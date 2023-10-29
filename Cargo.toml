@@ -2,6 +2,9 @@
 name = "moyo"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+description = "Library for Crystal Symmetry in Rust"
+repository = "https://github.com/lan496/moyo"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
