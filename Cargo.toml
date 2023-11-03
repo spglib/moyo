@@ -1,11 +1,17 @@
 [package]
 name = "moyo"
 version = "0.1.0"
+authors = ["Kohei Shinohara <kshinohara0508@gmail.com>"]
 edition = "2021"
 license = "MIT"
 description = "Library for Crystal Symmetry in Rust"
 repository = "https://github.com/lan496/moyo"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "moyo"
 
 [dependencies]
+nalgebra = "0.32.3"
+itertools = "0.11.0"
+approx = "0.5.1"
+rand = "0.8.5"
