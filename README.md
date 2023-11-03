@@ -1,5 +1,7 @@
 # Moyo
 
+🚧 This project is under construction 🚧
+
 ## Goals
 -  Find symmetry operations of a given crystal structure, identify its crystallographic group, and symmetrize the given crystal structure
 - Well-defined tolerance for finding symmetry operations

@@ -1,8 +1,9 @@
 use itertools::Itertools;
 use nalgebra::base::{DMatrix, DVector, Matrix3, Vector3};
 
+use crate::transformation::{OriginShift, Transformation, TransformationMatrix};
+
 pub type ColumnBasis = Matrix3<f64>;
-pub type TransformationMatrix = Matrix3<i32>;
 
 #[derive(Debug)]
 pub struct Lattice {
@@ -13,34 +14,34 @@ pub struct Lattice {
 const EPS: f64 = 1e-8;
 
 impl Lattice {
-    pub fn new(basis: &ColumnBasis) -> Lattice {
-        let basis = *basis;
-        Lattice { basis }
+    pub fn new(basis: ColumnBasis) -> Self {
+        Self { basis }
     }
 
-    pub fn transform(&self, tmat: TransformationMatrix) -> Lattice {
-        let tmat_as_f64 = tmat.map(|e| e as f64);
-        Lattice {
-            basis: self.basis * tmat_as_f64,
+    pub fn transform(&self, trans: &Transformation) -> Self {
+        let trans_mat_as_f64 = trans.trans_mat_as_f64();
+        Self {
+            basis: self.basis * trans_mat_as_f64,
         }
     }
 
-    pub fn minkowski_reduce(&self) -> (Lattice, TransformationMatrix) {
+    pub fn minkowski_reduce(&self) -> (Self, Transformation) {
         let mut minkowski_basis = self.basis.clone();
-        let mut tmat = TransformationMatrix::identity();
-        minkowski_reduce_greedy(&mut minkowski_basis, &mut tmat, 3);
-        let minkowski_lattice = Lattice {
+        let mut trans_mat = TransformationMatrix::identity();
+        minkowski_reduce_greedy(&mut minkowski_basis, &mut trans_mat, 3);
+        let minkowski_lattice = Self {
             basis: minkowski_basis,
         };
+        let trans = Transformation::new(trans_mat, OriginShift::zeros());
 
         assert_relative_eq!(
-            self.transform(tmat).basis,
+            self.transform(&trans).basis,
             minkowski_lattice.basis,
             epsilon = EPS
         );
         assert!(minkowski_lattice.is_minkowski_reduced());
 
-        (minkowski_lattice, tmat)
+        (minkowski_lattice, trans)
     }
 
     /// Return true if basis vectors are Minkowski reduced
@@ -82,13 +83,21 @@ impl Lattice {
 
         true
     }
+
+    pub fn metric_tensor(&self) -> Matrix3<f64> {
+        self.basis.transpose() * self.basis
+    }
 }
 
 /// Implement Fig.3 in [1]
-/// basis * tmat is always preserved
+/// basis * trans_mat is always preserved
 ///
 /// [1] https://royalsocietypublishing.org/doi/abs/10.1098/rspa.1992.0004
-fn minkowski_reduce_greedy(basis: &mut ColumnBasis, tmat: &mut TransformationMatrix, dim: usize) {
+fn minkowski_reduce_greedy(
+    basis: &mut ColumnBasis,
+    trans_mat: &mut TransformationMatrix,
+    dim: usize,
+) {
     // Line 1: exit condition
     if dim == 1 {
         return;
@@ -101,13 +110,13 @@ fn minkowski_reduce_greedy(basis: &mut ColumnBasis, tmat: &mut TransformationMat
             for j in 0..(dim - 1 - i) {
                 if lengths[j] > lengths[j + 1] + EPS {
                     basis.swap_columns(j, j + 1);
-                    *tmat = *tmat * swapping_column_matrix(j, j + 1);
+                    *trans_mat = *trans_mat * swapping_column_matrix(j, j + 1);
                 }
             }
         }
 
         // Line 4: Recursive call
-        minkowski_reduce_greedy(basis, tmat, dim - 1);
+        minkowski_reduce_greedy(basis, trans_mat, dim - 1);
 
         // Line 5: Solve the closest vector problem (CVP) for basis.column(d - 1)
         // linear projection (Gram-Schmidt)
@@ -145,7 +154,7 @@ fn minkowski_reduce_greedy(basis: &mut ColumnBasis, tmat: &mut TransformationMat
         for i in 0..(dim - 1) {
             add_mat[(i, dim - 1)] = -coeffs_argmin[i];
         }
-        *tmat = *tmat * add_mat;
+        *trans_mat = *trans_mat * add_mat;
 
         // Line 7: loop until length ordering is changed
         if basis.column(dim - 1).norm() + EPS > basis.column(dim - 2).norm() {
@@ -156,29 +165,29 @@ fn minkowski_reduce_greedy(basis: &mut ColumnBasis, tmat: &mut TransformationMat
 
 /// Return elementary matrix swapping the `col1`th and `col2`th columns
 fn swapping_column_matrix(col1: usize, col2: usize) -> TransformationMatrix {
-    let mut tmat = TransformationMatrix::zeros();
+    let mut trans_mat = TransformationMatrix::zeros();
     for i in 0..3 {
         if i == col1 {
-            tmat[(col1, col2)] = 1;
+            trans_mat[(col1, col2)] = 1;
         } else if i == col2 {
-            tmat[(col2, col1)] = 1;
+            trans_mat[(col2, col1)] = 1;
         } else {
-            tmat[(i, i)] = 1
+            trans_mat[(i, i)] = 1
         }
     }
-    tmat
+    trans_mat
 }
 
 /// Return elementary matrix adding the `k`-multiplied `col1`th column into the `col2`th column
 #[allow(dead_code)]
 fn adding_column_matrix(col1: usize, col2: usize, k: i32) -> TransformationMatrix {
-    let mut tmat = TransformationMatrix::identity();
+    let mut trans_mat = TransformationMatrix::identity();
     for i in 0..3 {
         if i == col1 {
-            tmat[(col1, col2)] = k;
+            trans_mat[(col1, col2)] = k;
         }
     }
-    tmat
+    trans_mat
 }
 
 #[cfg(test)]
@@ -193,14 +202,14 @@ mod tests {
 
     #[test]
     fn test_is_minkowski_reduced() {
-        let lattice = Lattice::new(&ColumnBasis::from_columns(&[
+        let lattice = Lattice::new(ColumnBasis::from_columns(&[
             Vector3::new(1.0, 0.0, 0.0),
             Vector3::new(0.0, 1.0, 0.0),
             Vector3::new(0.0, 0.0, 1.0),
         ]));
         assert!(lattice.is_minkowski_reduced());
 
-        let lattice = Lattice::new(&ColumnBasis::from_columns(&[
+        let lattice = Lattice::new(ColumnBasis::from_columns(&[
             Vector3::new(0.0, 1.0, 0.0),
             Vector3::new(1.0, 1.0, 0.0),
             Vector3::new(1.0, 1.0, 1.0),
@@ -224,16 +233,16 @@ mod tests {
 
     #[test]
     fn test_minkowski_reduction_small() {
-        let lattice = Lattice::new(&ColumnBasis::from_columns(&[
+        let lattice = Lattice::new(ColumnBasis::from_columns(&[
             Vector3::new(1.0, 0.0, 0.0),
             Vector3::new(0.0, 1.0, 0.0),
             Vector3::new(0.0, 0.0, 1.0),
         ]));
-        let (reduced_lattice, tmat) = lattice.minkowski_reduce();
+        let (reduced_lattice, trans) = lattice.minkowski_reduce();
         assert_relative_eq!(reduced_lattice.basis, lattice.basis);
-        assert_eq!(tmat, TransformationMatrix::identity());
+        assert_eq!(trans.trans_mat, TransformationMatrix::identity());
 
-        let lattice = Lattice::new(&ColumnBasis::from_columns(&[
+        let lattice = Lattice::new(ColumnBasis::from_columns(&[
             Vector3::new(0.0, 1.0, 0.0),
             Vector3::new(1.0, 1.0, 0.0),
             Vector3::new(1.0, 1.0, 1.0),
@@ -248,7 +257,7 @@ mod tests {
             ])
         );
 
-        let lattice = Lattice::new(&ColumnBasis::from_columns(&[
+        let lattice = Lattice::new(ColumnBasis::from_columns(&[
             Vector3::new(-5.0, -10.0, 17.0),
             Vector3::new(17.0, 24.0, 12.0),
             Vector3::new(-127.0, 73.0, 5.0),
@@ -264,7 +273,7 @@ mod tests {
         let mut rng: StdRng = SeedableRng::from_seed([0; 32]);
 
         for _ in 0..256 {
-            let lattice = Lattice::new(&ColumnBasis::new(
+            let lattice = Lattice::new(ColumnBasis::new(
                 rng.gen::<i8>() as f64,
                 rng.gen::<i8>() as f64,
                 rng.gen::<i8>() as f64,
@@ -279,7 +288,7 @@ mod tests {
         }
 
         for _ in 0..256 {
-            let lattice = Lattice::new(&ColumnBasis::new(
+            let lattice = Lattice::new(ColumnBasis::new(
                 rng.gen(),
                 rng.gen(),
                 rng.gen(),
