@@ -42,7 +42,7 @@ pub fn search_primitive_cell(
 
     // Try possible translations: overlap the `src`the site to the `dst`th site
     // TODO: this part takes O(num_atoms^3)
-    let mut permutations_tmp = vec![];
+    let mut permutations_translations_tmp = vec![];
     let src = pivot_site_indices[0];
     for dst in pivot_site_indices.iter() {
         let translation = reduced_cell.positions[*dst] - reduced_cell.positions[src];
@@ -57,18 +57,19 @@ pub fn search_primitive_cell(
         if let Some(permutation) =
             solve_correspondence(&reduced_cell, &new_positions, rough_symprec)
         {
-            permutations_tmp.push(permutation);
+            permutations_translations_tmp.push((permutation, translation));
         }
     }
-    assert!(permutations_tmp.len() > 0);
+    assert!(permutations_translations_tmp.len() > 0);
 
     // Purify translations by permutations
     let mut translations_and_permutations = vec![];
-    for permutation in permutations_tmp.iter() {
+    for (permutation, rough_translation) in permutations_translations_tmp.iter() {
         let (translation, distance) = symmetrize_translation_from_permutation(
             &reduced_cell,
             permutation,
             &Rotation::identity(),
+            rough_translation,
         );
         if distance < symprec {
             translations_and_permutations.push((translation, permutation));
@@ -129,6 +130,7 @@ fn symmetrize_translation_from_permutation(
     reduced_cell: &Cell,
     permutation: &Permutation,
     rotation: &Rotation,
+    rough_translation: &Translation,
 ) -> (Translation, f64) {
     // argmin_{t} sum_{i} | pbc(rotation * positions[i] + t - positions[permutation[i]]) |^2
     //   = 1/num_atoms * sum_{i} pbc(positions[permutation[i]] - rotation * positions[i])
@@ -138,7 +140,12 @@ fn symmetrize_translation_from_permutation(
         .map(|i| {
             let mut frac_displacement = reduced_cell.positions[permutation[i]]
                 - rotation.map(|e| e as f64) * reduced_cell.positions[i];
+
+            // To avoid rounding error, we first subtract rough translation. Then, the remainder should be almost zeros.
+            frac_displacement -= rough_translation;
             frac_displacement -= frac_displacement.map(|e| e.round());
+            frac_displacement += rough_translation;
+
             frac_displacement
         })
         .sum::<Vector3<_>>()
@@ -148,9 +155,104 @@ fn symmetrize_translation_from_permutation(
         .iter()
         .map(|pos| rotation.map(|e| e as f64) * pos + translation)
         .collect::<Vec<_>>();
+    dbg!(translation);
     let distance = (0..num_atoms)
-        .map(|i| (reduced_cell.positions[permutation[i]] - new_positions[i]).norm())
+        .map(|i| {
+            let mut frac_displacement = reduced_cell.positions[permutation[i]] - new_positions[i];
+            frac_displacement -= frac_displacement.map(|e| e.round());
+            dbg!(frac_displacement);
+            reduced_cell
+                .lattice
+                .cartesian_coords(&frac_displacement)
+                .norm()
+        })
         .max_by(|a, b| a.partial_cmp(b).unwrap())
         .unwrap();
     (translation, distance)
+}
+
+#[cfg(test)]
+mod tests {
+    use nalgebra::{matrix, Vector3};
+
+    use crate::cell::Cell;
+    use crate::lattice::Lattice;
+    use crate::operation::{Rotation, Translation};
+
+    use super::{solve_correspondence, symmetrize_translation_from_permutation};
+
+    #[test]
+    fn test_solve_correspondence() {
+        // Conventional fcc
+        let reduced_cell = Cell::new(
+            Lattice::new(matrix![
+                1.0, 0.0, 0.0;
+                0.0, 1.0, 0.0;
+                0.0, 0.0, 1.0;
+            ]),
+            vec![
+                Vector3::new(0.0, 0.0, 0.0),
+                Vector3::new(0.0, 0.5, 0.5),
+                Vector3::new(0.5, 0.0, 0.5),
+                Vector3::new(0.5, 0.5, 0.0),
+            ],
+            vec![0, 0, 0, 0],
+        );
+        let symprec = 1e-4;
+
+        {
+            // Translation::new(0.0, 0.5, 0.5);
+            let new_positions = vec![
+                Vector3::new(0.0, 0.5, 0.5),
+                Vector3::new(0.0, 1.0, 1.0),
+                Vector3::new(0.5, 0.5, 1.0),
+                Vector3::new(0.5, 1.0, 0.5),
+            ];
+            let actual = solve_correspondence(&reduced_cell, &new_positions, symprec).unwrap();
+            let expect = vec![1, 0, 3, 2];
+            assert_eq!(actual, expect);
+        }
+        {
+            // Translation::new(0.0, 0.5, 0.5 - 2 * symprec);
+            let new_positions = vec![
+                Vector3::new(0.0, 0.5, 0.5),
+                Vector3::new(0.0, 1.0, 1.0 - 2.0 * symprec),
+                Vector3::new(0.5, 0.5, 1.0),
+                Vector3::new(0.5, 1.0, 0.5),
+            ];
+            let actual = solve_correspondence(&reduced_cell, &new_positions, symprec);
+            assert_eq!(actual, None);
+        }
+    }
+
+    #[test]
+    fn test_symmetrize_translation_from_permutation() {
+        // Conventional fcc
+        let symprec = 1e-2;
+        let distorted_reduced_cell = Cell::new(
+            Lattice::new(matrix![
+                1.0, 0.0, 0.0;
+                0.0, 1.0, 0.0;
+                0.0, 0.0, 1.0;
+            ]),
+            vec![
+                Vector3::new(0.0, 0.0, 0.0),
+                Vector3::new(0.0, 0.5, 0.5 + 0.5 * symprec),
+                Vector3::new(0.5, 0.0, 0.5),
+                Vector3::new(0.5, 0.5, 0.0),
+            ],
+            vec![0, 0, 0, 0],
+        );
+
+        let permutation = vec![1, 0, 3, 2];
+        let (actual, distance) = symmetrize_translation_from_permutation(
+            &distorted_reduced_cell,
+            &permutation,
+            &Rotation::identity(),
+            &Translation::new(0.0, 0.5, 0.5 + 0.5 * symprec),
+        );
+        let expect = Translation::new(0.0, 0.5, 0.5);
+        assert_relative_eq!(actual, expect);
+        assert_relative_eq!(distance, 0.5 * symprec);
+    }
 }
