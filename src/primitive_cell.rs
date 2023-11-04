@@ -155,12 +155,10 @@ fn symmetrize_translation_from_permutation(
         .iter()
         .map(|pos| rotation.map(|e| e as f64) * pos + translation)
         .collect::<Vec<_>>();
-    dbg!(translation);
     let distance = (0..num_atoms)
         .map(|i| {
             let mut frac_displacement = reduced_cell.positions[permutation[i]] - new_positions[i];
             frac_displacement -= frac_displacement.map(|e| e.round());
-            dbg!(frac_displacement);
             reduced_cell
                 .lattice
                 .cartesian_coords(&frac_displacement)
