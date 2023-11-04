@@ -1,8 +1,8 @@
 extern crate nalgebra as na;
 use na::base::Vector3;
 
-use crate::lattice::Lattice;
-use crate::transformation::Transformation;
+use super::lattice::Lattice;
+use super::transformation::Transformation;
 
 pub type Position = Vector3<f64>;
 pub type AtomicSpecie = i32;

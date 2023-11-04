@@ -1,7 +1,7 @@
 use nalgebra::base::{Matrix3, Vector3};
 use std::ops::Mul;
 
-use crate::lattice::Lattice;
+use super::lattice::Lattice;
 
 pub type Rotation = Matrix3<i32>;
 pub type Translation = Vector3<f64>;
@@ -89,7 +89,7 @@ mod tests {
     use nalgebra::matrix;
 
     use super::{Operations, Permutation, Translation};
-    use crate::lattice::Lattice;
+    use crate::base::lattice::Lattice;
 
     #[test]
     fn test_cartesian_rotations() {

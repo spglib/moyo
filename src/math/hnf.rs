@@ -1,7 +1,7 @@
 use nalgebra::base::allocator::Allocator;
 use nalgebra::{DefaultAllocator, Dim, OMatrix};
 
-use crate::math::elementary::{adding_column_matrix, changing_sign_matrix, swapping_column_matrix};
+use super::elementary::{adding_column_matrix, changing_sign_matrix, swapping_column_matrix};
 
 /// Hermite normal form of RxC matrix such that h = basis * r
 #[derive(Debug)]

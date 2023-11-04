@@ -4,12 +4,12 @@ use std::collections::HashSet;
 use nalgebra::{Dyn, Matrix3, OMatrix, Vector3, U3};
 use union_find::{QuickFindUf, UnionByRank, UnionFind};
 
-use crate::cell::{Cell, Position, SiteMapping};
-use crate::error::MoyoError;
-use crate::lattice::Lattice;
+use crate::base::cell::{Cell, Position, SiteMapping};
+use crate::base::error::MoyoError;
+use crate::base::lattice::Lattice;
+use crate::base::operation::{Permutation, Rotation, Translation};
+use crate::base::transformation::{OriginShift, Transformation, TransformationMatrix};
 use crate::math::hnf::hnf;
-use crate::operation::{Permutation, Rotation, Translation};
-use crate::transformation::{OriginShift, Transformation, TransformationMatrix};
 
 const EPS: f64 = 1e-8;
 
@@ -312,9 +312,9 @@ fn primitive_cell_from_transformation(
 mod tests {
     use nalgebra::{matrix, Vector3};
 
-    use crate::cell::Cell;
-    use crate::lattice::Lattice;
-    use crate::operation::{Permutation, Rotation, Translation};
+    use crate::base::cell::Cell;
+    use crate::base::lattice::Lattice;
+    use crate::base::operation::{Permutation, Rotation, Translation};
 
     use super::{
         search_primitive_cell, solve_correspondence, symmetrize_translation_from_permutation,

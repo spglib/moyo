@@ -1,3 +1,3 @@
-pub mod elementary;
+mod elementary;
 pub mod hnf;
 pub mod minkowski;

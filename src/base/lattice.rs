@@ -1,8 +1,9 @@
 use nalgebra::base::{Matrix3, Vector3};
 
-use crate::error::MoyoError;
 use crate::math::minkowski::{is_minkowski_reduced, minkowski_reduce};
-use crate::transformation::TransformationMatrix;
+
+use super::error::MoyoError;
+use super::transformation::TransformationMatrix;
 
 pub type ColumnBasis = Matrix3<f64>;
 

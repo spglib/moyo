@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use nalgebra::{DMatrix, DVector, Matrix3, Vector3, U3};
 
-use crate::math::elementary::swapping_column_matrix;
+use super::elementary::swapping_column_matrix;
 
 const EPS: f64 = 1e-8;
 

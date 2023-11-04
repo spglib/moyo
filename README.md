@@ -11,3 +11,12 @@
 ## Non-goals
 - Crystallographic groups in other than three dimensions
 - Matching two similar crystal structures
+
+## Details
+
+### Module dependency
+
+```
+math <- base
+base <- primitive_cell
+```
