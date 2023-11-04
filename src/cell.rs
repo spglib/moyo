@@ -6,51 +6,52 @@ use crate::transformation::Transformation;
 
 pub type Position = Vector3<f64>;
 pub type AtomicSpecie = i32;
+pub type SiteMapping = Vec<usize>;
 
 #[derive(Debug)]
 pub struct Cell {
     pub lattice: Lattice,
     pub positions: Vec<Position>,
     pub numbers: Vec<AtomicSpecie>,
-    //
-    pub num_atoms: usize,
 }
 
 impl Cell {
     pub fn new(lattice: Lattice, positions: Vec<Position>, numbers: Vec<AtomicSpecie>) -> Self {
-        let num_atoms = positions.len();
-        if numbers.len() != num_atoms {
+        if positions.len() != numbers.len() {
             panic!("positions and numbers should be the same length");
         }
         Self {
             lattice,
             positions,
             numbers,
-            num_atoms,
         }
     }
 
-    pub fn transform(&self, trans: &Transformation) -> Self {
-        if trans.size == 1 {
-            self.transform_unimodular(trans)
-        } else {
-            unimplemented!("transformation matrix should have determinant of -1 or 1");
-        }
+    pub fn num_atoms(&self) -> usize {
+        self.positions.len()
     }
 
-    fn transform_unimodular(&self, trans: &Transformation) -> Self {
-        let new_lattice = self.lattice.transform(&trans);
-        let pinv = trans.trans_mat_as_f64().try_inverse().unwrap();
+    pub fn transform(&self, transformation: &Transformation) -> Self {
+        if transformation.size != 1 {
+            panic!("transformation matrix should have determinant of -1 or 1");
+        }
+        let new_lattice = self.lattice.transform(&transformation.trans_mat);
+        let pinv = transformation.trans_mat_as_f64().try_inverse().unwrap();
         let new_positions = self
             .positions
             .iter()
-            .map(|pos| pinv * (pos - trans.origin_shift))
+            .map(|pos| pinv * (pos - transformation.origin_shift))
             .collect();
         Self {
             lattice: new_lattice,
             positions: new_positions,
             numbers: self.numbers.clone(),
-            num_atoms: self.num_atoms,
         }
+    }
+
+    /// Apply `trans`, which may increase the number of atoms in the cell.
+    /// Mapping from sites of the new cell to those of the original cell is also returned.
+    pub fn expand_transform(&self, transformation: &Transformation) -> (Self, SiteMapping) {
+        unimplemented!()
     }
 }

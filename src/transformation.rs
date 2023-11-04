@@ -5,6 +5,7 @@ pub type TransformationMatrix = Matrix3<i32>;
 pub type OriginShift = Vector3<f64>;
 
 /// Represent change of origin and basis for an affine space
+#[derive(Debug)]
 pub struct Transformation {
     pub trans_mat: TransformationMatrix,
     pub origin_shift: OriginShift,

@@ -2,7 +2,7 @@ use nalgebra::base::{Matrix3, Vector3};
 
 use crate::error::MoyoError;
 use crate::math::minkowski::{is_minkowski_reduced, minkowski_reduce};
-use crate::transformation::{OriginShift, Transformation};
+use crate::transformation::TransformationMatrix;
 
 pub type ColumnBasis = Matrix3<f64>;
 
@@ -19,22 +19,21 @@ impl Lattice {
         Self { basis }
     }
 
-    pub fn transform(&self, trans: &Transformation) -> Self {
-        let trans_mat_as_f64 = trans.trans_mat_as_f64();
+    pub fn transform(&self, trans_mat: &TransformationMatrix) -> Self {
+        let trans_mat_as_f64 = trans_mat.map(|e| e as f64);
         Self {
             basis: self.basis * trans_mat_as_f64,
         }
     }
 
-    pub fn minkowski_reduce(&self) -> Result<(Self, Transformation), MoyoError> {
+    pub fn minkowski_reduce(&self) -> Result<(Self, TransformationMatrix), MoyoError> {
         let (minkowski_basis, trans_mat) = minkowski_reduce(&self.basis);
         let minkowski_lattice = Self {
             basis: minkowski_basis,
         };
-        let trans = Transformation::new(trans_mat, OriginShift::zeros());
 
         if relative_ne!(
-            self.transform(&trans).basis,
+            self.transform(&trans_mat).basis,
             minkowski_lattice.basis,
             epsilon = EPS
         ) {
@@ -44,7 +43,7 @@ impl Lattice {
             return Err(MoyoError::MinkowskiReductionError);
         }
 
-        Ok((minkowski_lattice, trans))
+        Ok((minkowski_lattice, trans_mat))
     }
 
     /// Return true if basis vectors are Minkowski reduced

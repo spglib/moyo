@@ -1,24 +1,21 @@
 use nalgebra::base::{Matrix3, Vector3};
+use std::ops::Mul;
 
-use crate::cell::Cell;
 use crate::lattice::Lattice;
 
 pub type Rotation = Matrix3<i32>;
 pub type Translation = Vector3<f64>;
 
-pub type Permutation = Vec<usize>;
+#[derive(Debug, PartialEq, Clone)]
+pub struct Permutation {
+    pub mapping: Vec<usize>,
+}
 
 pub struct Operations {
     pub lattice: Lattice,
     //
     pub rotations: Vec<Rotation>,
     pub translations: Vec<Translation>,
-}
-
-pub struct CellWithOperations {
-    pub cell: Cell,
-    pub operations: Operations,
-    pub permutations: Vec<Permutation>,
 }
 
 impl Operations {
@@ -47,27 +44,51 @@ impl Operations {
     }
 }
 
-impl CellWithOperations {
-    pub fn new(cell: Cell, operations: Operations, permutations: Vec<Permutation>) -> Self {
-        assert_relative_eq!(cell.lattice.basis, operations.lattice.basis);
-        assert_eq!(operations.num_operations(), permutations.len());
-        Self {
-            cell,
-            operations,
-            permutations,
-        }
+impl Permutation {
+    pub fn new(mapping: Vec<usize>) -> Self {
+        Self { mapping }
     }
 
-    pub fn num_operations(&self) -> usize {
-        self.operations.num_operations()
+    pub fn identity(size: usize) -> Self {
+        Self::new((0..size).collect())
+    }
+
+    pub fn size(&self) -> usize {
+        self.mapping.len()
+    }
+
+    pub fn apply(&self, i: usize) -> usize {
+        self.mapping[i]
+    }
+
+    pub fn inverse(&self) -> Self {
+        let mut inv = vec![0; self.size()];
+        for (i, &j) in self.mapping.iter().enumerate() {
+            inv[j] = i;
+        }
+        Self::new(inv)
+    }
+}
+
+impl Mul for Permutation {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        let mut mapping = vec![0; self.size()];
+        for i in 0..self.size() {
+            mapping[i] = self.apply(rhs.apply(i));
+        }
+        Self::new(mapping)
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::vec;
+
     use nalgebra::matrix;
 
-    use super::{Operations, Translation};
+    use super::{Operations, Permutation, Translation};
     use crate::lattice::Lattice;
 
     #[test]
@@ -94,5 +115,16 @@ mod tests {
         ];
         assert_relative_eq!(actual, expect);
         assert_eq!(operations.num_operations(), 1)
+    }
+
+    #[test]
+    fn test_permutation() {
+        let permutation = Permutation::new(vec![1, 2, 0]);
+        assert_eq!(permutation.apply(0), 1);
+        assert_eq!(permutation.inverse(), Permutation::new(vec![2, 0, 1]));
+        assert_eq!(
+            permutation.clone() * permutation.inverse(),
+            Permutation::identity(3)
+        );
     }
 }
