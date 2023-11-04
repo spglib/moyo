@@ -31,10 +31,14 @@ impl Cell {
     }
 
     pub fn transform(&self, trans: &Transformation) -> Self {
-        if trans.size > 1 {
+        if trans.size == 1 {
+            self.transform_unimodular(trans)
+        } else {
             unimplemented!("transformation matrix should have determinant of -1 or 1");
         }
+    }
 
+    fn transform_unimodular(&self, trans: &Transformation) -> Self {
         let new_lattice = self.lattice.transform(&trans);
         let pinv = trans.trans_mat_as_f64().try_inverse().unwrap();
         let new_positions = self

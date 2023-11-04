@@ -8,12 +8,12 @@ pub type OriginShift = Vector3<f64>;
 pub struct Transformation {
     pub trans_mat: TransformationMatrix,
     pub origin_shift: OriginShift,
-    pub size: i32,
+    pub size: usize,
 }
 
 impl Transformation {
     pub fn new(trans_mat: TransformationMatrix, origin_shift: OriginShift) -> Self {
-        let size = trans_mat.map(|e| e as f64).determinant().round().abs() as i32;
+        let size = trans_mat.map(|e| e as f64).determinant().round().abs() as usize;
         if size == 0 {
             panic!("transformation matrix should have nonzero determinant");
         }

@@ -1,30 +1,40 @@
 use nalgebra::base::{Matrix3, Vector3};
 
+use crate::cell::Cell;
 use crate::lattice::Lattice;
 
 pub type Rotation = Matrix3<i32>;
 pub type Translation = Vector3<f64>;
 
+pub type Permutation = Vec<usize>;
+
 pub struct Operations {
     pub lattice: Lattice,
-    pub num_operations: i32,
     //
     pub rotations: Vec<Rotation>,
     pub translations: Vec<Translation>,
 }
 
+pub struct CellWithOperations {
+    pub cell: Cell,
+    pub operations: Operations,
+    pub permutations: Vec<Permutation>,
+}
+
 impl Operations {
     pub fn new(lattice: Lattice, rotations: Vec<Rotation>, translations: Vec<Translation>) -> Self {
-        let num_operations = rotations.len() as i32;
         if translations.len() != rotations.len() {
             panic!("rotations and translations should be the same length");
         }
         Self {
             lattice,
-            num_operations,
             rotations,
             translations,
         }
+    }
+
+    pub fn num_operations(&self) -> usize {
+        self.rotations.len()
     }
 
     pub fn cartesian_rotations(&self) -> Vec<Matrix3<f64>> {
@@ -34,6 +44,22 @@ impl Operations {
             .map(|r| self.lattice.basis * r.map(|e| e as f64) * inv_basis)
             // .map(|r| inv_basis * r.map(|e| e as f64) * self.lattice.basis)
             .collect()
+    }
+}
+
+impl CellWithOperations {
+    pub fn new(cell: Cell, operations: Operations, permutations: Vec<Permutation>) -> Self {
+        assert_relative_eq!(cell.lattice.basis, operations.lattice.basis);
+        assert_eq!(operations.num_operations(), permutations.len());
+        Self {
+            cell,
+            operations,
+            permutations,
+        }
+    }
+
+    pub fn num_operations(&self) -> usize {
+        self.operations.num_operations()
     }
 }
 
@@ -67,6 +93,6 @@ mod tests {
             0.0, 0.0, 1.0;
         ];
         assert_relative_eq!(actual, expect);
-        assert_eq!(operations.num_operations, 1)
+        assert_eq!(operations.num_operations(), 1)
     }
 }
