@@ -1,5 +1,5 @@
 use nalgebra::base::allocator::Allocator;
-use nalgebra::{DefaultAllocator, Dim, DimName, OMatrix};
+use nalgebra::{DefaultAllocator, Dim, OMatrix};
 
 use crate::math::elementary::{adding_column_matrix, changing_sign_matrix, swapping_column_matrix};
 
@@ -14,42 +14,41 @@ where
 }
 
 /// Return column-wise Hermite norm form
-pub fn hnf<R: DimName, C: DimName>(basis: &OMatrix<i32, R, C>) -> HNF<R, C>
+pub fn hnf<R: Dim, C: Dim>(basis: &OMatrix<i32, R, C>) -> HNF<R, C>
 where
     DefaultAllocator: Allocator<i32, R, C> + Allocator<i32, C, C>,
 {
+    let (m, n) = basis.shape_generic();
     let mut h = basis.clone();
-    let mut r = OMatrix::<i32, C, C>::identity();
-    let m = R::dim();
-    let n = C::dim();
+    let mut r = OMatrix::identity_generic(n, n);
 
     // Process the `s`th row
-    for s in 0..m {
-        if (s..n).all(|j| h[(s, j)] == 0) {
+    for s in 0..m.value() {
+        if (s..n.value()).all(|j| h[(s, j)] == 0) {
             continue;
         }
 
         loop {
             // Choose pivot column with the smallest absolute value
-            let pivot = (s..n)
+            let pivot = (s..n.value())
                 .filter(|&j| h[(s, j)] != 0)
                 .min_by_key(|&j| h[(s, j)].abs())
                 .unwrap();
             h.swap_columns(s, pivot);
-            r = r * swapping_column_matrix::<C>(s, pivot);
+            r = r * swapping_column_matrix(n, s, pivot);
 
             // Guarantee that h[(s, s)] is positive
             if h[(s, s)] < 0 {
-                for i in 0..m {
+                for i in 0..m.value() {
                     h[(i, s)] *= -1;
                 }
-                r = r * changing_sign_matrix(s);
+                r = r * changing_sign_matrix(n, s);
             }
             assert_ne!(h[(s, s)], 0);
 
             // Add the `s`th column to the other columns
             let mut update = false;
-            for j in 0..n {
+            for j in 0..n.value() {
                 if j == s {
                     continue;
                 }
@@ -58,10 +57,10 @@ where
                 if k != 0 {
                     update = true;
                     // h[(:, j)] -= k * h[(:, s)]
-                    for i in 0..m {
+                    for i in 0..m.value() {
                         h[(i, j)] -= k * h[(i, s)];
                     }
-                    r = r * adding_column_matrix(s, j, -k);
+                    r = r * adding_column_matrix(n, s, j, -k);
                 }
             }
 
