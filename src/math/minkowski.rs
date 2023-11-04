@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use nalgebra::{DMatrix, DVector, Matrix3, Vector3};
+use nalgebra::{DMatrix, DVector, Matrix3, Vector3, U3};
 
 use crate::math::elementary::swapping_column_matrix;
 
@@ -30,7 +30,7 @@ fn minkowski_reduce_greedy(basis: &mut Matrix3<f64>, trans_mat: &mut Matrix3<i32
             for j in 0..(dim - 1 - i) {
                 if lengths[j] > lengths[j + 1] + EPS {
                     basis.swap_columns(j, j + 1);
-                    *trans_mat = *trans_mat * swapping_column_matrix::<3>(j, j + 1);
+                    *trans_mat = *trans_mat * swapping_column_matrix::<U3>(j, j + 1);
                 }
             }
         }
