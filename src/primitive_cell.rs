@@ -1,8 +1,9 @@
-use nalgebra::Vector3;
+use nalgebra::{Dyn, OMatrix, Vector3, U3};
 use std::collections::HashMap;
 
 use crate::cell::{Cell, Position};
 use crate::error::MoyoError;
+use crate::math::hnf::hnf;
 use crate::operation::{CellWithOperations, Permutation, Rotation, Translation};
 use crate::transformation::Transformation;
 
@@ -21,7 +22,7 @@ pub fn search_primitive_cell(
         .map(|v| v.norm())
         .fold(f64::INFINITY, f64::min);
     let rough_symprec = 2.0 * symprec;
-    if rough_symprec < minimum_basis_norm / 2.0 {
+    if rough_symprec > minimum_basis_norm / 2.0 {
         return Err(MoyoError::TooSmallSymprecError);
     }
 
@@ -63,7 +64,7 @@ pub fn search_primitive_cell(
     assert!(permutations_translations_tmp.len() > 0);
 
     // Purify translations by permutations
-    let mut translations_and_permutations = vec![];
+    let mut permutations_translations = vec![];
     for (permutation, rough_translation) in permutations_translations_tmp.iter() {
         let (translation, distance) = symmetrize_translation_from_permutation(
             &reduced_cell,
@@ -72,14 +73,26 @@ pub fn search_primitive_cell(
             rough_translation,
         );
         if distance < symprec {
-            translations_and_permutations.push((translation, permutation));
+            permutations_translations.push((permutation, translation));
         }
     }
-    assert!(translations_and_permutations.len() > 0);
 
-    if reduced_cell.num_atoms % translations_and_permutations.len() != 0 {
+    let size = permutations_translations.len() as i32;
+    assert!(size > 0);
+    if reduced_cell.num_atoms % (size as usize) != 0 {
         return Err(MoyoError::PrimitiveCellSearchError);
     }
+
+    // Recover a transformation matrix from translations
+    let mut columns: Vec<Vector3<i32>> = vec![
+        Vector3::new(size, 0, 0),
+        Vector3::new(0, size, 0),
+        Vector3::new(0, 0, size),
+    ];
+    for (_, translation) in permutations_translations {
+        columns.push((translation * (size as f64)).map(|e| e.round() as i32));
+    }
+    let hnf = hnf(&OMatrix::<i32, U3, Dyn>::from_columns(&columns));
 
     unimplemented!();
 }
@@ -177,7 +190,9 @@ mod tests {
     use crate::lattice::Lattice;
     use crate::operation::{Rotation, Translation};
 
-    use super::{solve_correspondence, symmetrize_translation_from_permutation};
+    use super::{
+        search_primitive_cell, solve_correspondence, symmetrize_translation_from_permutation,
+    };
 
     #[test]
     fn test_solve_correspondence() {
@@ -252,5 +267,27 @@ mod tests {
         let expect = Translation::new(0.0, 0.5, 0.5);
         assert_relative_eq!(actual, expect);
         assert_relative_eq!(distance, 0.5 * symprec);
+    }
+
+    #[test]
+    fn test_search_primitive_cell() {
+        // Conventional fcc
+        let cell = Cell::new(
+            Lattice::new(matrix![
+                1.0, 0.0, 0.0;
+                0.0, 1.0, 0.0;
+                0.0, 0.0, 1.0;
+            ]),
+            vec![
+                Vector3::new(0.0, 0.0, 0.0),
+                Vector3::new(0.0, 0.5, 0.5),
+                Vector3::new(0.5, 0.0, 0.5),
+                Vector3::new(0.5, 0.5, 0.0),
+            ],
+            vec![0, 0, 0, 0],
+        );
+        let symprec = 1e-4;
+
+        let _ = search_primitive_cell(&cell, symprec);
     }
 }
