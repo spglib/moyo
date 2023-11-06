@@ -1,10 +1,11 @@
-use std::collections::HashMap;
 use std::collections::HashSet;
 
 use nalgebra::{Dyn, Matrix3, OMatrix, Vector3, U3};
 use union_find::{QuickFindUf, UnionByRank, UnionFind};
 
-use super::solve::{solve_correspondence, symmetrize_translation_from_permutation};
+use super::solve::{
+    pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
+};
 use crate::base::cell::{Cell, Position, SiteMapping};
 use crate::base::error::MoyoError;
 use crate::base::lattice::Lattice;
@@ -68,23 +69,8 @@ pub fn search_primitive_cell(
         return Err(MoyoError::TooSmallSymprecError);
     }
 
-    // Choose atomic specie with the smallest occurrence
-    let mut counter = HashMap::new();
-    for number in reduced_cell.numbers.iter() {
-        let count = counter.entry(number).or_insert(0);
-        *count += 1;
-    }
-    let pivot_atomic_specie = *counter.iter().min_by_key(|(_, count)| *count).unwrap().0;
-    let pivot_site_indices = reduced_cell
-        .numbers
-        .iter()
-        .enumerate()
-        .filter(|(_, number)| *number == pivot_atomic_specie)
-        .map(|(i, _)| i)
-        .collect::<Vec<_>>();
-
     // Try possible translations: overlap the `src`the site to the `dst`th site
-    // TODO: this part takes O(num_atoms^3)
+    let pivot_site_indices = pivot_site_indices(&reduced_cell.numbers);
     let mut permutations_translations_tmp = vec![];
     let src = pivot_site_indices[0];
     for dst in pivot_site_indices.iter() {

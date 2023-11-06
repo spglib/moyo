@@ -8,7 +8,7 @@ use super::transformation::TransformationMatrix;
 
 pub type ColumnBasis = Matrix3<f64>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Lattice {
     /// basis.column(i) is the i-th basis vector
     pub basis: ColumnBasis,

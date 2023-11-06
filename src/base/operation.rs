@@ -11,6 +11,7 @@ pub struct Permutation {
     pub mapping: Vec<usize>,
 }
 
+#[derive(Debug)]
 pub struct Operations {
     pub lattice: Lattice,
     //

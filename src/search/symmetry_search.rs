@@ -2,13 +2,21 @@ use itertools::iproduct;
 
 use nalgebra::{Matrix3, Vector3};
 
-use crate::base::cell::Cell;
+use super::solve::{
+    pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
+};
+use crate::base::cell::{Cell, Position};
 use crate::base::error::MoyoError;
 use crate::base::lattice::Lattice;
-use crate::base::operation::Rotation;
+use crate::base::operation::{Operations, Permutation, Rotation};
 use crate::base::tolerance::{AngleTolerance, EPS};
 
-pub struct SymmetrySearchResult {}
+#[derive(Debug)]
+pub struct SymmetrySearchResult {
+    pub operations: Operations,
+    pub permutations: Vec<Permutation>,
+    pub bravais_group: Vec<Rotation>,
+}
 
 /// Return coset representatives of the space group w.r.t. its translation subgroup.
 /// Assume `primitive_cell` is a primitive cell and its basis vectors are Minkowski reduced.
@@ -18,11 +26,66 @@ pub fn search_symmetry_operations(
     symprec: f64,
     angle_tolerance: AngleTolerance,
 ) -> Result<SymmetrySearchResult, MoyoError> {
-    let bravais_group = search_bravais_group(&primitive_cell.lattice, symprec, angle_tolerance)?;
+    // Check if symprec is sufficiently small
+    let minimum_basis_norm = primitive_cell.lattice.basis.column(0).norm();
+    let rough_symprec = 2.0 * symprec;
+    if rough_symprec > minimum_basis_norm / 2.0 {
+        return Err(MoyoError::TooSmallSymprecError);
+    }
 
     // Search symmetry operations
+    let bravais_group = search_bravais_group(&primitive_cell.lattice, symprec, angle_tolerance)?;
+    let pivot_site_indices = pivot_site_indices(&primitive_cell.numbers);
+    let mut symmetries_tmp = vec![];
+    let src = pivot_site_indices[0];
+    for rotation in bravais_group.iter() {
+        for dst in pivot_site_indices.iter() {
+            // Try to overlap the `src`-th site to the `dst`-th site
+            let translation = primitive_cell.positions[*dst]
+                - rotation.map(|e| e as f64) * primitive_cell.positions[src];
+            let new_positions: Vec<Position> = primitive_cell
+                .positions
+                .iter()
+                .map(|pos| rotation.map(|e| e as f64) * pos + translation)
+                .collect();
 
-    unimplemented!()
+            if let Some(permutation) =
+                solve_correspondence(&primitive_cell, &new_positions, rough_symprec)
+            {
+                symmetries_tmp.push((rotation.clone(), translation, permutation));
+                // If a translation part is found, it should be unique (up to lattice translations)
+                break;
+            }
+        }
+    }
+    assert!(symmetries_tmp.len() > 0);
+
+    // Purify symmetry operations by permutations
+    let mut rotations = vec![];
+    let mut translations = vec![];
+    let mut permutations = vec![];
+    for (rotation, rough_translation, permutation) in symmetries_tmp.iter() {
+        let (translation, distance) = symmetrize_translation_from_permutation(
+            &primitive_cell,
+            permutation,
+            rotation,
+            rough_translation,
+        );
+        if distance < symprec {
+            rotations.push(rotation.clone());
+            translations.push(translation);
+            permutations.push(permutation.clone());
+        }
+    }
+    if rotations.len() == 0 {
+        return Err(MoyoError::SymmetrySearchError);
+    }
+
+    Ok(SymmetrySearchResult {
+        operations: Operations::new(primitive_cell.lattice.clone(), rotations, translations),
+        permutations,
+        bravais_group,
+    })
 }
 
 /// Relevant to spglib.c/symmetry.c::get_lattice_symmetry
@@ -164,23 +227,59 @@ mod tests {
     use crate::base::cell::Cell;
     use crate::base::lattice::Lattice;
     use crate::base::tolerance::AngleTolerance;
+    use crate::search::primitive_cell::search_primitive_cell;
 
     #[test]
     fn test_search_symmetry_operations() {
         let symprec = 1e-4;
 
         // Primitive fcc
-        let primitive_cell = Cell::new(
-            Lattice::new(matrix![
-                0.0, 0.5, 0.5;
-                0.5, 0.0, 0.5;
-                0.5, 0.5, 0.0;
-            ]),
-            vec![Vector3::new(0.0, 0.0, 0.0)],
-            vec![0],
-        );
-        let result =
-            search_symmetry_operations(&primitive_cell, symprec, AngleTolerance::Default).unwrap();
+        {
+            let primitive_cell = Cell::new(
+                Lattice::new(matrix![
+                    0.0, 0.5, 0.5;
+                    0.5, 0.0, 0.5;
+                    0.5, 0.5, 0.0;
+                ]),
+                vec![Vector3::new(0.0, 0.0, 0.0)],
+                vec![0],
+            );
+            let result =
+                search_symmetry_operations(&primitive_cell, symprec, AngleTolerance::Default)
+                    .unwrap();
+            assert_eq!(result.operations.num_operations(), 48);
+        }
+
+        // Rutile, P4_2/mnm (No. 136)
+        {
+            let a = 4.603;
+            let c = 2.969;
+            let lattice = Lattice::new(matrix![
+                a, 0.0, 0.0;
+                0.0, a, 0.0;
+                0.0, 0.0, c;
+            ]);
+            let x_4f = 0.3046;
+            let positions = vec![
+                Vector3::new(0.0, 0.0, 0.0),                // Ti(2a)
+                Vector3::new(0.5, 0.5, 0.5),                // Ti(2a)
+                Vector3::new(x_4f, x_4f, 0.0),              // O(4f)
+                Vector3::new(-x_4f, -x_4f, 0.0),            // O(4f)
+                Vector3::new(-x_4f + 0.5, x_4f + 0.5, 0.5), // O(4f)
+                Vector3::new(x_4f + 0.5, -x_4f + 0.5, 0.5), // O(4f)
+            ];
+            let numbers = vec![0, 0, 1, 1, 1, 1];
+            let angle_tolerance = AngleTolerance::Default;
+
+            let cell = Cell::new(lattice, positions, numbers);
+            let primitive_cell_result = search_primitive_cell(&cell, symprec).unwrap();
+            let primitive_cell = primitive_cell_result.primitive_cell;
+
+            let result =
+                search_symmetry_operations(&primitive_cell, symprec, angle_tolerance).unwrap();
+            assert_eq!(result.bravais_group.len(), 16);
+            assert_eq!(result.operations.num_operations(), 16);
+        }
     }
 
     #[test]

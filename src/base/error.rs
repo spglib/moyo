@@ -10,4 +10,6 @@ pub enum MoyoError {
     PrimitiveCellSearchError,
     #[error("Bravais group search failed")]
     BravaisGroupSearchError,
+    #[error("Symmetry search failed")]
+    SymmetrySearchError,
 }

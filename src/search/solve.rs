@@ -1,13 +1,32 @@
+use std::collections::HashMap;
+
 use nalgebra::Vector3;
 
-use crate::base::cell::{Cell, Position};
+use crate::base::cell::{AtomicSpecie, Cell, Position};
 use crate::base::operation::{Permutation, Rotation, Translation};
+
+/// Choose atomic specie with the smallest occurrence
+pub fn pivot_site_indices(numbers: &Vec<AtomicSpecie>) -> Vec<usize> {
+    let mut counter = HashMap::new();
+    for number in numbers.iter() {
+        let count = counter.entry(number).or_insert(0);
+        *count += 1;
+    }
+    let pivot_atomic_specie = *counter.iter().min_by_key(|(_, count)| *count).unwrap().0;
+    let pivot_site_indices = numbers
+        .iter()
+        .enumerate()
+        .filter(|(_, number)| *number == pivot_atomic_specie)
+        .map(|(i, _)| i)
+        .collect::<Vec<_>>();
+    pivot_site_indices
+}
 
 /// Return correspondence between the input and acted positions.
 /// Assume that reduced_cell is Minkowski reduced and symprec is sufficiently small for Babai's algorithm.
 /// Search permutation such that new_positions[i] = reduced_cell.positions[permutation[i]].
 /// Then, a corresponding symmetry operation moves the i-th site into the permutation[i]-th site.
-/// Be careful that the current implementation takes O(num_atoms^2) time!
+/// TODO: Be careful that the current implementation takes O(num_atoms^2) time!
 pub fn solve_correspondence(
     reduced_cell: &Cell,
     new_positions: &Vec<Position>,
@@ -24,7 +43,7 @@ pub fn solve_correspondence(
                 continue;
             }
 
-            let mut frac_displacement = new_positions[j] - reduced_cell.positions[i];
+            let mut frac_displacement = reduced_cell.positions[j] - new_positions[i];
             frac_displacement -= frac_displacement.map(|e| e.round());
             let distance = reduced_cell
                 .lattice
@@ -97,7 +116,17 @@ mod tests {
     use crate::base::lattice::Lattice;
     use crate::base::operation::{Permutation, Rotation, Translation};
 
-    use super::{solve_correspondence, symmetrize_translation_from_permutation};
+    use super::{
+        pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
+    };
+
+    #[test]
+    fn test_pivot_site_indices() {
+        let numbers = vec![0, 1, 1, 1, 2, 0, 2, 2];
+        let actual = pivot_site_indices(&numbers);
+        let expect = vec![0, 5];
+        assert_eq!(actual, expect);
+    }
 
     #[test]
     fn test_solve_correspondence() {
