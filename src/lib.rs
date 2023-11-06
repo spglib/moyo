@@ -4,4 +4,4 @@ extern crate approx;
 
 pub mod base;
 pub mod math;
-pub mod primitive_cell;
+pub mod search;

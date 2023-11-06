@@ -8,4 +8,6 @@ pub enum MoyoError {
     TooSmallSymprecError,
     #[error("Primitive cell search failed")]
     PrimitiveCellSearchError,
+    #[error("Bravais group search failed")]
+    BravaisGroupSearchError,
 }

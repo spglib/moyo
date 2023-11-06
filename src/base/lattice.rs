@@ -3,6 +3,7 @@ use nalgebra::base::{Matrix3, Vector3};
 use crate::math::minkowski::{is_minkowski_reduced, minkowski_reduce};
 
 use super::error::MoyoError;
+use super::tolerance::EPS;
 use super::transformation::TransformationMatrix;
 
 pub type ColumnBasis = Matrix3<f64>;
@@ -13,7 +14,23 @@ pub struct Lattice {
     pub basis: ColumnBasis,
 }
 
-const EPS: f64 = 1e-8;
+#[allow(non_camel_case_types)]
+enum BravaisTypeOfLattice {
+    aP,
+    mP,
+    mC,
+    oP,
+    oS,
+    oF,
+    oI,
+    tP,
+    tI,
+    hR,
+    hP,
+    cP,
+    cF,
+    cI,
+}
 
 impl Lattice {
     pub fn new(basis: ColumnBasis) -> Self {
