@@ -15,7 +15,7 @@ pub struct Lattice {
 }
 
 #[allow(non_camel_case_types)]
-enum BravaisTypeOfLattice {
+pub enum BravaisTypeOfLattice {
     aP,
     mP,
     mC,

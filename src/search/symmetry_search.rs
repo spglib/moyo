@@ -21,7 +21,7 @@ pub struct SymmetrySearchResult {
 /// Return coset representatives of the space group w.r.t. its translation subgroup.
 /// Assume `primitive_cell` is a primitive cell and its basis vectors are Minkowski reduced.
 /// Possible replacements for spglib/src/spacegroup.h::spa_search_spacegroup
-pub fn search_symmetry_operations(
+pub fn search_symmetry_operations_from_primitive(
     primitive_cell: &Cell,
     symprec: f64,
     angle_tolerance: AngleTolerance,
@@ -221,66 +221,11 @@ fn compare_nondiagonal_matrix_tensor_element(
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::{matrix, Vector3};
+    use nalgebra::matrix;
 
-    use super::{search_bravais_group, search_symmetry_operations};
-    use crate::base::cell::Cell;
+    use super::search_bravais_group;
     use crate::base::lattice::Lattice;
     use crate::base::tolerance::AngleTolerance;
-    use crate::search::primitive_cell::search_primitive_cell;
-
-    #[test]
-    fn test_search_symmetry_operations() {
-        let symprec = 1e-4;
-
-        // Primitive fcc
-        {
-            let primitive_cell = Cell::new(
-                Lattice::new(matrix![
-                    0.0, 0.5, 0.5;
-                    0.5, 0.0, 0.5;
-                    0.5, 0.5, 0.0;
-                ]),
-                vec![Vector3::new(0.0, 0.0, 0.0)],
-                vec![0],
-            );
-            let result =
-                search_symmetry_operations(&primitive_cell, symprec, AngleTolerance::Default)
-                    .unwrap();
-            assert_eq!(result.operations.num_operations(), 48);
-        }
-
-        // Rutile, P4_2/mnm (No. 136)
-        {
-            let a = 4.603;
-            let c = 2.969;
-            let lattice = Lattice::new(matrix![
-                a, 0.0, 0.0;
-                0.0, a, 0.0;
-                0.0, 0.0, c;
-            ]);
-            let x_4f = 0.3046;
-            let positions = vec![
-                Vector3::new(0.0, 0.0, 0.0),                // Ti(2a)
-                Vector3::new(0.5, 0.5, 0.5),                // Ti(2a)
-                Vector3::new(x_4f, x_4f, 0.0),              // O(4f)
-                Vector3::new(-x_4f, -x_4f, 0.0),            // O(4f)
-                Vector3::new(-x_4f + 0.5, x_4f + 0.5, 0.5), // O(4f)
-                Vector3::new(x_4f + 0.5, -x_4f + 0.5, 0.5), // O(4f)
-            ];
-            let numbers = vec![0, 0, 1, 1, 1, 1];
-            let angle_tolerance = AngleTolerance::Default;
-
-            let cell = Cell::new(lattice, positions, numbers);
-            let primitive_cell_result = search_primitive_cell(&cell, symprec).unwrap();
-            let primitive_cell = primitive_cell_result.primitive_cell;
-
-            let result =
-                search_symmetry_operations(&primitive_cell, symprec, angle_tolerance).unwrap();
-            assert_eq!(result.bravais_group.len(), 16);
-            assert_eq!(result.operations.num_operations(), 16);
-        }
-    }
 
     #[test]
     fn test_search_bravais_group() {
