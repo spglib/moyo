@@ -1,5 +1,5 @@
 use crate::base::lattice::Lattice;
-use crate::base::operation::Rotation;
+use crate::base::operation::{Rotation, RotationType};
 
 /// Crystallographic point group
 #[derive(Debug)]
@@ -122,19 +122,6 @@ pub enum GeometricCrystalClass {
     O,  // 432
     Td, // -43m
     Oh, // m-3m
-}
-
-enum RotationType {
-    Rotation1,      // 1
-    Rotation2,      // 2
-    Rotation3,      // 3
-    Rotation4,      // 4
-    Rotation6,      // 6
-    RotoInversion1, // -1 = S2
-    RotoInversion2, // -2 = m = S1
-    RotoInversion3, // -3 = S6^-1
-    RotoInversion4, // -4 = S4^-1
-    RotoInversion6, // -6 = S3^-1
 }
 
 fn identify_rotation_type(rotation: &Rotation) -> Option<RotationType> {

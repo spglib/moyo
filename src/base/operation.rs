@@ -6,6 +6,20 @@ use super::lattice::Lattice;
 pub type Rotation = Matrix3<i32>;
 pub type Translation = Vector3<f64>;
 
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum RotationType {
+    Rotation1,      // 1
+    Rotation2,      // 2
+    Rotation3,      // 3
+    Rotation4,      // 4
+    Rotation6,      // 6
+    RotoInversion1, // -1 = S2
+    RotoInversion2, // -2 = m = S1
+    RotoInversion3, // -3 = S6^-1
+    RotoInversion4, // -4 = S4^-1
+    RotoInversion6, // -6 = S3^-1
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Permutation {
     pub mapping: Vec<usize>,
