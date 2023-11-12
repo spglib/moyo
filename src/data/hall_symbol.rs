@@ -1,8 +1,12 @@
-use itertools::Itertools;
+use std::collections::{HashMap, VecDeque};
+
 use nalgebra::{matrix, Matrix3, Vector3};
 
 use crate::base::lattice::Lattice;
 use crate::base::operation::{Operations, Rotation, Translation};
+use crate::base::tolerance::EPS;
+
+const MAX_DENOMINATOR: i32 = 12;
 
 /// Hall symbol. See A1.4.2.3 in ITB (2010).
 ///
@@ -19,8 +23,8 @@ use crate::base::operation::{Operations, Rotation, Translation};
 #[derive(Debug)]
 pub struct HallSymbol {
     pub hall_symbol: String,
-    pub inversion_at_origin: bool,
     pub lattice_symbol: LatticeSymbol,
+    pub centerings: Vec<Translation>,
     pub generators: Operations,
 }
 
@@ -66,18 +70,17 @@ impl HallSymbol {
             }
         }
 
-        let mut rotations = vec![];
-        let mut translations = vec![];
+        // From translation subgroup
+        let centerings = Self::lattice_points(lattice_symbol)
+            .iter()
+            .filter(|&&translation| relative_ne!(translation, Translation::zeros(), epsilon = EPS))
+            .cloned()
+            .collect::<Vec<_>>();
+
         // change basis by (I, v)
         // (R, tau) -> (R, tau + v - Rv)
-
-        // From translation subgroup
-        for translation in Self::lattice_points(lattice_symbol) {
-            if relative_ne!(translation, Translation::zeros()) {
-                rotations.push(Rotation::identity());
-                translations.push(translation);
-            }
-        }
+        let mut rotations = vec![];
+        let mut translations = vec![];
 
         if inversion_at_origin {
             rotations.push(-Rotation::identity());
@@ -86,20 +89,66 @@ impl HallSymbol {
 
         for (rotation, translation) in ns {
             rotations.push(rotation);
-            translations
-                .push(translation + origin_shift - rotation.map(|e| e as f64) * translation);
+            let translation_mod1 = (translation + origin_shift
+                - rotation.map(|e| e as f64) * origin_shift)
+                .map(|e| e.rem_euclid(1.0));
+            translations.push(translation_mod1);
         }
 
         Some(Self {
             hall_symbol: hall_symbol.to_string(),
-            inversion_at_origin,
             lattice_symbol,
+            centerings,
             generators: Operations::new(
                 Lattice::new(Matrix3::<f64>::identity()),
                 rotations,
                 translations,
             ),
         })
+    }
+
+    /// Traverse all the symmetry operations up to translations by conventional cell.
+    pub fn traverse(&self) -> Operations {
+        let mut queue = VecDeque::new();
+        let mut hm_translations = HashMap::new();
+
+        queue.push_back((Rotation::identity(), Translation::zeros()));
+
+        while !queue.is_empty() {
+            let (rotation_lhs, translation_lhs) = queue.pop_front().unwrap();
+            if hm_translations.contains_key(&rotation_lhs) {
+                continue;
+            }
+            hm_translations.insert(rotation_lhs.clone(), translation_lhs.clone());
+
+            for (rotation_rhs, translation_rhs) in self
+                .generators
+                .rotations
+                .iter()
+                .zip(self.generators.translations.iter())
+            {
+                let rotation = rotation_lhs * rotation_rhs;
+                let translation =
+                    rotation_lhs.map(|e| e as f64) * translation_rhs + translation_lhs;
+                let translation_mod1 = translation.map(|e| {
+                    let mut eint = (e * (MAX_DENOMINATOR as f64)).round() as i32;
+                    eint = eint.rem_euclid(MAX_DENOMINATOR);
+                    (eint as f64) / (MAX_DENOMINATOR as f64)
+                });
+
+                if !hm_translations.contains_key(&rotation) {
+                    queue.push_back((rotation, translation_mod1));
+                }
+            }
+        }
+
+        let mut rotations = vec![];
+        let mut translations = vec![];
+        for (rotation, translation) in hm_translations {
+            rotations.push(rotation);
+            translations.push(translation);
+        }
+        Operations::new(self.generators.lattice.clone(), rotations, translations)
     }
 
     fn tokenize(hall_symbol: &str) -> Vec<&str> {
@@ -152,9 +201,9 @@ impl HallSymbol {
             return None;
         }
         let origin_shift = Vector3::<f64>::new(
-            tokens[0].parse::<i32>().unwrap() as f64 / 12.0,
-            tokens[1].parse::<i32>().unwrap() as f64 / 12.0,
-            tokens[2].parse::<i32>().unwrap() as f64 / 12.0,
+            (tokens[0].parse::<i32>().unwrap() / MAX_DENOMINATOR) as f64,
+            (tokens[1].parse::<i32>().unwrap() / MAX_DENOMINATOR) as f64,
+            (tokens[2].parse::<i32>().unwrap() / MAX_DENOMINATOR) as f64,
         );
         Some(origin_shift)
     }
@@ -455,20 +504,22 @@ mod tests {
     use super::{HallSymbol, LatticeSymbol};
 
     #[rstest]
-    #[case("P 2 2ab -1ab", false, LatticeSymbol::P, 3)] // No. 51
-    #[case("P 31 2 (0 0 4)", false, LatticeSymbol::P, 2)] // No. 151
-    #[case("-P 6c 2c", true, LatticeSymbol::P, 3)] // No. 194
-    #[case("F 4d 2 3", false, LatticeSymbol::F, 6)] // No. 210
+    #[case("P 2 2ab -1ab", LatticeSymbol::P, 0, 3, 8)] // No. 51
+    #[case("P 31 2 (0 0 4)", LatticeSymbol::P, 0, 2, 6)] // No. 151
+    #[case("-P 6c 2c", LatticeSymbol::P, 0, 3, 24)] // No. 194
+    #[case("F 4d 2 3", LatticeSymbol::F, 3, 3, 24)] // No. 210
     fn test_hall_symbol(
         #[case] hall_symbol: &str,
-        #[case] inversion_at_origin: bool,
         #[case] lattice_symbol: LatticeSymbol,
+        #[case] num_centerings: usize,
         #[case] num_generators: usize,
+        #[case] num_operations: usize, // without centerings
     ) {
         let hs = HallSymbol::new(hall_symbol).unwrap();
-        assert_eq!(hs.inversion_at_origin, inversion_at_origin);
         assert_eq!(hs.lattice_symbol, lattice_symbol);
+        assert_eq!(hs.centerings.len(), num_centerings);
         assert_eq!(hs.generators.num_operations(), num_generators);
-        dbg!(&hs);
+        let operations = hs.traverse();
+        assert_eq!(operations.num_operations(), num_operations);
     }
 }
