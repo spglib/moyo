@@ -14,24 +14,6 @@ pub struct Lattice {
     pub basis: ColumnBasis,
 }
 
-#[allow(non_camel_case_types)]
-pub enum BravaisTypeOfLattice {
-    aP,
-    mP,
-    mC,
-    oP,
-    oS,
-    oF,
-    oI,
-    tP,
-    tI,
-    hR,
-    hP,
-    cP,
-    cF,
-    cI,
-}
-
 impl Lattice {
     pub fn new(basis: ColumnBasis) -> Self {
         Self { basis }
