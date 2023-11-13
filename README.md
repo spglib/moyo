@@ -23,3 +23,7 @@ base <- identify
 base <- data
 identify <- data
 ```
+
+## Acknowledgments
+
+We thank Dr. Yusuke Seto for providing the crystallographic database.
