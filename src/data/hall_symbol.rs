@@ -302,7 +302,7 @@ impl HallSymbol {
         while pos <= token.len() - 1 {
             let c = token.chars().nth(pos).unwrap();
             // translations are applied additively
-            if "12346".contains(c) {
+            if "123456".contains(c) {
                 // always along z-axis!
                 translation = Translation::new(
                     0.0,
@@ -502,13 +502,15 @@ mod tests {
     use rstest::rstest;
 
     use super::{HallSymbol, LatticeSymbol};
+    use crate::data::hall_symbol_database::HALL_SYMBOL_DATABASE;
 
     #[rstest]
     #[case("P 2 2ab -1ab", LatticeSymbol::P, 0, 3, 8)] // No. 51
     #[case("P 31 2 (0 0 4)", LatticeSymbol::P, 0, 2, 6)] // No. 151
+    #[case("P 65", LatticeSymbol::P, 0, 1, 6)] // No. 170
     #[case("-P 6c 2c", LatticeSymbol::P, 0, 3, 24)] // No. 194
     #[case("F 4d 2 3", LatticeSymbol::F, 3, 3, 24)] // No. 210
-    fn test_hall_symbol(
+    fn test_hall_symbol_small(
         #[case] hall_symbol: &str,
         #[case] lattice_symbol: LatticeSymbol,
         #[case] num_centerings: usize,
@@ -521,5 +523,13 @@ mod tests {
         assert_eq!(hs.generators.num_operations(), num_generators);
         let operations = hs.traverse();
         assert_eq!(operations.num_operations(), num_operations);
+    }
+
+    #[test]
+    fn test_hall_symbol_whole() {
+        for (_, _, _, _, hall_symbol, _, _) in HALL_SYMBOL_DATABASE {
+            let hs = HallSymbol::new(hall_symbol).unwrap();
+            assert_eq!(48 % hs.traverse().num_operations(), 0);
+        }
     }
 }
