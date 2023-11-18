@@ -2,6 +2,7 @@ use std::collections::{HashMap, VecDeque};
 
 use nalgebra::{matrix, Matrix3, Vector3};
 
+use super::hall_symbol_database::{HallNumber, HALL_SYMBOL_DATABASE};
 use crate::base::lattice::Lattice;
 use crate::base::operation::{Operations, Rotation, Translation};
 use crate::base::tolerance::EPS;
@@ -149,6 +150,11 @@ impl HallSymbol {
             translations.push(translation);
         }
         Operations::new(self.generators.lattice.clone(), rotations, translations)
+    }
+
+    pub fn from_hall_number(hall_number: HallNumber) -> Self {
+        let hall_symbol = HALL_SYMBOL_DATABASE[hall_number as usize - 1].4;
+        Self::new(hall_symbol).unwrap()
     }
 
     fn tokenize(hall_symbol: &str) -> Vec<&str> {

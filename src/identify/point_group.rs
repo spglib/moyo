@@ -1,6 +1,7 @@
 use crate::base::lattice::Lattice;
 use crate::base::operation::{Rotation, RotationType};
 use crate::data::classification::GeometricCrystalClass;
+use crate::data::hall_symbol::HallSymbol;
 
 /// Crystallographic point group
 #[derive(Debug)]
@@ -12,6 +13,57 @@ pub struct PointGroup {
 impl PointGroup {
     pub fn new(lattice: Lattice, rotations: Vec<Rotation>) -> Self {
         Self { lattice, rotations }
+    }
+
+    pub fn from_geometric_crystal_class(geometric_crystal_class: GeometricCrystalClass) -> Self {
+        let hall_number = match geometric_crystal_class {
+            // Triclinic
+            GeometricCrystalClass::C1 => 1,
+            GeometricCrystalClass::Ci => 2,
+            // Monoclinic (unique axis b)
+            GeometricCrystalClass::C2 => 4,
+            GeometricCrystalClass::C1h => 18,
+            GeometricCrystalClass::C2h => 57,
+            // Orthorhombic
+            GeometricCrystalClass::D2 => 108,
+            GeometricCrystalClass::C2v => 125, // mm2
+            GeometricCrystalClass::D2h => 227,
+            // Tetragonal
+            GeometricCrystalClass::C4 => 349,
+            GeometricCrystalClass::S4 => 355,
+            GeometricCrystalClass::C4h => 357,
+            GeometricCrystalClass::D4 => 366,
+            GeometricCrystalClass::C4v => 376,
+            GeometricCrystalClass::D2d => 388, // -42m
+            GeometricCrystalClass::D4h => 400,
+            // Trigonal
+            GeometricCrystalClass::C3 => 430,
+            GeometricCrystalClass::C3i => 435,
+            GeometricCrystalClass::D3 => 438,  // 312
+            GeometricCrystalClass::C3v => 446, // 3m1
+            GeometricCrystalClass::D3d => 454, // -31m
+            // Hexagonal
+            GeometricCrystalClass::C6 => 462,
+            GeometricCrystalClass::C3h => 468,
+            GeometricCrystalClass::C6h => 469,
+            GeometricCrystalClass::D6 => 471,
+            GeometricCrystalClass::C6v => 477,
+            GeometricCrystalClass::D3h => 481, // -6m2
+            GeometricCrystalClass::D6h => 485,
+            // Cubic
+            GeometricCrystalClass::T => 489,
+            GeometricCrystalClass::Th => 494,
+            GeometricCrystalClass::O => 503,
+            GeometricCrystalClass::Td => 511,
+            GeometricCrystalClass::Oh => 517,
+        };
+        let hall_symbol = HallSymbol::from_hall_number(hall_number);
+        let operations = hall_symbol.traverse();
+        Self::new(operations.lattice, operations.rotations)
+    }
+
+    pub fn order(&self) -> usize {
+        self.rotations.len()
     }
 }
 
@@ -102,4 +154,58 @@ pub fn identify_geometric_crystal_class(point_group: &PointGroup) -> Option<Geom
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use rstest::rstest;
+
+    use super::PointGroup;
+    use crate::data::classification::GeometricCrystalClass;
+
+    #[rstest]
+    // Triclinic
+    #[case(GeometricCrystalClass::C1, 1)]
+    #[case(GeometricCrystalClass::Ci, 2)]
+    // Monoclinic
+    #[case(GeometricCrystalClass::C2, 2)]
+    #[case(GeometricCrystalClass::C1h, 2)]
+    #[case(GeometricCrystalClass::C2h, 4)]
+    // Orthorhombic
+    #[case(GeometricCrystalClass::D2, 4)]
+    #[case(GeometricCrystalClass::C2v, 4)]
+    #[case(GeometricCrystalClass::D2h, 8)]
+    // Tetragonal
+    #[case(GeometricCrystalClass::C4, 4)]
+    #[case(GeometricCrystalClass::S4, 4)]
+    #[case(GeometricCrystalClass::C4h, 8)]
+    #[case(GeometricCrystalClass::D4, 8)]
+    #[case(GeometricCrystalClass::C4v, 8)]
+    #[case(GeometricCrystalClass::D2d, 8)]
+    #[case(GeometricCrystalClass::D4h, 16)]
+    // Trigonal
+    #[case(GeometricCrystalClass::C3, 3)]
+    #[case(GeometricCrystalClass::C3i, 6)]
+    #[case(GeometricCrystalClass::D3, 6)]
+    #[case(GeometricCrystalClass::C3v, 6)]
+    #[case(GeometricCrystalClass::D3d, 12)]
+    // Hexagonal
+    #[case(GeometricCrystalClass::C6, 6)]
+    #[case(GeometricCrystalClass::C3h, 6)]
+    #[case(GeometricCrystalClass::C6h, 12)]
+    #[case(GeometricCrystalClass::D6, 12)]
+    #[case(GeometricCrystalClass::C6v, 12)]
+    #[case(GeometricCrystalClass::D3h, 12)]
+    #[case(GeometricCrystalClass::D6h, 24)]
+    // Cubic
+    #[case(GeometricCrystalClass::T, 12)]
+    #[case(GeometricCrystalClass::Th, 24)]
+    #[case(GeometricCrystalClass::O, 24)]
+    #[case(GeometricCrystalClass::Td, 24)]
+    #[case(GeometricCrystalClass::Oh, 48)]
+    fn test_point_group_representative(
+        #[case] geometric_crystal_class: GeometricCrystalClass,
+        #[case] order: usize,
+    ) {
+        dbg!(&geometric_crystal_class);
+        let point_group = PointGroup::from_geometric_crystal_class(geometric_crystal_class);
+        assert_eq!(point_group.order(), order);
+    }
+}

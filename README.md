@@ -18,10 +18,10 @@
 
 ```
 math <- base
+base <- data
 base <- search
 base <- identify
-base <- data
-identify <- data
+data <- identify
 ```
 
 ## Acknowledgments

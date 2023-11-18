@@ -1,7 +1,7 @@
 use super::arithmetic_crystal_class::ArithmeticNumber;
 
-type Number = i32;
-type HallNumber = i32;
+pub type Number = i32;
+pub type HallNumber = i32;
 type HallSymbolEntry = (
     HallNumber,
     Number,
