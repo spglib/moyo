@@ -1,20 +1,45 @@
+use std::collections::{HashSet, VecDeque};
+
+use itertools::iproduct;
+use nalgebra::Matrix3;
+
 use crate::base::lattice::Lattice;
-use crate::base::operation::{Rotation, RotationType};
+use crate::base::operation::{Permutation, Rotation, RotationType};
+use crate::base::transformation::TransformationMatrix;
+use crate::data::arithmetic_crystal_class::ArithmeticNumber;
 use crate::data::classification::GeometricCrystalClass;
-use crate::data::hall_symbol::HallSymbol;
+use crate::data::hall_symbol::{self, HallSymbol};
 
 /// Crystallographic point group
 #[derive(Debug)]
 pub struct PointGroup {
     pub lattice: Lattice,
     pub rotations: Vec<Rotation>,
+    //
+    pub rotation_types: Vec<RotationType>,
+    pub geometric_crystal_class: GeometricCrystalClass,
+    pub generators: Vec<usize>,
 }
 
+/// Crystallographic point group
 impl PointGroup {
-    pub fn new(lattice: Lattice, rotations: Vec<Rotation>) -> Self {
-        Self { lattice, rotations }
+    pub fn new(lattice: Lattice, rotations: Vec<Rotation>) -> Option<Self> {
+        let rotation_types = rotations
+            .iter()
+            .map(|rotation| identify_rotation_type(rotation).unwrap())
+            .collect();
+        let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types)?;
+        let generators = choose_generators(&rotations);
+        Some(Self {
+            lattice,
+            rotations,
+            rotation_types,
+            geometric_crystal_class,
+            generators,
+        })
     }
 
+    /// Construct representative point group from geometric crystal class
     pub fn from_geometric_crystal_class(geometric_crystal_class: GeometricCrystalClass) -> Self {
         let hall_number = match geometric_crystal_class {
             // Triclinic
@@ -59,11 +84,126 @@ impl PointGroup {
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number);
         let operations = hall_symbol.traverse();
-        Self::new(operations.lattice, operations.rotations)
+        Self::new(operations.lattice, operations.rotations).unwrap()
+    }
+
+    pub fn from_arithmetic_crystal_class(arithmetic_number: ArithmeticNumber) -> Self {
+        let hall_number = match arithmetic_number {
+            1 => 1,
+            2 => 2,
+            3 => 3,
+            4 => 9,
+            5 => 18,
+            6 => 30,
+            7 => 57,
+            8 => 63,
+            9 => 108,
+            10 => 116,
+            11 => 122,
+            12 => 123,
+            13 => 125,
+            14 => 173,
+            15 => 185,
+            16 => 209,
+            17 => 215,
+            18 => 227,
+            19 => 298,
+            20 => 334,
+            21 => 337,
+            22 => 349,
+            23 => 353,
+            24 => 355,
+            25 => 356,
+            26 => 357,
+            27 => 363,
+            28 => 366,
+            29 => 374,
+            30 => 376,
+            31 => 384,
+            32 => 388,
+            33 => 392,
+            34 => 396,
+            35 => 398,
+            36 => 400,
+            37 => 424,
+            38 => 430,
+            39 => 433,
+            40 => 435,
+            41 => 436,
+            42 => 438,
+            43 => 439,
+            44 => 444,
+            45 => 446,
+            46 => 447,
+            47 => 450,
+            48 => 454,
+            49 => 456,
+            50 => 458,
+            51 => 462,
+            52 => 468,
+            53 => 469,
+            54 => 471,
+            55 => 477,
+            56 => 483,
+            57 => 481,
+            58 => 485,
+            59 => 489,
+            60 => 490,
+            61 => 491,
+            62 => 494,
+            63 => 497,
+            64 => 500,
+            65 => 503,
+            66 => 505,
+            67 => 507,
+            68 => 511,
+            69 => 512,
+            70 => 513,
+            71 => 517,
+            72 => 523,
+            73 => 529,
+            _ => panic!("Invalid arithmetic number"),
+        };
+        let hall_symbol = HallSymbol::from_hall_number(hall_number);
+        let operations = hall_symbol.traverse();
+        Self::new(operations.lattice, operations.rotations).unwrap()
     }
 
     pub fn order(&self) -> usize {
         self.rotations.len()
+    }
+
+    /// If the two point groups belong to the same arithmetic crystal class, return the transformation matrix and permutation that transforms one point group to the other.
+    /// Assume the two point groups are both written with primitive basis vectors.
+    /// Let P be the (unimodular) transformation matrix and sigma be the permutation:
+    /// P^-1 * self.rotations[i] * P = other.rotations[sigma[i]]
+    ///
+    /// Implement algorithm presented in "R. W. Grosse-Kunstleve. Algorithms for deriving crystallographic space-group information. Acta Cryst. A, 55, 383-395 (1999)".
+    pub fn match_arithmetic(&self, other: &Self) -> Option<(TransformationMatrix, Permutation)> {
+        if self.geometric_crystal_class != other.geometric_crystal_class {
+            return None;
+        }
+        assert_eq!(self.order(), other.order());
+
+        // Try to map generators
+        let order = self.order();
+        let candidates: Vec<Vec<usize>> = self
+            .generators
+            .iter()
+            .map(|&i| {
+                (0..order)
+                    .filter(|&j| other.rotation_types[j] == self.rotation_types[i])
+                    .collect()
+            })
+            .collect();
+
+        for pivot in iproduct!(candidates.iter().map(|v| v.iter())) {
+            // Solve self.rotations[self.generators[i]] * P = P * other.rotations[pivot[i]] (for all i)
+            // For 1 and -1, trivial
+            // For 2, m, 2/m, 4, -4, 4/m, 3, -3, 6, -6, 6/m
+        }
+
+        unimplemented!()
     }
 }
 
@@ -87,28 +227,26 @@ fn identify_rotation_type(rotation: &Rotation) -> Option<RotationType> {
 }
 
 /// Use look up table in Table 6 of https://arxiv.org/pdf/1808.01590.pdf
-pub fn identify_geometric_crystal_class(point_group: &PointGroup) -> Option<GeometricCrystalClass> {
+fn identify_geometric_crystal_class(
+    rotation_types: &Vec<RotationType>,
+) -> Option<GeometricCrystalClass> {
     // count RotationTypes in point_group
-    let mut rotation_types = [0; 10];
-    for rotation in &point_group.rotations {
-        if let Some(rotation_type) = identify_rotation_type(rotation) {
-            match rotation_type {
-                RotationType::RotoInversion6 => rotation_types[0] += 1,
-                RotationType::RotoInversion4 => rotation_types[1] += 1,
-                RotationType::RotoInversion3 => rotation_types[2] += 1,
-                RotationType::RotoInversion2 => rotation_types[3] += 1,
-                RotationType::RotoInversion1 => rotation_types[4] += 1,
-                RotationType::Rotation1 => rotation_types[5] += 1,
-                RotationType::Rotation2 => rotation_types[6] += 1,
-                RotationType::Rotation3 => rotation_types[7] += 1,
-                RotationType::Rotation4 => rotation_types[8] += 1,
-                RotationType::Rotation6 => rotation_types[9] += 1,
-            }
-        } else {
-            return None;
+    let mut rotation_types_count = [0; 10];
+    for rotation_type in rotation_types {
+        match rotation_type {
+            RotationType::RotoInversion6 => rotation_types_count[0] += 1,
+            RotationType::RotoInversion4 => rotation_types_count[1] += 1,
+            RotationType::RotoInversion3 => rotation_types_count[2] += 1,
+            RotationType::RotoInversion2 => rotation_types_count[3] += 1,
+            RotationType::RotoInversion1 => rotation_types_count[4] += 1,
+            RotationType::Rotation1 => rotation_types_count[5] += 1,
+            RotationType::Rotation2 => rotation_types_count[6] += 1,
+            RotationType::Rotation3 => rotation_types_count[7] += 1,
+            RotationType::Rotation4 => rotation_types_count[8] += 1,
+            RotationType::Rotation6 => rotation_types_count[9] += 1,
         }
     }
-    match rotation_types {
+    match rotation_types_count {
         // Triclinic
         [0, 0, 0, 0, 0, 1, 0, 0, 0, 0] => Some(GeometricCrystalClass::C1),
         [0, 0, 0, 0, 1, 1, 0, 0, 0, 0] => Some(GeometricCrystalClass::Ci),
@@ -153,12 +291,67 @@ pub fn identify_geometric_crystal_class(point_group: &PointGroup) -> Option<Geom
     }
 }
 
+fn choose_generators(elements: &Vec<Rotation>) -> Vec<usize> {
+    let mut generators = Vec::new();
+
+    let mut visited = HashSet::new();
+    let identity = Rotation::identity();
+    visited.insert(identity);
+
+    for (i, element) in elements.iter().enumerate() {
+        if visited.contains(element) {
+            continue;
+        }
+        generators.push(i);
+
+        let mut queue = VecDeque::new();
+        for other in visited.iter().cloned() {
+            queue.push_back(other);
+        }
+
+        while !queue.is_empty() {
+            let other = queue.pop_front().unwrap();
+            let product = element * other;
+            if !visited.contains(&product) {
+                visited.insert(product.clone());
+                queue.push_back(product.clone());
+            }
+        }
+    }
+
+    generators
+}
+
 #[cfg(test)]
 mod tests {
+    use std::collections::{HashSet, VecDeque};
+
     use rstest::rstest;
 
     use super::PointGroup;
+    use crate::base::operation::Rotation;
     use crate::data::classification::GeometricCrystalClass;
+
+    fn traverse(generators: &Vec<Rotation>) -> Vec<Rotation> {
+        let mut queue = VecDeque::new();
+        let mut group = HashSet::new();
+
+        queue.push_back(Rotation::identity());
+
+        while !queue.is_empty() {
+            let element = queue.pop_front().unwrap();
+            if group.contains(&element) {
+                continue;
+            }
+            group.insert(element.clone());
+            for generator in generators {
+                let product = element * generator;
+                queue.push_back(product);
+            }
+        }
+
+        group.into_iter().collect()
+    }
 
     #[rstest]
     // Triclinic
@@ -204,8 +397,11 @@ mod tests {
         #[case] geometric_crystal_class: GeometricCrystalClass,
         #[case] order: usize,
     ) {
-        dbg!(&geometric_crystal_class);
         let point_group = PointGroup::from_geometric_crystal_class(geometric_crystal_class);
         assert_eq!(point_group.order(), order);
+        assert_eq!(point_group.geometric_crystal_class, geometric_crystal_class);
+
+        let elements = traverse(&point_group.rotations);
+        assert_eq!(elements.len(), order);
     }
 }

@@ -238,6 +238,9 @@ def main(spg_input):
     for _, row in df.iterrows():
         print(f'({row["hall_number"]}, {row["number"]}, {row["arithmetic_number"]}, \"{row["setting"]}\", \"{row["hall_symbol"]}\", \"{row["HM_symbol_short"]}\", \"{row["HM_symbol_full"]}\"),')
 
+    for _, row in df.groupby('arithmetic_number', as_index=False).first().iterrows():
+        print(f'{row["arithmetic_number"]} => {row["hall_number"]},')
+
 
 if __name__ == "__main__":
     main()

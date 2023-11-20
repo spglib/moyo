@@ -2,7 +2,7 @@
 /// Classification based on point group
 /// ===========================================================================
 /// c.f. Table 3.2.3.2 of ITA(6th)
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GeometricCrystalClass {
     // Triclinic
     C1, // 1
@@ -45,18 +45,58 @@ pub enum GeometricCrystalClass {
     Oh, // m-3m
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum LaueClass {
     Ci,  // -1
     C2h, // 2/m,
     D2h, // mmm
     C4h, // 4/m
     D4h, // 4/mmm
+    C3i, // -3
+    D3d, // -3m
     C6h, // 6/m
     D6h, // 6/mmm
     Th,  // m-3
     Oh,  // m-3m
 }
 
+impl LaueClass {
+    pub fn from_geometric_crystal_class(geometric_crystal_class: GeometricCrystalClass) -> Self {
+        match geometric_crystal_class {
+            GeometricCrystalClass::C1 | GeometricCrystalClass::Ci => LaueClass::Ci,
+            GeometricCrystalClass::C2 | GeometricCrystalClass::C1h | GeometricCrystalClass::C2h => {
+                LaueClass::C2h
+            }
+            GeometricCrystalClass::D2 | GeometricCrystalClass::C2v | GeometricCrystalClass::D2h => {
+                LaueClass::D2h
+            }
+            GeometricCrystalClass::C4 | GeometricCrystalClass::S4 | GeometricCrystalClass::C4h => {
+                LaueClass::C4h
+            }
+            GeometricCrystalClass::D4
+            | GeometricCrystalClass::C4v
+            | GeometricCrystalClass::D2d
+            | GeometricCrystalClass::D4h => LaueClass::D4h,
+            GeometricCrystalClass::C3 | GeometricCrystalClass::C3i => LaueClass::C3i,
+            GeometricCrystalClass::D3 | GeometricCrystalClass::C3v | GeometricCrystalClass::D3d => {
+                LaueClass::D3d
+            }
+            GeometricCrystalClass::C6 | GeometricCrystalClass::C3h | GeometricCrystalClass::C6h => {
+                LaueClass::C6h
+            }
+            GeometricCrystalClass::D6
+            | GeometricCrystalClass::C6v
+            | GeometricCrystalClass::D3h
+            | GeometricCrystalClass::D6h => LaueClass::D6h,
+            GeometricCrystalClass::T | GeometricCrystalClass::Th => LaueClass::Th,
+            GeometricCrystalClass::O | GeometricCrystalClass::Td | GeometricCrystalClass::Oh => {
+                LaueClass::Oh
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum CrystalSystem {
     Triclinic,
     Monoclinic,
@@ -68,7 +108,7 @@ pub enum CrystalSystem {
 }
 
 impl CrystalSystem {
-    pub fn from_geometric_crystal_class(geometric_crystal_class: &GeometricCrystalClass) -> Self {
+    pub fn from_geometric_crystal_class(geometric_crystal_class: GeometricCrystalClass) -> Self {
         match geometric_crystal_class {
             // Triclinic
             GeometricCrystalClass::C1 | GeometricCrystalClass::Ci => CrystalSystem::Triclinic,
@@ -115,8 +155,9 @@ impl CrystalSystem {
 /// ===========================================================================
 /// Classification based on lattice
 /// ===========================================================================
-#[allow(non_camel_case_types)]
 /// Reuse notations for Bravais type of lattices
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum BravaisClass {
     aP,
     mP,
@@ -134,6 +175,7 @@ pub enum BravaisClass {
     cI,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum LatticeSystem {
     // (lattice system, holohedry)
     Triclinic,    // -1
@@ -146,7 +188,7 @@ pub enum LatticeSystem {
 }
 
 impl LatticeSystem {
-    pub fn from_bravais_class(bravais_class: &BravaisClass) -> Self {
+    pub fn from_bravais_class(bravais_class: BravaisClass) -> Self {
         match bravais_class {
             BravaisClass::aP => LatticeSystem::Triclinic,
             BravaisClass::mP | BravaisClass::mC => LatticeSystem::Monoclinic,
@@ -165,6 +207,7 @@ impl LatticeSystem {
 /// Other classification
 /// ===========================================================================
 
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum CrystalFamily {
     Triclinic,
     Monoclinic,
@@ -175,7 +218,7 @@ pub enum CrystalFamily {
 }
 
 impl CrystalFamily {
-    pub fn from_crystal_system(crystal_system: &CrystalSystem) -> Self {
+    pub fn from_crystal_system(crystal_system: CrystalSystem) -> Self {
         match crystal_system {
             CrystalSystem::Triclinic => CrystalFamily::Triclinic,
             CrystalSystem::Monoclinic => CrystalFamily::Monoclinic,
@@ -186,7 +229,7 @@ impl CrystalFamily {
         }
     }
 
-    pub fn from_lattice_system(lattice_system: &LatticeSystem) -> Self {
+    pub fn from_lattice_system(lattice_system: LatticeSystem) -> Self {
         match lattice_system {
             LatticeSystem::Triclinic => CrystalFamily::Triclinic,
             LatticeSystem::Monoclinic => CrystalFamily::Monoclinic,
