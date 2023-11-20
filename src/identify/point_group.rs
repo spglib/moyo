@@ -88,28 +88,33 @@ impl PointGroup {
     }
 
     pub fn from_arithmetic_crystal_class(arithmetic_number: ArithmeticNumber) -> Self {
+        // Choose hexagonal axes for rhombohedral space groups
         let hall_number = match arithmetic_number {
+            // Triclinic
             1 => 1,
             2 => 2,
+            // Monoclinic (unique axis b, cell choice 1)
             3 => 3,
             4 => 9,
             5 => 18,
             6 => 30,
             7 => 57,
             8 => 63,
+            // Orthorhombic (setting abc)
             9 => 108,
-            10 => 116,
+            10 => 119, // 222C
             11 => 122,
             12 => 123,
             13 => 125,
             14 => 173,
-            15 => 185,
+            15 => 185, // mm2A
             16 => 209,
             17 => 215,
             18 => 227,
-            19 => 298,
+            19 => 310, // mmmC
             20 => 334,
             21 => 337,
+            // Tetragonal
             22 => 349,
             23 => 353,
             24 => 355,
@@ -126,6 +131,7 @@ impl PointGroup {
             35 => 398,
             36 => 400,
             37 => 424,
+            // Trigonal
             38 => 430,
             39 => 433,
             40 => 435,
@@ -139,6 +145,7 @@ impl PointGroup {
             48 => 454,
             49 => 456,
             50 => 458,
+            // Hexagonal
             51 => 462,
             52 => 468,
             53 => 469,
@@ -147,6 +154,7 @@ impl PointGroup {
             56 => 483,
             57 => 481,
             58 => 485,
+            // Cubic
             59 => 489,
             60 => 490,
             61 => 491,
