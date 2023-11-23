@@ -12,7 +12,7 @@ use crate::base::lattice::Lattice;
 use crate::base::operation::{Permutation, Rotation, Translation};
 use crate::base::tolerance::EPS;
 use crate::base::transformation::{OriginShift, Transformation, TransformationMatrix};
-use crate::math::hnf::hnf;
+use crate::math::hnf::HNF;
 
 #[derive(Debug)]
 pub struct PrimitiveCellSearchResult {
@@ -122,7 +122,7 @@ pub fn search_primitive_cell(
     for translation in translations.iter() {
         columns.push((translation * (size as f64)).map(|e| e.round() as i32));
     }
-    let hnf = hnf(&OMatrix::<i32, U3, Dyn>::from_columns(&columns));
+    let hnf = HNF::new(&OMatrix::<i32, U3, Dyn>::from_columns(&columns));
     let trans_mat_inv =
         Matrix3::<i32>::from_columns(&[hnf.h.column(0), hnf.h.column(1), hnf.h.column(2)])
             .map(|e| e as f64)

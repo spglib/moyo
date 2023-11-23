@@ -1,6 +1,6 @@
-use std::collections::{HashSet, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 
-use nalgebra::Vector3;
+use nalgebra::{Matrix3, Vector3};
 
 use crate::base::lattice::Lattice;
 use crate::base::operation::Rotation;
@@ -8,6 +8,7 @@ use crate::base::transformation::TransformationMatrix;
 use crate::data::arithmetic_crystal_class::ArithmeticNumber;
 use crate::data::classification::{GeometricCrystalClass, LaueClass};
 use crate::data::hall_symbol::HallSymbol;
+use crate::math::integer_system::IntegerLinearSystem;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum RotationType {
@@ -21,6 +22,23 @@ pub enum RotationType {
     RotoInversion3, // -3 = S6^-1
     RotoInversion4, // -4 = S4^-1
     RotoInversion6, // -6 = S3^-1
+}
+
+impl RotationType {
+    pub fn value(&self) -> i32 {
+        match self {
+            RotationType::Rotation1 => 1,
+            RotationType::Rotation2 => 2,
+            RotationType::Rotation3 => 3,
+            RotationType::Rotation4 => 4,
+            RotationType::Rotation6 => 6,
+            RotationType::RotoInversion1 => -1,
+            RotationType::RotoInversion2 => -2,
+            RotationType::RotoInversion3 => -3,
+            RotationType::RotoInversion4 => -4,
+            RotationType::RotoInversion6 => -6,
+        }
+    }
 }
 
 /// Crystallographic point group
@@ -189,6 +207,7 @@ impl PointGroup {
     /// P^-1 * self.rotations * P = PointGroup::from_arithmetic_crystal_class(arithmetic_number)
     ///
     /// Implement algorithm presented in "R. W. Grosse-Kunstleve. Algorithms for deriving crystallographic space-group information. Acta Cryst. A, 55, 383-395 (1999)".
+    /// Also refer to Table 1 of https://arxiv.org/pdf/1808.01590.pdf
     pub fn match_arithmetic(&self) -> (ArithmeticNumber, TransformationMatrix) {
         let rotation_types = self
             .rotations
@@ -197,7 +216,87 @@ impl PointGroup {
             .collect();
         let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types);
         let laue_class = LaueClass::from_geometric_crystal_class(geometric_crystal_class);
+
+        // Roughly align basis vectors
+        let trans_mat = match laue_class {
+            // -1
+            LaueClass::Ci => TransformationMatrix::identity(),
+            // 2/m
+            LaueClass::C2h => {
+                let primaries = self.find_parallel_axes(RotationType::Rotation2);
+                let (primary, primary_rotation) = primaries[0];
+                let axes = find_perpendicular_axes(&primary_rotation);
+                TransformationMatrix::from_columns(&[primary, axes[0], axes[1]])
+            }
+            // mmm and m-3
+            LaueClass::D2h | LaueClass::Th => {
+                let primaries = self.find_parallel_axes(RotationType::Rotation2);
+                TransformationMatrix::from_columns(&[
+                    primaries[0].0,
+                    primaries[1].0,
+                    primaries[2].0,
+                ])
+            }
+            // 4/m and 4/mmm
+            LaueClass::C4h | LaueClass::D4h => {
+                let primaries = self.find_parallel_axes(RotationType::Rotation4);
+                let (primary, primary_rotation) = primaries[0];
+                let axes = find_perpendicular_axes(&primary_rotation);
+                let secondary = axes[0];
+                TransformationMatrix::from_columns(&[
+                    primary,
+                    secondary,
+                    primary_rotation * secondary,
+                ])
+            }
+            // -3, -3m, 6/m, and 6/mmm
+            LaueClass::C3i | LaueClass::D3d | LaueClass::C6h | LaueClass::D6h => {
+                // Use Rotation3 for 6/m and 6/mmm to refer to hexagonal axes
+                let primaries = self.find_parallel_axes(RotationType::Rotation3);
+                let (primary, primary_rotation) = primaries[0];
+                let axes = find_perpendicular_axes(&primary_rotation);
+                let secondary = axes[0];
+                TransformationMatrix::from_columns(&[
+                    primary,
+                    secondary,
+                    primary_rotation * secondary,
+                ])
+            }
+            // m-3m
+            LaueClass::Oh => {
+                let primaries = self.find_parallel_axes(RotationType::Rotation4);
+                TransformationMatrix::from_columns(&[
+                    primaries[0].0,
+                    primaries[1].0,
+                    primaries[2].0,
+                ])
+            }
+        };
+
         unimplemented!()
+    }
+
+    /// Find rotations whose proper correspondence with given `proper_rotation_type`
+    fn find_parallel_axes(
+        &self,
+        proper_rotation_type: RotationType,
+    ) -> Vec<(Vector3<i32>, Rotation)> {
+        let mut distinct_axes = HashMap::new();
+        for rotation in self.rotations.iter() {
+            let proper_rotation = get_proper_rotation(rotation);
+            let rotation_type = identify_rotation_type(&proper_rotation);
+            if rotation_type != proper_rotation_type {
+                continue;
+            }
+
+            // Sign of axis_direction is fixed by convention
+            let axis_direction = find_axis_direction(&proper_rotation);
+            if distinct_axes.contains_key(&axis_direction) {
+                continue;
+            }
+            distinct_axes.insert(axis_direction, proper_rotation);
+        }
+        distinct_axes.into_iter().collect()
     }
 }
 
@@ -220,18 +319,55 @@ fn identify_rotation_type(rotation: &Rotation) -> RotationType {
     }
 }
 
-/// Algorithm in Section 4(a) of GK99
-fn find_axis_direction(rotation: &Rotation) -> Vector3<i32> {
-    let proper_rotation = if rotation.map(|e| e as f64).determinant().round() < 0.0 {
+fn get_proper_rotation(rotation: &Rotation) -> Rotation {
+    let proper_rotation = if rotation.map(|e| e as f64).determinant().round() > 0.0 {
         rotation.clone()
     } else {
         -1 * rotation.clone()
     };
-    let rotation_type = identify_rotation_type(&proper_rotation);
+    proper_rotation
+}
+
+/// Algorithm in Section 4(a) of GK99
+/// Assume `rotation` is other than identify and inversion
+fn find_axis_direction(rotation: &Rotation) -> Vector3<i32> {
+    let proper_rotation = get_proper_rotation(rotation);
 
     // Find axis direction by solving eigenvalue problem with eigenvalue 1
+    let solution =
+        IntegerLinearSystem::new(&(proper_rotation - Rotation::identity()), &Vector3::zeros());
+    assert_eq!(solution.rank, 2);
+    let mut axis_direction = solution.nullspace.row(0).clone_owned();
 
-    unimplemented!()
+    // Choose sign by convention
+    if axis_direction[2] < 0 {
+        axis_direction *= -1;
+    } else if (axis_direction[2] == 0) && (axis_direction[1] < 0) {
+        axis_direction *= -1;
+    } else if (axis_direction[2] == 0) && (axis_direction[1] == 0) && (axis_direction[0] < 0) {
+        axis_direction *= -1;
+    }
+
+    Vector3::new(axis_direction[0], axis_direction[1], axis_direction[2])
+}
+
+fn find_perpendicular_axes(proper_rotation: &Rotation) -> Vec<Vector3<i32>> {
+    let rotation_type = identify_rotation_type(proper_rotation);
+    assert!(rotation_type.value() >= 2);
+
+    let mut s = Matrix3::<i32>::zeros();
+    for _ in 0..rotation_type.value() {
+        s = proper_rotation * (s + Rotation::identity());
+    }
+    let solution = IntegerLinearSystem::new(&s, &Vector3::zeros());
+    assert_eq!(solution.rank, 1);
+
+    let axes = solution
+        .nullspace
+        .row_iter()
+        .map(|v| Vector3::new(v[0], v[1], v[2]))
+        .collect();
+    axes
 }
 
 /// Use look up table in Table 6 of https://arxiv.org/pdf/1808.01590.pdf
@@ -332,9 +468,10 @@ fn choose_generators(elements: &Vec<Rotation>) -> Vec<usize> {
 mod tests {
     use std::collections::{HashSet, VecDeque};
 
+    use nalgebra::{matrix, vector};
     use rstest::rstest;
 
-    use super::PointGroup;
+    use super::{find_axis_direction, find_perpendicular_axes, PointGroup};
     use crate::base::operation::Rotation;
     use crate::data::classification::GeometricCrystalClass;
 
@@ -408,5 +545,32 @@ mod tests {
 
         let elements = traverse(&point_group.rotations);
         assert_eq!(elements.len(), order);
+    }
+
+    #[test]
+    fn test_find_axis_direction() {
+        // three-fold rotation
+        let rotation = matrix![
+            0, -1, 0;
+            0, 0, 1;
+            -1, 0, 0;
+        ];
+        let axis = find_axis_direction(&rotation);
+        assert_eq!(axis, vector![-1, 1, 1]);
+    }
+
+    #[test]
+    fn test_find_perpendicular_axes() {
+        // three-fold rotation
+        let rotation = matrix![
+            0, -1, 0;
+            0, 0, 1;
+            -1, 0, 0;
+        ];
+        let axes = find_perpendicular_axes(&rotation);
+        assert_eq!(axes.len(), 2);
+        for axis in axes.iter() {
+            assert_eq!(axis.dot(&vector![-1, 1, 1]), 0);
+        }
     }
 }

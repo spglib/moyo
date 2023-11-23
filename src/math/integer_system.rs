@@ -3,6 +3,7 @@ use nalgebra::{DefaultAllocator, Dim, Dyn, OMatrix, OVector, U1};
 
 use super::snf::SNF;
 
+#[derive(Debug)]
 pub struct IntegerLinearSystem<N: Dim>
 where
     DefaultAllocator: Allocator<i32, N>,
