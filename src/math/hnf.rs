@@ -5,20 +5,20 @@ use super::elementary::{
     adding_column_matrix, changing_column_sign_matrix, swapping_column_matrix,
 };
 
-/// Hermite normal form of RxC matrix such that h = basis * r
+/// Hermite normal form of (M, N) matrix such that h = basis * r
 #[derive(Debug)]
-pub struct HNF<R: Dim, C: Dim>
+pub struct HNF<M: Dim, N: Dim>
 where
-    DefaultAllocator: Allocator<i32, R, C> + Allocator<i32, C, C>,
+    DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, N, N>,
 {
-    pub h: OMatrix<i32, R, C>,
-    pub r: OMatrix<i32, C, C>,
+    pub h: OMatrix<i32, M, N>,
+    pub r: OMatrix<i32, N, N>,
 }
 
 /// Return column-wise Hermite norm form
-pub fn hnf<R: Dim, C: Dim>(basis: &OMatrix<i32, R, C>) -> HNF<R, C>
+pub fn hnf<M: Dim, N: Dim>(basis: &OMatrix<i32, M, N>) -> HNF<M, N>
 where
-    DefaultAllocator: Allocator<i32, R, C> + Allocator<i32, C, C>,
+    DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, N, N>,
 {
     let (m, n) = basis.shape_generic();
     let mut h = basis.clone();
@@ -73,7 +73,7 @@ where
         }
     }
     assert_eq!(h, basis * r.clone());
-    HNF::<R, C> { h, r }
+    HNF::<M, N> { h, r }
 }
 
 #[cfg(test)]
