@@ -15,65 +15,67 @@ where
     pub r: OMatrix<i32, N, N>,
 }
 
-/// Return column-wise Hermite norm form
-pub fn hnf<M: Dim, N: Dim>(basis: &OMatrix<i32, M, N>) -> HNF<M, N>
+impl<M: Dim, N: Dim> HNF<M, N>
 where
     DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, N, N>,
 {
-    let (m, n) = basis.shape_generic();
-    let mut h = basis.clone();
-    let mut r = OMatrix::identity_generic(n, n);
+    /// Return column-wise Hermite norm form
+    pub fn new(basis: &OMatrix<i32, M, N>) -> Self {
+        let (m, n) = basis.shape_generic();
+        let mut h = basis.clone();
+        let mut r = OMatrix::identity_generic(n, n);
 
-    // Process the `s`th row
-    for s in 0..m.value() {
-        if (s..n.value()).all(|j| h[(s, j)] == 0) {
-            continue;
-        }
-
-        loop {
-            // Choose pivot column with the smallest absolute value
-            let pivot = (s..n.value())
-                .filter(|&j| h[(s, j)] != 0)
-                .min_by_key(|&j| h[(s, j)].abs())
-                .unwrap();
-            h.swap_columns(s, pivot);
-            r = r * swapping_column_matrix(n, s, pivot);
-
-            // Guarantee that h[(s, s)] is positive
-            if h[(s, s)] < 0 {
-                for i in 0..m.value() {
-                    h[(i, s)] *= -1;
-                }
-                r = r * changing_column_sign_matrix(n, s);
+        // Process the `s`th row
+        for s in 0..m.value() {
+            if (s..n.value()).all(|j| h[(s, j)] == 0) {
+                continue;
             }
-            assert_ne!(h[(s, s)], 0);
 
-            // Add the `s`th column to the other columns
-            let mut update = false;
-            for j in 0..n.value() {
-                if j == s {
-                    continue;
-                }
-                let k = h[(s, j)] / h[(s, s)];
+            loop {
+                // Choose pivot column with the smallest absolute value
+                let pivot = (s..n.value())
+                    .filter(|&j| h[(s, j)] != 0)
+                    .min_by_key(|&j| h[(s, j)].abs())
+                    .unwrap();
+                h.swap_columns(s, pivot);
+                r = r * swapping_column_matrix(n, s, pivot);
 
-                if k != 0 {
-                    update = true;
-                    // h[(:, j)] -= k * h[(:, s)]
+                // Guarantee that h[(s, s)] is positive
+                if h[(s, s)] < 0 {
                     for i in 0..m.value() {
-                        h[(i, j)] -= k * h[(i, s)];
+                        h[(i, s)] *= -1;
                     }
-                    r = r * adding_column_matrix(n, s, j, -k);
+                    r = r * changing_column_sign_matrix(n, s);
+                }
+                assert_ne!(h[(s, s)], 0);
+
+                // Add the `s`th column to the other columns
+                let mut update = false;
+                for j in 0..n.value() {
+                    if j == s {
+                        continue;
+                    }
+                    let k = h[(s, j)] / h[(s, s)];
+
+                    if k != 0 {
+                        update = true;
+                        // h[(:, j)] -= k * h[(:, s)]
+                        for i in 0..m.value() {
+                            h[(i, j)] -= k * h[(i, s)];
+                        }
+                        r = r * adding_column_matrix(n, s, j, -k);
+                    }
+                }
+
+                // Continue until updating
+                if !update {
+                    break;
                 }
             }
-
-            // Continue until updating
-            if !update {
-                break;
-            }
         }
+        assert_eq!(h, basis * r.clone());
+        Self { h, r }
     }
-    assert_eq!(h, basis * r.clone());
-    HNF::<M, N> { h, r }
 }
 
 #[cfg(test)]
@@ -83,7 +85,7 @@ mod tests {
     use rand::rngs::StdRng;
     use rand::SeedableRng;
 
-    use super::hnf;
+    use super::HNF;
 
     #[test]
     fn test_hnf_small() {
@@ -92,7 +94,7 @@ mod tests {
                 20, -6;
                 -2, 1;
             ];
-            let hnf = hnf(&m);
+            let hnf = HNF::new(&m);
             assert_eq!(hnf.h, matrix![2, 0; 1, 4]);
         }
         {
@@ -101,7 +103,7 @@ mod tests {
                 5, 6, 1, 6;
                 8, 3, 1, 1;
             ];
-            let hnf = hnf(&m);
+            let hnf = HNF::new(&m);
             let expect = matrix![
                 1, 0, 0, 0;
                 0, 1, 0, 0;
@@ -117,13 +119,13 @@ mod tests {
 
         for _ in 0..256 {
             let m = SMatrix::<i32, 3, 3>::from_fn(|_, _| rng.gen_range(-4..4));
-            let _ = hnf(&m);
+            let _ = HNF::new(&m);
 
             let m = SMatrix::<i32, 5, 7>::from_fn(|_, _| rng.gen_range(-4..4));
-            let _ = hnf(&m);
+            let _ = HNF::new(&m);
 
             let m = SMatrix::<i32, 7, 5>::from_fn(|_, _| rng.gen_range(-4..4));
-            let _ = hnf(&m);
+            let _ = HNF::new(&m);
         }
     }
 }

@@ -6,99 +6,104 @@ use super::elementary::{
     swapping_row_matrix,
 };
 
-/// Hermite normal form of MxN matrix such that h = l * basis * r
+/// Hermite normal form of MxN matrix such that d = l * basis * r
 #[derive(Debug)]
 pub struct SNF<M: Dim, N: Dim>
 where
     DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, M, M> + Allocator<i32, N, N>,
 {
-    pub h: OMatrix<i32, M, N>,
+    pub d: OMatrix<i32, M, N>,
     pub l: OMatrix<i32, M, M>,
     pub r: OMatrix<i32, N, N>,
 }
 
-pub fn snf<M: Dim, N: Dim>(basis: &OMatrix<i32, M, N>) -> SNF<M, N>
+impl<M: Dim, N: Dim> SNF<M, N>
 where
     DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, M, M> + Allocator<i32, N, N>,
 {
-    let (m, n) = basis.shape_generic();
-    let mut h = basis.clone();
-    let mut l = OMatrix::identity_generic(m, m);
-    let mut r = OMatrix::identity_generic(n, n);
+    pub fn new(basis: &OMatrix<i32, M, N>) -> SNF<M, N>
+    where
+        DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, M, M> + Allocator<i32, N, N>,
+    {
+        let (m, n) = basis.shape_generic();
+        let mut d = basis.clone();
+        let mut l = OMatrix::identity_generic(m, m);
+        let mut r = OMatrix::identity_generic(n, n);
 
-    // Process the `s`th column and row
-    for s in 0..usize::min(m.value(), n.value()) {
-        if (s..m.value()).all(|i| h[(i, s)] == 0) && (s..n.value()).all(|j| h[(s, j)] == 0) {
-            continue;
-        }
-
-        loop {
-            // Choose pivot element with the smallest absolute value
-            let pivot = (s..m.value())
-                .flat_map(|i| (s..n.value()).map(move |j| (i, j)))
-                .filter(|&(i, j)| h[(i, j)] != 0)
-                .min_by_key(|&(i, j)| h[(i, j)].abs())
-                .unwrap();
-
-            // Move pivot element to (s, s)
-            h.swap_rows(s, pivot.0);
-            l = swapping_row_matrix(m, s, pivot.0) * l;
-            h.swap_columns(s, pivot.1);
-            r = r * swapping_column_matrix(n, s, pivot.1);
-
-            // Guarantee that h[(s, s)] is positive
-            if h[(s, s)] < 0 {
-                for i in 0..m.value() {
-                    h[(i, s)] *= -1;
-                }
-                r = r * changing_column_sign_matrix(n, s);
-            }
-            assert_ne!(h[(s, s)], 0);
-
-            // Eliminate (*, s) entries
-            let mut update = false;
-            for i in 0..m.value() {
-                if i == s {
-                    continue;
-                }
-                let k = h[(i, s)] / h[(s, s)];
-
-                if k != 0 {
-                    update = true;
-                    // h[(i, :)] -= k * h[(s, :)]
-                    for j in 0..n.value() {
-                        h[(i, j)] -= k * h[(s, j)];
-                    }
-                    l = adding_row_matrix(m, s, i, -k) * l;
-                }
+        // Process the `s`th column and row
+        for s in 0..usize::min(m.value(), n.value()) {
+            if (s..m.value()).all(|i| d[(i, s)] == 0) && (s..n.value()).all(|j| d[(s, j)] == 0) {
+                continue;
             }
 
-            // Eliminate (s, *) entries
-            for j in 0..n.value() {
-                if j == s {
-                    continue;
-                }
-                let k = h[(s, j)] / h[(s, s)];
+            loop {
+                // Choose pivot element with the smallest absolute value
+                let pivot = (s..m.value())
+                    .flat_map(|i| (s..n.value()).map(move |j| (i, j)))
+                    .filter(|&(i, j)| d[(i, j)] != 0)
+                    .min_by_key(|&(i, j)| d[(i, j)].abs())
+                    .unwrap();
 
-                if k != 0 {
-                    update = true;
-                    // h[(:, j)] -= k * h[(:, s)]
+                // Move pivot element to (s, s)
+                d.swap_rows(s, pivot.0);
+                l = swapping_row_matrix(m, s, pivot.0) * l;
+                d.swap_columns(s, pivot.1);
+                r = r * swapping_column_matrix(n, s, pivot.1);
+
+                // Guarantee that h[(s, s)] is positive
+                if d[(s, s)] < 0 {
                     for i in 0..m.value() {
-                        h[(i, j)] -= k * h[(i, s)];
+                        d[(i, s)] *= -1;
                     }
-                    r = r * adding_column_matrix(n, s, j, -k);
+                    r = r * changing_column_sign_matrix(n, s);
+                }
+                assert_ne!(d[(s, s)], 0);
+
+                // Eliminate (*, s) entries
+                let mut update = false;
+                for i in 0..m.value() {
+                    if i == s {
+                        continue;
+                    }
+                    let k = d[(i, s)] / d[(s, s)];
+
+                    if k != 0 {
+                        update = true;
+                        // d[(i, :)] -= k * d[(s, :)]
+                        for j in 0..n.value() {
+                            d[(i, j)] -= k * d[(s, j)];
+                        }
+                        l = adding_row_matrix(m, s, i, -k) * l;
+                    }
+                }
+
+                // Eliminate (s, *) entries
+                for j in 0..n.value() {
+                    if j == s {
+                        continue;
+                    }
+                    let k = d[(s, j)] / d[(s, s)];
+
+                    if k != 0 {
+                        update = true;
+                        // d[(:, j)] -= k * d[(:, s)]
+                        for i in 0..m.value() {
+                            d[(i, j)] -= k * d[(i, s)];
+                        }
+                        r = r * adding_column_matrix(n, s, j, -k);
+                    }
+                }
+
+                // Continue until updating
+                if !update {
+                    break;
                 }
             }
-
-            // Continue until updating
-            if !update {
-                break;
-            }
         }
-    }
 
-    assert_eq!(h, l.clone() * basis * r.clone());
-    SNF::<M, N> { h, l, r }
+        assert_eq!(d, l.clone() * basis * r.clone());
+        SNF::<M, N> { d, l, r }
+    }
 }
 
 #[cfg(test)]
@@ -108,7 +113,7 @@ mod tests {
     use rand::rngs::StdRng;
     use rand::SeedableRng;
 
-    use super::snf;
+    use super::SNF;
 
     #[test]
     fn test_snf_small() {
@@ -118,8 +123,8 @@ mod tests {
                 -6, 6, 12;
                 10, -4, -16;
             ];
-            let snf = snf(&m);
-            assert_eq!(snf.h, matrix![2, 0, 0; 0, 6, 0; 0, 0, 12]);
+            let snf = SNF::new(&m);
+            assert_eq!(snf.d, matrix![2, 0, 0; 0, 6, 0; 0, 0, 12]);
         }
     }
 
@@ -129,13 +134,13 @@ mod tests {
 
         for _ in 0..256 {
             let m = SMatrix::<i32, 3, 3>::from_fn(|_, _| rng.gen_range(-4..4));
-            let _ = snf(&m);
+            let _ = SNF::new(&m);
 
             let m = SMatrix::<i32, 5, 7>::from_fn(|_, _| rng.gen_range(-4..4));
-            let _ = snf(&m);
+            let _ = SNF::new(&m);
 
             let m = SMatrix::<i32, 7, 5>::from_fn(|_, _| rng.gen_range(-4..4));
-            let _ = snf(&m);
+            let _ = SNF::new(&m);
         }
     }
 }
