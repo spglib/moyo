@@ -1,7 +1,9 @@
 use nalgebra::base::allocator::Allocator;
 use nalgebra::{DefaultAllocator, Dim, OMatrix};
 
-use super::elementary::{adding_column_matrix, changing_sign_matrix, swapping_column_matrix};
+use super::elementary::{
+    adding_column_matrix, changing_column_sign_matrix, swapping_column_matrix,
+};
 
 /// Hermite normal form of RxC matrix such that h = basis * r
 #[derive(Debug)]
@@ -42,7 +44,7 @@ where
                 for i in 0..m.value() {
                     h[(i, s)] *= -1;
                 }
-                r = r * changing_sign_matrix(n, s);
+                r = r * changing_column_sign_matrix(n, s);
             }
             assert_ne!(h[(s, s)], 0);
 

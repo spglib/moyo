@@ -1,14 +1,27 @@
 use std::collections::{HashSet, VecDeque};
 
-use itertools::iproduct;
-use nalgebra::Matrix3;
+use nalgebra::Vector3;
 
 use crate::base::lattice::Lattice;
-use crate::base::operation::{Permutation, Rotation, RotationType};
+use crate::base::operation::Rotation;
 use crate::base::transformation::TransformationMatrix;
 use crate::data::arithmetic_crystal_class::ArithmeticNumber;
-use crate::data::classification::GeometricCrystalClass;
-use crate::data::hall_symbol::{self, HallSymbol};
+use crate::data::classification::{GeometricCrystalClass, LaueClass};
+use crate::data::hall_symbol::HallSymbol;
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum RotationType {
+    Rotation1,      // 1
+    Rotation2,      // 2
+    Rotation3,      // 3
+    Rotation4,      // 4
+    Rotation6,      // 6
+    RotoInversion1, // -1 = S2
+    RotoInversion2, // -2 = m = S1
+    RotoInversion3, // -3 = S6^-1
+    RotoInversion4, // -4 = S4^-1
+    RotoInversion6, // -6 = S3^-1
+}
 
 /// Crystallographic point group
 #[derive(Debug)]
@@ -16,27 +29,18 @@ pub struct PointGroup {
     pub lattice: Lattice,
     pub rotations: Vec<Rotation>,
     //
-    pub rotation_types: Vec<RotationType>,
-    pub geometric_crystal_class: GeometricCrystalClass,
     pub generators: Vec<usize>,
 }
 
 /// Crystallographic point group
 impl PointGroup {
-    pub fn new(lattice: Lattice, rotations: Vec<Rotation>) -> Option<Self> {
-        let rotation_types = rotations
-            .iter()
-            .map(|rotation| identify_rotation_type(rotation).unwrap())
-            .collect();
-        let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types)?;
+    pub fn new(lattice: Lattice, rotations: Vec<Rotation>) -> Self {
         let generators = choose_generators(&rotations);
-        Some(Self {
+        Self {
             lattice,
             rotations,
-            rotation_types,
-            geometric_crystal_class,
             generators,
-        })
+        }
     }
 
     /// Construct representative point group from geometric crystal class
@@ -84,7 +88,7 @@ impl PointGroup {
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number);
         let operations = hall_symbol.traverse();
-        Self::new(operations.lattice, operations.rotations).unwrap()
+        Self::new(operations.lattice, operations.rotations)
     }
 
     pub fn from_arithmetic_crystal_class(arithmetic_number: ArithmeticNumber) -> Self {
@@ -174,70 +178,64 @@ impl PointGroup {
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number);
         let operations = hall_symbol.traverse();
-        Self::new(operations.lattice, operations.rotations).unwrap()
+        Self::new(operations.lattice, operations.rotations)
     }
 
     pub fn order(&self) -> usize {
         self.rotations.len()
     }
 
-    /// If the two point groups belong to the same arithmetic crystal class, return the transformation matrix and permutation that transforms one point group to the other.
-    /// Assume the two point groups are both written with primitive basis vectors.
-    /// Let P be the (unimodular) transformation matrix and sigma be the permutation:
-    /// P^-1 * self.rotations[i] * P = other.rotations[sigma[i]]
+    /// Let P be the (unimodular) transformation matrix
+    /// P^-1 * self.rotations * P = PointGroup::from_arithmetic_crystal_class(arithmetic_number)
     ///
     /// Implement algorithm presented in "R. W. Grosse-Kunstleve. Algorithms for deriving crystallographic space-group information. Acta Cryst. A, 55, 383-395 (1999)".
-    pub fn match_arithmetic(&self, other: &Self) -> Option<(TransformationMatrix, Permutation)> {
-        if self.geometric_crystal_class != other.geometric_crystal_class {
-            return None;
-        }
-        assert_eq!(self.order(), other.order());
-
-        // Try to map generators
-        let order = self.order();
-        let candidates: Vec<Vec<usize>> = self
-            .generators
+    pub fn match_arithmetic(&self) -> (ArithmeticNumber, TransformationMatrix) {
+        let rotation_types = self
+            .rotations
             .iter()
-            .map(|&i| {
-                (0..order)
-                    .filter(|&j| other.rotation_types[j] == self.rotation_types[i])
-                    .collect()
-            })
+            .map(|rotation| identify_rotation_type(rotation))
             .collect();
-
-        for pivot in iproduct!(candidates.iter().map(|v| v.iter())) {
-            // Solve self.rotations[self.generators[i]] * P = P * other.rotations[pivot[i]] (for all i)
-            // For 1 and -1, trivial
-            // For 2, m, 2/m, 4, -4, 4/m, 3, -3, 6, -6, 6/m
-        }
-
+        let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types);
+        let laue_class = LaueClass::from_geometric_crystal_class(geometric_crystal_class);
         unimplemented!()
     }
 }
 
-fn identify_rotation_type(rotation: &Rotation) -> Option<RotationType> {
+fn identify_rotation_type(rotation: &Rotation) -> RotationType {
     let tr = rotation.trace();
     let det = rotation.map(|e| e as f64).determinant().round() as i32;
 
     match (tr, det) {
-        (3, 1) => Some(RotationType::Rotation1),
-        (-1, 1) => Some(RotationType::Rotation2),
-        (0, 1) => Some(RotationType::Rotation3),
-        (1, 1) => Some(RotationType::Rotation4),
-        (2, 1) => Some(RotationType::Rotation6),
-        (-3, -1) => Some(RotationType::RotoInversion1),
-        (1, -1) => Some(RotationType::RotoInversion2),
-        (0, -1) => Some(RotationType::RotoInversion3),
-        (-1, -1) => Some(RotationType::RotoInversion4),
-        (-2, -1) => Some(RotationType::RotoInversion6),
-        _ => None,
+        (3, 1) => RotationType::Rotation1,
+        (-1, 1) => RotationType::Rotation2,
+        (0, 1) => RotationType::Rotation3,
+        (1, 1) => RotationType::Rotation4,
+        (2, 1) => RotationType::Rotation6,
+        (-3, -1) => RotationType::RotoInversion1,
+        (1, -1) => RotationType::RotoInversion2,
+        (0, -1) => RotationType::RotoInversion3,
+        (-1, -1) => RotationType::RotoInversion4,
+        (-2, -1) => RotationType::RotoInversion6,
+        _ => unreachable!("Unknown rotation type"),
     }
 }
 
+/// Algorithm in Section 4(a) of GK99
+fn find_axis_direction(rotation: &Rotation) -> Vector3<i32> {
+    let proper_rotation = if rotation.map(|e| e as f64).determinant().round() < 0.0 {
+        rotation.clone()
+    } else {
+        -1 * rotation.clone()
+    };
+    let rotation_type = identify_rotation_type(&proper_rotation);
+
+    // Find axis direction by solving eigenvalue problem with eigenvalue 1
+
+    unimplemented!()
+}
+
 /// Use look up table in Table 6 of https://arxiv.org/pdf/1808.01590.pdf
-fn identify_geometric_crystal_class(
-    rotation_types: &Vec<RotationType>,
-) -> Option<GeometricCrystalClass> {
+fn identify_geometric_crystal_class(rotation_types: &Vec<RotationType>) -> GeometricCrystalClass {
     // count RotationTypes in point_group
     let mut rotation_types_count = [0; 10];
     for rotation_type in rotation_types {
@@ -256,46 +254,46 @@ fn identify_geometric_crystal_class(
     }
     match rotation_types_count {
         // Triclinic
-        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0] => Some(GeometricCrystalClass::C1),
-        [0, 0, 0, 0, 1, 1, 0, 0, 0, 0] => Some(GeometricCrystalClass::Ci),
+        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0] => GeometricCrystalClass::C1,
+        [0, 0, 0, 0, 1, 1, 0, 0, 0, 0] => GeometricCrystalClass::Ci,
         // Monoclinic
-        [0, 0, 0, 0, 0, 1, 1, 0, 0, 0] => Some(GeometricCrystalClass::C2),
-        [0, 0, 0, 1, 0, 1, 0, 0, 0, 0] => Some(GeometricCrystalClass::C1h),
-        [0, 0, 0, 1, 1, 1, 1, 0, 0, 0] => Some(GeometricCrystalClass::C2h),
+        [0, 0, 0, 0, 0, 1, 1, 0, 0, 0] => GeometricCrystalClass::C2,
+        [0, 0, 0, 1, 0, 1, 0, 0, 0, 0] => GeometricCrystalClass::C1h,
+        [0, 0, 0, 1, 1, 1, 1, 0, 0, 0] => GeometricCrystalClass::C2h,
         // Orthorhombic
-        [0, 0, 0, 0, 0, 1, 3, 0, 0, 0] => Some(GeometricCrystalClass::D2),
-        [0, 0, 0, 2, 0, 1, 1, 0, 0, 0] => Some(GeometricCrystalClass::C2v),
-        [0, 0, 0, 3, 1, 1, 3, 0, 0, 0] => Some(GeometricCrystalClass::D2h),
+        [0, 0, 0, 0, 0, 1, 3, 0, 0, 0] => GeometricCrystalClass::D2,
+        [0, 0, 0, 2, 0, 1, 1, 0, 0, 0] => GeometricCrystalClass::C2v,
+        [0, 0, 0, 3, 1, 1, 3, 0, 0, 0] => GeometricCrystalClass::D2h,
         // Tetragonal
-        [0, 0, 0, 0, 0, 1, 1, 0, 2, 0] => Some(GeometricCrystalClass::C4),
-        [0, 2, 0, 0, 0, 1, 1, 0, 0, 0] => Some(GeometricCrystalClass::S4),
-        [0, 2, 0, 1, 1, 1, 1, 0, 2, 0] => Some(GeometricCrystalClass::C4h),
-        [0, 0, 0, 0, 0, 1, 5, 0, 2, 0] => Some(GeometricCrystalClass::D4),
-        [0, 0, 0, 4, 0, 1, 1, 0, 2, 0] => Some(GeometricCrystalClass::C4v),
-        [0, 2, 0, 2, 0, 1, 3, 0, 0, 0] => Some(GeometricCrystalClass::D2d),
-        [0, 2, 0, 5, 1, 1, 5, 0, 2, 0] => Some(GeometricCrystalClass::D4h),
+        [0, 0, 0, 0, 0, 1, 1, 0, 2, 0] => GeometricCrystalClass::C4,
+        [0, 2, 0, 0, 0, 1, 1, 0, 0, 0] => GeometricCrystalClass::S4,
+        [0, 2, 0, 1, 1, 1, 1, 0, 2, 0] => GeometricCrystalClass::C4h,
+        [0, 0, 0, 0, 0, 1, 5, 0, 2, 0] => GeometricCrystalClass::D4,
+        [0, 0, 0, 4, 0, 1, 1, 0, 2, 0] => GeometricCrystalClass::C4v,
+        [0, 2, 0, 2, 0, 1, 3, 0, 0, 0] => GeometricCrystalClass::D2d,
+        [0, 2, 0, 5, 1, 1, 5, 0, 2, 0] => GeometricCrystalClass::D4h,
         // Trigonal
-        [0, 0, 0, 0, 0, 1, 0, 2, 0, 0] => Some(GeometricCrystalClass::C3),
-        [0, 0, 2, 0, 1, 1, 0, 2, 0, 0] => Some(GeometricCrystalClass::C3i),
-        [0, 0, 0, 0, 0, 1, 3, 2, 0, 0] => Some(GeometricCrystalClass::D3),
-        [0, 0, 0, 3, 0, 1, 0, 2, 0, 0] => Some(GeometricCrystalClass::C3v),
-        [0, 0, 2, 3, 1, 1, 3, 2, 0, 0] => Some(GeometricCrystalClass::D3d),
+        [0, 0, 0, 0, 0, 1, 0, 2, 0, 0] => GeometricCrystalClass::C3,
+        [0, 0, 2, 0, 1, 1, 0, 2, 0, 0] => GeometricCrystalClass::C3i,
+        [0, 0, 0, 0, 0, 1, 3, 2, 0, 0] => GeometricCrystalClass::D3,
+        [0, 0, 0, 3, 0, 1, 0, 2, 0, 0] => GeometricCrystalClass::C3v,
+        [0, 0, 2, 3, 1, 1, 3, 2, 0, 0] => GeometricCrystalClass::D3d,
         // Hexagonal
-        [0, 0, 0, 0, 0, 1, 1, 2, 0, 2] => Some(GeometricCrystalClass::C6),
-        [2, 0, 0, 1, 0, 1, 0, 2, 0, 0] => Some(GeometricCrystalClass::C3h),
-        [2, 0, 2, 1, 1, 1, 1, 2, 0, 2] => Some(GeometricCrystalClass::C6h),
-        [0, 0, 0, 0, 0, 1, 7, 2, 0, 2] => Some(GeometricCrystalClass::D6),
-        [0, 0, 0, 6, 0, 1, 1, 2, 0, 2] => Some(GeometricCrystalClass::C6v),
-        [2, 0, 0, 4, 0, 1, 3, 2, 0, 0] => Some(GeometricCrystalClass::D3h),
-        [2, 0, 2, 7, 1, 1, 7, 2, 0, 2] => Some(GeometricCrystalClass::D6h),
+        [0, 0, 0, 0, 0, 1, 1, 2, 0, 2] => GeometricCrystalClass::C6,
+        [2, 0, 0, 1, 0, 1, 0, 2, 0, 0] => GeometricCrystalClass::C3h,
+        [2, 0, 2, 1, 1, 1, 1, 2, 0, 2] => GeometricCrystalClass::C6h,
+        [0, 0, 0, 0, 0, 1, 7, 2, 0, 2] => GeometricCrystalClass::D6,
+        [0, 0, 0, 6, 0, 1, 1, 2, 0, 2] => GeometricCrystalClass::C6v,
+        [2, 0, 0, 4, 0, 1, 3, 2, 0, 0] => GeometricCrystalClass::D3h,
+        [2, 0, 2, 7, 1, 1, 7, 2, 0, 2] => GeometricCrystalClass::D6h,
         // Cubic
-        [0, 0, 0, 0, 0, 1, 3, 8, 0, 0] => Some(GeometricCrystalClass::T),
-        [0, 0, 8, 3, 1, 1, 3, 8, 0, 0] => Some(GeometricCrystalClass::Th),
-        [0, 0, 0, 0, 0, 1, 9, 8, 6, 0] => Some(GeometricCrystalClass::O),
-        [0, 6, 0, 6, 0, 1, 3, 8, 0, 0] => Some(GeometricCrystalClass::Td),
-        [0, 6, 8, 9, 1, 1, 9, 8, 6, 0] => Some(GeometricCrystalClass::Oh),
+        [0, 0, 0, 0, 0, 1, 3, 8, 0, 0] => GeometricCrystalClass::T,
+        [0, 0, 8, 3, 1, 1, 3, 8, 0, 0] => GeometricCrystalClass::Th,
+        [0, 0, 0, 0, 0, 1, 9, 8, 6, 0] => GeometricCrystalClass::O,
+        [0, 6, 0, 6, 0, 1, 3, 8, 0, 0] => GeometricCrystalClass::Td,
+        [0, 6, 8, 9, 1, 1, 9, 8, 6, 0] => GeometricCrystalClass::Oh,
         // Unknown
-        _ => None,
+        _ => unreachable!("Unknown point group"),
     }
 }
 
@@ -407,7 +405,6 @@ mod tests {
     ) {
         let point_group = PointGroup::from_geometric_crystal_class(geometric_crystal_class);
         assert_eq!(point_group.order(), order);
-        assert_eq!(point_group.geometric_crystal_class, geometric_crystal_class);
 
         let elements = traverse(&point_group.rotations);
         assert_eq!(elements.len(), order);
