@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet, VecDeque};
 use nalgebra::{Matrix3, Vector3};
 
 use crate::base::lattice::Lattice;
-use crate::base::operation::Rotation;
+use crate::base::operation::{AbstractOperations, Rotation};
 use crate::base::transformation::TransformationMatrix;
 use crate::data::arithmetic_crystal_class::ArithmeticNumber;
 use crate::data::classification::{GeometricCrystalClass, LaueClass};
@@ -41,24 +41,24 @@ impl RotationType {
     }
 }
 
-/// Crystallographic point group
 #[derive(Debug)]
-pub struct PointGroup {
-    pub lattice: Lattice,
+/// Crystallographic point group without basis information
+pub struct AbstractPointGroup {
     pub rotations: Vec<Rotation>,
-    //
     pub generators: Vec<usize>,
 }
 
-/// Crystallographic point group
-impl PointGroup {
-    pub fn new(lattice: Lattice, rotations: Vec<Rotation>) -> Self {
+impl AbstractPointGroup {
+    pub fn new(rotations: Vec<Rotation>) -> Self {
         let generators = choose_generators(&rotations);
         Self {
-            lattice,
             rotations,
             generators,
         }
+    }
+
+    pub fn order(&self) -> usize {
+        self.rotations.len()
     }
 
     /// Construct representative point group from geometric crystal class
@@ -106,7 +106,7 @@ impl PointGroup {
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number);
         let operations = hall_symbol.traverse();
-        Self::new(operations.lattice, operations.rotations)
+        Self::new(operations.rotations)
     }
 
     pub fn from_arithmetic_crystal_class(arithmetic_number: ArithmeticNumber) -> Self {
@@ -196,7 +196,27 @@ impl PointGroup {
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number);
         let operations = hall_symbol.traverse();
-        Self::new(operations.lattice, operations.rotations)
+        Self::new(operations.rotations)
+    }
+}
+
+/// Crystallographic point group
+#[derive(Debug)]
+pub struct PointGroup {
+    pub lattice: Lattice,
+    pub rotations: Vec<Rotation>,
+    pub generators: Vec<usize>,
+}
+
+/// Crystallographic point group
+impl PointGroup {
+    pub fn new(lattice: Lattice, rotations: Vec<Rotation>) -> Self {
+        let generators = choose_generators(&rotations);
+        Self {
+            lattice,
+            rotations,
+            generators,
+        }
     }
 
     pub fn order(&self) -> usize {
@@ -471,7 +491,7 @@ mod tests {
     use nalgebra::{matrix, vector};
     use rstest::rstest;
 
-    use super::{find_axis_direction, find_perpendicular_axes, PointGroup};
+    use super::{find_axis_direction, find_perpendicular_axes, AbstractPointGroup, PointGroup};
     use crate::base::operation::Rotation;
     use crate::data::classification::GeometricCrystalClass;
 
@@ -540,7 +560,7 @@ mod tests {
         #[case] geometric_crystal_class: GeometricCrystalClass,
         #[case] order: usize,
     ) {
-        let point_group = PointGroup::from_geometric_crystal_class(geometric_crystal_class);
+        let point_group = AbstractPointGroup::from_geometric_crystal_class(geometric_crystal_class);
         assert_eq!(point_group.order(), order);
 
         let elements = traverse(&point_group.rotations);

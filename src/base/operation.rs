@@ -12,6 +12,30 @@ pub struct Permutation {
 }
 
 #[derive(Debug)]
+/// Symmetry operation without basis information
+pub struct AbstractOperations {
+    pub rotations: Vec<Rotation>,
+    pub translations: Vec<Translation>,
+}
+
+impl AbstractOperations {
+    pub fn new(rotations: Vec<Rotation>, translations: Vec<Translation>) -> Self {
+        if translations.len() != rotations.len() {
+            panic!("rotations and translations should be the same length");
+        }
+        Self {
+            rotations,
+            translations,
+        }
+    }
+
+    pub fn num_operations(&self) -> usize {
+        self.rotations.len()
+    }
+}
+
+#[derive(Debug)]
+/// Symmetry operation on a given basis
 pub struct Operations {
     pub lattice: Lattice,
     //

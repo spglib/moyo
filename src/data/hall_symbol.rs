@@ -1,10 +1,9 @@
 use std::collections::{HashMap, VecDeque};
 
-use nalgebra::{matrix, Matrix3, Vector3};
+use nalgebra::{matrix, Vector3};
 
 use super::hall_symbol_database::{HallNumber, HALL_SYMBOL_DATABASE};
-use crate::base::lattice::Lattice;
-use crate::base::operation::{Operations, Rotation, Translation};
+use crate::base::operation::{AbstractOperations, Rotation, Translation};
 use crate::base::tolerance::EPS;
 
 const MAX_DENOMINATOR: i32 = 12;
@@ -26,7 +25,7 @@ pub struct HallSymbol {
     pub hall_symbol: String,
     pub lattice_symbol: LatticeSymbol,
     pub centerings: Vec<Translation>,
-    pub generators: Operations,
+    pub generators: AbstractOperations,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -100,16 +99,12 @@ impl HallSymbol {
             hall_symbol: hall_symbol.to_string(),
             lattice_symbol,
             centerings,
-            generators: Operations::new(
-                Lattice::new(Matrix3::<f64>::identity()),
-                rotations,
-                translations,
-            ),
+            generators: AbstractOperations::new(rotations, translations),
         })
     }
 
     /// Traverse all the symmetry operations up to translations by conventional cell.
-    pub fn traverse(&self) -> Operations {
+    pub fn traverse(&self) -> AbstractOperations {
         let mut queue = VecDeque::new();
         let mut hm_translations = HashMap::new();
 
@@ -149,7 +144,7 @@ impl HallSymbol {
             rotations.push(rotation);
             translations.push(translation);
         }
-        Operations::new(self.generators.lattice.clone(), rotations, translations)
+        AbstractOperations::new(rotations, translations)
     }
 
     pub fn from_hall_number(hall_number: HallNumber) -> Self {
