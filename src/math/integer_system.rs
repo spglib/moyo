@@ -21,7 +21,8 @@ where
     DefaultAllocator: Allocator<i32, N>,
 {
     /// Solve a * x = b
-    pub fn new<M: Dim>(a: &OMatrix<i32, M, N>, b: &OVector<i32, M>) -> Self
+    /// If no solution, return None
+    pub fn new<M: Dim>(a: &OMatrix<i32, M, N>, b: &OVector<i32, M>) -> Option<Self>
     where
         DefaultAllocator:
             Allocator<i32, M, N> + Allocator<i32, M, M> + Allocator<i32, N, N> + Allocator<i32, M>,
@@ -34,13 +35,16 @@ where
         let mut y = OVector::zeros_generic(n, U1);
         let lb = snf.l * b;
         for i in 0..rank {
+            if lb[(i, 0)] % snf.d[(i, i)] != 0 {
+                return None;
+            }
             y[i] = lb[(i, 0)] / snf.d[(i, i)];
         }
         let x = snf.r.clone() * y;
 
         let nullspace = snf.r.columns(rank, n.value() - rank).clone().transpose();
 
-        Self { rank, x, nullspace }
+        Some(Self { rank, x, nullspace })
     }
 }
 
@@ -58,7 +62,7 @@ mod tests {
                 -1, 1, -5;
             ];
             let b = vector![4, 11];
-            let solution = IntegerLinearSystem::new(&a, &b);
+            let solution = IntegerLinearSystem::new(&a, &b).unwrap();
             assert_eq!(solution.rank, 2);
             assert_eq!(a * solution.x, b);
         }
@@ -67,9 +71,17 @@ mod tests {
                 1, 1, 0;
             ];
             let b = vector![2];
-            let solution = IntegerLinearSystem::new(&a, &b);
+            let solution = IntegerLinearSystem::new(&a, &b).unwrap();
             assert_eq!(solution.rank, 1);
             assert_eq!(a * solution.x, b);
+        }
+        {
+            let a = matrix![
+                2, 4, 0;
+            ];
+            let b = vector![1];
+            let solution = IntegerLinearSystem::new(&a, &b);
+            assert!(solution.is_none());
         }
     }
 }
