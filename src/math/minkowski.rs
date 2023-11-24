@@ -199,7 +199,9 @@ mod tests {
                 rng.gen::<i8>() as f64,
                 rng.gen::<i8>() as f64,
             );
-            let _ = minkowski_reduce(&basis);
+            let (reduced_basis, trans_mat) = minkowski_reduce(&basis);
+            assert!(is_minkowski_reduced(&reduced_basis));
+            assert_relative_eq!(basis * trans_mat.map(|e| e as f64), reduced_basis);
         }
 
         for _ in 0..256 {
@@ -214,7 +216,13 @@ mod tests {
                 rng.gen(),
                 rng.gen(),
             );
-            let _ = minkowski_reduce(&basis);
+            let (reduced_basis, trans_mat) = minkowski_reduce(&basis);
+            assert!(is_minkowski_reduced(&reduced_basis));
+            assert_relative_eq!(
+                basis * trans_mat.map(|e| e as f64),
+                reduced_basis,
+                epsilon = 1e-4
+            );
         }
     }
 }
