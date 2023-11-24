@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use nalgebra::{Dyn, Matrix3, OMatrix, Vector3, U3};
 use union_find::{QuickFindUf, UnionByRank, UnionFind};
@@ -180,7 +180,7 @@ fn primitive_cell_from_transformation(
         }
     }
     let site_mapping: SiteMapping = (0..num_atoms).map(|i| uf.find(i)).collect();
-    let mut orbits_set = HashSet::new();
+    let mut orbits_set = BTreeSet::new();
     for i in 0..num_atoms {
         orbits_set.insert(uf.find(i));
     }

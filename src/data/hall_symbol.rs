@@ -23,13 +23,13 @@ const MAX_DENOMINATOR: i32 = 12;
 #[derive(Debug)]
 pub struct HallSymbol {
     pub hall_symbol: String,
-    pub lattice_symbol: LatticeSymbol,
+    pub lattice_symbol: Centering,
     pub centerings: Vec<Translation>,
     pub generators: AbstractOperations,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub enum LatticeSymbol {
+pub enum Centering {
     P, // Primitive
     A, // A-face centered
     B, // B-face centered
@@ -104,9 +104,12 @@ impl HallSymbol {
     }
 
     /// Traverse all the symmetry operations up to translations by conventional cell.
+    /// The order of operations is guaranteed to be fixed.
     pub fn traverse(&self) -> AbstractOperations {
         let mut queue = VecDeque::new();
         let mut hm_translations = HashMap::new();
+        let mut rotations = vec![];
+        let mut translations = vec![];
 
         queue.push_back((Rotation::identity(), Translation::zeros()));
 
@@ -116,6 +119,8 @@ impl HallSymbol {
                 continue;
             }
             hm_translations.insert(rotation_lhs.clone(), translation_lhs.clone());
+            rotations.push(rotation_lhs.clone());
+            translations.push(translation_lhs.clone());
 
             for (rotation_rhs, translation_rhs) in self
                 .generators
@@ -138,12 +143,6 @@ impl HallSymbol {
             }
         }
 
-        let mut rotations = vec![];
-        let mut translations = vec![];
-        for (rotation, translation) in hm_translations {
-            rotations.push(rotation);
-            translations.push(translation);
-        }
         AbstractOperations::new(rotations, translations)
     }
 
@@ -160,7 +159,7 @@ impl HallSymbol {
         tokens
     }
 
-    fn parse_lattice(token: &str) -> Option<(bool, LatticeSymbol)> {
+    fn parse_lattice(token: &str) -> Option<(bool, Centering)> {
         let mut pos = 0;
         let inversion_at_origin = match token.chars().nth(pos).unwrap() {
             '-' => {
@@ -170,14 +169,14 @@ impl HallSymbol {
             _ => false,
         };
         let lattice_symbol = match token.chars().nth(pos).unwrap() {
-            'P' => LatticeSymbol::P,
-            'A' => LatticeSymbol::A,
-            'B' => LatticeSymbol::B,
-            'C' => LatticeSymbol::C,
-            'I' => LatticeSymbol::I,
-            'R' => LatticeSymbol::R,
-            'H' => LatticeSymbol::H,
-            'F' => LatticeSymbol::F,
+            'P' => Centering::P,
+            'A' => Centering::A,
+            'B' => Centering::B,
+            'C' => Centering::C,
+            'I' => Centering::I,
+            'R' => Centering::R,
+            'H' => Centering::H,
+            'F' => Centering::F,
             _ => return None,
         };
         Some((inversion_at_origin, lattice_symbol))
@@ -322,36 +321,36 @@ impl HallSymbol {
         Some((rotation, translation, nfold, axis.to_string()))
     }
 
-    fn lattice_points(lattice_symbol: LatticeSymbol) -> Vec<Vector3<f64>> {
+    fn lattice_points(lattice_symbol: Centering) -> Vec<Vector3<f64>> {
         match lattice_symbol {
-            LatticeSymbol::P => {
+            Centering::P => {
                 vec![Translation::new(0.0, 0.0, 0.0)]
             }
-            LatticeSymbol::A => {
+            Centering::A => {
                 vec![
                     Translation::new(0.0, 0.0, 0.0),
                     Translation::new(0.0, 0.5, 0.5),
                 ]
             }
-            LatticeSymbol::B => {
+            Centering::B => {
                 vec![
                     Translation::new(0.0, 0.0, 0.0),
                     Translation::new(0.5, 0.0, 0.5),
                 ]
             }
-            LatticeSymbol::C => {
+            Centering::C => {
                 vec![
                     Translation::new(0.0, 0.0, 0.0),
                     Translation::new(0.5, 0.5, 0.0),
                 ]
             }
-            LatticeSymbol::I => {
+            Centering::I => {
                 vec![
                     Translation::new(0.0, 0.0, 0.0),
                     Translation::new(0.5, 0.5, 0.5),
                 ]
             }
-            LatticeSymbol::R => {
+            Centering::R => {
                 // obverse setting
                 vec![
                     Translation::new(0.0, 0.0, 0.0),
@@ -359,14 +358,14 @@ impl HallSymbol {
                     Translation::new(1.0 / 3.0, 2.0 / 3.0, 2.0 / 3.0),
                 ]
             }
-            LatticeSymbol::H => {
+            Centering::H => {
                 vec![
                     Translation::new(0.0, 0.0, 0.0),
                     Translation::new(2.0 / 3.0, 1.0 / 3.0, 0.0),
                     Translation::new(1.0 / 3.0, 2.0 / 3.0, 0.0),
                 ]
             }
-            LatticeSymbol::F => {
+            Centering::F => {
                 vec![
                     Translation::new(0.0, 0.0, 0.0),
                     Translation::new(0.0, 0.5, 0.5),
@@ -502,18 +501,18 @@ impl HallSymbol {
 mod tests {
     use rstest::rstest;
 
-    use super::{HallSymbol, LatticeSymbol};
+    use super::{Centering, HallSymbol};
     use crate::data::hall_symbol_database::HALL_SYMBOL_DATABASE;
 
     #[rstest]
-    #[case("P 2 2ab -1ab", LatticeSymbol::P, 0, 3, 8)] // No. 51
-    #[case("P 31 2 (0 0 4)", LatticeSymbol::P, 0, 2, 6)] // No. 151
-    #[case("P 65", LatticeSymbol::P, 0, 1, 6)] // No. 170
-    #[case("-P 6c 2c", LatticeSymbol::P, 0, 3, 24)] // No. 194
-    #[case("F 4d 2 3", LatticeSymbol::F, 3, 3, 24)] // No. 210
+    #[case("P 2 2ab -1ab", Centering::P, 0, 3, 8)] // No. 51
+    #[case("P 31 2 (0 0 4)", Centering::P, 0, 2, 6)] // No. 151
+    #[case("P 65", Centering::P, 0, 1, 6)] // No. 170
+    #[case("-P 6c 2c", Centering::P, 0, 3, 24)] // No. 194
+    #[case("F 4d 2 3", Centering::F, 3, 3, 24)] // No. 210
     fn test_hall_symbol_small(
         #[case] hall_symbol: &str,
-        #[case] lattice_symbol: LatticeSymbol,
+        #[case] lattice_symbol: Centering,
         #[case] num_centerings: usize,
         #[case] num_generators: usize,
         #[case] num_operations: usize, // without centerings
@@ -528,7 +527,7 @@ mod tests {
 
     #[test]
     fn test_hall_symbol_whole() {
-        for (_, _, _, _, hall_symbol, _, _) in HALL_SYMBOL_DATABASE {
+        for (_, _, _, _, hall_symbol, _, _, _) in HALL_SYMBOL_DATABASE {
             let hs = HallSymbol::new(hall_symbol).unwrap();
             assert_eq!(48 % hs.traverse().num_operations(), 0);
         }

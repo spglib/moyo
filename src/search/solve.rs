@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use nalgebra::Vector3;
 
@@ -7,7 +7,7 @@ use crate::base::operation::{Permutation, Rotation, Translation};
 
 /// Choose atomic specie with the smallest occurrence
 pub fn pivot_site_indices(numbers: &Vec<AtomicSpecie>) -> Vec<usize> {
-    let mut counter = HashMap::new();
+    let mut counter = BTreeMap::new();
     for number in numbers.iter() {
         let count = counter.entry(number).or_insert(0);
         *count += 1;

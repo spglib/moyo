@@ -1,12 +1,14 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashSet, VecDeque};
 
-use nalgebra::{Matrix3, Vector3};
+use itertools::Itertools;
+use nalgebra::{Dyn, OMatrix, OVector, U9};
 
+use crate::base::error::MoyoError;
 use crate::base::lattice::Lattice;
-use crate::base::operation::{AbstractOperations, Rotation};
+use crate::base::operation::Rotation;
 use crate::base::transformation::TransformationMatrix;
-use crate::data::arithmetic_crystal_class::ArithmeticNumber;
-use crate::data::classification::{GeometricCrystalClass, LaueClass};
+use crate::data::arithmetic_crystal_class::{ArithmeticNumber, ARITHMETIC_CRYSTAL_CLASS_DATABASE};
+use crate::data::classification::GeometricCrystalClass;
 use crate::data::hall_symbol::HallSymbol;
 use crate::math::integer_system::IntegerLinearSystem;
 
@@ -44,21 +46,12 @@ impl RotationType {
 #[derive(Debug)]
 /// Crystallographic point group without basis information
 pub struct AbstractPointGroup {
-    pub rotations: Vec<Rotation>,
-    pub generators: Vec<usize>,
+    pub generators: Vec<Rotation>,
 }
 
 impl AbstractPointGroup {
-    pub fn new(rotations: Vec<Rotation>) -> Self {
-        let generators = choose_generators(&rotations);
-        Self {
-            rotations,
-            generators,
-        }
-    }
-
-    pub fn order(&self) -> usize {
-        self.rotations.len()
+    pub fn new(generators: Vec<Rotation>) -> Self {
+        Self { generators }
     }
 
     /// Construct representative point group from geometric crystal class
@@ -105,8 +98,7 @@ impl AbstractPointGroup {
             GeometricCrystalClass::Oh => 517,
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number);
-        let operations = hall_symbol.traverse();
-        Self::new(operations.rotations)
+        Self::new(hall_symbol.generators.rotations)
     }
 
     pub fn from_arithmetic_crystal_class(arithmetic_number: ArithmeticNumber) -> Self {
@@ -195,8 +187,7 @@ impl AbstractPointGroup {
             _ => panic!("Invalid arithmetic number"),
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number);
-        let operations = hall_symbol.traverse();
-        Self::new(operations.rotations)
+        Self::new(hall_symbol.generators.rotations)
     }
 }
 
@@ -224,99 +215,108 @@ impl PointGroup {
     }
 
     /// Let P be the (unimodular) transformation matrix
-    /// P^-1 * self.rotations * P = PointGroup::from_arithmetic_crystal_class(arithmetic_number)
-    ///
-    /// Implement algorithm presented in "R. W. Grosse-Kunstleve. Algorithms for deriving crystallographic space-group information. Acta Cryst. A, 55, 383-395 (1999)".
-    /// Also refer to Table 1 of https://arxiv.org/pdf/1808.01590.pdf
-    pub fn match_arithmetic(&self) -> (ArithmeticNumber, TransformationMatrix) {
+    /// P^-1 * self.rotations * P = AbstractPointGroup::from_arithmetic_crystal_class(arithmetic_number)
+    pub fn match_arithmetic(&self) -> Result<(ArithmeticNumber, TransformationMatrix), MoyoError> {
         let rotation_types = self
             .rotations
             .iter()
             .map(|rotation| identify_rotation_type(rotation))
             .collect();
         let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types);
-        let laue_class = LaueClass::from_geometric_crystal_class(geometric_crystal_class);
 
-        // Roughly align basis vectors
-        let trans_mat = match laue_class {
-            // -1
-            LaueClass::Ci => TransformationMatrix::identity(),
-            // 2/m
-            LaueClass::C2h => {
-                let primaries = self.find_parallel_axes(RotationType::Rotation2);
-                let (primary, primary_rotation) = primaries[0];
-                let axes = find_perpendicular_axes(&primary_rotation);
-                TransformationMatrix::from_columns(&[primary, axes[0], axes[1]])
+        for (arithmetic_number_db, _, geometric_crystal_class_db, _) in
+            ARITHMETIC_CRYSTAL_CLASS_DATABASE.iter()
+        {
+            if geometric_crystal_class_db != &geometric_crystal_class {
+                continue;
             }
-            // mmm and m-3
-            LaueClass::D2h | LaueClass::Th => {
-                let primaries = self.find_parallel_axes(RotationType::Rotation2);
-                TransformationMatrix::from_columns(&[
-                    primaries[0].0,
-                    primaries[1].0,
-                    primaries[2].0,
-                ])
+            let point_group_db =
+                AbstractPointGroup::from_arithmetic_crystal_class(*arithmetic_number_db);
+            if let Some(trans_mat) = self.match_with_point_group(&point_group_db) {
+                return Ok((*arithmetic_number_db, trans_mat));
             }
-            // 4/m and 4/mmm
-            LaueClass::C4h | LaueClass::D4h => {
-                let primaries = self.find_parallel_axes(RotationType::Rotation4);
-                let (primary, primary_rotation) = primaries[0];
-                let axes = find_perpendicular_axes(&primary_rotation);
-                let secondary = axes[0];
-                TransformationMatrix::from_columns(&[
-                    primary,
-                    secondary,
-                    primary_rotation * secondary,
-                ])
-            }
-            // -3, -3m, 6/m, and 6/mmm
-            LaueClass::C3i | LaueClass::D3d | LaueClass::C6h | LaueClass::D6h => {
-                // Use Rotation3 for 6/m and 6/mmm to refer to hexagonal axes
-                let primaries = self.find_parallel_axes(RotationType::Rotation3);
-                let (primary, primary_rotation) = primaries[0];
-                let axes = find_perpendicular_axes(&primary_rotation);
-                let secondary = axes[0];
-                TransformationMatrix::from_columns(&[
-                    primary,
-                    secondary,
-                    primary_rotation * secondary,
-                ])
-            }
-            // m-3m
-            LaueClass::Oh => {
-                let primaries = self.find_parallel_axes(RotationType::Rotation4);
-                TransformationMatrix::from_columns(&[
-                    primaries[0].0,
-                    primaries[1].0,
-                    primaries[2].0,
-                ])
-            }
-        };
+        }
 
-        unimplemented!()
+        Err(MoyoError::ArithmeticCrystalClassIdentificationError)
     }
 
-    /// Find rotations whose proper correspondence with given `proper_rotation_type`
-    fn find_parallel_axes(
-        &self,
-        proper_rotation_type: RotationType,
-    ) -> Vec<(Vector3<i32>, Rotation)> {
-        let mut distinct_axes = HashMap::new();
-        for rotation in self.rotations.iter() {
-            let proper_rotation = get_proper_rotation(rotation);
-            let rotation_type = identify_rotation_type(&proper_rotation);
-            if rotation_type != proper_rotation_type {
-                continue;
-            }
+    fn match_with_point_group(&self, other: &AbstractPointGroup) -> Option<TransformationMatrix> {
+        let order = self.order();
 
-            // Sign of axis_direction is fixed by convention
-            let axis_direction = find_axis_direction(&proper_rotation);
-            if distinct_axes.contains_key(&axis_direction) {
-                continue;
+        // Try to map generators
+        let other_generator_rotation_types = other
+            .generators
+            .iter()
+            .map(|rotation| identify_rotation_type(rotation))
+            .collect::<Vec<_>>();
+        let rotation_types = self
+            .rotations
+            .iter()
+            .map(identify_rotation_type)
+            .collect::<Vec<_>>();
+        let candidates: Vec<Vec<usize>> = other_generator_rotation_types
+            .iter()
+            .map(|&rotation_type| {
+                (0..order)
+                    .filter(|&i| rotation_types[i] == rotation_type)
+                    .collect()
+            })
+            .collect();
+
+        for pivot in candidates
+            .iter()
+            .map(|v| v.iter())
+            .multi_cartesian_product()
+        {
+            // Solve self.rotations[self.rotations[pivot[i]]] * P = P * other.generators[i] (for all i)
+            // vec(A * P - P * B) = (I_3 \otimes A - B^T \otimes I_3) * vec(P)
+            let mut coeffs = OMatrix::<i32, Dyn, U9>::zeros(9 * other.generators.len());
+            for (k, &pk) in pivot.iter().enumerate() {
+                let rotation = self.rotations[*pk];
+                let other_rotation = other.generators[k];
+                let identity = Rotation::identity();
+                let adj =
+                    identity.kronecker(&rotation) - other_rotation.transpose().kronecker(&identity);
+                for i in 0..9 {
+                    for j in 0..9 {
+                        coeffs[(9 * k + i, j)] = adj[(i, j)];
+                    }
+                }
             }
-            distinct_axes.insert(axis_direction, proper_rotation);
+            let solution =
+                IntegerLinearSystem::new(&coeffs, &OVector::<i32, Dyn>::zeros(coeffs.nrows()));
+
+            // Search integer linear combination such that the transformation matrix is unimodular
+            if let Some(solution) = solution {
+                let trans_mat_basis: Vec<_> = solution
+                    .nullspace
+                    .row_iter()
+                    .map(|e| {
+                        TransformationMatrix::new(
+                            e[0], e[3], e[6], //
+                            e[1], e[4], e[7], //
+                            e[2], e[5], e[8], //
+                        )
+                    })
+                    .collect();
+                // Consider coefficients in [-2, 2], which seems to be sufficient for Delaunay reduced basis
+                for comb in (0..trans_mat_basis.len())
+                    .map(|_| -2..=2)
+                    .multi_cartesian_product()
+                {
+                    let mut trans_mat = TransformationMatrix::zeros();
+                    for (i, matrix) in trans_mat_basis.iter().enumerate() {
+                        trans_mat += comb[i] * matrix;
+                    }
+                    let det = trans_mat.map(|e| e as f64).determinant().round() as i32;
+                    if det == 1 {
+                        return Some(trans_mat);
+                    }
+                }
+            }
         }
-        distinct_axes.into_iter().collect()
+
+        None
     }
 }
 
@@ -337,57 +337,6 @@ fn identify_rotation_type(rotation: &Rotation) -> RotationType {
         (-2, -1) => RotationType::RotoInversion6,
         _ => unreachable!("Unknown rotation type"),
     }
-}
-
-fn get_proper_rotation(rotation: &Rotation) -> Rotation {
-    let proper_rotation = if rotation.map(|e| e as f64).determinant().round() > 0.0 {
-        rotation.clone()
-    } else {
-        -1 * rotation.clone()
-    };
-    proper_rotation
-}
-
-/// Algorithm in Section 4(a) of GK99
-/// Assume `rotation` is other than identify and inversion
-fn find_axis_direction(rotation: &Rotation) -> Vector3<i32> {
-    let proper_rotation = get_proper_rotation(rotation);
-
-    // Find axis direction by solving eigenvalue problem with eigenvalue 1
-    let solution =
-        IntegerLinearSystem::new(&(proper_rotation - Rotation::identity()), &Vector3::zeros());
-    assert_eq!(solution.rank, 2);
-    let mut axis_direction = solution.nullspace.row(0).clone_owned();
-
-    // Choose sign by convention
-    if axis_direction[2] < 0 {
-        axis_direction *= -1;
-    } else if (axis_direction[2] == 0) && (axis_direction[1] < 0) {
-        axis_direction *= -1;
-    } else if (axis_direction[2] == 0) && (axis_direction[1] == 0) && (axis_direction[0] < 0) {
-        axis_direction *= -1;
-    }
-
-    Vector3::new(axis_direction[0], axis_direction[1], axis_direction[2])
-}
-
-fn find_perpendicular_axes(proper_rotation: &Rotation) -> Vec<Vector3<i32>> {
-    let rotation_type = identify_rotation_type(proper_rotation);
-    assert!(rotation_type.value() >= 2);
-
-    let mut s = Matrix3::<i32>::zeros();
-    for _ in 0..rotation_type.value() {
-        s = proper_rotation * (s + Rotation::identity());
-    }
-    let solution = IntegerLinearSystem::new(&s, &Vector3::zeros());
-    assert_eq!(solution.rank, 1);
-
-    let axes = solution
-        .nullspace
-        .row_iter()
-        .map(|v| Vector3::new(v[0], v[1], v[2]))
-        .collect();
-    axes
 }
 
 /// Use look up table in Table 6 of https://arxiv.org/pdf/1808.01590.pdf
@@ -488,32 +437,36 @@ fn choose_generators(elements: &Vec<Rotation>) -> Vec<usize> {
 mod tests {
     use std::collections::{HashSet, VecDeque};
 
-    use nalgebra::{matrix, vector};
+    use nalgebra::Matrix3;
     use rstest::rstest;
 
-    use super::{find_axis_direction, find_perpendicular_axes, AbstractPointGroup, PointGroup};
+    use super::{AbstractPointGroup, PointGroup};
+    use crate::base::lattice::Lattice;
     use crate::base::operation::Rotation;
     use crate::data::classification::GeometricCrystalClass;
 
     fn traverse(generators: &Vec<Rotation>) -> Vec<Rotation> {
         let mut queue = VecDeque::new();
-        let mut group = HashSet::new();
+        let mut visited = HashSet::new();
+        let mut group = vec![];
 
         queue.push_back(Rotation::identity());
 
         while !queue.is_empty() {
             let element = queue.pop_front().unwrap();
-            if group.contains(&element) {
+            if visited.contains(&element) {
                 continue;
             }
-            group.insert(element.clone());
+            visited.insert(element.clone());
+            group.push(element.clone());
+
             for generator in generators {
                 let product = element * generator;
                 queue.push_back(product);
             }
         }
 
-        group.into_iter().collect()
+        group
     }
 
     #[rstest]
@@ -561,36 +514,18 @@ mod tests {
         #[case] order: usize,
     ) {
         let point_group = AbstractPointGroup::from_geometric_crystal_class(geometric_crystal_class);
-        assert_eq!(point_group.order(), order);
-
-        let elements = traverse(&point_group.rotations);
-        assert_eq!(elements.len(), order);
+        let rotations = traverse(&point_group.generators);
+        assert_eq!(rotations.len(), order);
     }
 
     #[test]
-    fn test_find_axis_direction() {
-        // three-fold rotation
-        let rotation = matrix![
-            0, -1, 0;
-            0, 0, 1;
-            -1, 0, 0;
-        ];
-        let axis = find_axis_direction(&rotation);
-        assert_eq!(axis, vector![-1, 1, 1]);
-    }
+    fn test_point_group_match() {
+        let abstract_point_group =
+            AbstractPointGroup::from_geometric_crystal_class(GeometricCrystalClass::Oh);
 
-    #[test]
-    fn test_find_perpendicular_axes() {
-        // three-fold rotation
-        let rotation = matrix![
-            0, -1, 0;
-            0, 0, 1;
-            -1, 0, 0;
-        ];
-        let axes = find_perpendicular_axes(&rotation);
-        assert_eq!(axes.len(), 2);
-        for axis in axes.iter() {
-            assert_eq!(axis.dot(&vector![-1, 1, 1]), 0);
-        }
+        let rotations = traverse(&abstract_point_group.generators);
+        let point_group = PointGroup::new(Lattice::new(Matrix3::identity()), rotations);
+        let result = point_group.match_arithmetic().unwrap();
+        dbg!(&result);
     }
 }

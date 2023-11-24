@@ -230,13 +230,14 @@ def main(spg_input):
         .str.rstrip(" ")
     )
     df_hall.drop(columns=["HM_symbol_short_all"], inplace=True)
+    df_hall["centering"] = df_hall['hall_symbol'].apply(lambda s: f"Centering::{s[0]}" if s[0] != '-' else f"Centering::{s[1]}")
 
     df_arith = number_to_arithmetic_crystal_class()
 
     df = pd.merge(df_hall, df_arith, on="number", how="left")
 
     for _, row in df.iterrows():
-        print(f'({row["hall_number"]}, {row["number"]}, {row["arithmetic_number"]}, \"{row["setting"]}\", \"{row["hall_symbol"]}\", \"{row["HM_symbol_short"]}\", \"{row["HM_symbol_full"]}\"),')
+        print(f'({row["hall_number"]}, {row["number"]}, {row["arithmetic_number"]}, \"{row["setting"]}\", \"{row["hall_symbol"]}\", \"{row["HM_symbol_short"]}\", \"{row["HM_symbol_full"]}\", {row["centering"]}),')
 
 
 if __name__ == "__main__":

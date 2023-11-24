@@ -1,5 +1,5 @@
 use nalgebra::base::allocator::Allocator;
-use nalgebra::{DefaultAllocator, Dim, Dyn, OMatrix, OVector, U1};
+use nalgebra::{DefaultAllocator, Dim, DimMin, Dyn, OMatrix, OVector, U1};
 
 use super::snf::SNF;
 
@@ -22,14 +22,19 @@ where
 {
     /// Solve a * x = b
     /// If no solution, return None
-    pub fn new<M: Dim>(a: &OMatrix<i32, M, N>, b: &OVector<i32, M>) -> Option<Self>
+    pub fn new<M: DimMin<N>>(a: &OMatrix<i32, M, N>, b: &OVector<i32, M>) -> Option<Self>
     where
         DefaultAllocator:
             Allocator<i32, M, N> + Allocator<i32, M, M> + Allocator<i32, N, N> + Allocator<i32, M>,
     {
         let (m, n) = a.shape_generic();
         let snf = SNF::new(a);
-        let rank = (0..m.value()).filter(|&i| snf.d[(i, i)] != 0).count();
+        let rank = (0..m.min(n).value())
+            .filter(|&i| snf.d[(i, i)] != 0)
+            .count();
+        if rank == n.value() {
+            return None;
+        }
 
         // Solve snf.d * y = snf.l * b (x = snf.r * y)
         let mut y = OVector::zeros_generic(n, U1);

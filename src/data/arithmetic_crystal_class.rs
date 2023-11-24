@@ -1,16 +1,17 @@
 use crate::data::classification::{BravaisClass, GeometricCrystalClass};
 
 pub type ArithmeticNumber = i32;
+pub type ArithmeticCrystalClassSymbol = &'static str;
 
-type ArithmeticCrystalClassEntry = (
+pub type ArithmeticCrystalClassEntry = (
     ArithmeticNumber,
-    &'static str,
+    ArithmeticCrystalClassSymbol,
     GeometricCrystalClass,
     BravaisClass,
 );
 
 // Ordered the same as https://dictionary.iucr.org/Arithmetic_crystal_class
-const ARITHMETIC_CRYSTAL_CLASS_DATABASE: [ArithmeticCrystalClassEntry; 73] = [
+pub const ARITHMETIC_CRYSTAL_CLASS_DATABASE: [ArithmeticCrystalClassEntry; 73] = [
     // Crystal system: triclinic
     (1, "1P", GeometricCrystalClass::C1, BravaisClass::aP),
     (2, "-1P", GeometricCrystalClass::Ci, BravaisClass::aP),
