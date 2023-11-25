@@ -27,11 +27,11 @@ where
 
         // Process the `s`th row
         for s in 0..m.value() {
-            if (s..n.value()).all(|j| h[(s, j)] == 0) {
-                continue;
-            }
-
             loop {
+                if (s..n.value()).all(|j| h[(s, j)] == 0) {
+                    break;
+                }
+
                 // Choose pivot column with the smallest absolute value
                 let pivot = (s..n.value())
                     .filter(|&j| h[(s, j)] != 0)

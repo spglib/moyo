@@ -1,8 +1,10 @@
+use strum_macros::EnumIter;
+
 /// ===========================================================================
 /// Classification based on point group
 /// ===========================================================================
 /// c.f. Table 3.2.3.2 of ITA(6th)
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 pub enum GeometricCrystalClass {
     // Triclinic
     C1, // 1

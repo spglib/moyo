@@ -16,6 +16,8 @@ itertools = "0.11.0"
 approx = "0.5.1"
 thiserror = "1.0"
 union-find = "0.4.2"
+strum = "0.25"
+strum_macros = "0.25"
 
 [dev-dependencies]
 rand = "0.8.5"

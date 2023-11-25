@@ -1,6 +1,6 @@
 use std::collections::{HashMap, VecDeque};
 
-use nalgebra::{matrix, Vector3};
+use nalgebra::{matrix, Matrix3, Vector3};
 
 use super::hall_symbol_database::{HallNumber, HALL_SYMBOL_DATABASE};
 use crate::base::operation::{AbstractOperations, Rotation, Translation};
@@ -36,8 +36,49 @@ pub enum Centering {
     C, // C-face centered
     I, // Body centered
     R, // Rhombohedral (obverse setting)
-    H, // Hexagonal
     F, // Face centered
+}
+
+/// https://github.com/spglib/spglib/blob/39a95560dd831c2d16f162126921ac1e519efa31/src/spacegroup.c#L373-L384
+pub fn get_transformation_matrix(centering: Centering) -> Matrix3<f64> {
+    match centering {
+        Centering::P => matrix![
+            1.0, 0.0, 0.0;
+            0.0, 1.0, 0.0;
+            0.0, 0.0, 1.0;
+        ],
+        Centering::A => matrix![
+            1.0, 0.0, 0.0;
+            0.0, 1.0 / 2.0, -1.0 / 2.0;
+            0.0, 1.0 / 2.0, 1.0 / 2.0;
+        ],
+        Centering::B => matrix![
+            1.0 / 2.0, 0.0, 1.0 / 2.0;
+            0.0, 1.0, 0.0;
+            -1.0 / 2.0, 0.0, 1.0 / 2.0;
+        ],
+        Centering::C => matrix![
+            1.0 / 2.0, 1.0 / 2.0, 0.0;
+            -1.0 / 2.0, 1.0 / 2.0, 0.0;
+            0.0, 0.0, 1.0;
+        ],
+        Centering::I => matrix![
+            -1.0 / 2.0, 1.0 / 2.0, 1.0 / 2.0;
+            1.0 / 2.0, -1.0 / 2.0, 1.0 / 2.0;
+            1.0 / 2.0, 1.0 / 2.0, -1.0 / 2.0;
+        ],
+        // obverse setting
+        Centering::R => matrix![
+            2.0 / 3.0, -1.0 / 3.0, -1.0 / 3.0;
+            1.0 / 3.0, 1.0 / 3.0, -2.0 / 3.0;
+            1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0;
+        ],
+        Centering::F => matrix![
+            0.0, 1.0 / 2.0, 1.0 / 2.0;
+            1.0 / 2.0, 0.0, 1.0 / 2.0;
+            1.0 / 2.0, 1.0 / 2.0, 0.0;
+        ],
+    }
 }
 
 impl HallSymbol {
@@ -175,7 +216,6 @@ impl HallSymbol {
             'C' => Centering::C,
             'I' => Centering::I,
             'R' => Centering::R,
-            'H' => Centering::H,
             'F' => Centering::F,
             _ => return None,
         };
@@ -358,13 +398,13 @@ impl HallSymbol {
                     Translation::new(1.0 / 3.0, 2.0 / 3.0, 2.0 / 3.0),
                 ]
             }
-            Centering::H => {
-                vec![
-                    Translation::new(0.0, 0.0, 0.0),
-                    Translation::new(2.0 / 3.0, 1.0 / 3.0, 0.0),
-                    Translation::new(1.0 / 3.0, 2.0 / 3.0, 0.0),
-                ]
-            }
+            // Centering::H => {
+            //     vec![
+            //         Translation::new(0.0, 0.0, 0.0),
+            //         Translation::new(2.0 / 3.0, 1.0 / 3.0, 0.0),
+            //         Translation::new(1.0 / 3.0, 2.0 / 3.0, 0.0),
+            //     ]
+            // }
             Centering::F => {
                 vec![
                     Translation::new(0.0, 0.0, 0.0),

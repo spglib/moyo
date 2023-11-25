@@ -4,12 +4,11 @@ use itertools::Itertools;
 use nalgebra::{Dyn, OMatrix, OVector, U9};
 
 use crate::base::error::MoyoError;
-use crate::base::lattice::Lattice;
 use crate::base::operation::Rotation;
 use crate::base::transformation::TransformationMatrix;
 use crate::data::arithmetic_crystal_class::{ArithmeticNumber, ARITHMETIC_CRYSTAL_CLASS_DATABASE};
 use crate::data::classification::GeometricCrystalClass;
-use crate::data::hall_symbol::HallSymbol;
+use crate::data::hall_symbol::{get_transformation_matrix, Centering, HallSymbol};
 use crate::math::integer_system::IntegerLinearSystem;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -44,14 +43,18 @@ impl RotationType {
 }
 
 #[derive(Debug)]
-/// Crystallographic point group without basis information
-pub struct AbstractPointGroup {
+/// Specific crystallographic point group in database
+pub struct PointGroupRepresentative {
     pub generators: Vec<Rotation>,
+    pub centering: Centering,
 }
 
-impl AbstractPointGroup {
-    pub fn new(generators: Vec<Rotation>) -> Self {
-        Self { generators }
+impl PointGroupRepresentative {
+    fn new(generators: Vec<Rotation>, centering: Centering) -> Self {
+        Self {
+            generators,
+            centering,
+        }
     }
 
     /// Construct representative point group from geometric crystal class
@@ -98,7 +101,7 @@ impl AbstractPointGroup {
             GeometricCrystalClass::Oh => 517,
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number);
-        Self::new(hall_symbol.generators.rotations)
+        Self::new(hall_symbol.generators.rotations, hall_symbol.lattice_symbol)
     }
 
     pub fn from_arithmetic_crystal_class(arithmetic_number: ArithmeticNumber) -> Self {
@@ -187,27 +190,32 @@ impl AbstractPointGroup {
             _ => panic!("Invalid arithmetic number"),
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number);
-        Self::new(hall_symbol.generators.rotations)
+        Self::new(hall_symbol.generators.rotations, hall_symbol.lattice_symbol)
+    }
+
+    pub fn primitive_generators(&self) -> Vec<Rotation> {
+        let prim_trans_mat = get_transformation_matrix(self.centering);
+        let prim_trans_mat_inv = prim_trans_mat.try_inverse().unwrap();
+        self.generators
+            .iter()
+            .map(|g| {
+                let prim_g = prim_trans_mat_inv * g.map(|e| e as f64) * prim_trans_mat;
+                prim_g.map(|e| e.round() as i32)
+            })
+            .collect()
     }
 }
 
 /// Crystallographic point group
 #[derive(Debug)]
 pub struct PointGroup {
-    pub lattice: Lattice,
     pub rotations: Vec<Rotation>,
-    pub generators: Vec<usize>,
 }
 
 /// Crystallographic point group
 impl PointGroup {
-    pub fn new(lattice: Lattice, rotations: Vec<Rotation>) -> Self {
-        let generators = choose_generators(&rotations);
-        Self {
-            lattice,
-            rotations,
-            generators,
-        }
+    pub fn new(rotations: Vec<Rotation>) -> Self {
+        Self { rotations }
     }
 
     pub fn order(&self) -> usize {
@@ -224,15 +232,26 @@ impl PointGroup {
             .collect();
         let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types);
 
+        // Skip triclinic cases as trivial
+        if geometric_crystal_class == GeometricCrystalClass::C1 {
+            return Ok((1, TransformationMatrix::identity()));
+        }
+        if geometric_crystal_class == GeometricCrystalClass::Ci {
+            return Ok((2, TransformationMatrix::identity()));
+        }
+
         for (arithmetic_number_db, _, geometric_crystal_class_db, _) in
             ARITHMETIC_CRYSTAL_CLASS_DATABASE.iter()
         {
             if geometric_crystal_class_db != &geometric_crystal_class {
                 continue;
             }
+
             let point_group_db =
-                AbstractPointGroup::from_arithmetic_crystal_class(*arithmetic_number_db);
-            if let Some(trans_mat) = self.match_with_point_group(&point_group_db) {
+                PointGroupRepresentative::from_arithmetic_crystal_class(*arithmetic_number_db);
+            let other_prim_generators = point_group_db.primitive_generators();
+
+            if let Some(trans_mat) = self.match_with_point_group(&other_prim_generators) {
                 return Ok((*arithmetic_number_db, trans_mat));
             }
         }
@@ -240,12 +259,14 @@ impl PointGroup {
         Err(MoyoError::ArithmeticCrystalClassIdentificationError)
     }
 
-    fn match_with_point_group(&self, other: &AbstractPointGroup) -> Option<TransformationMatrix> {
+    fn match_with_point_group(
+        &self,
+        other_prim_generators: &Vec<Rotation>,
+    ) -> Option<TransformationMatrix> {
         let order = self.order();
 
         // Try to map generators
-        let other_generator_rotation_types = other
-            .generators
+        let other_generator_rotation_types = other_prim_generators
             .iter()
             .map(|rotation| identify_rotation_type(rotation))
             .collect::<Vec<_>>();
@@ -270,10 +291,10 @@ impl PointGroup {
         {
             // Solve self.rotations[self.rotations[pivot[i]]] * P = P * other.generators[i] (for all i)
             // vec(A * P - P * B) = (I_3 \otimes A - B^T \otimes I_3) * vec(P)
-            let mut coeffs = OMatrix::<i32, Dyn, U9>::zeros(9 * other.generators.len());
+            let mut coeffs = OMatrix::<i32, Dyn, U9>::zeros(9 * other_prim_generators.len());
             for (k, &pk) in pivot.iter().enumerate() {
                 let rotation = self.rotations[*pk];
-                let other_rotation = other.generators[k];
+                let other_rotation = other_prim_generators[k];
                 let identity = Rotation::identity();
                 let adj =
                     identity.kronecker(&rotation) - other_rotation.transpose().kronecker(&identity);
@@ -299,18 +320,29 @@ impl PointGroup {
                         )
                     })
                     .collect();
-                // Consider coefficients in [-2, 2], which seems to be sufficient for Delaunay reduced basis
-                for comb in (0..trans_mat_basis.len())
-                    .map(|_| -2..=2)
-                    .multi_cartesian_product()
-                {
-                    let mut trans_mat = TransformationMatrix::zeros();
-                    for (i, matrix) in trans_mat_basis.iter().enumerate() {
-                        trans_mat += comb[i] * matrix;
-                    }
+
+                if trans_mat_basis.len() == 1 {
+                    let trans_mat = trans_mat_basis[0];
                     let det = trans_mat.map(|e| e as f64).determinant().round() as i32;
                     if det == 1 {
                         return Some(trans_mat);
+                    } else if det == -1 {
+                        return Some(-1 * trans_mat);
+                    }
+                } else {
+                    // Consider coefficients in [-2, 2], which will be sufficient for Delaunay reduced basis
+                    for comb in (0..trans_mat_basis.len())
+                        .map(|_| -2..=2)
+                        .multi_cartesian_product()
+                    {
+                        let mut trans_mat = TransformationMatrix::zeros();
+                        for (i, matrix) in trans_mat_basis.iter().enumerate() {
+                            trans_mat += comb[i] * matrix;
+                        }
+                        let det = trans_mat.map(|e| e as f64).determinant().round() as i32;
+                        if det == 1 {
+                            return Some(trans_mat);
+                        }
                     }
                 }
             }
@@ -437,11 +469,9 @@ fn choose_generators(elements: &Vec<Rotation>) -> Vec<usize> {
 mod tests {
     use std::collections::{HashSet, VecDeque};
 
-    use nalgebra::Matrix3;
-    use rstest::rstest;
+    use strum::IntoEnumIterator;
 
-    use super::{AbstractPointGroup, PointGroup};
-    use crate::base::lattice::Lattice;
+    use super::{PointGroup, PointGroupRepresentative};
     use crate::base::operation::Rotation;
     use crate::data::classification::GeometricCrystalClass;
 
@@ -469,63 +499,73 @@ mod tests {
         group
     }
 
-    #[rstest]
+    fn order(geometric_crystal_class: GeometricCrystalClass) -> usize {
+        match geometric_crystal_class {
+            // Triclinic
+            GeometricCrystalClass::C1 => 1,
+            GeometricCrystalClass::Ci => 2,
+            // Monoclinic
+            GeometricCrystalClass::C2 => 2,
+            GeometricCrystalClass::C1h => 2,
+            GeometricCrystalClass::C2h => 4,
+            // Orthorhombic
+            GeometricCrystalClass::D2 => 4,
+            GeometricCrystalClass::C2v => 4,
+            GeometricCrystalClass::D2h => 8,
+            // Tetragonal
+            GeometricCrystalClass::C4 => 4,
+            GeometricCrystalClass::S4 => 4,
+            GeometricCrystalClass::C4h => 8,
+            GeometricCrystalClass::D4 => 8,
+            GeometricCrystalClass::C4v => 8,
+            GeometricCrystalClass::D2d => 8,
+            GeometricCrystalClass::D4h => 16,
+            // Trigonal
+            GeometricCrystalClass::C3 => 3,
+            GeometricCrystalClass::C3i => 6,
+            GeometricCrystalClass::D3 => 6,
+            GeometricCrystalClass::C3v => 6,
+            GeometricCrystalClass::D3d => 12,
+            // Hexagonal
+            GeometricCrystalClass::C6 => 6,
+            GeometricCrystalClass::C3h => 6,
+            GeometricCrystalClass::C6h => 12,
+            GeometricCrystalClass::D6 => 12,
+            GeometricCrystalClass::C6v => 12,
+            GeometricCrystalClass::D3h => 12,
+            GeometricCrystalClass::D6h => 24,
+            // Cubic
+            GeometricCrystalClass::T => 12,
+            GeometricCrystalClass::Td => 24,
+            GeometricCrystalClass::O => 24,
+            GeometricCrystalClass::Th => 24,
+            GeometricCrystalClass::Oh => 48,
+        }
+    }
+
+    #[test]
     // Triclinic
-    #[case(GeometricCrystalClass::C1, 1)]
-    #[case(GeometricCrystalClass::Ci, 2)]
-    // Monoclinic
-    #[case(GeometricCrystalClass::C2, 2)]
-    #[case(GeometricCrystalClass::C1h, 2)]
-    #[case(GeometricCrystalClass::C2h, 4)]
-    // Orthorhombic
-    #[case(GeometricCrystalClass::D2, 4)]
-    #[case(GeometricCrystalClass::C2v, 4)]
-    #[case(GeometricCrystalClass::D2h, 8)]
-    // Tetragonal
-    #[case(GeometricCrystalClass::C4, 4)]
-    #[case(GeometricCrystalClass::S4, 4)]
-    #[case(GeometricCrystalClass::C4h, 8)]
-    #[case(GeometricCrystalClass::D4, 8)]
-    #[case(GeometricCrystalClass::C4v, 8)]
-    #[case(GeometricCrystalClass::D2d, 8)]
-    #[case(GeometricCrystalClass::D4h, 16)]
-    // Trigonal
-    #[case(GeometricCrystalClass::C3, 3)]
-    #[case(GeometricCrystalClass::C3i, 6)]
-    #[case(GeometricCrystalClass::D3, 6)]
-    #[case(GeometricCrystalClass::C3v, 6)]
-    #[case(GeometricCrystalClass::D3d, 12)]
-    // Hexagonal
-    #[case(GeometricCrystalClass::C6, 6)]
-    #[case(GeometricCrystalClass::C3h, 6)]
-    #[case(GeometricCrystalClass::C6h, 12)]
-    #[case(GeometricCrystalClass::D6, 12)]
-    #[case(GeometricCrystalClass::C6v, 12)]
-    #[case(GeometricCrystalClass::D3h, 12)]
-    #[case(GeometricCrystalClass::D6h, 24)]
-    // Cubic
-    #[case(GeometricCrystalClass::T, 12)]
-    #[case(GeometricCrystalClass::Th, 24)]
-    #[case(GeometricCrystalClass::O, 24)]
-    #[case(GeometricCrystalClass::Td, 24)]
-    #[case(GeometricCrystalClass::Oh, 48)]
-    fn test_point_group_representative(
-        #[case] geometric_crystal_class: GeometricCrystalClass,
-        #[case] order: usize,
-    ) {
-        let point_group = AbstractPointGroup::from_geometric_crystal_class(geometric_crystal_class);
-        let rotations = traverse(&point_group.generators);
-        assert_eq!(rotations.len(), order);
+    fn test_point_group_representative() {
+        for geometric_crystal_class in GeometricCrystalClass::iter() {
+            let point_group =
+                PointGroupRepresentative::from_geometric_crystal_class(geometric_crystal_class);
+            let rotations = traverse(&point_group.generators);
+            assert_eq!(rotations.len(), order(geometric_crystal_class));
+        }
     }
 
     #[test]
     fn test_point_group_match() {
-        let abstract_point_group =
-            AbstractPointGroup::from_geometric_crystal_class(GeometricCrystalClass::Oh);
+        for arithmetic_number in 1..=58 {
+            // for arithmetic_number in [66] {
+            let point_group_db =
+                PointGroupRepresentative::from_arithmetic_crystal_class(arithmetic_number);
+            let primitive_generators = point_group_db.primitive_generators();
+            let rotations = traverse(&primitive_generators);
+            let point_group = PointGroup::new(rotations);
 
-        let rotations = traverse(&abstract_point_group.generators);
-        let point_group = PointGroup::new(Lattice::new(Matrix3::identity()), rotations);
-        let result = point_group.match_arithmetic().unwrap();
-        dbg!(&result);
+            let (arithmetic_number_actual, _) = point_group.match_arithmetic().unwrap();
+            assert_eq!(arithmetic_number_actual, arithmetic_number);
+        }
     }
 }

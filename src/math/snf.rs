@@ -1,5 +1,5 @@
 use nalgebra::base::allocator::Allocator;
-use nalgebra::{DefaultAllocator, Dim, OMatrix};
+use nalgebra::{DefaultAllocator, Dim, DimMin, OMatrix};
 
 use super::elementary::{
     adding_column_matrix, adding_row_matrix, changing_column_sign_matrix, swapping_column_matrix,
@@ -8,7 +8,7 @@ use super::elementary::{
 
 /// Hermite normal form of MxN matrix such that d = l * basis * r
 #[derive(Debug)]
-pub struct SNF<M: Dim, N: Dim>
+pub struct SNF<M: DimMin<N>, N: Dim>
 where
     DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, M, M> + Allocator<i32, N, N>,
 {
@@ -17,7 +17,7 @@ where
     pub r: OMatrix<i32, N, N>,
 }
 
-impl<M: Dim, N: Dim> SNF<M, N>
+impl<M: DimMin<N>, N: Dim> SNF<M, N>
 where
     DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, M, M> + Allocator<i32, N, N>,
 {
@@ -31,12 +31,15 @@ where
         let mut r = OMatrix::identity_generic(n, n);
 
         // Process the `s`th column and row
-        for s in 0..usize::min(m.value(), n.value()) {
-            if (s..m.value()).all(|i| d[(i, s)] == 0) && (s..n.value()).all(|j| d[(s, j)] == 0) {
-                continue;
-            }
-
+        for s in 0..m.min(n).value() {
             loop {
+                if (s..m.value())
+                    .flat_map(|i| (s..n.value()).map(move |j| (i, j)))
+                    .all(|(i, j)| d[(i, j)] == 0)
+                {
+                    break;
+                }
+
                 // Choose pivot element with the smallest absolute value
                 let pivot = (s..m.value())
                     .flat_map(|i| (s..n.value()).map(move |j| (i, j)))
@@ -61,10 +64,7 @@ where
 
                 // Eliminate (*, s) entries
                 let mut update = false;
-                for i in 0..m.value() {
-                    if i == s {
-                        continue;
-                    }
+                for i in s + 1..m.value() {
                     let k = d[(i, s)] / d[(s, s)];
 
                     if k != 0 {
@@ -78,10 +78,7 @@ where
                 }
 
                 // Eliminate (s, *) entries
-                for j in 0..n.value() {
-                    if j == s {
-                        continue;
-                    }
+                for j in s + 1..n.value() {
                     let k = d[(s, j)] / d[(s, s)];
 
                     if k != 0 {
