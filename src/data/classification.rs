@@ -47,7 +47,7 @@ pub enum GeometricCrystalClass {
     Oh, // m-3m
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 pub enum LaueClass {
     Ci,  // -1
     C2h, // 2/m,
@@ -98,7 +98,7 @@ impl LaueClass {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 pub enum CrystalSystem {
     Triclinic,
     Monoclinic,
@@ -159,7 +159,7 @@ impl CrystalSystem {
 /// ===========================================================================
 /// Reuse notations for Bravais type of lattices
 #[allow(non_camel_case_types)]
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 pub enum BravaisClass {
     aP,
     mP,
@@ -177,7 +177,7 @@ pub enum BravaisClass {
     cI,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 pub enum LatticeSystem {
     // (lattice system, holohedry)
     Triclinic,    // -1
@@ -209,7 +209,7 @@ impl LatticeSystem {
 /// Other classification
 /// ===========================================================================
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 pub enum CrystalFamily {
     Triclinic,
     Monoclinic,

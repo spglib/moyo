@@ -1,10 +1,12 @@
 use std::collections::{HashMap, VecDeque};
 
 use nalgebra::{matrix, Matrix3, Vector3};
+use strum_macros::EnumIter;
 
 use super::hall_symbol_database::{HallNumber, HALL_SYMBOL_DATABASE};
 use crate::base::operation::{AbstractOperations, Rotation, Translation};
 use crate::base::tolerance::EPS;
+use crate::base::transformation::TransformationMatrix;
 
 const MAX_DENOMINATOR: i32 = 12;
 
@@ -28,7 +30,7 @@ pub struct HallSymbol {
     pub generators: AbstractOperations,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, EnumIter)]
 pub enum Centering {
     P, // Primitive
     A, // A-face centered
@@ -39,45 +41,63 @@ pub enum Centering {
     F, // Face centered
 }
 
-/// https://github.com/spglib/spglib/blob/39a95560dd831c2d16f162126921ac1e519efa31/src/spacegroup.c#L373-L384
-pub fn get_transformation_matrix(centering: Centering) -> Matrix3<f64> {
-    match centering {
-        Centering::P => matrix![
-            1.0, 0.0, 0.0;
-            0.0, 1.0, 0.0;
-            0.0, 0.0, 1.0;
-        ],
-        Centering::A => matrix![
-            1.0, 0.0, 0.0;
-            0.0, 1.0 / 2.0, -1.0 / 2.0;
-            0.0, 1.0 / 2.0, 1.0 / 2.0;
-        ],
-        Centering::B => matrix![
-            1.0 / 2.0, 0.0, 1.0 / 2.0;
-            0.0, 1.0, 0.0;
-            -1.0 / 2.0, 0.0, 1.0 / 2.0;
-        ],
-        Centering::C => matrix![
-            1.0 / 2.0, 1.0 / 2.0, 0.0;
-            -1.0 / 2.0, 1.0 / 2.0, 0.0;
-            0.0, 0.0, 1.0;
-        ],
-        Centering::I => matrix![
-            -1.0 / 2.0, 1.0 / 2.0, 1.0 / 2.0;
-            1.0 / 2.0, -1.0 / 2.0, 1.0 / 2.0;
-            1.0 / 2.0, 1.0 / 2.0, -1.0 / 2.0;
-        ],
-        // obverse setting
-        Centering::R => matrix![
-            2.0 / 3.0, -1.0 / 3.0, -1.0 / 3.0;
-            1.0 / 3.0, 1.0 / 3.0, -2.0 / 3.0;
-            1.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0;
-        ],
-        Centering::F => matrix![
-            0.0, 1.0 / 2.0, 1.0 / 2.0;
-            1.0 / 2.0, 0.0, 1.0 / 2.0;
-            1.0 / 2.0, 1.0 / 2.0, 0.0;
-        ],
+impl Centering {
+    pub fn order(&self) -> usize {
+        match self {
+            Centering::P => 1,
+            Centering::A => 2,
+            Centering::B => 2,
+            Centering::C => 2,
+            Centering::I => 2,
+            Centering::R => 3,
+            Centering::F => 4,
+        }
+    }
+
+    /// Inverse matrices of https://github.com/spglib/spglib/blob/39a95560dd831c2d16f162126921ac1e519efa31/src/spacegroup.c#L373-L384
+    /// Transformation matrix from primitive to conventional cell.
+    pub fn transformation_matrix(&self) -> TransformationMatrix {
+        match self {
+            Centering::P => TransformationMatrix::identity(),
+            Centering::A => TransformationMatrix::new(
+                1, 0, 0, //
+                0, 1, 1, //
+                0, -1, 1, //
+            ),
+            Centering::B => TransformationMatrix::new(
+                1, 0, -1, //
+                0, 1, 0, //
+                1, 0, 1, //
+            ),
+            Centering::C => TransformationMatrix::new(
+                1, -1, 0, //
+                1, 1, 0, //
+                0, 0, 1, //
+            ),
+            Centering::R => TransformationMatrix::new(
+                1, 0, 1, //
+                -1, 1, 1, //
+                0, -1, 1, //
+            ),
+            Centering::I => TransformationMatrix::new(
+                0, 1, 1, //
+                1, 0, 1, //
+                1, 1, 0, //
+            ),
+            Centering::F => TransformationMatrix::new(
+                -1, 1, 1, //
+                1, -1, 1, //
+                1, 1, -1, //
+            ),
+        }
+    }
+
+    /// Transformation matrix from conventional to primitive cell.
+    pub fn inverse(&self) -> Matrix3<f64> {
+        self.transformation_matrix()
+            .map(|e| e as f64)
+            .try_inverse()
+            .unwrap()
     }
 }
 
@@ -540,6 +560,7 @@ impl HallSymbol {
 #[cfg(test)]
 mod tests {
     use rstest::rstest;
+    use strum::IntoEnumIterator;
 
     use super::{Centering, HallSymbol};
     use crate::data::hall_symbol_database::HALL_SYMBOL_DATABASE;
@@ -570,6 +591,15 @@ mod tests {
         for (_, _, _, _, hall_symbol, _, _, _) in HALL_SYMBOL_DATABASE {
             let hs = HallSymbol::new(hall_symbol).unwrap();
             assert_eq!(48 % hs.traverse().num_operations(), 0);
+        }
+    }
+
+    #[test]
+    fn test_conventional_transformation_matrix() {
+        for centering in Centering::iter() {
+            let prim_trans_mat = centering.transformation_matrix();
+            let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
+            assert_eq!(det, centering.order() as i32);
         }
     }
 }
