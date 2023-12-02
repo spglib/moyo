@@ -237,7 +237,7 @@ def main(spg_input):
     df = pd.merge(df_hall, df_arith, on="number", how="left")
 
     for _, row in df.iterrows():
-        print(f'({row["hall_number"]}, {row["number"]}, {row["arithmetic_number"]}, \"{row["setting"]}\", \"{row["hall_symbol"]}\", \"{row["HM_symbol_short"]}\", \"{row["HM_symbol_full"]}\", {row["centering"]}),')
+        print(f'HallSymbolEntry::new({row["hall_number"]}, {row["number"]}, {row["arithmetic_number"]}, \"{row["setting"]}\", \"{row["hall_symbol"]}\", \"{row["HM_symbol_short"]}\", \"{row["HM_symbol_full"]}\", {row["centering"]}),')
 
 
 if __name__ == "__main__":

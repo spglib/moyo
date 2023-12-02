@@ -3,78 +3,103 @@ use super::hall_symbol::Centering;
 
 pub type Number = i32;
 pub type HallNumber = i32;
-type HallSymbolEntry = (
-    HallNumber,
-    Number,
-    ArithmeticNumber,
-    &'static str, // setting
-    &'static str, // Hall symbol
-    &'static str, // HM symbol (short)
-    &'static str, // HM symbol (full)
-    Centering,
-);
+
+pub struct HallSymbolEntry {
+    pub hall_number: HallNumber,
+    pub number: Number,
+    pub arithmetic_number: ArithmeticNumber,
+    pub setting: &'static str,     // setting
+    pub hall_symbol: &'static str, // Hall symbol
+    pub hm_short: &'static str,    // HM symbol HallSymbolEntry::new(short)
+    pub hm_full: &'static str,     // HM symbol HallSymbolEntry::new(full)
+    pub centering: Centering,
+}
+
+impl HallSymbolEntry {
+    const fn new(
+        hall_number: HallNumber,
+        number: Number,
+        arithmetic_number: ArithmeticNumber,
+        setting: &'static str,
+        hall_symbol: &'static str,
+        hm_short: &'static str,
+        hm_full: &'static str,
+        centering: Centering,
+    ) -> Self {
+        Self {
+            hall_number,
+            number,
+            arithmetic_number,
+            setting,
+            hall_symbol,
+            hm_short,
+            hm_full,
+            centering,
+        }
+    }
+}
 
 pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
-    (1, 1, 1, "", "P 1", "P 1", "P 1", Centering::P),
-    (2, 2, 2, "", "-P 1", "P -1", "P -1", Centering::P),
-    (3, 3, 3, "b", "P 2y", "P 2", "P 1 2 1", Centering::P),
-    (4, 3, 3, "c", "P 2", "P 2", "P 1 1 2", Centering::P),
-    (5, 3, 3, "a", "P 2x", "P 2", "P 2 1 1", Centering::P),
-    (6, 4, 3, "b", "P 2yb", "P 2_1", "P 1 2_1 1", Centering::P),
-    (7, 4, 3, "c", "P 2c", "P 2_1", "P 1 1 2_1", Centering::P),
-    (8, 4, 3, "a", "P 2xa", "P 2_1", "P 2_1 1 1", Centering::P),
-    (9, 5, 4, "b1", "C 2y", "C 2", "C 1 2 1", Centering::C),
-    (10, 5, 4, "b2", "A 2y", "C 2", "A 1 2 1", Centering::A),
-    (11, 5, 4, "b3", "I 2y", "C 2", "I 1 2 1", Centering::I),
-    (12, 5, 4, "c1", "A 2", "C 2", "A 1 1 2", Centering::A),
-    (13, 5, 4, "c2", "B 2", "C 2", "B 1 1 2", Centering::B),
-    (14, 5, 4, "c3", "I 2", "C 2", "I 1 1 2", Centering::I),
-    (15, 5, 4, "a1", "B 2x", "C 2", "B 2 1 1", Centering::B),
-    (16, 5, 4, "a2", "C 2x", "C 2", "C 2 1 1", Centering::C),
-    (17, 5, 4, "a3", "I 2x", "C 2", "I 2 1 1", Centering::I),
-    (18, 6, 5, "b", "P -2y", "P m", "P 1 m 1", Centering::P),
-    (19, 6, 5, "c", "P -2", "P m", "P 1 1 m", Centering::P),
-    (20, 6, 5, "a", "P -2x", "P m", "P m 1 1", Centering::P),
-    (21, 7, 5, "b1", "P -2yc", "P c", "P 1 c 1", Centering::P),
-    (22, 7, 5, "b2", "P -2yac", "P c", "P 1 n 1", Centering::P),
-    (23, 7, 5, "b3", "P -2ya", "P c", "P 1 a 1", Centering::P),
-    (24, 7, 5, "c1", "P -2a", "P c", "P 1 1 a", Centering::P),
-    (25, 7, 5, "c2", "P -2ab", "P c", "P 1 1 n", Centering::P),
-    (26, 7, 5, "c3", "P -2b", "P c", "P 1 1 b", Centering::P),
-    (27, 7, 5, "a1", "P -2xb", "P c", "P b 1 1", Centering::P),
-    (28, 7, 5, "a2", "P -2xbc", "P c", "P n 1 1", Centering::P),
-    (29, 7, 5, "a3", "P -2xc", "P c", "P c 1 1", Centering::P),
-    (30, 8, 6, "b1", "C -2y", "C m", "C 1 m 1", Centering::C),
-    (31, 8, 6, "b2", "A -2y", "C m", "A 1 m 1", Centering::A),
-    (32, 8, 6, "b3", "I -2y", "C m", "I 1 m 1", Centering::I),
-    (33, 8, 6, "c1", "A -2", "C m", "A 1 1 m", Centering::A),
-    (34, 8, 6, "c2", "B -2", "C m", "B 1 1 m", Centering::B),
-    (35, 8, 6, "c3", "I -2", "C m", "I 1 1 m", Centering::I),
-    (36, 8, 6, "a1", "B -2x", "C m", "B m 1 1", Centering::B),
-    (37, 8, 6, "a2", "C -2x", "C m", "C m 1 1", Centering::C),
-    (38, 8, 6, "a3", "I -2x", "C m", "I m 1 1", Centering::I),
-    (39, 9, 6, "b1", "C -2yc", "C c", "C 1 c 1", Centering::C),
-    (40, 9, 6, "b2", "A -2yab", "C c", "A 1 n 1", Centering::A),
-    (41, 9, 6, "b3", "I -2ya", "C c", "I 1 a 1", Centering::I),
-    (42, 9, 6, "-b1", "A -2ya", "C c", "A 1 a 1", Centering::A),
-    (43, 9, 6, "-b2", "C -2yac", "C c", "C 1 n 1", Centering::C),
-    (44, 9, 6, "-b3", "I -2yc", "C c", "I 1 c 1", Centering::I),
-    (45, 9, 6, "c1", "A -2a", "C c", "A 1 1 a", Centering::A),
-    (46, 9, 6, "c2", "B -2ab", "C c", "B 1 1 n", Centering::B),
-    (47, 9, 6, "c3", "I -2b", "C c", "I 1 1 b", Centering::I),
-    (48, 9, 6, "-c1", "B -2b", "C c", "B 1 1 b", Centering::B),
-    (49, 9, 6, "-c2", "A -2ab", "C c", "A 1 1 n", Centering::A),
-    (50, 9, 6, "-c3", "I -2a", "C c", "I 1 1 a", Centering::I),
-    (51, 9, 6, "a1", "B -2xb", "C c", "B b 1 1", Centering::B),
-    (52, 9, 6, "a2", "C -2xac", "C c", "C n 1 1", Centering::C),
-    (53, 9, 6, "a3", "I -2xc", "C c", "I c 1 1", Centering::I),
-    (54, 9, 6, "-a1", "C -2xc", "C c", "C c 1 1", Centering::C),
-    (55, 9, 6, "-a2", "B -2xab", "C c", "B n 1 1", Centering::B),
-    (56, 9, 6, "-a3", "I -2xb", "C c", "I b 1 1", Centering::I),
-    (57, 10, 7, "b", "-P 2y", "P 2/m", "P 1 2/m 1", Centering::P),
-    (58, 10, 7, "c", "-P 2", "P 2/m", "P 1 1 2/m", Centering::P),
-    (59, 10, 7, "a", "-P 2x", "P 2/m", "P 2/m 1 1", Centering::P),
-    (
+    HallSymbolEntry::new(1, 1, 1, "", "P 1", "P 1", "P 1", Centering::P),
+    HallSymbolEntry::new(2, 2, 2, "", "-P 1", "P -1", "P -1", Centering::P),
+    HallSymbolEntry::new(3, 3, 3, "b", "P 2y", "P 2", "P 1 2 1", Centering::P),
+    HallSymbolEntry::new(4, 3, 3, "c", "P 2", "P 2", "P 1 1 2", Centering::P),
+    HallSymbolEntry::new(5, 3, 3, "a", "P 2x", "P 2", "P 2 1 1", Centering::P),
+    HallSymbolEntry::new(6, 4, 3, "b", "P 2yb", "P 2_1", "P 1 2_1 1", Centering::P),
+    HallSymbolEntry::new(7, 4, 3, "c", "P 2c", "P 2_1", "P 1 1 2_1", Centering::P),
+    HallSymbolEntry::new(8, 4, 3, "a", "P 2xa", "P 2_1", "P 2_1 1 1", Centering::P),
+    HallSymbolEntry::new(9, 5, 4, "b1", "C 2y", "C 2", "C 1 2 1", Centering::C),
+    HallSymbolEntry::new(10, 5, 4, "b2", "A 2y", "C 2", "A 1 2 1", Centering::A),
+    HallSymbolEntry::new(11, 5, 4, "b3", "I 2y", "C 2", "I 1 2 1", Centering::I),
+    HallSymbolEntry::new(12, 5, 4, "c1", "A 2", "C 2", "A 1 1 2", Centering::A),
+    HallSymbolEntry::new(13, 5, 4, "c2", "B 2", "C 2", "B 1 1 2", Centering::B),
+    HallSymbolEntry::new(14, 5, 4, "c3", "I 2", "C 2", "I 1 1 2", Centering::I),
+    HallSymbolEntry::new(15, 5, 4, "a1", "B 2x", "C 2", "B 2 1 1", Centering::B),
+    HallSymbolEntry::new(16, 5, 4, "a2", "C 2x", "C 2", "C 2 1 1", Centering::C),
+    HallSymbolEntry::new(17, 5, 4, "a3", "I 2x", "C 2", "I 2 1 1", Centering::I),
+    HallSymbolEntry::new(18, 6, 5, "b", "P -2y", "P m", "P 1 m 1", Centering::P),
+    HallSymbolEntry::new(19, 6, 5, "c", "P -2", "P m", "P 1 1 m", Centering::P),
+    HallSymbolEntry::new(20, 6, 5, "a", "P -2x", "P m", "P m 1 1", Centering::P),
+    HallSymbolEntry::new(21, 7, 5, "b1", "P -2yc", "P c", "P 1 c 1", Centering::P),
+    HallSymbolEntry::new(22, 7, 5, "b2", "P -2yac", "P c", "P 1 n 1", Centering::P),
+    HallSymbolEntry::new(23, 7, 5, "b3", "P -2ya", "P c", "P 1 a 1", Centering::P),
+    HallSymbolEntry::new(24, 7, 5, "c1", "P -2a", "P c", "P 1 1 a", Centering::P),
+    HallSymbolEntry::new(25, 7, 5, "c2", "P -2ab", "P c", "P 1 1 n", Centering::P),
+    HallSymbolEntry::new(26, 7, 5, "c3", "P -2b", "P c", "P 1 1 b", Centering::P),
+    HallSymbolEntry::new(27, 7, 5, "a1", "P -2xb", "P c", "P b 1 1", Centering::P),
+    HallSymbolEntry::new(28, 7, 5, "a2", "P -2xbc", "P c", "P n 1 1", Centering::P),
+    HallSymbolEntry::new(29, 7, 5, "a3", "P -2xc", "P c", "P c 1 1", Centering::P),
+    HallSymbolEntry::new(30, 8, 6, "b1", "C -2y", "C m", "C 1 m 1", Centering::C),
+    HallSymbolEntry::new(31, 8, 6, "b2", "A -2y", "C m", "A 1 m 1", Centering::A),
+    HallSymbolEntry::new(32, 8, 6, "b3", "I -2y", "C m", "I 1 m 1", Centering::I),
+    HallSymbolEntry::new(33, 8, 6, "c1", "A -2", "C m", "A 1 1 m", Centering::A),
+    HallSymbolEntry::new(34, 8, 6, "c2", "B -2", "C m", "B 1 1 m", Centering::B),
+    HallSymbolEntry::new(35, 8, 6, "c3", "I -2", "C m", "I 1 1 m", Centering::I),
+    HallSymbolEntry::new(36, 8, 6, "a1", "B -2x", "C m", "B m 1 1", Centering::B),
+    HallSymbolEntry::new(37, 8, 6, "a2", "C -2x", "C m", "C m 1 1", Centering::C),
+    HallSymbolEntry::new(38, 8, 6, "a3", "I -2x", "C m", "I m 1 1", Centering::I),
+    HallSymbolEntry::new(39, 9, 6, "b1", "C -2yc", "C c", "C 1 c 1", Centering::C),
+    HallSymbolEntry::new(40, 9, 6, "b2", "A -2yab", "C c", "A 1 n 1", Centering::A),
+    HallSymbolEntry::new(41, 9, 6, "b3", "I -2ya", "C c", "I 1 a 1", Centering::I),
+    HallSymbolEntry::new(42, 9, 6, "-b1", "A -2ya", "C c", "A 1 a 1", Centering::A),
+    HallSymbolEntry::new(43, 9, 6, "-b2", "C -2yac", "C c", "C 1 n 1", Centering::C),
+    HallSymbolEntry::new(44, 9, 6, "-b3", "I -2yc", "C c", "I 1 c 1", Centering::I),
+    HallSymbolEntry::new(45, 9, 6, "c1", "A -2a", "C c", "A 1 1 a", Centering::A),
+    HallSymbolEntry::new(46, 9, 6, "c2", "B -2ab", "C c", "B 1 1 n", Centering::B),
+    HallSymbolEntry::new(47, 9, 6, "c3", "I -2b", "C c", "I 1 1 b", Centering::I),
+    HallSymbolEntry::new(48, 9, 6, "-c1", "B -2b", "C c", "B 1 1 b", Centering::B),
+    HallSymbolEntry::new(49, 9, 6, "-c2", "A -2ab", "C c", "A 1 1 n", Centering::A),
+    HallSymbolEntry::new(50, 9, 6, "-c3", "I -2a", "C c", "I 1 1 a", Centering::I),
+    HallSymbolEntry::new(51, 9, 6, "a1", "B -2xb", "C c", "B b 1 1", Centering::B),
+    HallSymbolEntry::new(52, 9, 6, "a2", "C -2xac", "C c", "C n 1 1", Centering::C),
+    HallSymbolEntry::new(53, 9, 6, "a3", "I -2xc", "C c", "I c 1 1", Centering::I),
+    HallSymbolEntry::new(54, 9, 6, "-a1", "C -2xc", "C c", "C c 1 1", Centering::C),
+    HallSymbolEntry::new(55, 9, 6, "-a2", "B -2xab", "C c", "B n 1 1", Centering::B),
+    HallSymbolEntry::new(56, 9, 6, "-a3", "I -2xb", "C c", "I b 1 1", Centering::I),
+    HallSymbolEntry::new(57, 10, 7, "b", "-P 2y", "P 2/m", "P 1 2/m 1", Centering::P),
+    HallSymbolEntry::new(58, 10, 7, "c", "-P 2", "P 2/m", "P 1 1 2/m", Centering::P),
+    HallSymbolEntry::new(59, 10, 7, "a", "-P 2x", "P 2/m", "P 2/m 1 1", Centering::P),
+    HallSymbolEntry::new(
         60,
         11,
         7,
@@ -84,7 +109,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 1 2_1/m 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         61,
         11,
         7,
@@ -94,7 +119,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 1 1 2_1/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         62,
         11,
         7,
@@ -104,16 +129,16 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/m 1 1",
         Centering::P,
     ),
-    (63, 12, 8, "b1", "-C 2y", "C 2/m", "C 1 2/m 1", Centering::C),
-    (64, 12, 8, "b2", "-A 2y", "C 2/m", "A 1 2/m 1", Centering::A),
-    (65, 12, 8, "b3", "-I 2y", "C 2/m", "I 1 2/m 1", Centering::I),
-    (66, 12, 8, "c1", "-A 2", "C 2/m", "A 1 1 2/m", Centering::A),
-    (67, 12, 8, "c2", "-B 2", "C 2/m", "B 1 1 2/m", Centering::B),
-    (68, 12, 8, "c3", "-I 2", "C 2/m", "I 1 1 2/m", Centering::I),
-    (69, 12, 8, "a1", "-B 2x", "C 2/m", "B 2/m 1 1", Centering::B),
-    (70, 12, 8, "a2", "-C 2x", "C 2/m", "C 2/m 1 1", Centering::C),
-    (71, 12, 8, "a3", "-I 2x", "C 2/m", "I 2/m 1 1", Centering::I),
-    (
+    HallSymbolEntry::new(63, 12, 8, "b1", "-C 2y", "C 2/m", "C 1 2/m 1", Centering::C),
+    HallSymbolEntry::new(64, 12, 8, "b2", "-A 2y", "C 2/m", "A 1 2/m 1", Centering::A),
+    HallSymbolEntry::new(65, 12, 8, "b3", "-I 2y", "C 2/m", "I 1 2/m 1", Centering::I),
+    HallSymbolEntry::new(66, 12, 8, "c1", "-A 2", "C 2/m", "A 1 1 2/m", Centering::A),
+    HallSymbolEntry::new(67, 12, 8, "c2", "-B 2", "C 2/m", "B 1 1 2/m", Centering::B),
+    HallSymbolEntry::new(68, 12, 8, "c3", "-I 2", "C 2/m", "I 1 1 2/m", Centering::I),
+    HallSymbolEntry::new(69, 12, 8, "a1", "-B 2x", "C 2/m", "B 2/m 1 1", Centering::B),
+    HallSymbolEntry::new(70, 12, 8, "a2", "-C 2x", "C 2/m", "C 2/m 1 1", Centering::C),
+    HallSymbolEntry::new(71, 12, 8, "a3", "-I 2x", "C 2/m", "I 2/m 1 1", Centering::I),
+    HallSymbolEntry::new(
         72,
         13,
         7,
@@ -123,7 +148,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 1 2/c 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         73,
         13,
         7,
@@ -133,7 +158,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 1 2/n 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         74,
         13,
         7,
@@ -143,8 +168,8 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 1 2/a 1",
         Centering::P,
     ),
-    (75, 13, 7, "c1", "-P 2a", "P 2/c", "P 1 1 2/a", Centering::P),
-    (
+    HallSymbolEntry::new(75, 13, 7, "c1", "-P 2a", "P 2/c", "P 1 1 2/a", Centering::P),
+    HallSymbolEntry::new(
         76,
         13,
         7,
@@ -154,8 +179,8 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 1 1 2/n",
         Centering::P,
     ),
-    (77, 13, 7, "c3", "-P 2b", "P 2/c", "P 1 1 2/b", Centering::P),
-    (
+    HallSymbolEntry::new(77, 13, 7, "c3", "-P 2b", "P 2/c", "P 1 1 2/b", Centering::P),
+    HallSymbolEntry::new(
         78,
         13,
         7,
@@ -165,7 +190,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/b 1 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         79,
         13,
         7,
@@ -175,7 +200,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n 1 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         80,
         13,
         7,
@@ -185,7 +210,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/c 1 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         81,
         14,
         7,
@@ -195,7 +220,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 1 2_1/c 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         82,
         14,
         7,
@@ -205,7 +230,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 1 2_1/n 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         83,
         14,
         7,
@@ -215,7 +240,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 1 2_1/a 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         84,
         14,
         7,
@@ -225,7 +250,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 1 1 2_1/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         85,
         14,
         7,
@@ -235,7 +260,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 1 1 2_1/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         86,
         14,
         7,
@@ -245,7 +270,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 1 1 2_1/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         87,
         14,
         7,
@@ -255,7 +280,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/b 1 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         88,
         14,
         7,
@@ -265,7 +290,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/n 1 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         89,
         14,
         7,
@@ -275,7 +300,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/c 1 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         90,
         15,
         8,
@@ -285,7 +310,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 1 2/c 1",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         91,
         15,
         8,
@@ -295,7 +320,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 1 2/n 1",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         92,
         15,
         8,
@@ -305,7 +330,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 1 2/a 1",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         93,
         15,
         8,
@@ -315,7 +340,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 1 2/a 1",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         94,
         15,
         8,
@@ -325,7 +350,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 1 2/n 1",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         95,
         15,
         8,
@@ -335,8 +360,8 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 1 2/c 1",
         Centering::I,
     ),
-    (96, 15, 8, "c1", "-A 2a", "C 2/c", "A 1 1 2/a", Centering::A),
-    (
+    HallSymbolEntry::new(96, 15, 8, "c1", "-A 2a", "C 2/c", "A 1 1 2/a", Centering::A),
+    HallSymbolEntry::new(
         97,
         15,
         8,
@@ -346,8 +371,8 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 1 1 2/n",
         Centering::B,
     ),
-    (98, 15, 8, "c3", "-I 2b", "C 2/c", "I 1 1 2/b", Centering::I),
-    (
+    HallSymbolEntry::new(98, 15, 8, "c3", "-I 2b", "C 2/c", "I 1 1 2/b", Centering::I),
+    HallSymbolEntry::new(
         99,
         15,
         8,
@@ -357,7 +382,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 1 1 2/b",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         100,
         15,
         8,
@@ -367,7 +392,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 1 1 2/n",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         101,
         15,
         8,
@@ -377,7 +402,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 1 1 2/a",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         102,
         15,
         8,
@@ -387,7 +412,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/b 1 1",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         103,
         15,
         8,
@@ -397,7 +422,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/n 1 1",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         104,
         15,
         8,
@@ -407,7 +432,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/c 1 1",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         105,
         15,
         8,
@@ -417,7 +442,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/c 1 1",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         106,
         15,
         8,
@@ -427,7 +452,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/n 1 1",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         107,
         15,
         8,
@@ -437,8 +462,8 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/b 1 1",
         Centering::I,
     ),
-    (108, 16, 9, "", "P 2 2", "P 2 2 2", "P 2 2 2", Centering::P),
-    (
+    HallSymbolEntry::new(108, 16, 9, "", "P 2 2", "P 2 2 2", "P 2 2 2", Centering::P),
+    HallSymbolEntry::new(
         109,
         17,
         9,
@@ -448,7 +473,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2 2 2_1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         110,
         17,
         9,
@@ -458,7 +483,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1 2 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         111,
         17,
         9,
@@ -468,7 +493,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2 2_1 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         112,
         18,
         9,
@@ -478,7 +503,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1 2_1 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         113,
         18,
         9,
@@ -488,7 +513,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2 2_1 2_1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         114,
         18,
         9,
@@ -498,7 +523,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1 2 2_1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         115,
         19,
         9,
@@ -508,7 +533,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1 2_1 2_1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         116,
         20,
         10,
@@ -518,7 +543,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2 2 2_1",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         117,
         20,
         10,
@@ -528,7 +553,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2_1 2 2",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         118,
         20,
         10,
@@ -538,8 +563,8 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2 2_1 2",
         Centering::B,
     ),
-    (119, 21, 10, "", "C 2 2", "C 2 2 2", "C 2 2 2", Centering::C),
-    (
+    HallSymbolEntry::new(119, 21, 10, "", "C 2 2", "C 2 2 2", "C 2 2 2", Centering::C),
+    HallSymbolEntry::new(
         120,
         21,
         10,
@@ -549,7 +574,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2 2 2",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         121,
         21,
         10,
@@ -559,9 +584,9 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2 2 2",
         Centering::B,
     ),
-    (122, 22, 11, "", "F 2 2", "F 2 2 2", "F 2 2 2", Centering::F),
-    (123, 23, 12, "", "I 2 2", "I 2 2 2", "I 2 2 2", Centering::I),
-    (
+    HallSymbolEntry::new(122, 22, 11, "", "F 2 2", "F 2 2 2", "F 2 2 2", Centering::F),
+    HallSymbolEntry::new(123, 23, 12, "", "I 2 2", "I 2 2 2", "I 2 2 2", Centering::I),
+    HallSymbolEntry::new(
         124,
         24,
         12,
@@ -571,7 +596,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2_1 2_1 2_1",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         125,
         25,
         13,
@@ -581,7 +606,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P m m 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         126,
         25,
         13,
@@ -591,7 +616,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2 m m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         127,
         25,
         13,
@@ -601,7 +626,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P m 2 m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         128,
         26,
         13,
@@ -611,7 +636,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P m c 2_1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         129,
         26,
         13,
@@ -621,7 +646,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P c m 2_1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         130,
         26,
         13,
@@ -631,7 +656,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1 m a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         131,
         26,
         13,
@@ -641,7 +666,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1 a m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         132,
         26,
         13,
@@ -651,7 +676,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P b 2_1 m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         133,
         26,
         13,
@@ -661,7 +686,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P m 2_1 b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         134,
         27,
         13,
@@ -671,7 +696,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P c c 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         135,
         27,
         13,
@@ -681,7 +706,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2 a a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         136,
         27,
         13,
@@ -691,7 +716,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P b 2 b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         137,
         28,
         13,
@@ -701,7 +726,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P m a 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         138,
         28,
         13,
@@ -711,7 +736,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P b m 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         139,
         28,
         13,
@@ -721,7 +746,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2 m b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         140,
         28,
         13,
@@ -731,7 +756,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2 c m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         141,
         28,
         13,
@@ -741,7 +766,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P c 2 m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         142,
         28,
         13,
@@ -751,7 +776,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P m 2 a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         143,
         29,
         13,
@@ -761,7 +786,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P c a 2_1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         144,
         29,
         13,
@@ -771,7 +796,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P b c 2_1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         145,
         29,
         13,
@@ -781,7 +806,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1 a b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         146,
         29,
         13,
@@ -791,7 +816,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1 c a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         147,
         29,
         13,
@@ -801,7 +826,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P c 2_1 b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         148,
         29,
         13,
@@ -811,7 +836,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P b 2_1 a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         149,
         30,
         13,
@@ -821,7 +846,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P n c 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         150,
         30,
         13,
@@ -831,7 +856,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P c n 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         151,
         30,
         13,
@@ -841,7 +866,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2 n a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         152,
         30,
         13,
@@ -851,7 +876,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2 a n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         153,
         30,
         13,
@@ -861,7 +886,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P b 2 n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         154,
         30,
         13,
@@ -871,7 +896,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P n 2 b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         155,
         31,
         13,
@@ -881,7 +906,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P m n 2_1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         156,
         31,
         13,
@@ -891,7 +916,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P n m 2_1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         157,
         31,
         13,
@@ -901,7 +926,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1 m n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         158,
         31,
         13,
@@ -911,7 +936,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1 n m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         159,
         31,
         13,
@@ -921,7 +946,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P n 2_1 m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         160,
         31,
         13,
@@ -931,7 +956,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P m 2_1 n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         161,
         32,
         13,
@@ -941,7 +966,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P b a 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         162,
         32,
         13,
@@ -951,7 +976,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2 c b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         163,
         32,
         13,
@@ -961,7 +986,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P c 2 a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         164,
         33,
         13,
@@ -971,7 +996,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P n a 2_1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         165,
         33,
         13,
@@ -981,7 +1006,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P b n 2_1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         166,
         33,
         13,
@@ -991,7 +1016,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1 n b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         167,
         33,
         13,
@@ -1001,7 +1026,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1 c n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         168,
         33,
         13,
@@ -1011,7 +1036,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P c 2_1 n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         169,
         33,
         13,
@@ -1021,7 +1046,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P n 2_1 a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         170,
         34,
         13,
@@ -1031,7 +1056,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P n n 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         171,
         34,
         13,
@@ -1041,7 +1066,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2 n n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         172,
         34,
         13,
@@ -1051,7 +1076,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P n 2 n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         173,
         35,
         14,
@@ -1061,7 +1086,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C m m 2",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         174,
         35,
         14,
@@ -1071,7 +1096,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2 m m",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         175,
         35,
         14,
@@ -1081,7 +1106,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B m 2 m",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         176,
         36,
         14,
@@ -1091,7 +1116,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C m c 2_1",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         177,
         36,
         14,
@@ -1101,7 +1126,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C c m 2_1",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         178,
         36,
         14,
@@ -1111,7 +1136,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2_1 m a",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         179,
         36,
         14,
@@ -1121,7 +1146,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2_1 a m",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         180,
         36,
         14,
@@ -1131,7 +1156,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B b 2_1 m",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         181,
         36,
         14,
@@ -1141,7 +1166,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B m 2_1 b",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         182,
         37,
         14,
@@ -1151,7 +1176,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C c c 2",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         183,
         37,
         14,
@@ -1161,7 +1186,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2 a a",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         184,
         37,
         14,
@@ -1171,7 +1196,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B b 2 b",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         185,
         38,
         15,
@@ -1181,7 +1206,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A m m 2",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         186,
         38,
         15,
@@ -1191,7 +1216,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B m m 2",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         187,
         38,
         15,
@@ -1201,7 +1226,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2 m m",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         188,
         38,
         15,
@@ -1211,7 +1236,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2 m m",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         189,
         38,
         15,
@@ -1221,7 +1246,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C m 2 m",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         190,
         38,
         15,
@@ -1231,7 +1256,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A m 2 m",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         191,
         39,
         15,
@@ -1241,7 +1266,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A e m 2",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         192,
         39,
         15,
@@ -1251,7 +1276,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B m e 2",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         193,
         39,
         15,
@@ -1261,7 +1286,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2 e m",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         194,
         39,
         15,
@@ -1271,7 +1296,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2 m e",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         195,
         39,
         15,
@@ -1281,7 +1306,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C m 2 e",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         196,
         39,
         15,
@@ -1291,7 +1316,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A e 2 m",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         197,
         40,
         15,
@@ -1301,7 +1326,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A m a 2",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         198,
         40,
         15,
@@ -1311,7 +1336,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B b m 2",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         199,
         40,
         15,
@@ -1321,7 +1346,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2 m b",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         200,
         40,
         15,
@@ -1331,7 +1356,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2 c m",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         201,
         40,
         15,
@@ -1341,7 +1366,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C c 2 m",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         202,
         40,
         15,
@@ -1351,7 +1376,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A m 2 a",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         203,
         41,
         15,
@@ -1361,7 +1386,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A e a 2",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         204,
         41,
         15,
@@ -1371,7 +1396,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B b e 2",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         205,
         41,
         15,
@@ -1381,7 +1406,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2 e b",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         206,
         41,
         15,
@@ -1391,7 +1416,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2 c e",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         207,
         41,
         15,
@@ -1401,7 +1426,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C c 2 e",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         208,
         41,
         15,
@@ -1411,7 +1436,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A e 2 a",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         209,
         42,
         16,
@@ -1421,7 +1446,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F m m 2",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         210,
         42,
         16,
@@ -1431,7 +1456,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 2 m m",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         211,
         42,
         16,
@@ -1441,7 +1466,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F m 2 m",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         212,
         43,
         16,
@@ -1451,7 +1476,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F d d 2",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         213,
         43,
         16,
@@ -1461,7 +1486,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 2 d d",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         214,
         43,
         16,
@@ -1471,7 +1496,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F d 2 d",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         215,
         44,
         17,
@@ -1481,7 +1506,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I m m 2",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         216,
         44,
         17,
@@ -1491,7 +1516,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2 m m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         217,
         44,
         17,
@@ -1501,7 +1526,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I m 2 m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         218,
         45,
         17,
@@ -1511,7 +1536,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I b a 2",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         219,
         45,
         17,
@@ -1521,7 +1546,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2 c b",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         220,
         45,
         17,
@@ -1531,7 +1556,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I c 2 a",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         221,
         46,
         17,
@@ -1541,7 +1566,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I m a 2",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         222,
         46,
         17,
@@ -1551,7 +1576,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I b m 2",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         223,
         46,
         17,
@@ -1561,7 +1586,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2 m b",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         224,
         46,
         17,
@@ -1571,7 +1596,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2 c m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         225,
         46,
         17,
@@ -1581,7 +1606,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I c 2 m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         226,
         46,
         17,
@@ -1591,7 +1616,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I m 2 a",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         227,
         47,
         18,
@@ -1601,7 +1626,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/m 2/m 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         228,
         48,
         18,
@@ -1611,7 +1636,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n 2/n 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         229,
         48,
         18,
@@ -1621,7 +1646,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n 2/n 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         230,
         49,
         18,
@@ -1631,7 +1656,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/c 2/c 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         231,
         49,
         18,
@@ -1641,7 +1666,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/m 2/a 2/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         232,
         49,
         18,
@@ -1651,7 +1676,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/b 2/m 2/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         233,
         50,
         18,
@@ -1661,7 +1686,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/b 2/a 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         234,
         50,
         18,
@@ -1671,7 +1696,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/b 2/a 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         235,
         50,
         18,
@@ -1681,7 +1706,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n 2/c 2/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         236,
         50,
         18,
@@ -1691,7 +1716,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n 2/c 2/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         237,
         50,
         18,
@@ -1701,7 +1726,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/c 2/n 2/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         238,
         50,
         18,
@@ -1711,7 +1736,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/c 2/n 2/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         239,
         51,
         18,
@@ -1721,7 +1746,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/m 2/m 2/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         240,
         51,
         18,
@@ -1731,7 +1756,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/m 2_1/m 2/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         241,
         51,
         18,
@@ -1741,7 +1766,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/b 2_1/m 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         242,
         51,
         18,
@@ -1751,7 +1776,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/c 2/m 2_1/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         243,
         51,
         18,
@@ -1761,7 +1786,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/m 2/c 2_1/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         244,
         51,
         18,
@@ -1771,7 +1796,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/m 2/a 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         245,
         52,
         18,
@@ -1781,7 +1806,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n 2_1/n 2/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         246,
         52,
         18,
@@ -1791,7 +1816,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/n 2/n 2/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         247,
         52,
         18,
@@ -1801,7 +1826,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/b 2/n 2_1/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         248,
         52,
         18,
@@ -1811,7 +1836,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/c 2_1/n 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         249,
         52,
         18,
@@ -1821,7 +1846,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/n 2/c 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         250,
         52,
         18,
@@ -1831,7 +1856,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n 2/a 2_1/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         251,
         53,
         18,
@@ -1841,7 +1866,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/m 2/n 2_1/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         252,
         53,
         18,
@@ -1851,7 +1876,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n 2/m 2_1/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         253,
         53,
         18,
@@ -1861,7 +1886,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/b 2/m 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         254,
         53,
         18,
@@ -1871,7 +1896,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/c 2/n 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         255,
         53,
         18,
@@ -1881,7 +1906,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n 2_1/c 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         256,
         53,
         18,
@@ -1891,7 +1916,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/m 2_1/a 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         257,
         54,
         18,
@@ -1901,7 +1926,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/c 2/c 2/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         258,
         54,
         18,
@@ -1911,7 +1936,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/c 2_1/c 2/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         259,
         54,
         18,
@@ -1921,7 +1946,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/b 2_1/a 2/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         260,
         54,
         18,
@@ -1931,7 +1956,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/c 2/a 2_1/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         261,
         54,
         18,
@@ -1941,7 +1966,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/b 2/c 2_1/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         262,
         54,
         18,
@@ -1951,7 +1976,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/b 2/a 2/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         263,
         55,
         18,
@@ -1961,7 +1986,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/b 2_1/a 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         264,
         55,
         18,
@@ -1971,7 +1996,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/m 2_1/c 2_1/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         265,
         55,
         18,
@@ -1981,7 +2006,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/c 2/m 2_1/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         266,
         56,
         18,
@@ -1991,7 +2016,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/c 2_1/c 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         267,
         56,
         18,
@@ -2001,7 +2026,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n 2_1/a 2_1/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         268,
         56,
         18,
@@ -2011,7 +2036,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/b 2/n 2_1/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         269,
         57,
         18,
@@ -2021,7 +2046,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/b 2_1/c 2_1/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         270,
         57,
         18,
@@ -2031,7 +2056,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/c 2/a 2_1/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         271,
         57,
         18,
@@ -2041,7 +2066,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/m 2/c 2_1/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         272,
         57,
         18,
@@ -2051,7 +2076,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/m 2_1/a 2/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         273,
         57,
         18,
@@ -2061,7 +2086,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/b 2_1/m 2/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         274,
         57,
         18,
@@ -2071,7 +2096,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/c 2_1/m 2_1/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         275,
         58,
         18,
@@ -2081,7 +2106,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/n 2_1/n 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         276,
         58,
         18,
@@ -2091,7 +2116,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/m 2_1/n 2_1/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         277,
         58,
         18,
@@ -2101,7 +2126,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/n 2/m 2_1/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         278,
         59,
         18,
@@ -2111,7 +2136,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/m 2_1/m 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         279,
         59,
         18,
@@ -2121,7 +2146,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/m 2_1/m 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         280,
         59,
         18,
@@ -2131,7 +2156,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n 2_1/m 2_1/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         281,
         59,
         18,
@@ -2141,7 +2166,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n 2_1/m 2_1/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         282,
         59,
         18,
@@ -2151,7 +2176,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/m 2/n 2_1/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         283,
         59,
         18,
@@ -2161,7 +2186,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/m 2/n 2_1/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         284,
         60,
         18,
@@ -2171,7 +2196,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/b 2/c 2_1/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         285,
         60,
         18,
@@ -2181,7 +2206,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/c 2_1/a 2_1/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         286,
         60,
         18,
@@ -2191,7 +2216,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/n 2_1/c 2/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         287,
         60,
         18,
@@ -2201,7 +2226,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/n 2/a 2_1/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         288,
         60,
         18,
@@ -2211,7 +2236,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/b 2_1/n 2_1/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         289,
         60,
         18,
@@ -2221,7 +2246,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/c 2_1/n 2/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         290,
         61,
         18,
@@ -2231,7 +2256,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/b 2_1/c 2_1/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         291,
         61,
         18,
@@ -2241,7 +2266,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/c 2_1/a 2_1/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         292,
         62,
         18,
@@ -2251,7 +2276,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/n 2_1/m 2_1/a",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         293,
         62,
         18,
@@ -2261,7 +2286,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/m 2_1/n 2_1/b",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         294,
         62,
         18,
@@ -2271,7 +2296,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/b 2_1/n 2_1/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         295,
         62,
         18,
@@ -2281,7 +2306,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/c 2_1/m 2_1/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         296,
         62,
         18,
@@ -2291,7 +2316,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/m 2_1/c 2_1/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         297,
         62,
         18,
@@ -2301,7 +2326,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/n 2_1/a 2_1/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         298,
         63,
         19,
@@ -2311,7 +2336,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/m 2/c 2_1/m",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         299,
         63,
         19,
@@ -2321,7 +2346,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/c 2/m 2_1/m",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         300,
         63,
         19,
@@ -2331,7 +2356,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2_1/m 2/m 2/a",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         301,
         63,
         19,
@@ -2341,7 +2366,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2_1/m 2/a 2/m",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         302,
         63,
         19,
@@ -2351,7 +2376,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/b 2_1/m 2/m",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         303,
         63,
         19,
@@ -2361,7 +2386,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/m 2_1/m 2/b",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         304,
         64,
         19,
@@ -2371,7 +2396,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/m 2/c 2_1/e",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         305,
         64,
         19,
@@ -2381,7 +2406,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/c 2/m 2_1/e",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         306,
         64,
         19,
@@ -2391,7 +2416,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2_1/e 2/m 2/a",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         307,
         64,
         19,
@@ -2401,7 +2426,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2_1/e 2/a 2/m",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         308,
         64,
         19,
@@ -2411,7 +2436,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/b 2_1/e 2/m",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         309,
         64,
         19,
@@ -2421,7 +2446,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/m 2_1/e 2/b",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         310,
         65,
         19,
@@ -2431,7 +2456,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/m 2/m 2/m",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         311,
         65,
         19,
@@ -2441,7 +2466,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2/m 2/m 2/m",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         312,
         65,
         19,
@@ -2451,7 +2476,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/m 2/m 2/m",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         313,
         66,
         19,
@@ -2461,7 +2486,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/c 2/c 2/m",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         314,
         66,
         19,
@@ -2471,7 +2496,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2/m 2/a 2/a",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         315,
         66,
         19,
@@ -2481,7 +2506,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/b 2/m 2/b",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         316,
         67,
         19,
@@ -2491,7 +2516,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/m 2/m 2/e",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         317,
         67,
         19,
@@ -2501,7 +2526,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/m 2/m 2/e",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         318,
         67,
         19,
@@ -2511,7 +2536,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2/e 2/m 2/m",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         319,
         67,
         19,
@@ -2521,7 +2546,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2/e 2/m 2/m",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         320,
         67,
         19,
@@ -2531,7 +2556,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/m 2/e 2/m",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         321,
         67,
         19,
@@ -2541,7 +2566,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/m 2/e 2/m",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         322,
         68,
         19,
@@ -2551,7 +2576,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/c 2/c 2/e",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         323,
         68,
         19,
@@ -2561,7 +2586,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/c 2/c 2/e",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         324,
         68,
         19,
@@ -2571,7 +2596,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/c 2/c 2/e",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         325,
         68,
         19,
@@ -2581,7 +2606,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "C 2/c 2/c 2/e",
         Centering::C,
     ),
-    (
+    HallSymbolEntry::new(
         326,
         68,
         19,
@@ -2591,7 +2616,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2/e 2/a 2/a",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         327,
         68,
         19,
@@ -2601,7 +2626,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2/e 2/a 2/a",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         328,
         68,
         19,
@@ -2611,7 +2636,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2/e 2/a 2/a",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         329,
         68,
         19,
@@ -2621,7 +2646,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "A 2/e 2/a 2/a",
         Centering::A,
     ),
-    (
+    HallSymbolEntry::new(
         330,
         68,
         19,
@@ -2631,7 +2656,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/b 2/e 2/b",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         331,
         68,
         19,
@@ -2641,7 +2666,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/b 2/e 2/b",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         332,
         68,
         19,
@@ -2651,7 +2676,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/b 2/e 2/b",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         333,
         68,
         19,
@@ -2661,7 +2686,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "B 2/b 2/e 2/b",
         Centering::B,
     ),
-    (
+    HallSymbolEntry::new(
         334,
         69,
         20,
@@ -2671,7 +2696,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 2/m 2/m 2/m",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         335,
         70,
         20,
@@ -2681,7 +2706,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 2/d 2/d 2/d",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         336,
         70,
         20,
@@ -2691,7 +2716,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 2/d 2/d 2/d",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         337,
         71,
         21,
@@ -2701,7 +2726,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/m 2/m 2/m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         338,
         72,
         21,
@@ -2711,7 +2736,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/b 2/a 2/m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         339,
         72,
         21,
@@ -2721,7 +2746,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/m 2/c 2/b",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         340,
         72,
         21,
@@ -2731,7 +2756,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/c 2/m 2/a",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         341,
         73,
         21,
@@ -2741,7 +2766,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/b 2/c 2/a",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         342,
         73,
         21,
@@ -2751,7 +2776,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/c 2/a 2/b",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         343,
         74,
         21,
@@ -2761,7 +2786,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/m 2/m 2/a",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         344,
         74,
         21,
@@ -2771,7 +2796,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/m 2/m 2/b",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         345,
         74,
         21,
@@ -2781,7 +2806,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/b 2/m 2/m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         346,
         74,
         21,
@@ -2791,7 +2816,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/c 2/m 2/m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         347,
         74,
         21,
@@ -2801,7 +2826,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/m 2/c 2/m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         348,
         74,
         21,
@@ -2811,17 +2836,17 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/m 2/a 2/m",
         Centering::I,
     ),
-    (349, 75, 22, "", "P 4", "P 4", "P 4", Centering::P),
-    (350, 76, 22, "", "P 4w", "P 4_1", "P 4_1", Centering::P),
-    (351, 77, 22, "", "P 4c", "P 4_2", "P 4_2", Centering::P),
-    (352, 78, 22, "", "P 4cw", "P 4_3", "P 4_3", Centering::P),
-    (353, 79, 23, "", "I 4", "I 4", "I 4", Centering::I),
-    (354, 80, 23, "", "I 4bw", "I 4_1", "I 4_1", Centering::I),
-    (355, 81, 24, "", "P -4", "P -4", "P -4", Centering::P),
-    (356, 82, 25, "", "I -4", "I -4", "I -4", Centering::I),
-    (357, 83, 26, "", "-P 4", "P 4/m", "P 4/m", Centering::P),
-    (358, 84, 26, "", "-P 4c", "P 4_2/m", "P 4_2/m", Centering::P),
-    (
+    HallSymbolEntry::new(349, 75, 22, "", "P 4", "P 4", "P 4", Centering::P),
+    HallSymbolEntry::new(350, 76, 22, "", "P 4w", "P 4_1", "P 4_1", Centering::P),
+    HallSymbolEntry::new(351, 77, 22, "", "P 4c", "P 4_2", "P 4_2", Centering::P),
+    HallSymbolEntry::new(352, 78, 22, "", "P 4cw", "P 4_3", "P 4_3", Centering::P),
+    HallSymbolEntry::new(353, 79, 23, "", "I 4", "I 4", "I 4", Centering::I),
+    HallSymbolEntry::new(354, 80, 23, "", "I 4bw", "I 4_1", "I 4_1", Centering::I),
+    HallSymbolEntry::new(355, 81, 24, "", "P -4", "P -4", "P -4", Centering::P),
+    HallSymbolEntry::new(356, 82, 25, "", "I -4", "I -4", "I -4", Centering::I),
+    HallSymbolEntry::new(357, 83, 26, "", "-P 4", "P 4/m", "P 4/m", Centering::P),
+    HallSymbolEntry::new(358, 84, 26, "", "-P 4c", "P 4_2/m", "P 4_2/m", Centering::P),
+    HallSymbolEntry::new(
         359,
         85,
         26,
@@ -2831,8 +2856,8 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/n",
         Centering::P,
     ),
-    (360, 85, 26, "2", "-P 4a", "P 4/n", "P 4/n", Centering::P),
-    (
+    HallSymbolEntry::new(360, 85, 26, "2", "-P 4a", "P 4/n", "P 4/n", Centering::P),
+    HallSymbolEntry::new(
         361,
         86,
         26,
@@ -2842,7 +2867,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         362,
         86,
         26,
@@ -2852,8 +2877,8 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/n",
         Centering::P,
     ),
-    (363, 87, 27, "", "-I 4", "I 4/m", "I 4/m", Centering::I),
-    (
+    HallSymbolEntry::new(363, 87, 27, "", "-I 4", "I 4/m", "I 4/m", Centering::I),
+    HallSymbolEntry::new(
         364,
         88,
         27,
@@ -2863,7 +2888,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4_1/a",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         365,
         88,
         27,
@@ -2873,8 +2898,8 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4_1/a",
         Centering::I,
     ),
-    (366, 89, 28, "", "P 4 2", "P 4 2 2", "P 4 2 2", Centering::P),
-    (
+    HallSymbolEntry::new(366, 89, 28, "", "P 4 2", "P 4 2 2", "P 4 2 2", Centering::P),
+    HallSymbolEntry::new(
         367,
         90,
         28,
@@ -2884,7 +2909,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4 2_1 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         368,
         91,
         28,
@@ -2894,7 +2919,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_1 2 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         369,
         92,
         28,
@@ -2904,7 +2929,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_1 2_1 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         370,
         93,
         28,
@@ -2914,7 +2939,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2 2 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         371,
         94,
         28,
@@ -2924,7 +2949,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2 2_1 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         372,
         95,
         28,
@@ -2934,7 +2959,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_3 2 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         373,
         96,
         28,
@@ -2944,8 +2969,8 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_3 2_1 2",
         Centering::P,
     ),
-    (374, 97, 29, "", "I 4 2", "I 4 2 2", "I 4 2 2", Centering::I),
-    (
+    HallSymbolEntry::new(374, 97, 29, "", "I 4 2", "I 4 2 2", "I 4 2 2", Centering::I),
+    HallSymbolEntry::new(
         375,
         98,
         29,
@@ -2955,7 +2980,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4_1 2 2",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         376,
         99,
         30,
@@ -2965,7 +2990,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4 m m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         377,
         100,
         30,
@@ -2975,7 +3000,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4 b m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         378,
         101,
         30,
@@ -2985,7 +3010,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2 c m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         379,
         102,
         30,
@@ -2995,7 +3020,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2 n m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         380,
         103,
         30,
@@ -3005,7 +3030,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4 c c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         381,
         104,
         30,
@@ -3015,7 +3040,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4 n c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         382,
         105,
         30,
@@ -3025,7 +3050,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2 m c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         383,
         106,
         30,
@@ -3035,7 +3060,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2 b c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         384,
         107,
         31,
@@ -3045,7 +3070,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4 m m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         385,
         108,
         31,
@@ -3055,7 +3080,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4 c m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         386,
         109,
         31,
@@ -3065,7 +3090,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4_1 m d",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         387,
         110,
         31,
@@ -3075,7 +3100,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4_1 c d",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         388,
         111,
         32,
@@ -3085,7 +3110,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -4 2 m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         389,
         112,
         32,
@@ -3095,7 +3120,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -4 2 c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         390,
         113,
         32,
@@ -3105,7 +3130,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -4 2_1 m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         391,
         114,
         32,
@@ -3115,7 +3140,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -4 2_1 c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         392,
         115,
         33,
@@ -3125,7 +3150,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -4 m 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         393,
         116,
         33,
@@ -3135,7 +3160,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -4 c 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         394,
         117,
         33,
@@ -3145,7 +3170,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -4 b 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         395,
         118,
         33,
@@ -3155,7 +3180,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -4 n 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         396,
         119,
         34,
@@ -3165,7 +3190,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I -4 m 2",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         397,
         120,
         34,
@@ -3175,7 +3200,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I -4 c 2",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         398,
         121,
         35,
@@ -3185,7 +3210,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I -4 2 m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         399,
         122,
         35,
@@ -3195,7 +3220,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I -4 2 d",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         400,
         123,
         36,
@@ -3205,7 +3230,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/m 2/m 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         401,
         124,
         36,
@@ -3215,7 +3240,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/m 2/c 2/c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         402,
         125,
         36,
@@ -3225,7 +3250,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/n 2/b 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         403,
         125,
         36,
@@ -3235,7 +3260,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/n 2/b 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         404,
         126,
         36,
@@ -3245,7 +3270,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/n 2/n 2/c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         405,
         126,
         36,
@@ -3255,7 +3280,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/n 2/n 2/c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         406,
         127,
         36,
@@ -3265,7 +3290,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/m 2_1/b m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         407,
         128,
         36,
@@ -3275,7 +3300,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/m 2_1/n c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         408,
         129,
         36,
@@ -3285,7 +3310,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/n 2_1/m m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         409,
         129,
         36,
@@ -3295,7 +3320,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/n 2_1/m m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         410,
         130,
         36,
@@ -3305,7 +3330,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/n 2_1/c c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         411,
         130,
         36,
@@ -3315,7 +3340,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/n 2_1/c c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         412,
         131,
         36,
@@ -3325,7 +3350,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/m 2/m 2/c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         413,
         132,
         36,
@@ -3335,7 +3360,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/m 2/c 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         414,
         133,
         36,
@@ -3345,7 +3370,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/n 2/b 2/c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         415,
         133,
         36,
@@ -3355,7 +3380,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/n 2/b 2/c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         416,
         134,
         36,
@@ -3365,7 +3390,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/n 2/n 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         417,
         134,
         36,
@@ -3375,7 +3400,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/n 2/n 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         418,
         135,
         36,
@@ -3385,7 +3410,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/m 2_1/b 2/c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         419,
         136,
         36,
@@ -3395,7 +3420,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/m 2_1/n 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         420,
         137,
         36,
@@ -3405,7 +3430,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/n 2_1/m 2/c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         421,
         137,
         36,
@@ -3415,7 +3440,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/n 2_1/m 2/c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         422,
         138,
         36,
@@ -3425,7 +3450,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/n 2_1/c 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         423,
         138,
         36,
@@ -3435,7 +3460,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/n 2_1/c 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         424,
         139,
         37,
@@ -3445,7 +3470,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4/m 2/m 2/m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         425,
         140,
         37,
@@ -3455,7 +3480,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4/m 2/c 2/m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         426,
         141,
         37,
@@ -3465,7 +3490,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4_1/a 2/m 2/d",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         427,
         141,
         37,
@@ -3475,7 +3500,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4_1/a 2/m 2/d",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         428,
         142,
         37,
@@ -3485,7 +3510,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4_1/a 2/c 2/d",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         429,
         142,
         37,
@@ -3495,15 +3520,15 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4_1/a 2/c 2/d",
         Centering::I,
     ),
-    (430, 143, 38, "", "P 3", "P 3", "P 3", Centering::P),
-    (431, 144, 38, "", "P 31", "P 3_1", "P 3_1", Centering::P),
-    (432, 145, 38, "", "P 32", "P 3_2", "P 3_2", Centering::P),
-    (433, 146, 39, "H", "R 3", "R 3", "R 3", Centering::R),
-    (434, 146, 39, "R", "P 3*", "R 3", "R 3", Centering::P),
-    (435, 147, 40, "", "-P 3", "P -3", "P -3", Centering::P),
-    (436, 148, 41, "H", "-R 3", "R -3", "R -3", Centering::R),
-    (437, 148, 41, "R", "-P 3*", "R -3", "R -3", Centering::P),
-    (
+    HallSymbolEntry::new(430, 143, 38, "", "P 3", "P 3", "P 3", Centering::P),
+    HallSymbolEntry::new(431, 144, 38, "", "P 31", "P 3_1", "P 3_1", Centering::P),
+    HallSymbolEntry::new(432, 145, 38, "", "P 32", "P 3_2", "P 3_2", Centering::P),
+    HallSymbolEntry::new(433, 146, 39, "H", "R 3", "R 3", "R 3", Centering::R),
+    HallSymbolEntry::new(434, 146, 39, "R", "P 3*", "R 3", "R 3", Centering::P),
+    HallSymbolEntry::new(435, 147, 40, "", "-P 3", "P -3", "P -3", Centering::P),
+    HallSymbolEntry::new(436, 148, 41, "H", "-R 3", "R -3", "R -3", Centering::R),
+    HallSymbolEntry::new(437, 148, 41, "R", "-P 3*", "R -3", "R -3", Centering::P),
+    HallSymbolEntry::new(
         438,
         149,
         42,
@@ -3513,7 +3538,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 3 1 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         439,
         150,
         43,
@@ -3523,17 +3548,17 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 3 2 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         440,
         151,
         42,
         "",
-        "P 31 2 (0 0 4)",
+        "P 31 2 HallSymbolEntry::new(0 0 4)",
         "P 3_1 1 2",
         "P 3_1 1 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         441,
         152,
         43,
@@ -3543,17 +3568,17 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 3_1 2 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         442,
         153,
         42,
         "",
-        "P 32 2 (0 0 2)",
+        "P 32 2 HallSymbolEntry::new(0 0 2)",
         "P 3_2 1 2",
         "P 3_2 1 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         443,
         154,
         43,
@@ -3563,9 +3588,9 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 3_2 2 1",
         Centering::P,
     ),
-    (444, 155, 44, "H", "R 3 2=", "R 3 2", "R 3 2", Centering::R),
-    (445, 155, 44, "R", "P 3* 2", "R 3 2", "R 3 2", Centering::P),
-    (
+    HallSymbolEntry::new(444, 155, 44, "H", "R 3 2=", "R 3 2", "R 3 2", Centering::R),
+    HallSymbolEntry::new(445, 155, 44, "R", "P 3* 2", "R 3 2", "R 3 2", Centering::P),
+    HallSymbolEntry::new(
         446,
         156,
         45,
@@ -3575,7 +3600,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 3 m 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         447,
         157,
         46,
@@ -3585,7 +3610,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 3 1 m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         448,
         158,
         45,
@@ -3595,7 +3620,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 3 c 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         449,
         159,
         46,
@@ -3605,9 +3630,9 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 3 1 c",
         Centering::P,
     ),
-    (450, 160, 47, "H", "R 3 -2=", "R 3 m", "R 3 m", Centering::R),
-    (451, 160, 47, "R", "P 3* -2", "R 3 m", "R 3 m", Centering::P),
-    (
+    HallSymbolEntry::new(450, 160, 47, "H", "R 3 -2=", "R 3 m", "R 3 m", Centering::R),
+    HallSymbolEntry::new(451, 160, 47, "R", "P 3* -2", "R 3 m", "R 3 m", Centering::P),
+    HallSymbolEntry::new(
         452,
         161,
         47,
@@ -3617,7 +3642,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "R 3 c",
         Centering::R,
     ),
-    (
+    HallSymbolEntry::new(
         453,
         161,
         47,
@@ -3627,7 +3652,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "R 3 c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         454,
         162,
         48,
@@ -3637,7 +3662,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -3 1 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         455,
         163,
         48,
@@ -3647,7 +3672,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -3 1 2/c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         456,
         164,
         49,
@@ -3657,7 +3682,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -3 2/m 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         457,
         165,
         49,
@@ -3667,7 +3692,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -3 2/c 1",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         458,
         166,
         50,
@@ -3677,7 +3702,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "R -3 2/m",
         Centering::R,
     ),
-    (
+    HallSymbolEntry::new(
         459,
         166,
         50,
@@ -3687,7 +3712,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "R -3 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         460,
         167,
         50,
@@ -3697,7 +3722,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "R -3 2/c",
         Centering::R,
     ),
-    (
+    HallSymbolEntry::new(
         461,
         167,
         50,
@@ -3707,15 +3732,15 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "R -3 2/c",
         Centering::P,
     ),
-    (462, 168, 51, "", "P 6", "P 6", "P 6", Centering::P),
-    (463, 169, 51, "", "P 61", "P 6_1", "P 6_1", Centering::P),
-    (464, 170, 51, "", "P 65", "P 6_5", "P 6_5", Centering::P),
-    (465, 171, 51, "", "P 62", "P 6_2", "P 6_2", Centering::P),
-    (466, 172, 51, "", "P 64", "P 6_4", "P 6_4", Centering::P),
-    (467, 173, 51, "", "P 6c", "P 6_3", "P 6_3", Centering::P),
-    (468, 174, 52, "", "P -6", "P -6", "P -6", Centering::P),
-    (469, 175, 53, "", "-P 6", "P 6/m", "P 6/m", Centering::P),
-    (
+    HallSymbolEntry::new(462, 168, 51, "", "P 6", "P 6", "P 6", Centering::P),
+    HallSymbolEntry::new(463, 169, 51, "", "P 61", "P 6_1", "P 6_1", Centering::P),
+    HallSymbolEntry::new(464, 170, 51, "", "P 65", "P 6_5", "P 6_5", Centering::P),
+    HallSymbolEntry::new(465, 171, 51, "", "P 62", "P 6_2", "P 6_2", Centering::P),
+    HallSymbolEntry::new(466, 172, 51, "", "P 64", "P 6_4", "P 6_4", Centering::P),
+    HallSymbolEntry::new(467, 173, 51, "", "P 6c", "P 6_3", "P 6_3", Centering::P),
+    HallSymbolEntry::new(468, 174, 52, "", "P -6", "P -6", "P -6", Centering::P),
+    HallSymbolEntry::new(469, 175, 53, "", "-P 6", "P 6/m", "P 6/m", Centering::P),
+    HallSymbolEntry::new(
         470,
         176,
         53,
@@ -3725,7 +3750,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 6_3/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         471,
         177,
         54,
@@ -3735,47 +3760,47 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 6 2 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         472,
         178,
         54,
         "",
-        "P 61 2 (0 0 5)",
+        "P 61 2 HallSymbolEntry::new(0 0 5)",
         "P 6_1 2 2",
         "P 6_1 2 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         473,
         179,
         54,
         "",
-        "P 65 2 (0 0 1)",
+        "P 65 2 HallSymbolEntry::new(0 0 1)",
         "P 6_5 2 2",
         "P 6_5 2 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         474,
         180,
         54,
         "",
-        "P 62 2 (0 0 4)",
+        "P 62 2 HallSymbolEntry::new(0 0 4)",
         "P 6_2 2 2",
         "P 6_2 2 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         475,
         181,
         54,
         "",
-        "P 64 2 (0 0 2)",
+        "P 64 2 HallSymbolEntry::new(0 0 2)",
         "P 6_4 2 2",
         "P 6_4 2 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         476,
         182,
         54,
@@ -3785,7 +3810,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 6_3 2 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         477,
         183,
         55,
@@ -3795,7 +3820,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 6 m m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         478,
         184,
         55,
@@ -3805,7 +3830,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 6 c c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         479,
         185,
         55,
@@ -3815,7 +3840,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 6_3 c m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         480,
         186,
         55,
@@ -3825,7 +3850,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 6_3 m c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         481,
         187,
         57,
@@ -3835,7 +3860,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -6 m 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         482,
         188,
         57,
@@ -3845,7 +3870,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -6 c 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         483,
         189,
         56,
@@ -3855,7 +3880,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -6 2 m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         484,
         190,
         56,
@@ -3865,7 +3890,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -6 2 c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         485,
         191,
         58,
@@ -3875,7 +3900,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 6/m 2/m 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         486,
         192,
         58,
@@ -3885,7 +3910,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 6/m 2/c 2/c",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         487,
         193,
         58,
@@ -3895,7 +3920,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 6_3/m 2/c 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         488,
         194,
         58,
@@ -3905,10 +3930,10 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 6_3/m 2/m 2/c",
         Centering::P,
     ),
-    (489, 195, 59, "", "P 2 2 3", "P 2 3", "P 2 3", Centering::P),
-    (490, 196, 60, "", "F 2 2 3", "F 2 3", "F 2 3", Centering::F),
-    (491, 197, 61, "", "I 2 2 3", "I 2 3", "I 2 3", Centering::I),
-    (
+    HallSymbolEntry::new(489, 195, 59, "", "P 2 2 3", "P 2 3", "P 2 3", Centering::P),
+    HallSymbolEntry::new(490, 196, 60, "", "F 2 2 3", "F 2 3", "F 2 3", Centering::F),
+    HallSymbolEntry::new(491, 197, 61, "", "I 2 2 3", "I 2 3", "I 2 3", Centering::I),
+    HallSymbolEntry::new(
         492,
         198,
         59,
@@ -3918,7 +3943,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1 3",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         493,
         199,
         61,
@@ -3928,7 +3953,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2_1 3",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         494,
         200,
         62,
@@ -3938,7 +3963,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/m -3",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         495,
         201,
         62,
@@ -3948,7 +3973,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n -3",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         496,
         201,
         62,
@@ -3958,7 +3983,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2/n -3",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         497,
         202,
         63,
@@ -3968,7 +3993,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 2/m -3",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         498,
         203,
         63,
@@ -3978,7 +4003,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 2/d -3",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         499,
         203,
         63,
@@ -3988,7 +4013,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 2/d -3",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         500,
         204,
         64,
@@ -3998,7 +4023,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2/m -3",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         501,
         205,
         62,
@@ -4008,7 +4033,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 2_1/a -3",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         502,
         206,
         64,
@@ -4018,7 +4043,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 2_1/a -3",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         503,
         207,
         65,
@@ -4028,7 +4053,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4 3 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         504,
         208,
         65,
@@ -4038,7 +4063,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2 3 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         505,
         209,
         66,
@@ -4048,7 +4073,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 4 3 2",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         506,
         210,
         66,
@@ -4058,7 +4083,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 4_1 3 2",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         507,
         211,
         67,
@@ -4068,7 +4093,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4 3 2",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         508,
         212,
         65,
@@ -4078,7 +4103,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_3 3 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         509,
         213,
         65,
@@ -4088,7 +4113,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_1 3 2",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         510,
         214,
         67,
@@ -4098,7 +4123,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4_1 3 2",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         511,
         215,
         68,
@@ -4108,7 +4133,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -4 3 m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         512,
         216,
         69,
@@ -4118,7 +4143,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F -4 3 m",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         513,
         217,
         70,
@@ -4128,7 +4153,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I -4 3 m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         514,
         218,
         68,
@@ -4138,7 +4163,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P -4 3 n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         515,
         219,
         69,
@@ -4148,7 +4173,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F -4 3 c",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         516,
         220,
         70,
@@ -4158,7 +4183,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I -4 3 d",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         517,
         221,
         71,
@@ -4168,7 +4193,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/m -3 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         518,
         222,
         71,
@@ -4178,7 +4203,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/n -3 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         519,
         222,
         71,
@@ -4188,7 +4213,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4/n -3 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         520,
         223,
         71,
@@ -4198,7 +4223,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/m -3 2/n",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         521,
         224,
         71,
@@ -4208,7 +4233,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/n -3 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         522,
         224,
         71,
@@ -4218,7 +4243,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "P 4_2/n -3 2/m",
         Centering::P,
     ),
-    (
+    HallSymbolEntry::new(
         523,
         225,
         72,
@@ -4228,7 +4253,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 4/m -3 2/m",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         524,
         226,
         72,
@@ -4238,7 +4263,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 4/m -3 2/c",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         525,
         227,
         72,
@@ -4248,7 +4273,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 4_1/d -3 2/m",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         526,
         227,
         72,
@@ -4258,7 +4283,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 4_1/d -3 2/m",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         527,
         228,
         72,
@@ -4268,7 +4293,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 4_1/d -3 2/c",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         528,
         228,
         72,
@@ -4278,7 +4303,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "F 4_1/d -3 2/c",
         Centering::F,
     ),
-    (
+    HallSymbolEntry::new(
         529,
         229,
         73,
@@ -4288,7 +4313,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         "I 4/m -3 2/m",
         Centering::I,
     ),
-    (
+    HallSymbolEntry::new(
         530,
         230,
         73,

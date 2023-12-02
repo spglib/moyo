@@ -208,7 +208,7 @@ impl HallSymbol {
     }
 
     pub fn from_hall_number(hall_number: HallNumber) -> Self {
-        let hall_symbol = HALL_SYMBOL_DATABASE[hall_number as usize - 1].4;
+        let hall_symbol = HALL_SYMBOL_DATABASE[hall_number as usize - 1].hall_symbol;
         Self::new(hall_symbol).unwrap()
     }
 
@@ -588,8 +588,8 @@ mod tests {
 
     #[test]
     fn test_hall_symbol_whole() {
-        for (_, _, _, _, hall_symbol, _, _, _) in HALL_SYMBOL_DATABASE {
-            let hs = HallSymbol::new(hall_symbol).unwrap();
+        for entry in HALL_SYMBOL_DATABASE.iter() {
+            let hs = HallSymbol::new(entry.hall_symbol).unwrap();
             assert_eq!(48 % hs.traverse().num_operations(), 0);
         }
     }
