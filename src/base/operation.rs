@@ -2,6 +2,7 @@ use nalgebra::base::{Matrix3, Vector3};
 use std::ops::Mul;
 
 use super::lattice::Lattice;
+use super::transformation::Transformation;
 
 pub type Rotation = Matrix3<i32>;
 pub type Translation = Vector3<f64>;
@@ -32,6 +33,32 @@ impl AbstractOperations {
     pub fn num_operations(&self) -> usize {
         self.rotations.len()
     }
+
+    /// (P, p)^-1 (W, w) (P, p)
+    pub fn transform(&self, linear: &Matrix3<f64>, origin_shift: &Vector3<f64>) -> Self {
+        let mut new_rotations = vec![];
+        let mut new_translations = vec![];
+        for (rotation, translation) in self.rotations.iter().zip(self.translations.iter()) {
+            let (new_rotation, new_translation) =
+                transform_operation(rotation, translation, linear, origin_shift);
+            new_rotations.push(new_rotation);
+            new_translations.push(new_translation);
+        }
+        Self::new(new_rotations, new_translations)
+    }
+}
+
+fn transform_operation(
+    rotation: &Rotation,
+    translation: &Translation,
+    linear: &Matrix3<f64>,
+    origin_shift: &Vector3<f64>,
+) -> (Rotation, Translation) {
+    let linear_inv = linear.try_inverse().unwrap();
+    let new_rotation = (linear_inv * rotation.map(|e| e as f64) * linear).map(|e| e.round() as i32);
+    let new_translation =
+        linear_inv * (rotation.map(|e| e as f64) * origin_shift + translation - origin_shift);
+    (new_rotation, new_translation)
 }
 
 #[derive(Debug)]
@@ -66,6 +93,19 @@ impl Operations {
             .map(|r| self.lattice.basis * r.map(|e| e as f64) * inv_basis)
             // .map(|r| inv_basis * r.map(|e| e as f64) * self.lattice.basis)
             .collect()
+    }
+
+    pub fn transform(&self, linear: &Matrix3<f64>, origin_shift: &Vector3<f64>) -> Self {
+        let new_lattice = self.lattice.transform(linear);
+        let mut new_rotations = vec![];
+        let mut new_translations = vec![];
+        for (rotation, translation) in self.rotations.iter().zip(self.translations.iter()) {
+            let (new_rotation, new_translation) =
+                transform_operation(rotation, translation, linear, origin_shift);
+            new_rotations.push(new_rotation);
+            new_translations.push(new_translation);
+        }
+        Self::new(new_lattice, new_rotations, new_translations)
     }
 }
 

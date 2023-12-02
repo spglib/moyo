@@ -4,6 +4,7 @@ use super::hall_symbol::Centering;
 pub type Number = i32;
 pub type HallNumber = i32;
 
+#[derive(Debug, Clone)]
 pub struct HallSymbolEntry {
     pub hall_number: HallNumber,
     pub number: Number,
@@ -4324,3 +4325,7 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         Centering::I,
     ),
 ];
+
+pub fn get_hall_symbol_entry(hall_number: HallNumber) -> HallSymbolEntry {
+    HALL_SYMBOL_DATABASE[(hall_number - 1) as usize].clone()
+}

@@ -35,7 +35,9 @@ impl Cell {
         if transformation.size != 1 {
             panic!("transformation matrix should have determinant of -1 or 1");
         }
-        let new_lattice = self.lattice.transform(&transformation.trans_mat);
+        let new_lattice = self
+            .lattice
+            .transform(&transformation.trans_mat.map(|e| e as f64));
         let pinv = transformation.trans_mat_as_f64().try_inverse().unwrap();
         let new_positions = self
             .positions

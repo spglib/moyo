@@ -3,7 +3,7 @@ use std::collections::{HashMap, VecDeque};
 use nalgebra::{matrix, Matrix3, Vector3};
 use strum_macros::EnumIter;
 
-use super::hall_symbol_database::{HallNumber, HALL_SYMBOL_DATABASE};
+use super::hall_symbol_database::{get_hall_symbol_entry, HallNumber, HALL_SYMBOL_DATABASE};
 use crate::base::operation::{AbstractOperations, Rotation, Translation};
 use crate::base::tolerance::EPS;
 use crate::base::transformation::TransformationMatrix;
@@ -208,8 +208,8 @@ impl HallSymbol {
     }
 
     pub fn from_hall_number(hall_number: HallNumber) -> Self {
-        let hall_symbol = HALL_SYMBOL_DATABASE[hall_number as usize - 1].hall_symbol;
-        Self::new(hall_symbol).unwrap()
+        let entry = get_hall_symbol_entry(hall_number);
+        Self::new(entry.hall_symbol).unwrap()
     }
 
     fn tokenize(hall_symbol: &str) -> Vec<&str> {

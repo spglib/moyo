@@ -19,10 +19,9 @@ impl Lattice {
         Self { basis }
     }
 
-    pub fn transform(&self, trans_mat: &TransformationMatrix) -> Self {
-        let trans_mat_as_f64 = trans_mat.map(|e| e as f64);
+    pub fn transform(&self, trans_mat: &Matrix3<f64>) -> Self {
         Self {
-            basis: self.basis * trans_mat_as_f64,
+            basis: self.basis * trans_mat,
         }
     }
 
@@ -33,7 +32,7 @@ impl Lattice {
         };
 
         if relative_ne!(
-            self.transform(&trans_mat).basis,
+            self.transform(&trans_mat.map(|e| e as f64)).basis,
             minkowski_lattice.basis,
             epsilon = EPS
         ) {

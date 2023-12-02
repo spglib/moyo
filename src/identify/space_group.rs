@@ -1,8 +1,9 @@
 use super::point_group::identify_point_group;
 use crate::base::error::MoyoError;
-use crate::base::operation::Operations;
+use crate::base::operation::{Rotation, Translation};
 use crate::base::transformation::Transformation;
-use crate::data::hall_symbol_database::{HallNumber, Number, HALL_SYMBOL_DATABASE};
+use crate::data::hall_symbol::HallSymbol;
+use crate::data::hall_symbol_database::{get_hall_symbol_entry, HallNumber, Number};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Setting {
@@ -57,7 +58,6 @@ impl Setting {
 
 #[derive(Debug)]
 pub struct SpaceGroup {
-    pub prim_operations: Operations,
     pub number: Number,
     pub hall_number: HallNumber,
     /// Transformation to the representative for `hall_number`
@@ -65,15 +65,46 @@ pub struct SpaceGroup {
 }
 
 pub fn identify_space_group(
-    prim_operations: Operations,
+    prim_rotations: &Vec<Rotation>,
+    prim_translations: &Vec<Translation>,
     setting: Setting,
 ) -> Result<SpaceGroup, MoyoError> {
-    let point_group = identify_point_group(&prim_operations.rotations)?;
-    let hall_number_candidates: Vec<HallNumber> = setting
-        .hall_numbers()
-        .iter()
-        .filter_map(|hall_number| unimplemented!())
-        .collect();
+    let point_group = identify_point_group(&prim_rotations)?;
+
+    for hall_number in setting.hall_numbers() {
+        let entry = get_hall_symbol_entry(hall_number);
+        if entry.arithmetic_number != point_group.arithmetic_number {
+            continue;
+        }
+
+        let hall_symbol = HallSymbol::from_hall_number(hall_number);
+        dbg!(entry);
+    }
 
     unimplemented!()
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::base::transformation::OriginShift;
+    use crate::data::hall_symbol::HallSymbol;
+
+    use super::{identify_space_group, Setting};
+
+    #[test]
+    fn test_identify_space_group() {
+        let hall_number = 530;
+        let hall_symbol = HallSymbol::from_hall_number(hall_number);
+        let operations = hall_symbol.traverse();
+
+        // conventional -> primitive
+        let linear = hall_symbol.lattice_symbol.inverse();
+        let prim_operations = operations.transform(&linear, &OriginShift::zeros());
+
+        let space_group = identify_space_group(
+            &prim_operations.rotations,
+            &prim_operations.translations,
+            Setting::Spglib,
+        );
+    }
 }
