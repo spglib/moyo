@@ -14,4 +14,6 @@ pub enum MoyoError {
     SymmetrySearchError,
     #[error("Arithmetic crystal class identification failed")]
     ArithmeticCrystalClassIdentificationError,
+    #[error("Space group type identification failed")]
+    SpaceGroupTypeIdentificationError,
 }

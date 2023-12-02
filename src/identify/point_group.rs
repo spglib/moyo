@@ -210,22 +210,13 @@ impl PointGroupRepresentative {
 /// Assume the rotations are given in the (Minkowski-reduced) primitive basis
 #[derive(Debug)]
 pub struct PointGroup {
-    pub prim_rotations: Vec<Rotation>,
-    pub geometric_crystal_class: GeometricCrystalClass,
     pub arithmetic_number: ArithmeticNumber,
     /// Transformation matrix to the representative for `arithmetic_number`
     /// trans_mat^-1 * self.rotations * trans_mat = AbstractPointGroup::from_arithmetic_crystal_class(arithmetic_number)
     pub trans_mat: TransformationMatrix,
 }
 
-/// Crystallographic point group
-impl PointGroup {
-    pub fn order(&self) -> usize {
-        self.prim_rotations.len()
-    }
-}
-
-pub fn identify_point_group(prim_rotations: Vec<Rotation>) -> Result<PointGroup, MoyoError> {
+pub fn identify_point_group(prim_rotations: &Vec<Rotation>) -> Result<PointGroup, MoyoError> {
     let rotation_types = prim_rotations
         .iter()
         .map(|rotation| identify_rotation_type(rotation))
@@ -238,16 +229,12 @@ pub fn identify_point_group(prim_rotations: Vec<Rotation>) -> Result<PointGroup,
         CrystalSystem::Triclinic => match geometric_crystal_class {
             GeometricCrystalClass::C1 => {
                 return Ok(PointGroup {
-                    prim_rotations,
-                    geometric_crystal_class,
                     arithmetic_number: 1,
                     trans_mat: TransformationMatrix::identity(),
                 })
             }
             GeometricCrystalClass::Ci => {
                 return Ok(PointGroup {
-                    prim_rotations,
-                    geometric_crystal_class,
                     arithmetic_number: 2,
                     trans_mat: TransformationMatrix::identity(),
                 });
@@ -261,8 +248,6 @@ pub fn identify_point_group(prim_rotations: Vec<Rotation>) -> Result<PointGroup,
                 geometric_crystal_class,
             ) {
                 return Ok(PointGroup {
-                    prim_rotations,
-                    geometric_crystal_class,
                     arithmetic_number,
                     trans_mat,
                 });
@@ -273,8 +258,6 @@ pub fn identify_point_group(prim_rotations: Vec<Rotation>) -> Result<PointGroup,
                 match_with_point_group(&prim_rotations, &rotation_types, geometric_crystal_class)
             {
                 return Ok(PointGroup {
-                    prim_rotations,
-                    geometric_crystal_class,
                     arithmetic_number,
                     trans_mat,
                 });
@@ -711,7 +694,7 @@ mod tests {
                 PointGroupRepresentative::from_arithmetic_crystal_class(arithmetic_number);
             let primitive_generators = point_group_db.primitive_generators();
             let prim_rotations = traverse(&primitive_generators);
-            let point_group = identify_point_group(prim_rotations).unwrap();
+            let point_group = identify_point_group(&prim_rotations).unwrap();
             assert_eq!(point_group.arithmetic_number, arithmetic_number);
         }
     }
