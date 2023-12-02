@@ -206,115 +206,233 @@ impl PointGroupRepresentative {
     }
 }
 
-/// Crystallographic point group
+/// Crystallographic point group with group-type information
+/// Assume the rotations are given in the (Minkowski-reduced) primitive basis
 #[derive(Debug)]
 pub struct PointGroup {
-    pub rotations: Vec<Rotation>,
+    pub prim_rotations: Vec<Rotation>,
+    pub geometric_crystal_class: GeometricCrystalClass,
+    pub arithmetic_number: ArithmeticNumber,
+    /// Transformation matrix to the representative for `arithmetic_number`
+    /// trans_mat^-1 * self.rotations * trans_mat = AbstractPointGroup::from_arithmetic_crystal_class(arithmetic_number)
+    pub trans_mat: TransformationMatrix,
 }
 
 /// Crystallographic point group
 impl PointGroup {
-    pub fn new(rotations: Vec<Rotation>) -> Self {
-        Self { rotations }
-    }
-
     pub fn order(&self) -> usize {
-        self.rotations.len()
+        self.prim_rotations.len()
     }
+}
 
-    /// Let P be the (unimodular) transformation matrix
-    /// P^-1 * self.rotations * P = AbstractPointGroup::from_arithmetic_crystal_class(arithmetic_number)
-    pub fn match_arithmetic(&self) -> Result<(ArithmeticNumber, TransformationMatrix), MoyoError> {
-        let rotation_types = self
-            .rotations
-            .iter()
-            .map(|rotation| identify_rotation_type(rotation))
-            .collect();
-        let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types);
+pub fn identify_point_group(prim_rotations: Vec<Rotation>) -> Result<PointGroup, MoyoError> {
+    let rotation_types = prim_rotations
+        .iter()
+        .map(|rotation| identify_rotation_type(rotation))
+        .collect();
+    let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types);
 
+    let crystal_system = CrystalSystem::from_geometric_crystal_class(geometric_crystal_class);
+    match crystal_system {
         // Skip triclinic cases as trivial
-        if geometric_crystal_class == GeometricCrystalClass::C1 {
-            return Ok((1, TransformationMatrix::identity()));
+        CrystalSystem::Triclinic => match geometric_crystal_class {
+            GeometricCrystalClass::C1 => {
+                return Ok(PointGroup {
+                    prim_rotations,
+                    geometric_crystal_class,
+                    arithmetic_number: 1,
+                    trans_mat: TransformationMatrix::identity(),
+                })
+            }
+            GeometricCrystalClass::Ci => {
+                return Ok(PointGroup {
+                    prim_rotations,
+                    geometric_crystal_class,
+                    arithmetic_number: 2,
+                    trans_mat: TransformationMatrix::identity(),
+                });
+            }
+            _ => unreachable!(),
+        },
+        CrystalSystem::Cubic => {
+            if let Some((arithmetic_number, trans_mat)) = match_with_cubic_point_group(
+                &prim_rotations,
+                &rotation_types,
+                geometric_crystal_class,
+            ) {
+                return Ok(PointGroup {
+                    prim_rotations,
+                    geometric_crystal_class,
+                    arithmetic_number,
+                    trans_mat,
+                });
+            }
         }
-        if geometric_crystal_class == GeometricCrystalClass::Ci {
-            return Ok((2, TransformationMatrix::identity()));
+        _ => {
+            if let Some((arithmetic_number, trans_mat)) =
+                match_with_point_group(&prim_rotations, &rotation_types, geometric_crystal_class)
+            {
+                return Ok(PointGroup {
+                    prim_rotations,
+                    geometric_crystal_class,
+                    arithmetic_number,
+                    trans_mat,
+                });
+            }
         }
+    }
+    Err(MoyoError::ArithmeticCrystalClassIdentificationError)
+}
 
-        let crystal_system = CrystalSystem::from_geometric_crystal_class(geometric_crystal_class);
-        match crystal_system {
-            CrystalSystem::Cubic => {
-                if let Some((arithmetic_number, trans_mat)) =
-                    self.match_with_cubic_point_group(geometric_crystal_class)
-                {
-                    return Ok((arithmetic_number, trans_mat));
+/// Faster matching algorithm for cubic point groups
+fn match_with_cubic_point_group(
+    prim_rotations: &Vec<Rotation>,
+    rotation_types: &Vec<RotationType>,
+    geometric_crystal_class: GeometricCrystalClass,
+) -> Option<(ArithmeticNumber, TransformationMatrix)> {
+    let generators = choose_generators(&prim_rotations);
+
+    let arithmetic_crystal_class_candidates = ARITHMETIC_CRYSTAL_CLASS_DATABASE
+        .iter()
+        .filter_map(|(arithmetic_number_db, _, geometric_crystal_class_db, _)| {
+            if *geometric_crystal_class_db != geometric_crystal_class {
+                return None;
+            }
+
+            // Check if prim_trans_mat^-1 * rotation * prim_trans_mat is integer matrix (for all rotation in generators)
+            let point_group_db =
+                PointGroupRepresentative::from_arithmetic_crystal_class(*arithmetic_number_db);
+            let centering = point_group_db.centering;
+            let prim_trans_mat = centering.transformation_matrix(); // primitive -> conventional
+            let prim_trans_mat_inv = centering.inverse();
+            let compatible = generators.iter().all(|i| {
+                let rotation = prim_rotations[*i];
+                let tmp_mat = prim_trans_mat_inv * (rotation * prim_trans_mat).map(|e| e as f64);
+                let tmp_mat_int = tmp_mat.map(|e| e.round() as i32);
+                (rotation * prim_trans_mat - prim_trans_mat * tmp_mat_int)
+                    .iter()
+                    .all(|e| *e == 0)
+            });
+            if !compatible {
+                return None;
+            }
+
+            Some((*arithmetic_number_db, point_group_db, centering))
+        })
+        .collect::<Vec<_>>();
+    let primitive_arithmetic_crystal_class = arithmetic_crystal_class_candidates
+        .iter()
+        .filter(|(_, _, centering)| *centering == Centering::P)
+        .next()
+        .unwrap();
+
+    let order = prim_rotations.len();
+    let other_prim_generators = primitive_arithmetic_crystal_class.1.primitive_generators();
+
+    // Try to map generators
+    let other_generator_rotation_types = other_prim_generators
+        .iter()
+        .map(|rotation| identify_rotation_type(rotation))
+        .collect::<Vec<_>>();
+    let candidates: Vec<Vec<usize>> = other_generator_rotation_types
+        .iter()
+        .map(|&rotation_type| {
+            (0..order)
+                .filter(|&i| rotation_types[i] == rotation_type)
+                .collect()
+        })
+        .collect();
+
+    for pivot in candidates
+        .iter()
+        .map(|v| v.iter())
+        .multi_cartesian_product()
+    {
+        // Solve P^-1 * self.rotations[self.rotations[pivot[i]]] * P = other.generators[i] (for all i)
+        // vec(A * P - P * B) = (I_3 \otimes A - B^T \otimes I_3) * vec(P)
+        let mut coeffs = OMatrix::<i32, Dyn, U9>::zeros(9 * other_prim_generators.len());
+        for (k, &pk) in pivot.iter().enumerate() {
+            let rotation = prim_rotations[*pk];
+            let other_rotation = other_prim_generators[k];
+            let identity = Rotation::identity();
+            let adj =
+                identity.kronecker(&rotation) - other_rotation.transpose().kronecker(&identity);
+            for i in 0..9 {
+                for j in 0..9 {
+                    coeffs[(9 * k + i, j)] = adj[(i, j)];
                 }
             }
-            _ => {
-                if let Some((arithmetic_number, trans_mat)) =
-                    self.match_with_point_group(geometric_crystal_class)
-                {
-                    return Ok((arithmetic_number, trans_mat));
+        }
+        let solution =
+            IntegerLinearSystem::new(&coeffs, &OVector::<i32, Dyn>::zeros(coeffs.nrows()));
+
+        // Search integer linear combination such that the transformation matrix is unimodular
+        if let Some(solution) = solution {
+            let trans_mat_basis: Vec<_> = solution
+                .nullspace
+                .row_iter()
+                .map(|e| {
+                    TransformationMatrix::new(
+                        e[0], e[3], e[6], //
+                        e[1], e[4], e[7], //
+                        e[2], e[5], e[8], //
+                    )
+                })
+                .collect();
+
+            // trans_mat: self -> primitive
+            // The dimension of linear integer system should be one for cubic.
+            assert_eq!(trans_mat_basis.len(), 1);
+            let mut trans_mat = trans_mat_basis[0];
+
+            // Guarantee det > 0
+            let mut det = trans_mat.map(|e| e as f64).determinant().round() as i32;
+            if det < 0 {
+                trans_mat *= -1;
+                det *= -1;
+            } else if det == 0 {
+                continue;
+            }
+
+            for (arithmetic_crystal_class, _, centering) in
+                arithmetic_crystal_class_candidates.iter()
+            {
+                if centering.order() as i32 != det {
+                    continue;
                 }
+
+                // trans_mat_conv: self -> conventional
+                let trans_mat_conv = centering.transformation_matrix() * trans_mat;
+                return Some((*arithmetic_crystal_class, trans_mat_conv));
             }
         }
-
-        Err(MoyoError::ArithmeticCrystalClassIdentificationError)
     }
 
-    /// Faster matching algorithm for cubic point groups
-    fn match_with_cubic_point_group(
-        &self,
-        geometric_crystal_class: GeometricCrystalClass,
-    ) -> Option<(ArithmeticNumber, TransformationMatrix)> {
-        let generators = choose_generators(&self.rotations);
+    None
+}
 
-        let arithmetic_crystal_class_candidates = ARITHMETIC_CRYSTAL_CLASS_DATABASE
-            .iter()
-            .filter_map(|(arithmetic_number_db, _, geometric_crystal_class_db, _)| {
-                if *geometric_crystal_class_db != geometric_crystal_class {
-                    return None;
-                }
+fn match_with_point_group(
+    prim_rotations: &Vec<Rotation>,
+    rotation_types: &Vec<RotationType>,
+    geometric_crystal_class: GeometricCrystalClass,
+) -> Option<(ArithmeticNumber, TransformationMatrix)> {
+    let order = prim_rotations.len();
 
-                // Check if prim_trans_mat^-1 * rotation * prim_trans_mat is integer matrix (for all rotation in generators)
-                let point_group_db =
-                    PointGroupRepresentative::from_arithmetic_crystal_class(*arithmetic_number_db);
-                let centering = point_group_db.centering;
-                let prim_trans_mat = centering.transformation_matrix(); // primitive -> conventional
-                let prim_trans_mat_inv = centering.inverse();
-                let compatible = generators.iter().all(|i| {
-                    let rotation = self.rotations[*i];
-                    let tmp_mat =
-                        prim_trans_mat_inv * (rotation * prim_trans_mat).map(|e| e as f64);
-                    let tmp_mat_int = tmp_mat.map(|e| e.round() as i32);
-                    (rotation * prim_trans_mat - prim_trans_mat * tmp_mat_int)
-                        .iter()
-                        .all(|e| *e == 0)
-                });
-                if !compatible {
-                    return None;
-                }
+    for (arithmetic_number_db, _, geometric_crystal_class_db, _) in
+        ARITHMETIC_CRYSTAL_CLASS_DATABASE.iter()
+    {
+        if *geometric_crystal_class_db != geometric_crystal_class {
+            continue;
+        }
 
-                Some((*arithmetic_number_db, point_group_db, centering))
-            })
-            .collect::<Vec<_>>();
-        let primitive_arithmetic_crystal_class = arithmetic_crystal_class_candidates
-            .iter()
-            .filter(|(_, _, centering)| *centering == Centering::P)
-            .next()
-            .unwrap();
-
-        let order = self.order();
-        let other_prim_generators = primitive_arithmetic_crystal_class.1.primitive_generators();
+        let point_group_db =
+            PointGroupRepresentative::from_arithmetic_crystal_class(*arithmetic_number_db);
+        let other_prim_generators = point_group_db.primitive_generators();
 
         // Try to map generators
         let other_generator_rotation_types = other_prim_generators
             .iter()
             .map(|rotation| identify_rotation_type(rotation))
-            .collect::<Vec<_>>();
-        let rotation_types = self
-            .rotations
-            .iter()
-            .map(identify_rotation_type)
             .collect::<Vec<_>>();
         let candidates: Vec<Vec<usize>> = other_generator_rotation_types
             .iter()
@@ -330,11 +448,11 @@ impl PointGroup {
             .map(|v| v.iter())
             .multi_cartesian_product()
         {
-            // Solve P^-1 * self.rotations[self.rotations[pivot[i]]] * P = other.generators[i] (for all i)
+            // Solve self.rotations[self.rotations[pivot[i]]] * P = P * other.generators[i] (for all i)
             // vec(A * P - P * B) = (I_3 \otimes A - B^T \otimes I_3) * vec(P)
             let mut coeffs = OMatrix::<i32, Dyn, U9>::zeros(9 * other_prim_generators.len());
             for (k, &pk) in pivot.iter().enumerate() {
-                let rotation = self.rotations[*pk];
+                let rotation = prim_rotations[*pk];
                 let other_rotation = other_prim_generators[k];
                 let identity = Rotation::identity();
                 let adj =
@@ -362,130 +480,25 @@ impl PointGroup {
                     })
                     .collect();
 
-                // trans_mat: self -> primitive
-                // The dimension of linear integer system should be one for cubic.
-                assert_eq!(trans_mat_basis.len(), 1);
-                let mut trans_mat = trans_mat_basis[0];
-
-                // Guarantee det > 0
-                let mut det = trans_mat.map(|e| e as f64).determinant().round() as i32;
-                if det < 0 {
-                    trans_mat *= -1;
-                    det *= -1;
-                } else if det == 0 {
-                    continue;
-                }
-
-                for (arithmetic_crystal_class, _, centering) in
-                    arithmetic_crystal_class_candidates.iter()
+                // Consider coefficients in [-2, 2], which will be sufficient for Delaunay reduced basis
+                for comb in (0..trans_mat_basis.len())
+                    .map(|_| -2..=2)
+                    .multi_cartesian_product()
                 {
-                    if centering.order() as i32 != det {
-                        continue;
+                    let mut trans_mat = TransformationMatrix::zeros();
+                    for (i, matrix) in trans_mat_basis.iter().enumerate() {
+                        trans_mat += comb[i] * matrix;
                     }
-
-                    // trans_mat_conv: self -> conventional
-                    let trans_mat_conv = centering.transformation_matrix() * trans_mat;
-                    return Some((*arithmetic_crystal_class, trans_mat_conv));
-                }
-            }
-        }
-
-        None
-    }
-
-    fn match_with_point_group(
-        &self,
-        geometric_crystal_class: GeometricCrystalClass,
-    ) -> Option<(ArithmeticNumber, TransformationMatrix)> {
-        let order = self.order();
-
-        for (arithmetic_number_db, _, geometric_crystal_class_db, _) in
-            ARITHMETIC_CRYSTAL_CLASS_DATABASE.iter()
-        {
-            if *geometric_crystal_class_db != geometric_crystal_class {
-                continue;
-            }
-
-            let point_group_db =
-                PointGroupRepresentative::from_arithmetic_crystal_class(*arithmetic_number_db);
-            let other_prim_generators = point_group_db.primitive_generators();
-
-            // Try to map generators
-            let other_generator_rotation_types = other_prim_generators
-                .iter()
-                .map(|rotation| identify_rotation_type(rotation))
-                .collect::<Vec<_>>();
-            let rotation_types = self
-                .rotations
-                .iter()
-                .map(identify_rotation_type)
-                .collect::<Vec<_>>();
-            let candidates: Vec<Vec<usize>> = other_generator_rotation_types
-                .iter()
-                .map(|&rotation_type| {
-                    (0..order)
-                        .filter(|&i| rotation_types[i] == rotation_type)
-                        .collect()
-                })
-                .collect();
-
-            for pivot in candidates
-                .iter()
-                .map(|v| v.iter())
-                .multi_cartesian_product()
-            {
-                // Solve self.rotations[self.rotations[pivot[i]]] * P = P * other.generators[i] (for all i)
-                // vec(A * P - P * B) = (I_3 \otimes A - B^T \otimes I_3) * vec(P)
-                let mut coeffs = OMatrix::<i32, Dyn, U9>::zeros(9 * other_prim_generators.len());
-                for (k, &pk) in pivot.iter().enumerate() {
-                    let rotation = self.rotations[*pk];
-                    let other_rotation = other_prim_generators[k];
-                    let identity = Rotation::identity();
-                    let adj = identity.kronecker(&rotation)
-                        - other_rotation.transpose().kronecker(&identity);
-                    for i in 0..9 {
-                        for j in 0..9 {
-                            coeffs[(9 * k + i, j)] = adj[(i, j)];
-                        }
-                    }
-                }
-                let solution =
-                    IntegerLinearSystem::new(&coeffs, &OVector::<i32, Dyn>::zeros(coeffs.nrows()));
-
-                // Search integer linear combination such that the transformation matrix is unimodular
-                if let Some(solution) = solution {
-                    let trans_mat_basis: Vec<_> = solution
-                        .nullspace
-                        .row_iter()
-                        .map(|e| {
-                            TransformationMatrix::new(
-                                e[0], e[3], e[6], //
-                                e[1], e[4], e[7], //
-                                e[2], e[5], e[8], //
-                            )
-                        })
-                        .collect();
-
-                    // Consider coefficients in [-2, 2], which will be sufficient for Delaunay reduced basis
-                    for comb in (0..trans_mat_basis.len())
-                        .map(|_| -2..=2)
-                        .multi_cartesian_product()
-                    {
-                        let mut trans_mat = TransformationMatrix::zeros();
-                        for (i, matrix) in trans_mat_basis.iter().enumerate() {
-                            trans_mat += comb[i] * matrix;
-                        }
-                        let det = trans_mat.map(|e| e as f64).determinant().round() as i32;
-                        if det == 1 {
-                            return Some((*arithmetic_number_db, trans_mat));
-                        }
+                    let det = trans_mat.map(|e| e as f64).determinant().round() as i32;
+                    if det == 1 {
+                        return Some((*arithmetic_number_db, trans_mat));
                     }
                 }
             }
         }
-
-        None
     }
+
+    None
 }
 
 fn identify_rotation_type(rotation: &Rotation) -> RotationType {
@@ -607,7 +620,7 @@ mod tests {
 
     use strum::IntoEnumIterator;
 
-    use super::{PointGroup, PointGroupRepresentative};
+    use super::{identify_point_group, PointGroupRepresentative};
     use crate::base::operation::Rotation;
     use crate::data::classification::GeometricCrystalClass;
 
@@ -692,16 +705,14 @@ mod tests {
 
     #[test]
     fn test_point_group_match() {
-        // TODO: this test takes ~6 seconds. We may need to speed up `PointGroup::match_arithmetic`
+        // TODO: this test takes ~6 seconds with debug build. We may need to speed up `PointGroup::match_arithmetic`
         for arithmetic_number in 1..=73 {
             let point_group_db =
                 PointGroupRepresentative::from_arithmetic_crystal_class(arithmetic_number);
             let primitive_generators = point_group_db.primitive_generators();
-            let rotations = traverse(&primitive_generators);
-            let point_group = PointGroup::new(rotations);
-
-            let (arithmetic_number_actual, _) = point_group.match_arithmetic().unwrap();
-            assert_eq!(arithmetic_number_actual, arithmetic_number);
+            let prim_rotations = traverse(&primitive_generators);
+            let point_group = identify_point_group(prim_rotations).unwrap();
+            assert_eq!(point_group.arithmetic_number, arithmetic_number);
         }
     }
 }
