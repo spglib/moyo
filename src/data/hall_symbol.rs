@@ -3,10 +3,10 @@ use std::collections::{HashMap, VecDeque};
 use nalgebra::{matrix, Matrix3, Vector3};
 use strum_macros::EnumIter;
 
-use super::hall_symbol_database::{get_hall_symbol_entry, HallNumber, HALL_SYMBOL_DATABASE};
+use super::hall_symbol_database::{get_hall_symbol_entry, HallNumber};
 use crate::base::operation::{AbstractOperations, Rotation, Translation};
 use crate::base::tolerance::EPS;
-use crate::base::transformation::TransformationMatrix;
+use crate::base::transformation::{OriginShift, TransformationMatrix};
 
 const MAX_DENOMINATOR: i32 = 12;
 
@@ -210,6 +210,12 @@ impl HallSymbol {
     pub fn from_hall_number(hall_number: HallNumber) -> Self {
         let entry = get_hall_symbol_entry(hall_number);
         Self::new(entry.hall_symbol).unwrap()
+    }
+
+    pub fn primitive_generators(&self) -> AbstractOperations {
+        let prim_trans_mat = self.lattice_symbol.inverse();
+        self.generators
+            .transform(&prim_trans_mat, &OriginShift::zeros())
     }
 
     fn tokenize(hall_symbol: &str) -> Vec<&str> {

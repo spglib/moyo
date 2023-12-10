@@ -1,7 +1,11 @@
+use std::collections::HashMap;
+
+use nalgebra::{Dyn, Matrix3, OMatrix, OVector, U3};
+
 use super::point_group::identify_point_group;
 use crate::base::error::MoyoError;
-use crate::base::operation::{Rotation, Translation};
-use crate::base::transformation::Transformation;
+use crate::base::operation::AbstractOperations;
+use crate::base::transformation::{OriginShift, Transformation};
 use crate::data::hall_symbol::HallSymbol;
 use crate::data::hall_symbol_database::{get_hall_symbol_entry, HallNumber, Number};
 
@@ -65,11 +69,25 @@ pub struct SpaceGroup {
 }
 
 pub fn identify_space_group(
-    prim_rotations: &Vec<Rotation>,
-    prim_translations: &Vec<Translation>,
+    prim_operations: &AbstractOperations,
     setting: Setting,
 ) -> Result<SpaceGroup, MoyoError> {
-    let point_group = identify_point_group(&prim_rotations)?;
+    // point_group.trans_mat: self -> primitive
+    let point_group = identify_point_group(&prim_operations.rotations)?;
+    dbg!(&point_group);
+
+    let new_prim_operations = prim_operations.transform(
+        &point_group.prim_trans_mat.map(|e| e as f64),
+        &OriginShift::zeros(),
+    );
+    let mut hm_translations = HashMap::new();
+    for (rotation, translation) in new_prim_operations
+        .rotations
+        .iter()
+        .zip(prim_operations.translations.iter())
+    {
+        hm_translations.insert(rotation.clone(), translation.clone());
+    }
 
     for hall_number in setting.hall_numbers() {
         let entry = get_hall_symbol_entry(hall_number);
@@ -78,10 +96,32 @@ pub fn identify_space_group(
         }
 
         let hall_symbol = HallSymbol::from_hall_number(hall_number);
-        dbg!(entry);
+        let other_prim_generators = hall_symbol.primitive_generators();
+
+        // Solve (E, c)^-1 (R, t_target) (E, c) = (R, t_other) (mod 1) (for all (R, t_other) in other_prim_generators)
+        // (R, R * c - c + t_target) = (R, t_other) (mod 1)
+        // <-> (R - E) * c = t_other - t_target (mod 1)
+        let mut a = OMatrix::<i32, Dyn, U3>::zeros(3 * other_prim_generators.rotations.len());
+        let mut b = OVector::<f64, Dyn>::zeros(3 * other_prim_generators.rotations.len());
+        for (k, (rotation, other_translation)) in other_prim_generators
+            .rotations
+            .iter()
+            .zip(other_prim_generators.translations.iter())
+            .enumerate()
+        {
+            let target_translation = hm_translations.get(rotation).unwrap();
+            let ak = rotation - Matrix3::<i32>::identity();
+            let bk = other_translation - target_translation;
+            for i in 0..3 {
+                for j in 0..3 {
+                    a[(3 * k + i, j)] = ak[(i, j)];
+                }
+                b[3 * k + i] = bk[i];
+            }
+        }
     }
 
-    unimplemented!()
+    Err(MoyoError::SpaceGroupTypeIdentificationError)
 }
 
 #[cfg(test)]
@@ -101,10 +141,6 @@ mod tests {
         let linear = hall_symbol.lattice_symbol.inverse();
         let prim_operations = operations.transform(&linear, &OriginShift::zeros());
 
-        let space_group = identify_space_group(
-            &prim_operations.rotations,
-            &prim_operations.translations,
-            Setting::Spglib,
-        );
+        let space_group = identify_space_group(&prim_operations, Setting::Spglib);
     }
 }

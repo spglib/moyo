@@ -1,8 +1,9 @@
-use nalgebra::base::{Matrix3, Vector3};
+use std::collections::{HashSet, VecDeque};
 use std::ops::Mul;
 
+use nalgebra::base::{Matrix3, Vector3};
+
 use super::lattice::Lattice;
-use super::transformation::Transformation;
 
 pub type Rotation = Matrix3<i32>;
 pub type Translation = Vector3<f64>;
@@ -59,6 +60,30 @@ fn transform_operation(
     let new_translation =
         linear_inv * (rotation.map(|e| e as f64) * origin_shift + translation - origin_shift);
     (new_rotation, new_translation)
+}
+
+pub fn traverse(generators: &Vec<Rotation>) -> Vec<Rotation> {
+    let mut queue = VecDeque::new();
+    let mut visited = HashSet::new();
+    let mut group = vec![];
+
+    queue.push_back(Rotation::identity());
+
+    while !queue.is_empty() {
+        let element = queue.pop_front().unwrap();
+        if visited.contains(&element) {
+            continue;
+        }
+        visited.insert(element.clone());
+        group.push(element.clone());
+
+        for generator in generators {
+            let product = element * generator;
+            queue.push_back(product);
+        }
+    }
+
+    group
 }
 
 #[derive(Debug)]
