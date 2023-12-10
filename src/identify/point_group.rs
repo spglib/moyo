@@ -170,15 +170,15 @@ fn match_with_cubic_point_group(
                 .collect::<Vec<_>>(),
             &other_prim_generators,
         ) {
-            // prim_trans_mat: self -> primitive
+            // conv_trans_mat: self -> conventional
             // The dimension of linear integer system should be one for cubic.
             assert_eq!(trans_mat_basis.len(), 1);
-            let mut prim_trans_mat = trans_mat_basis[0];
+            let mut conv_trans_mat = trans_mat_basis[0];
 
             // Guarantee det > 0
-            let mut det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
+            let mut det = conv_trans_mat.map(|e| e as f64).determinant().round() as i32;
             if det < 0 {
-                prim_trans_mat *= -1;
+                conv_trans_mat *= -1;
                 det *= -1;
             } else if det == 0 {
                 continue;
@@ -190,9 +190,10 @@ fn match_with_cubic_point_group(
                 if centering.order() as i32 != det {
                     continue;
                 }
+                // conv_trans_mat: self -> conventional
+                let prim_trans_mat = (conv_trans_mat.map(|e| e as f64) * centering.inverse())
+                    .map(|e| e.round() as i32);
 
-                // trans_mat_conv: self -> conventional
-                let conv_trans_mat = prim_trans_mat * centering.transformation_matrix();
                 return Ok(PointGroup {
                     arithmetic_number: *arithmetic_crystal_class,
                     prim_trans_mat,
@@ -441,18 +442,12 @@ mod tests {
     #[test]
     fn test_point_group_match() {
         // TODO: this test takes ~6 seconds with debug build. We may need to speed up `PointGroup::match_arithmetic`
-        // for arithmetic_number in 1..=73 {
-        // for arithmetic_number in 1..=58 {
-        for arithmetic_number in 59..=73 {
-            // for arithmetic_number in [11] {
+        for arithmetic_number in 1..=73 {
             let point_group_db =
                 PointGroupRepresentative::from_arithmetic_crystal_class(arithmetic_number);
             let primitive_generators = point_group_db.primitive_generators();
             let prim_rotations = traverse(&primitive_generators);
             let point_group = identify_point_group(&prim_rotations).unwrap();
-            dbg!(&point_group);
-            dbg!(point_group.prim_trans_mat.map(|e| e as f64).determinant());
-            dbg!(point_group.conv_trans_mat.map(|e| e as f64).determinant());
 
             assert_eq!(point_group.arithmetic_number, arithmetic_number);
             assert_eq!(
