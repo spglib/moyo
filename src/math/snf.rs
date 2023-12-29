@@ -101,6 +101,14 @@ where
         assert_eq!(d, l.clone() * basis * r.clone());
         SNF::<M, N> { d, l, r }
     }
+
+    pub fn rank(&self) -> usize {
+        let (m, n) = self.d.shape_generic();
+        let rank = (0..m.min(n).value())
+            .filter(|&i| self.d[(i, i)] != 0)
+            .count();
+        rank
+    }
 }
 
 #[cfg(test)]

@@ -17,7 +17,6 @@ fn test_conventional_cell_rutile(rutile: Cell) {
     let primitive_cell_result = search_primitive_cell(&cell, symprec).unwrap();
     let primitive_cell = primitive_cell_result.primitive_cell;
 
-    let result =
-        search_symmetry_operations_from_primitive(&primitive_cell, symprec, angle_tolerance)
-            .unwrap();
+    let _ = search_symmetry_operations_from_primitive(&primitive_cell, symprec, angle_tolerance)
+        .unwrap();
 }

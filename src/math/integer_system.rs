@@ -12,7 +12,7 @@ where
     pub rank: usize,
     /// Special solution for a * x = b
     pub x: OVector<i32, N>,
-    /// Nullspace of a * x = b
+    /// Nullspace of a * x = 0
     pub nullspace: OMatrix<i32, Dyn, N>,
 }
 
@@ -27,11 +27,9 @@ where
         DefaultAllocator:
             Allocator<i32, M, N> + Allocator<i32, M, M> + Allocator<i32, N, N> + Allocator<i32, M>,
     {
-        let (m, n) = a.shape_generic();
+        let (_, n) = a.shape_generic();
         let snf = SNF::new(a);
-        let rank = (0..m.min(n).value())
-            .filter(|&i| snf.d[(i, i)] != 0)
-            .count();
+        let rank = snf.rank();
         if rank == n.value() {
             return None;
         }
