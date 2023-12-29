@@ -12,37 +12,6 @@ use crate::data::hall_symbol::Centering;
 use crate::data::point_group::PointGroupRepresentative;
 use crate::math::integer_system::IntegerLinearSystem;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum RotationType {
-    Rotation1,      // 1
-    Rotation2,      // 2
-    Rotation3,      // 3
-    Rotation4,      // 4
-    Rotation6,      // 6
-    RotoInversion1, // -1 = S2
-    RotoInversion2, // -2 = m = S1
-    RotoInversion3, // -3 = S6^-1
-    RotoInversion4, // -4 = S4^-1
-    RotoInversion6, // -6 = S3^-1
-}
-
-impl RotationType {
-    pub fn value(&self) -> i32 {
-        match self {
-            RotationType::Rotation1 => 1,
-            RotationType::Rotation2 => 2,
-            RotationType::Rotation3 => 3,
-            RotationType::Rotation4 => 4,
-            RotationType::Rotation6 => 6,
-            RotationType::RotoInversion1 => -1,
-            RotationType::RotoInversion2 => -2,
-            RotationType::RotoInversion3 => -3,
-            RotationType::RotoInversion4 => -4,
-            RotationType::RotoInversion6 => -6,
-        }
-    }
-}
-
 /// Crystallographic point group with group-type information
 #[derive(Debug)]
 pub struct PointGroup {
@@ -53,49 +22,66 @@ pub struct PointGroup {
     pub conv_trans_mat: TransformationMatrix,
 }
 
-/// Assume the rotations are given in the (reduced) primitive basis
-pub fn identify_point_group(prim_rotations: &Vec<Rotation>) -> Result<PointGroup, MoyoError> {
-    let rotation_types = prim_rotations
-        .iter()
-        .map(|rotation| identify_rotation_type(rotation))
-        .collect();
-    let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types);
+impl PointGroup {
+    /// Identify the arithmetic crystal class from the given rotations and transformation matrix into the representative
+    /// Assume the rotations are given in the (reduced) primitive basis
+    pub fn new(prim_rotations: &Vec<Rotation>) -> Result<Self, MoyoError> {
+        let rotation_types = prim_rotations
+            .iter()
+            .map(|rotation| identify_rotation_type(rotation))
+            .collect();
+        let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types);
 
-    let crystal_system = CrystalSystem::from_geometric_crystal_class(geometric_crystal_class);
-    match crystal_system {
-        // Skip triclinic cases as trivial
-        CrystalSystem::Triclinic => match geometric_crystal_class {
-            GeometricCrystalClass::C1 => {
-                return Ok(PointGroup {
-                    arithmetic_number: 1,
-                    prim_trans_mat: TransformationMatrix::identity(),
-                    conv_trans_mat: TransformationMatrix::identity(),
-                })
+        let crystal_system = CrystalSystem::from_geometric_crystal_class(geometric_crystal_class);
+        match crystal_system {
+            // Skip triclinic cases as trivial
+            CrystalSystem::Triclinic => match geometric_crystal_class {
+                GeometricCrystalClass::C1 => {
+                    return Ok(PointGroup {
+                        arithmetic_number: 1,
+                        prim_trans_mat: TransformationMatrix::identity(),
+                        conv_trans_mat: TransformationMatrix::identity(),
+                    })
+                }
+                GeometricCrystalClass::Ci => {
+                    return Ok(PointGroup {
+                        arithmetic_number: 2,
+                        prim_trans_mat: TransformationMatrix::identity(),
+                        conv_trans_mat: TransformationMatrix::identity(),
+                    });
+                }
+                _ => unreachable!(),
+            },
+            CrystalSystem::Cubic => {
+                return match_with_cubic_point_group(
+                    &prim_rotations,
+                    &rotation_types,
+                    geometric_crystal_class,
+                );
             }
-            GeometricCrystalClass::Ci => {
-                return Ok(PointGroup {
-                    arithmetic_number: 2,
-                    prim_trans_mat: TransformationMatrix::identity(),
-                    conv_trans_mat: TransformationMatrix::identity(),
-                });
+            _ => {
+                return match_with_point_group(
+                    &prim_rotations,
+                    &rotation_types,
+                    geometric_crystal_class,
+                );
             }
-            _ => unreachable!(),
-        },
-        CrystalSystem::Cubic => {
-            return match_with_cubic_point_group(
-                &prim_rotations,
-                &rotation_types,
-                geometric_crystal_class,
-            );
-        }
-        _ => {
-            return match_with_point_group(
-                &prim_rotations,
-                &rotation_types,
-                geometric_crystal_class,
-            );
         }
     }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+enum RotationType {
+    Rotation1,      // 1
+    Rotation2,      // 2
+    Rotation3,      // 3
+    Rotation4,      // 4
+    Rotation6,      // 6
+    RotoInversion1, // -1 = S2
+    RotoInversion2, // -2 = m = S1
+    RotoInversion3, // -3 = S6^-1
+    RotoInversion4, // -4 = S4^-1
+    RotoInversion6, // -6 = S3^-1
 }
 
 /// Faster matching algorithm for cubic point groups
@@ -436,7 +422,7 @@ fn choose_generators(elements: &Vec<Rotation>) -> Vec<usize> {
 mod tests {
     use std::collections::HashSet;
 
-    use super::{identify_point_group, PointGroupRepresentative};
+    use super::{PointGroup, PointGroupRepresentative};
     use crate::base::operation::traverse;
 
     #[test]
@@ -447,7 +433,7 @@ mod tests {
                 PointGroupRepresentative::from_arithmetic_crystal_class(arithmetic_number);
             let primitive_generators = point_group_db.primitive_generators();
             let prim_rotations = traverse(&primitive_generators);
-            let point_group = identify_point_group(&prim_rotations).unwrap();
+            let point_group = PointGroup::new(&prim_rotations).unwrap();
 
             assert_eq!(point_group.arithmetic_number, arithmetic_number);
             assert_eq!(

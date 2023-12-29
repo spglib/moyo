@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use nalgebra::{Dyn, Matrix3, OMatrix, OVector, Vector3, U3};
 
-use super::point_group::identify_point_group;
+use super::point_group::PointGroup;
 use crate::base::error::MoyoError;
 use crate::base::operation::AbstractOperations;
 use crate::base::transformation::{OriginShift, Transformation, TransformationMatrix};
@@ -11,58 +11,8 @@ use crate::data::classification::CrystalSystem;
 use crate::data::hall_symbol::HallSymbol;
 use crate::data::hall_symbol_database::{get_hall_symbol_entry, HallNumber, Number};
 use crate::data::point_group::PointGroupRepresentative;
+use crate::data::setting::Setting;
 use crate::math::snf::SNF;
-
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum Setting {
-    HallNumber(HallNumber),
-    /// The setting of the smallest Hall number
-    Spglib,
-    /// Unique axis b, cell choice 1 for monoclinic, hexagonal axes for rhombohedral, and origin choice 2 for centrosymmetric space groups
-    Standard,
-}
-
-impl Setting {
-    pub fn hall_numbers(&self) -> Vec<HallNumber> {
-        match self {
-            Setting::HallNumber(hall_number) => vec![*hall_number],
-            Setting::Spglib => vec![
-                1, 2, 3, 6, 9, 18, 21, 30, 39, 57, 60, 63, 72, 81, 90, 108, 109, 112, 115, 116,
-                119, 122, 123, 124, 125, 128, 134, 137, 143, 149, 155, 161, 164, 170, 173, 176,
-                182, 185, 191, 197, 203, 209, 212, 215, 218, 221, 227, 228, 230, 233, 239, 245,
-                251, 257, 263, 266, 269, 275, 278, 284, 290, 292, 298, 304, 310, 313, 316, 322,
-                334, 335, 337, 338, 341, 343, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358,
-                359, 361, 363, 364, 366, 367, 368, 369, 370, 371, 372, 373, 374, 375, 376, 377,
-                378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393,
-                394, 395, 396, 397, 398, 399, 400, 401, 402, 404, 406, 407, 408, 410, 412, 413,
-                414, 416, 418, 419, 420, 422, 424, 425, 426, 428, 430, 431, 432, 433, 435, 436,
-                438, 439, 440, 441, 442, 443, 444, 446, 447, 448, 449, 450, 452, 454, 455, 456,
-                457, 458, 460, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474,
-                475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490,
-                491, 492, 493, 494, 495, 497, 498, 500, 501, 502, 503, 504, 505, 506, 507, 508,
-                509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 520, 521, 523, 524, 525, 527,
-                529, 530,
-            ],
-            Setting::Standard => vec![
-                1, 2, 3, 6, 9, 18, 21, 30, 39, 57, 60, 63, 72, 81, 90, 108, 109, 112, 115, 116,
-                119, 122, 123, 124, 125, 128, 134, 137, 143, 149, 155, 161, 164, 170, 173, 176,
-                182, 185, 191, 197, 203, 209, 212, 215, 218, 221, 227, 229, 230, 234, 239, 245,
-                251, 257, 263, 266, 269, 275, 279, 284, 290, 292, 298, 304, 310, 313, 316, 323,
-                334, 336, 337, 338, 341, 343, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358,
-                360, 362, 363, 365, 366, 367, 368, 369, 370, 371, 372, 373, 374, 375, 376, 377,
-                378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393,
-                394, 395, 396, 397, 398, 399, 400, 401, 403, 405, 406, 407, 409, 411, 412, 413,
-                415, 417, 418, 419, 421, 423, 424, 425, 427, 429, 430, 431, 432, 433, 435, 436,
-                438, 439, 440, 441, 442, 443, 444, 446, 447, 448, 449, 450, 452, 454, 455, 456,
-                457, 458, 460, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474,
-                475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490,
-                491, 492, 493, 494, 496, 497, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508,
-                509, 510, 511, 512, 513, 514, 515, 516, 517, 519, 520, 522, 523, 524, 526, 528,
-                529, 530,
-            ],
-        }
-    }
-}
 
 #[derive(Debug)]
 pub struct SpaceGroup {
@@ -72,39 +22,40 @@ pub struct SpaceGroup {
     pub transformation: Transformation,
 }
 
-pub fn identify_space_group(
-    prim_operations: &AbstractOperations,
-    setting: Setting,
-) -> Result<SpaceGroup, MoyoError> {
-    // point_group.trans_mat: self -> primitive
-    let point_group = identify_point_group(&prim_operations.rotations)?;
+impl SpaceGroup {
+    /// Identify the space group from the primitive operations.
+    pub fn new(prim_operations: &AbstractOperations, setting: Setting) -> Result<Self, MoyoError> {
+        // point_group.trans_mat: self -> primitive
+        let point_group = PointGroup::new(&prim_operations.rotations)?;
 
-    for hall_number in setting.hall_numbers() {
-        let entry = get_hall_symbol_entry(hall_number);
-        if entry.arithmetic_number != point_group.arithmetic_number {
-            continue;
-        }
+        for hall_number in setting.hall_numbers() {
+            let entry = get_hall_symbol_entry(hall_number);
+            if entry.arithmetic_number != point_group.arithmetic_number {
+                continue;
+            }
 
-        let hall_symbol = HallSymbol::from_hall_number(hall_number);
-        let db_prim_generators = hall_symbol.primitive_generators();
+            let hall_symbol = HallSymbol::from_hall_number(hall_number);
+            let db_prim_generators = hall_symbol.primitive_generators();
 
-        // Try several correction transformation matrices for monoclinic and orthorhombic
-        for trans_mat_corr in get_correction_transformation_matrices(point_group.arithmetic_number)
-        {
-            let trans_mat = point_group.prim_trans_mat * trans_mat_corr;
-            if let Some(origin_shift) =
-                match_origin_shift(prim_operations, &trans_mat, &db_prim_generators)
+            // Try several correction transformation matrices for monoclinic and orthorhombic
+            for trans_mat_corr in
+                get_correction_transformation_matrices(point_group.arithmetic_number)
             {
-                return Ok(SpaceGroup {
-                    number: entry.number,
-                    hall_number: hall_number,
-                    transformation: Transformation::new(trans_mat, origin_shift),
-                });
+                let trans_mat = point_group.prim_trans_mat * trans_mat_corr;
+                if let Some(origin_shift) =
+                    match_origin_shift(prim_operations, &trans_mat, &db_prim_generators)
+                {
+                    return Ok(Self {
+                        number: entry.number,
+                        hall_number: hall_number,
+                        transformation: Transformation::new(trans_mat, origin_shift),
+                    });
+                }
             }
         }
-    }
 
-    Err(MoyoError::SpaceGroupTypeIdentificationError)
+        Err(MoyoError::SpaceGroupTypeIdentificationError)
+    }
 }
 
 fn get_correction_transformation_matrices(
@@ -210,6 +161,11 @@ fn match_origin_shift(
         .zip(db_prim_generators.translations.iter())
         .enumerate()
     {
+        // Correction transformation matrix may not be normalizer of the point group. For example, mm2 -> 2mm
+        if !hm_translations.contains_key(rotation) {
+            return None;
+        }
+
         let target_translation = hm_translations.get(rotation).unwrap();
         let ak = rotation - Matrix3::<i32>::identity();
         let bk = other_translation - target_translation;
@@ -262,10 +218,9 @@ mod tests {
     use crate::base::transformation::OriginShift;
     use crate::data::hall_symbol::HallSymbol;
     use crate::data::hall_symbol_database::get_hall_symbol_entry;
+    use crate::data::setting::Setting;
 
-    use super::{
-        get_correction_transformation_matrices, identify_space_group, solve_mod1, Setting,
-    };
+    use super::{get_correction_transformation_matrices, solve_mod1, SpaceGroup};
 
     #[test]
     fn test_solve_mod1() {
@@ -323,7 +278,6 @@ mod tests {
     #[test]
     fn test_identify_space_group() {
         for hall_number in 1..=530 {
-            // for hall_number in [60] {
             dbg!(hall_number);
             let hall_symbol = HallSymbol::from_hall_number(hall_number);
             let operations = hall_symbol.traverse();
@@ -332,10 +286,14 @@ mod tests {
             let linear = hall_symbol.lattice_symbol.inverse();
             let prim_operations = operations.transform(&linear, &OriginShift::zeros());
 
-            let space_group = identify_space_group(&prim_operations, Setting::Spglib).unwrap();
+            let space_group = SpaceGroup::new(&prim_operations, Setting::Spglib).unwrap();
 
+            // Check space group type
             let entry = get_hall_symbol_entry(hall_number);
             assert_eq!(space_group.number, entry.number);
+
+            // Check transformation
+            unimplemented!()
         }
     }
 }
