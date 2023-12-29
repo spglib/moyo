@@ -134,6 +134,7 @@ fn get_correction_transformation_matrices(
     corrections
 }
 
+/// Search for origin_shift such that (trans_mat, origin_shift) transforms <prim_operations> into <db_prim_generators>
 fn match_origin_shift(
     prim_operations: &AbstractOperations,
     trans_mat: &TransformationMatrix,
@@ -150,9 +151,17 @@ fn match_origin_shift(
         hm_translations.insert(*rotation, *translation);
     }
 
-    // Solve (E, c)^-1 (R, t_target) (E, c) = (R, t_other) (mod 1) (for all (R, t_other) in other_prim_generators)
-    // (R, R * c - c + t_target) = (R, t_other) (mod 1)
-    // <-> (R - E) * c = t_other - t_target (mod 1)
+    // dbg!(&new_prim_operations);
+    // dbg!(&db_prim_generators);
+
+    // Find origin_shift `c`: (P, c)^-1 G (P, c) = G_db
+    //     (P, c) = (P, 0) (P, 0)^-1 (P, c) = (P, 0) (E, P^-1 c)
+    //     s := P^-1 c
+    //     G' := (P, 0)^-1 G (P, 0)
+    //     (E, s)^-1 G' (E, s) = G_db
+    // Solve (E, s)^-1 (R, t_target) (E, s) = (R, t_db) (mod 1) (for all (R, t_db) in db_prim_generators)
+    //     (R, R * s - s + t_target) = (R, t_db) (mod 1)
+    //     <-> (R - E) * s = t_db - t_target (mod 1)
     let mut a = OMatrix::<i32, Dyn, U3>::zeros(3 * db_prim_generators.rotations.len());
     let mut b = OVector::<f64, Dyn>::zeros(3 * db_prim_generators.rotations.len());
     for (k, (rotation, other_translation)) in db_prim_generators
@@ -176,7 +185,15 @@ fn match_origin_shift(
             b[3 * k + i] = bk[i];
         }
     }
-    solve_mod1(&a, &b, 1e-4) // origin shift
+
+    match solve_mod1(&a, &b, 1e-4) {
+        Some(s) => {
+            let mut origin_shfit = trans_mat.map(|e| e as f64) * s;
+            origin_shfit -= origin_shfit.map(|e| e.round());
+            Some(origin_shfit)
+        }
+        None => None,
+    }
 }
 
 /// Solve a * x = b (mod 1)
@@ -196,15 +213,16 @@ fn solve_mod1(a: &OMatrix<i32, Dyn, U3>, b: &OVector<f64, Dyn>, eps: f64) -> Opt
         }
     }
 
+    let mut x = snf.r.map(|e| e as f64) * y;
+    x -= x.map(|e| e.round()); // mod 1
+
     // Check solution
-    let mut residual = snf.d.map(|e| e as f64) * y - lb;
+    let mut residual = a.map(|e| e as f64) * x - b;
     residual -= residual.map(|e| e.round()); // mod 1
     if residual.iter().any(|e| e.abs() > eps) {
         return None;
     }
 
-    let mut x = snf.r.map(|e| e as f64) * y;
-    x -= x.map(|e| e.round()); // mod 1
     Some(x)
 }
 
@@ -291,7 +309,50 @@ mod tests {
             let entry = get_hall_symbol_entry(hall_number);
             assert_eq!(space_group.number, entry.number);
 
+            // Check transformation matrix
+            assert_eq!(
+                space_group
+                    .transformation
+                    .trans_mat_as_f64()
+                    .determinant()
+                    .round() as i32,
+                1
+            );
+
+            let matched_hall_symbol = HallSymbol::from_hall_number(space_group.hall_number);
+            let matched_operations = matched_hall_symbol.traverse();
+            let matched_prim_operations = matched_operations.transform(
+                &matched_hall_symbol.lattice_symbol.inverse(),
+                &OriginShift::zeros(),
+            );
+            let mut hm_translations = HashMap::new();
+            for (rotation, translation) in matched_prim_operations
+                .rotations
+                .iter()
+                .zip(matched_prim_operations.translations.iter())
+            {
+                hm_translations.insert(rotation, translation);
+            }
+
             // Check transformation
+            let transformed_prim_operations = prim_operations.transform(
+                &space_group.transformation.trans_mat_as_f64(),
+                &space_group.transformation.origin_shift,
+            );
+            assert_eq!(
+                matched_prim_operations.rotations.len(),
+                transformed_prim_operations.rotations.len()
+            );
+            for (rotation, translation) in transformed_prim_operations
+                .rotations
+                .iter()
+                .zip(transformed_prim_operations.translations.iter())
+            {
+                assert!(hm_translations.contains_key(rotation));
+                let mut diff = *hm_translations.get(rotation).unwrap() - translation;
+                diff -= diff.map(|e| e.round());
+                assert_relative_eq!(diff, vector![0.0, 0.0, 0.0])
+            }
         }
     }
 }
