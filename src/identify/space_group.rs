@@ -5,14 +5,12 @@ use nalgebra::{Dyn, Matrix3, OMatrix, OVector, Vector3, U3};
 use super::point_group::identify_point_group;
 use crate::base::error::MoyoError;
 use crate::base::operation::AbstractOperations;
-use crate::base::tolerance::EPS;
 use crate::base::transformation::{OriginShift, Transformation, TransformationMatrix};
 use crate::data::arithmetic_crystal_class::{get_arithmetic_crystal_class_entry, ArithmeticNumber};
 use crate::data::classification::CrystalSystem;
 use crate::data::hall_symbol::HallSymbol;
 use crate::data::hall_symbol_database::{get_hall_symbol_entry, HallNumber, Number};
 use crate::data::point_group::PointGroupRepresentative;
-use crate::identify::point_group::PointGroup;
 use crate::math::snf::SNF;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -72,6 +70,41 @@ pub struct SpaceGroup {
     pub hall_number: HallNumber,
     /// Transformation to the representative for `hall_number` in primitive
     pub transformation: Transformation,
+}
+
+pub fn identify_space_group(
+    prim_operations: &AbstractOperations,
+    setting: Setting,
+) -> Result<SpaceGroup, MoyoError> {
+    // point_group.trans_mat: self -> primitive
+    let point_group = identify_point_group(&prim_operations.rotations)?;
+
+    for hall_number in setting.hall_numbers() {
+        let entry = get_hall_symbol_entry(hall_number);
+        if entry.arithmetic_number != point_group.arithmetic_number {
+            continue;
+        }
+
+        let hall_symbol = HallSymbol::from_hall_number(hall_number);
+        let db_prim_generators = hall_symbol.primitive_generators();
+
+        // Try several correction transformation matrices for monoclinic and orthorhombic
+        for trans_mat_corr in get_correction_transformation_matrices(point_group.arithmetic_number)
+        {
+            let trans_mat = point_group.prim_trans_mat * trans_mat_corr;
+            if let Some(origin_shift) =
+                match_origin_shift(prim_operations, &trans_mat, &db_prim_generators)
+            {
+                return Ok(SpaceGroup {
+                    number: entry.number,
+                    hall_number: hall_number,
+                    transformation: Transformation::new(trans_mat, origin_shift),
+                });
+            }
+        }
+    }
+
+    Err(MoyoError::SpaceGroupTypeIdentificationError)
 }
 
 fn get_correction_transformation_matrices(
@@ -150,17 +183,13 @@ fn get_correction_transformation_matrices(
     corrections
 }
 
-pub fn identify_space_group(
+fn match_origin_shift(
     prim_operations: &AbstractOperations,
-    setting: Setting,
-) -> Result<SpaceGroup, MoyoError> {
-    // point_group.trans_mat: self -> primitive
-    let point_group = identify_point_group(&prim_operations.rotations)?;
-
-    let new_prim_operations = prim_operations.transform(
-        &point_group.prim_trans_mat.map(|e| e as f64),
-        &OriginShift::zeros(),
-    );
+    trans_mat: &TransformationMatrix,
+    db_prim_generators: &AbstractOperations,
+) -> Option<OriginShift> {
+    let new_prim_operations =
+        prim_operations.transform(&trans_mat.map(|e| e as f64), &OriginShift::zeros());
     let mut hm_translations = HashMap::new();
     for (rotation, translation) in new_prim_operations
         .rotations
@@ -169,57 +198,34 @@ pub fn identify_space_group(
     {
         hm_translations.insert(rotation.clone(), translation.clone());
     }
-    dbg!(&hm_translations);
 
-    for hall_number in setting.hall_numbers() {
-        let entry = get_hall_symbol_entry(hall_number);
-        if entry.arithmetic_number != point_group.arithmetic_number {
-            continue;
-        }
-
-        let hall_symbol = HallSymbol::from_hall_number(hall_number);
-        let other_prim_generators = hall_symbol.primitive_generators();
-
-        // Solve (E, c)^-1 (R, t_target) (E, c) = (R, t_other) (mod 1) (for all (R, t_other) in other_prim_generators)
-        // (R, R * c - c + t_target) = (R, t_other) (mod 1)
-        // <-> (R - E) * c = t_other - t_target (mod 1)
-        let mut a = OMatrix::<i32, Dyn, U3>::zeros(3 * other_prim_generators.rotations.len());
-        let mut b = OVector::<f64, Dyn>::zeros(3 * other_prim_generators.rotations.len());
-        for (k, (rotation, other_translation)) in other_prim_generators
-            .rotations
-            .iter()
-            .zip(other_prim_generators.translations.iter())
-            .enumerate()
-        {
-            let target_translation = hm_translations.get(rotation).unwrap();
-            let ak = rotation - Matrix3::<i32>::identity();
-            let bk = other_translation - target_translation;
-            for i in 0..3 {
-                for j in 0..3 {
-                    a[(3 * k + i, j)] = ak[(i, j)];
-                }
-                b[3 * k + i] = bk[i];
+    // Solve (E, c)^-1 (R, t_target) (E, c) = (R, t_other) (mod 1) (for all (R, t_other) in other_prim_generators)
+    // (R, R * c - c + t_target) = (R, t_other) (mod 1)
+    // <-> (R - E) * c = t_other - t_target (mod 1)
+    let mut a = OMatrix::<i32, Dyn, U3>::zeros(3 * db_prim_generators.rotations.len());
+    let mut b = OVector::<f64, Dyn>::zeros(3 * db_prim_generators.rotations.len());
+    for (k, (rotation, other_translation)) in db_prim_generators
+        .rotations
+        .iter()
+        .zip(db_prim_generators.translations.iter())
+        .enumerate()
+    {
+        let target_translation = hm_translations.get(rotation).unwrap();
+        let ak = rotation - Matrix3::<i32>::identity();
+        let bk = other_translation - target_translation;
+        for i in 0..3 {
+            for j in 0..3 {
+                a[(3 * k + i, j)] = ak[(i, j)];
             }
-        }
-
-        if let Some(origin_shift) = solve_mod1(&a, &b) {
-            dbg!(hall_number);
-            dbg!(a.map(|e| e as f64) * origin_shift.clone() - b);
-            dbg!(&origin_shift);
-            return Ok(SpaceGroup {
-                number: entry.number,
-                hall_number: hall_number,
-                transformation: Transformation::new(point_group.prim_trans_mat, origin_shift),
-            });
+            b[3 * k + i] = bk[i];
         }
     }
-
-    Err(MoyoError::SpaceGroupTypeIdentificationError)
+    let origin_shift = solve_mod1(&a, &b, 1e-4);
+    origin_shift
 }
 
-/// TODO: this function seems to be wrong!!!
 /// Solve a * x = b (mod 1)
-fn solve_mod1(a: &OMatrix<i32, Dyn, U3>, b: &OVector<f64, Dyn>) -> Option<Vector3<f64>> {
+fn solve_mod1(a: &OMatrix<i32, Dyn, U3>, b: &OVector<f64, Dyn>, eps: f64) -> Option<Vector3<f64>> {
     // Solve snf.d * y = snf.l * b (x = snf.r * y)
     let snf = SNF::new(a);
     let mut y = Vector3::<f64>::zeros();
@@ -227,13 +233,21 @@ fn solve_mod1(a: &OMatrix<i32, Dyn, U3>, b: &OVector<f64, Dyn>) -> Option<Vector
     for i in 0..3 {
         if snf.d[(i, i)] == 0 {
             let lbi = lb[i] - lb[i].round();
-            if lbi.abs() > EPS {
+            if lbi.abs() > eps {
                 return None;
             }
         } else {
             y[i] = lb[i] / (snf.d[(i, i)] as f64);
         }
     }
+
+    // Check solution
+    let mut residual = snf.d.map(|e| e as f64) * y - lb;
+    residual -= residual.map(|e| e.round()); // mod 1
+    if residual.iter().any(|e| e.abs() > eps) {
+        return None;
+    }
+
     let mut x = snf.r.map(|e| e as f64) * y;
     x -= x.map(|e| e.round()); // mod 1
     Some(x)
@@ -256,13 +270,16 @@ mod tests {
     #[test]
     fn test_solve_mod1() {
         let a = OMatrix::<i32, Dyn, U3>::from_rows(&[
-            RowVector3::new(1, 0, 0),
-            RowVector3::new(0, 1, 0),
-            RowVector3::new(0, 0, 1),
+            RowVector3::new(-2, 0, 0),
+            RowVector3::new(0, -2, 0),
+            RowVector3::new(0, 0, -2),
+            RowVector3::new(-2, 0, 0),
+            RowVector3::new(0, 0, 0),
+            RowVector3::new(0, 0, -2),
         ]);
-        let b = OVector::<f64, Dyn>::from_row_slice(&[1.0, 0.0, 0.0]);
-        let x = solve_mod1(&a, &b);
-        // TODO
+        let b = OVector::<f64, Dyn>::from_row_slice(&[0.0, 0.0, 0.0, 0.0, 0.5, 0.0]);
+        let x = solve_mod1(&a, &b, 1e-4);
+        assert_eq!(x, None);
     }
 
     #[test]
@@ -305,8 +322,8 @@ mod tests {
 
     #[test]
     fn test_identify_space_group() {
-        // for hall_number in 1..=530 {
-        for hall_number in [21] {
+        for hall_number in 1..=530 {
+            // for hall_number in [60] {
             dbg!(hall_number);
             let hall_symbol = HallSymbol::from_hall_number(hall_number);
             let operations = hall_symbol.traverse();
