@@ -47,7 +47,7 @@ impl SpaceGroup {
                 {
                     return Ok(Self {
                         number: entry.number,
-                        hall_number: hall_number,
+                        hall_number,
                         transformation: Transformation::new(trans_mat, origin_shift),
                     });
                 }
@@ -147,7 +147,7 @@ fn match_origin_shift(
         .iter()
         .zip(new_prim_operations.translations.iter())
     {
-        hm_translations.insert(rotation.clone(), translation.clone());
+        hm_translations.insert(*rotation, *translation);
     }
 
     // Solve (E, c)^-1 (R, t_target) (E, c) = (R, t_other) (mod 1) (for all (R, t_other) in other_prim_generators)
@@ -176,8 +176,7 @@ fn match_origin_shift(
             b[3 * k + i] = bk[i];
         }
     }
-    let origin_shift = solve_mod1(&a, &b, 1e-4);
-    origin_shift
+    solve_mod1(&a, &b, 1e-4) // origin shift
 }
 
 /// Solve a * x = b (mod 1)
@@ -293,7 +292,6 @@ mod tests {
             assert_eq!(space_group.number, entry.number);
 
             // Check transformation
-            unimplemented!()
         }
     }
 }

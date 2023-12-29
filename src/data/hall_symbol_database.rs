@@ -17,6 +17,7 @@ pub struct HallSymbolEntry {
 }
 
 impl HallSymbolEntry {
+    #[allow(clippy::too_many_arguments)]
     const fn new(
         hall_number: HallNumber,
         number: Number,

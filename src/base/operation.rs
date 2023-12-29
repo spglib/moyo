@@ -74,8 +74,8 @@ pub fn traverse(generators: &Vec<Rotation>) -> Vec<Rotation> {
         if visited.contains(&element) {
             continue;
         }
-        visited.insert(element.clone());
-        group.push(element.clone());
+        visited.insert(element);
+        group.push(element);
 
         for generator in generators {
             let product = element * generator;
@@ -164,10 +164,7 @@ impl Mul for Permutation {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        let mut mapping = vec![0; self.size()];
-        for i in 0..self.size() {
-            mapping[i] = self.apply(rhs.apply(i));
-        }
+        let mapping = (0..self.size()).map(|i| self.apply(rhs.apply(i))).collect();
         Self::new(mapping)
     }
 }

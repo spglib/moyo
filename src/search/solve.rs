@@ -6,7 +6,7 @@ use crate::base::cell::{AtomicSpecie, Cell, Position};
 use crate::base::operation::{Permutation, Rotation, Translation};
 
 /// Choose atomic specie with the smallest occurrence
-pub fn pivot_site_indices(numbers: &Vec<AtomicSpecie>) -> Vec<usize> {
+pub fn pivot_site_indices(numbers: &[AtomicSpecie]) -> Vec<usize> {
     let mut counter = BTreeMap::new();
     for number in numbers.iter() {
         let count = counter.entry(number).or_insert(0);
@@ -27,9 +27,10 @@ pub fn pivot_site_indices(numbers: &Vec<AtomicSpecie>) -> Vec<usize> {
 /// Search permutation such that new_positions[i] = reduced_cell.positions[permutation[i]].
 /// Then, a corresponding symmetry operation moves the i-th site into the permutation[i]-th site.
 /// TODO: Be careful that the current implementation takes O(num_atoms^2) time!
+#[allow(clippy::needless_range_loop)]
 pub fn solve_correspondence(
     reduced_cell: &Cell,
-    new_positions: &Vec<Position>,
+    new_positions: &[Position],
     symprec: f64,
 ) -> Option<Permutation> {
     let num_atoms = reduced_cell.num_atoms();

@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::collections::{HashSet, VecDeque};
 
 use itertools::Itertools;
@@ -26,46 +27,31 @@ impl PointGroup {
     /// Identify the arithmetic crystal class from the given rotations and transformation matrix into the representative
     /// Assume the rotations are given in the (reduced) primitive basis
     pub fn new(prim_rotations: &Vec<Rotation>) -> Result<Self, MoyoError> {
-        let rotation_types = prim_rotations
-            .iter()
-            .map(|rotation| identify_rotation_type(rotation))
-            .collect();
+        let rotation_types = prim_rotations.iter().map(identify_rotation_type).collect();
         let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types);
 
         let crystal_system = CrystalSystem::from_geometric_crystal_class(geometric_crystal_class);
         match crystal_system {
             // Skip triclinic cases as trivial
             CrystalSystem::Triclinic => match geometric_crystal_class {
-                GeometricCrystalClass::C1 => {
-                    return Ok(PointGroup {
-                        arithmetic_number: 1,
-                        prim_trans_mat: TransformationMatrix::identity(),
-                        conv_trans_mat: TransformationMatrix::identity(),
-                    })
-                }
-                GeometricCrystalClass::Ci => {
-                    return Ok(PointGroup {
-                        arithmetic_number: 2,
-                        prim_trans_mat: TransformationMatrix::identity(),
-                        conv_trans_mat: TransformationMatrix::identity(),
-                    });
-                }
+                GeometricCrystalClass::C1 => Ok(PointGroup {
+                    arithmetic_number: 1,
+                    prim_trans_mat: TransformationMatrix::identity(),
+                    conv_trans_mat: TransformationMatrix::identity(),
+                }),
+                GeometricCrystalClass::Ci => Ok(PointGroup {
+                    arithmetic_number: 2,
+                    prim_trans_mat: TransformationMatrix::identity(),
+                    conv_trans_mat: TransformationMatrix::identity(),
+                }),
                 _ => unreachable!(),
             },
-            CrystalSystem::Cubic => {
-                return match_with_cubic_point_group(
-                    &prim_rotations,
-                    &rotation_types,
-                    geometric_crystal_class,
-                );
-            }
-            _ => {
-                return match_with_point_group(
-                    &prim_rotations,
-                    &rotation_types,
-                    geometric_crystal_class,
-                );
-            }
+            CrystalSystem::Cubic => match_with_cubic_point_group(
+                prim_rotations,
+                &rotation_types,
+                geometric_crystal_class,
+            ),
+            _ => match_with_point_group(prim_rotations, &rotation_types, geometric_crystal_class),
         }
     }
 }
@@ -87,10 +73,10 @@ enum RotationType {
 /// Faster matching algorithm for cubic point groups
 fn match_with_cubic_point_group(
     prim_rotations: &Vec<Rotation>,
-    rotation_types: &Vec<RotationType>,
+    rotation_types: &[RotationType],
     geometric_crystal_class: GeometricCrystalClass,
 ) -> Result<PointGroup, MoyoError> {
-    let generators = choose_generators(&prim_rotations);
+    let generators = choose_generators(prim_rotations);
 
     let arithmetic_crystal_class_candidates = ARITHMETIC_CRYSTAL_CLASS_DATABASE
         .iter()
@@ -122,8 +108,7 @@ fn match_with_cubic_point_group(
         .collect::<Vec<_>>();
     let primitive_arithmetic_crystal_class = arithmetic_crystal_class_candidates
         .iter()
-        .filter(|(_, _, centering)| *centering == Centering::P)
-        .next()
+        .find(|(_, _, centering)| *centering == Centering::P)
         .unwrap();
 
     let order = prim_rotations.len();
@@ -132,7 +117,7 @@ fn match_with_cubic_point_group(
     // Try to map generators
     let other_generator_rotation_types = other_prim_generators
         .iter()
-        .map(|rotation| identify_rotation_type(rotation))
+        .map(identify_rotation_type)
         .collect::<Vec<_>>();
     let candidates: Vec<Vec<usize>> = other_generator_rotation_types
         .iter()
@@ -163,11 +148,13 @@ fn match_with_cubic_point_group(
 
             // Guarantee det > 0
             let mut det = conv_trans_mat.map(|e| e as f64).determinant().round() as i32;
-            if det < 0 {
-                conv_trans_mat *= -1;
-                det *= -1;
-            } else if det == 0 {
-                continue;
+            match det.cmp(&0) {
+                Ordering::Less => {
+                    conv_trans_mat *= -1;
+                    det *= -1;
+                }
+                Ordering::Equal => continue,
+                Ordering::Greater => {}
             }
 
             for (arithmetic_crystal_class, _, centering) in
@@ -194,7 +181,7 @@ fn match_with_cubic_point_group(
 
 fn match_with_point_group(
     prim_rotations: &Vec<Rotation>,
-    rotation_types: &Vec<RotationType>,
+    rotation_types: &[RotationType],
     geometric_crystal_class: GeometricCrystalClass,
 ) -> Result<PointGroup, MoyoError> {
     let order = prim_rotations.len();
@@ -213,7 +200,7 @@ fn match_with_point_group(
         // Try to map generators
         let other_generator_rotation_types = other_prim_generators
             .iter()
-            .map(|rotation| identify_rotation_type(rotation))
+            .map(identify_rotation_type)
             .collect::<Vec<_>>();
         let candidates: Vec<Vec<usize>> = other_generator_rotation_types
             .iter()
@@ -387,7 +374,7 @@ fn identify_geometric_crystal_class(rotation_types: &Vec<RotationType>) -> Geome
     }
 }
 
-fn choose_generators(elements: &Vec<Rotation>) -> Vec<usize> {
+fn choose_generators(elements: &[Rotation]) -> Vec<usize> {
     let mut generators = Vec::new();
 
     let mut visited = HashSet::new();
@@ -409,8 +396,8 @@ fn choose_generators(elements: &Vec<Rotation>) -> Vec<usize> {
             let other = queue.pop_front().unwrap();
             let product = element * other;
             if !visited.contains(&product) {
-                visited.insert(product.clone());
-                queue.push_back(product.clone());
+                visited.insert(product);
+                queue.push_back(product);
             }
         }
     }

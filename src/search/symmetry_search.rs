@@ -50,15 +50,15 @@ pub fn search_symmetry_operations_from_primitive(
                 .collect();
 
             if let Some(permutation) =
-                solve_correspondence(&primitive_cell, &new_positions, rough_symprec)
+                solve_correspondence(primitive_cell, &new_positions, rough_symprec)
             {
-                symmetries_tmp.push((rotation.clone(), translation, permutation));
+                symmetries_tmp.push((*rotation, translation, permutation));
                 // If a translation part is found, it should be unique (up to lattice translations)
                 break;
             }
         }
     }
-    assert!(symmetries_tmp.len() > 0);
+    assert!(!symmetries_tmp.is_empty());
 
     // Purify symmetry operations by permutations
     let mut rotations = vec![];
@@ -66,18 +66,18 @@ pub fn search_symmetry_operations_from_primitive(
     let mut permutations = vec![];
     for (rotation, rough_translation, permutation) in symmetries_tmp.iter() {
         let (translation, distance) = symmetrize_translation_from_permutation(
-            &primitive_cell,
+            primitive_cell,
             permutation,
             rotation,
             rough_translation,
         );
         if distance < symprec {
-            rotations.push(rotation.clone());
+            rotations.push(*rotation);
             translations.push(translation);
             permutations.push(permutation.clone());
         }
     }
-    if rotations.len() == 0 {
+    if rotations.is_empty() {
         return Err(MoyoError::SymmetrySearchError);
     }
 
@@ -110,7 +110,7 @@ fn search_bravais_group(
         let v_length = v.norm();
         for (i, &length) in lengths.iter().enumerate() {
             if (v_length - length).abs() < symprec {
-                candidate_lattice_points[i].push(coeffs.clone());
+                candidate_lattice_points[i].push(coeffs);
             }
         }
     }
@@ -183,7 +183,7 @@ fn search_bravais_group(
         }
     }
 
-    if rotations.len() == 0 {
+    if rotations.is_empty() {
         return Err(MoyoError::BravaisGroupSearchError);
     }
     Ok(rotations)

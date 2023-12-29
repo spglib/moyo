@@ -103,7 +103,7 @@ impl Centering {
 
 impl HallSymbol {
     pub fn new(hall_symbol: &str) -> Option<Self> {
-        let tokens = Self::tokenize(&hall_symbol);
+        let tokens = Self::tokenize(hall_symbol);
 
         let (inversion_at_origin, lattice_symbol) = Self::parse_lattice(tokens[0])?;
 
@@ -179,9 +179,9 @@ impl HallSymbol {
             if hm_translations.contains_key(&rotation_lhs) {
                 continue;
             }
-            hm_translations.insert(rotation_lhs.clone(), translation_lhs.clone());
-            rotations.push(rotation_lhs.clone());
-            translations.push(translation_lhs.clone());
+            hm_translations.insert(rotation_lhs, translation_lhs);
+            rotations.push(rotation_lhs);
+            translations.push(translation_lhs);
 
             for (rotation_rhs, translation_rhs) in self
                 .generators
@@ -295,7 +295,7 @@ impl HallSymbol {
 
         let prime_axis_symbol = '\'';
         let mut axis = String::new();
-        if pos <= token.len() - 1 {
+        if pos < token.len() {
             if token.chars().nth(pos).unwrap() == prime_axis_symbol {
                 axis += "p";
                 pos += 1;
@@ -307,7 +307,7 @@ impl HallSymbol {
             }
         }
 
-        if pos <= token.len() - 1 {
+        if pos < token.len() {
             let c = token.chars().nth(pos).unwrap();
             if (c == 'x') || (c == 'y') || (c == 'z') || (c == '*') {
                 axis.push(c);
@@ -326,7 +326,7 @@ impl HallSymbol {
         }
 
         // Default axes. See A1.4.2.3.1
-        if (axis == "") || (axis == "p") || (axis == "pp") {
+        if axis.is_empty() || (axis == "p") || (axis == "pp") {
             match count {
                 0 => {
                     // axis direction of c
@@ -365,7 +365,7 @@ impl HallSymbol {
         // translation
         let mut translation = Translation::zeros();
 
-        while pos <= token.len() - 1 {
+        while pos < token.len() {
             let c = token.chars().nth(pos).unwrap();
             // translations are applied additively
             if "123456".contains(c) {

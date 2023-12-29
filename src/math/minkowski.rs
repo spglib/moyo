@@ -7,7 +7,7 @@ const EPS: f64 = 1e-8;
 
 /// basis is column-wise
 pub fn minkowski_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
-    let mut minkowski_basis = basis.clone();
+    let mut minkowski_basis = *basis;
     let mut trans_mat = Matrix3::<i32>::identity();
     minkowski_reduce_greedy(&mut minkowski_basis, &mut trans_mat, 3);
     (minkowski_basis, trans_mat)
@@ -30,7 +30,7 @@ fn minkowski_reduce_greedy(basis: &mut Matrix3<f64>, trans_mat: &mut Matrix3<i32
             for j in 0..(dim - 1 - i) {
                 if lengths[j] > lengths[j + 1] + EPS {
                     basis.swap_columns(j, j + 1);
-                    *trans_mat = *trans_mat * swapping_column_matrix(U3, j, j + 1);
+                    *trans_mat *= swapping_column_matrix(U3, j, j + 1);
                 }
             }
         }
@@ -62,7 +62,7 @@ fn minkowski_reduce_greedy(basis: &mut Matrix3<f64>, trans_mat: &mut Matrix3<i32
             if cvp < cvp_min {
                 cvp_min = cvp;
                 coeffs_argmin = coeffs.clone();
-                c_argmin = c.clone();
+                c_argmin = c;
             }
         }
 
@@ -74,7 +74,7 @@ fn minkowski_reduce_greedy(basis: &mut Matrix3<f64>, trans_mat: &mut Matrix3<i32
         for i in 0..(dim - 1) {
             add_mat[(i, dim - 1)] = -coeffs_argmin[i];
         }
-        *trans_mat = *trans_mat * add_mat;
+        *trans_mat *= add_mat;
 
         // Line 7: loop until length ordering is changed
         if basis.column(dim - 1).norm() + EPS > basis.column(dim - 2).norm() {

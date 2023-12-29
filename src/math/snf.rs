@@ -51,14 +51,14 @@ where
                 d.swap_rows(s, pivot.0);
                 l = swapping_row_matrix(m, s, pivot.0) * l;
                 d.swap_columns(s, pivot.1);
-                r = r * swapping_column_matrix(n, s, pivot.1);
+                r *= swapping_column_matrix(n, s, pivot.1);
 
                 // Guarantee that h[(s, s)] is positive
                 if d[(s, s)] < 0 {
                     for i in 0..m.value() {
                         d[(i, s)] *= -1;
                     }
-                    r = r * changing_column_sign_matrix(n, s);
+                    r *= changing_column_sign_matrix(n, s);
                 }
                 assert_ne!(d[(s, s)], 0);
 
@@ -87,7 +87,7 @@ where
                         for i in 0..m.value() {
                             d[(i, j)] -= k * d[(i, s)];
                         }
-                        r = r * adding_column_matrix(n, s, j, -k);
+                        r *= adding_column_matrix(n, s, j, -k);
                     }
                 }
 
@@ -104,10 +104,9 @@ where
 
     pub fn rank(&self) -> usize {
         let (m, n) = self.d.shape_generic();
-        let rank = (0..m.min(n).value())
+        (0..m.min(n).value())
             .filter(|&i| self.d[(i, i)] != 0)
-            .count();
-        rank
+            .count()
     }
 }
 

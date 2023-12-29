@@ -8,7 +8,7 @@ const EPS: f64 = 1e-8;
 
 /// basis is column-wise
 pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
-    let mut reduced_basis = basis.clone();
+    let mut reduced_basis = *basis;
     let mut trans_mat = Matrix3::<i32>::identity();
 
     loop {
@@ -32,12 +32,12 @@ pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
                         if (k == i) || (k == j) {
                             continue;
                         }
-                        trans_mat_tmp = trans_mat_tmp * adding_column_matrix(U3, i, k, 1);
+                        trans_mat_tmp *= adding_column_matrix(U3, i, k, 1);
                     }
-                    trans_mat_tmp = trans_mat_tmp * changing_column_sign_matrix(U3, i);
+                    trans_mat_tmp *= changing_column_sign_matrix(U3, i);
 
-                    reduced_basis = reduced_basis * trans_mat_tmp.map(|e| e as f64);
-                    trans_mat = trans_mat * trans_mat_tmp;
+                    reduced_basis *= trans_mat_tmp.map(|e| e as f64);
+                    trans_mat *= trans_mat_tmp;
                     update = true;
                     break;
                 }

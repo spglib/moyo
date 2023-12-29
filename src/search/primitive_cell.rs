@@ -89,7 +89,7 @@ pub fn search_primitive_cell(
             permutations_translations_tmp.push((permutation, translation));
         }
     }
-    assert!(permutations_translations_tmp.len() > 0);
+    assert!(!permutations_translations_tmp.is_empty());
 
     // Purify translations by permutations
     let mut translations = vec![];
@@ -166,7 +166,7 @@ fn primitive_cell_from_transformation(
     cell: &Cell,
     trans_mat: &TransformationMatrix,
     translations: &Vec<Translation>,
-    permutations: &Vec<Permutation>,
+    permutations: &[Permutation],
 ) -> Option<(Cell, SiteMapping)> {
     let trans_mat_inv = trans_mat.map(|e| e as f64).try_inverse().unwrap();
     let new_lattice = Lattice::new(cell.lattice.basis * trans_mat_inv);

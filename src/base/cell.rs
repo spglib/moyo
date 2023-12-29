@@ -51,9 +51,9 @@ impl Cell {
         }
     }
 
-    /// Apply `trans`, which may increase the number of atoms in the cell.
-    /// Mapping from sites of the new cell to those of the original cell is also returned.
-    pub fn expand_transform(&self, transformation: &Transformation) -> (Self, SiteMapping) {
-        unimplemented!()
-    }
+    // Apply `trans`, which may increase the number of atoms in the cell.
+    // Mapping from sites of the new cell to those of the original cell is also returned.
+    // pub fn expand_transform(&self, transformation: &Transformation) -> (Self, SiteMapping) {
+    //     unimplemented!()
+    // }
 }
