@@ -24,7 +24,12 @@ pub struct SpaceGroup {
 
 impl SpaceGroup {
     /// Identify the space group from the primitive operations.
-    pub fn new(prim_operations: &AbstractOperations, setting: Setting) -> Result<Self, MoyoError> {
+    /// epsilon: tolerance for comparing translation parts
+    pub fn new(
+        prim_operations: &AbstractOperations,
+        setting: Setting,
+        epsilon: f64,
+    ) -> Result<Self, MoyoError> {
         // point_group.trans_mat: self -> primitive
         let point_group = PointGroup::new(&prim_operations.rotations)?;
 
@@ -43,7 +48,7 @@ impl SpaceGroup {
             {
                 let trans_mat = point_group.prim_trans_mat * trans_mat_corr;
                 if let Some(origin_shift) =
-                    match_origin_shift(prim_operations, &trans_mat, &db_prim_generators)
+                    match_origin_shift(prim_operations, &trans_mat, &db_prim_generators, epsilon)
                 {
                     return Ok(Self {
                         number: entry.number,
@@ -139,6 +144,7 @@ fn match_origin_shift(
     prim_operations: &AbstractOperations,
     trans_mat: &TransformationMatrix,
     db_prim_generators: &AbstractOperations,
+    epsilon: f64,
 ) -> Option<OriginShift> {
     let new_prim_operations =
         prim_operations.transform(&trans_mat.map(|e| e as f64), &OriginShift::zeros());
@@ -186,7 +192,7 @@ fn match_origin_shift(
         }
     }
 
-    match solve_mod1(&a, &b, 1e-4) {
+    match solve_mod1(&a, &b, epsilon) {
         Some(s) => {
             let mut origin_shfit = trans_mat.map(|e| e as f64) * s;
             origin_shfit -= origin_shfit.map(|e| e.round());
@@ -197,7 +203,11 @@ fn match_origin_shift(
 }
 
 /// Solve a * x = b (mod 1)
-fn solve_mod1(a: &OMatrix<i32, Dyn, U3>, b: &OVector<f64, Dyn>, eps: f64) -> Option<Vector3<f64>> {
+fn solve_mod1(
+    a: &OMatrix<i32, Dyn, U3>,
+    b: &OVector<f64, Dyn>,
+    epsilon: f64,
+) -> Option<Vector3<f64>> {
     // Solve snf.d * y = snf.l * b (x = snf.r * y)
     let snf = SNF::new(a);
     let mut y = Vector3::<f64>::zeros();
@@ -205,7 +215,7 @@ fn solve_mod1(a: &OMatrix<i32, Dyn, U3>, b: &OVector<f64, Dyn>, eps: f64) -> Opt
     for i in 0..3 {
         if snf.d[(i, i)] == 0 {
             let lbi = lb[i] - lb[i].round();
-            if lbi.abs() > eps {
+            if lbi.abs() > epsilon {
                 return None;
             }
         } else {
@@ -219,7 +229,7 @@ fn solve_mod1(a: &OMatrix<i32, Dyn, U3>, b: &OVector<f64, Dyn>, eps: f64) -> Opt
     // Check solution
     let mut residual = a.map(|e| e as f64) * x - b;
     residual -= residual.map(|e| e.round()); // mod 1
-    if residual.iter().any(|e| e.abs() > eps) {
+    if residual.iter().any(|e| e.abs() > epsilon) {
         return None;
     }
 
@@ -232,6 +242,7 @@ mod tests {
 
     use nalgebra::{matrix, vector, Dyn, OMatrix, OVector, RowVector3, U3};
 
+    use crate::base::tolerance::EPS;
     use crate::base::transformation::OriginShift;
     use crate::data::hall_symbol::HallSymbol;
     use crate::data::hall_symbol_database::get_hall_symbol_entry;
@@ -250,7 +261,7 @@ mod tests {
             RowVector3::new(0, 0, -2),
         ]);
         let b = OVector::<f64, Dyn>::from_row_slice(&[0.0, 0.0, 0.0, 0.0, 0.5, 0.0]);
-        let x = solve_mod1(&a, &b, 1e-4);
+        let x = solve_mod1(&a, &b, EPS);
         assert_eq!(x, None);
     }
 
@@ -303,7 +314,7 @@ mod tests {
             let linear = hall_symbol.lattice_symbol.inverse();
             let prim_operations = operations.transform(&linear, &OriginShift::zeros());
 
-            let space_group = SpaceGroup::new(&prim_operations, Setting::Spglib).unwrap();
+            let space_group = SpaceGroup::new(&prim_operations, Setting::Spglib, 1e-8).unwrap();
 
             // Check space group type
             let entry = get_hall_symbol_entry(hall_number);
