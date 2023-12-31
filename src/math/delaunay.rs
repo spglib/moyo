@@ -1,7 +1,8 @@
-use nalgebra::{Matrix3, Vector3, U3};
+use nalgebra::{vector, Matrix3, Vector3, U3};
 
 use crate::base::transformation::TransformationMatrix;
 
+use super::cycle_checker::CycleChecker;
 use super::elementary::{adding_column_matrix, changing_column_sign_matrix};
 
 const EPS: f64 = 1e-8;
@@ -11,14 +12,9 @@ pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
     let mut reduced_basis = *basis;
     let mut trans_mat = Matrix3::<i32>::identity();
 
+    let mut cc = CycleChecker::new();
     loop {
-        let mut superbase = vec![];
-        let mut sum_vec = Vector3::<f64>::zeros();
-        for base in basis.column_iter() {
-            superbase.push(base.clone_owned());
-            sum_vec += base;
-        }
-        superbase.push(-sum_vec);
+        let superbase = get_superbase(&reduced_basis);
 
         let mut update = false;
         for i in 0..3 {
@@ -26,7 +22,7 @@ pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
                 break;
             }
             for j in i + 1..4 {
-                if superbase[i].dot(&superbase[j]) < EPS {
+                if superbase[i].dot(&superbase[j]) > EPS {
                     let mut trans_mat_tmp = TransformationMatrix::identity();
                     for k in 0..3 {
                         if (k == i) || (k == j) {
@@ -44,12 +40,49 @@ pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
             }
         }
 
-        if update {
+        // If not updated or the new basis is already visited, stop the loop
+        if !update || !cc.insert(&trans_mat) {
             break;
         }
     }
 
+    // Select three shortest vectors from {b1, b2, b3, b4, b1 + b2, b2 + b3, b3 + b1}
+    let basis_candidates = [
+        vector![1, 0, 0],
+        vector![0, 1, 0],
+        vector![0, 0, 1],
+        vector![-1, -1, -1],
+        vector![1, 1, 0],
+        vector![0, 1, 1],
+        vector![1, 0, 1],
+    ];
+    let norms = basis_candidates
+        .iter()
+        .map(|&v| (reduced_basis * v.map(|e| e as f64)).norm())
+        .collect::<Vec<_>>();
+    let mut argsort = (0..7).collect::<Vec<_>>();
+    argsort.sort_by(|&i, &j| norms[i].partial_cmp(&norms[j]).unwrap());
+
+    let trans_mat_shortest = TransformationMatrix::from_columns(&[
+        basis_candidates[argsort[0]],
+        basis_candidates[argsort[1]],
+        basis_candidates[argsort[2]],
+    ]);
+    trans_mat *= trans_mat_shortest;
+    reduced_basis *= trans_mat_shortest.map(|e| e as f64);
+
     (reduced_basis, trans_mat)
+}
+
+fn get_superbase(basis: &Matrix3<f64>) -> Vec<Vector3<f64>> {
+    let mut superbase = vec![];
+    let mut sum_vec = Vector3::<f64>::zeros();
+    for base in basis.column_iter() {
+        superbase.push(base.clone_owned());
+        sum_vec += base;
+    }
+    superbase.push(-sum_vec);
+    superbase
 }
 
 #[cfg(test)]
@@ -75,7 +108,11 @@ mod tests {
                 vector![10.5158083946732219, 0.0, 883.3279051525505565],
             ]);
             let (reduced_basis, trans_mat) = delaunay_reduce(&basis);
-            assert_relative_eq!(basis * trans_mat.map(|e| e as f64), reduced_basis);
+            assert_relative_eq!(
+                basis * trans_mat.map(|e| e as f64),
+                reduced_basis,
+                epsilon = 1e-4
+            );
         }
     }
 
@@ -96,7 +133,11 @@ mod tests {
                 rng.gen::<i8>() as f64,
             );
             let (reduced_basis, trans_mat) = delaunay_reduce(&basis);
-            assert_relative_eq!(basis * trans_mat.map(|e| e as f64), reduced_basis);
+            assert_relative_eq!(
+                basis * trans_mat.map(|e| e as f64),
+                reduced_basis,
+                epsilon = 1e-4
+            );
         }
 
         for _ in 0..256 {

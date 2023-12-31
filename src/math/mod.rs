@@ -1,3 +1,4 @@
+mod cycle_checker;
 pub mod delaunay;
 mod elementary;
 pub mod hnf;

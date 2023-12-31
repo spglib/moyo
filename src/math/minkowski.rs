@@ -1,6 +1,7 @@
 use itertools::Itertools;
 use nalgebra::{DMatrix, DVector, Matrix3, Vector3, U3};
 
+use super::cycle_checker::CycleChecker;
 use super::elementary::swapping_column_matrix;
 
 const EPS: f64 = 1e-8;
@@ -23,6 +24,7 @@ fn minkowski_reduce_greedy(basis: &mut Matrix3<f64>, trans_mat: &mut Matrix3<i32
         return;
     }
 
+    let mut cc = CycleChecker::new();
     loop {
         // Line 3: sort basis vectors by their lengths
         let lengths: Vec<f64> = basis.column_iter().map(|column| column.norm()).collect();
@@ -78,6 +80,11 @@ fn minkowski_reduce_greedy(basis: &mut Matrix3<f64>, trans_mat: &mut Matrix3<i32
 
         // Line 7: loop until length ordering is changed
         if basis.column(dim - 1).norm() + EPS > basis.column(dim - 2).norm() {
+            break;
+        }
+
+        // If the new basis is already visited, stop the loop
+        if !cc.insert(trans_mat) {
             break;
         }
     }
