@@ -4,6 +4,10 @@ use thiserror::Error;
 pub enum MoyoError {
     #[error("Minkowski reduction failed")]
     MinkowskiReductionError,
+    #[error("Niggli reduction failed")]
+    NiggliReductionError,
+    #[error("Delaunay reduction failed")]
+    DelaunayReductionError,
     #[error("Too small symprec")]
     TooSmallSymprecError,
     #[error("Primitive cell search failed")]

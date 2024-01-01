@@ -1,6 +1,8 @@
 use nalgebra::base::{Matrix3, Vector3};
 
+use crate::math::delaunay::delaunay_reduce;
 use crate::math::minkowski::{is_minkowski_reduced, minkowski_reduce};
+use crate::math::niggli::{is_niggli_reduced, niggli_reduce};
 
 use super::error::MoyoError;
 use super::tolerance::EPS;
@@ -26,28 +28,70 @@ impl Lattice {
     }
 
     pub fn minkowski_reduce(&self) -> Result<(Self, TransformationMatrix), MoyoError> {
-        let (minkowski_basis, trans_mat) = minkowski_reduce(&self.basis);
-        let minkowski_lattice = Self {
-            basis: minkowski_basis,
+        let (reduced_basis, trans_mat) = minkowski_reduce(&self.basis);
+        let reduced_lattice = Self {
+            basis: reduced_basis,
         };
 
         if relative_ne!(
             self.transform(&trans_mat.map(|e| e as f64)).basis,
-            minkowski_lattice.basis,
+            reduced_lattice.basis,
             epsilon = EPS
         ) {
             return Err(MoyoError::MinkowskiReductionError);
         }
-        if !minkowski_lattice.is_minkowski_reduced() {
+        if !reduced_lattice.is_minkowski_reduced() {
             return Err(MoyoError::MinkowskiReductionError);
         }
 
-        Ok((minkowski_lattice, trans_mat))
+        Ok((reduced_lattice, trans_mat))
     }
 
     /// Return true if basis vectors are Minkowski reduced
     pub fn is_minkowski_reduced(&self) -> bool {
         is_minkowski_reduced(&self.basis)
+    }
+
+    pub fn niggli_reduce(&self) -> Result<(Self, TransformationMatrix), MoyoError> {
+        let (reduced_basis, trans_mat) = niggli_reduce(&self.basis);
+        let reduced_lattice = Self {
+            basis: reduced_basis,
+        };
+
+        if relative_ne!(
+            self.transform(&trans_mat.map(|e| e as f64)).basis,
+            reduced_lattice.basis,
+            epsilon = EPS
+        ) {
+            return Err(MoyoError::NiggliReductionError);
+        }
+        if !reduced_lattice.is_niggli_reduced() {
+            return Err(MoyoError::NiggliReductionError);
+        }
+
+        Ok((reduced_lattice, trans_mat))
+    }
+
+    /// Return true if basis vectors are Niggli reduced
+    pub fn is_niggli_reduced(&self) -> bool {
+        is_niggli_reduced(&self.basis)
+    }
+
+    pub fn delaunay_reduce(&self) -> Result<(Self, TransformationMatrix), MoyoError> {
+        let (reduced_basis, trans_mat) = delaunay_reduce(&self.basis);
+        let reduced_lattice = Self {
+            basis: reduced_basis,
+        };
+
+        if relative_ne!(
+            self.transform(&trans_mat.map(|e| e as f64)).basis,
+            reduced_lattice.basis,
+            epsilon = EPS
+        ) {
+            return Err(MoyoError::DelaunayReductionError);
+        }
+
+        Ok((reduced_lattice, trans_mat))
     }
 
     pub fn metric_tensor(&self) -> Matrix3<f64> {
