@@ -7,7 +7,7 @@ use nalgebra::{Dyn, Matrix3, OMatrix, OVector, U9};
 use crate::base::error::MoyoError;
 use crate::base::operation::Rotation;
 use crate::base::transformation::TransformationMatrix;
-use crate::data::arithmetic_crystal_class::{ArithmeticNumber, ARITHMETIC_CRYSTAL_CLASS_DATABASE};
+use crate::data::arithmetic_crystal_class::{iter_arithmetic_crystal_entry, ArithmeticNumber};
 use crate::data::classification::{CrystalSystem, GeometricCrystalClass};
 use crate::data::hall_symbol::Centering;
 use crate::data::point_group::PointGroupRepresentative;
@@ -78,16 +78,15 @@ fn match_with_cubic_point_group(
 ) -> Result<PointGroup, MoyoError> {
     let generators = choose_generators(prim_rotations);
 
-    let arithmetic_crystal_class_candidates = ARITHMETIC_CRYSTAL_CLASS_DATABASE
-        .iter()
+    let arithmetic_crystal_class_candidates = iter_arithmetic_crystal_entry()
         .filter_map(|(arithmetic_number_db, _, geometric_crystal_class_db, _)| {
-            if *geometric_crystal_class_db != geometric_crystal_class {
+            if geometric_crystal_class_db != geometric_crystal_class {
                 return None;
             }
 
             // Check if prim_trans_mat^-1 * rotation * prim_trans_mat is integer matrix (for all rotation in generators)
             let point_group_db =
-                PointGroupRepresentative::from_arithmetic_crystal_class(*arithmetic_number_db);
+                PointGroupRepresentative::from_arithmetic_crystal_class(arithmetic_number_db);
             let centering = point_group_db.centering;
             let prim_trans_mat = centering.transformation_matrix(); // primitive -> conventional
             let prim_trans_mat_inv = centering.inverse();
@@ -103,7 +102,7 @@ fn match_with_cubic_point_group(
                 return None;
             }
 
-            Some((*arithmetic_number_db, point_group_db, centering))
+            Some((arithmetic_number_db, point_group_db, centering))
         })
         .collect::<Vec<_>>();
     let primitive_arithmetic_crystal_class = arithmetic_crystal_class_candidates
@@ -186,15 +185,14 @@ fn match_with_point_group(
 ) -> Result<PointGroup, MoyoError> {
     let order = prim_rotations.len();
 
-    for (arithmetic_number_db, _, geometric_crystal_class_db, _) in
-        ARITHMETIC_CRYSTAL_CLASS_DATABASE.iter()
+    for (arithmetic_number_db, _, geometric_crystal_class_db, _) in iter_arithmetic_crystal_entry()
     {
-        if *geometric_crystal_class_db != geometric_crystal_class {
+        if geometric_crystal_class_db != geometric_crystal_class {
             continue;
         }
 
         let point_group_db =
-            PointGroupRepresentative::from_arithmetic_crystal_class(*arithmetic_number_db);
+            PointGroupRepresentative::from_arithmetic_crystal_class(arithmetic_number_db);
         let other_prim_generators = point_group_db.primitive_generators();
 
         // Try to map generators
@@ -241,7 +239,7 @@ fn match_with_point_group(
                         let conv_trans_mat =
                             prim_trans_mat * point_group_db.centering.transformation_matrix();
                         return Ok(PointGroup {
-                            arithmetic_number: *arithmetic_number_db,
+                            arithmetic_number: arithmetic_number_db,
                             prim_trans_mat,
                             conv_trans_mat,
                         });

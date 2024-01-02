@@ -569,7 +569,7 @@ mod tests {
     use strum::IntoEnumIterator;
 
     use super::{Centering, HallSymbol};
-    use crate::data::hall_symbol_database::HALL_SYMBOL_DATABASE;
+    use crate::data::hall_symbol_database::iter_hall_symbol_entry;
 
     #[rstest]
     #[case("P 2 2ab -1ab", Centering::P, 0, 3, 8)] // No. 51
@@ -594,7 +594,7 @@ mod tests {
 
     #[test]
     fn test_hall_symbol_whole() {
-        for entry in HALL_SYMBOL_DATABASE.iter() {
+        for entry in iter_hall_symbol_entry() {
             let hs = HallSymbol::new(entry.hall_symbol).unwrap();
             assert_eq!(48 % hs.traverse().num_operations(), 0);
         }

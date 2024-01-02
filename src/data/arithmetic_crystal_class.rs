@@ -10,8 +10,18 @@ pub type ArithmeticCrystalClassEntry = (
     BravaisClass,
 );
 
+pub fn arithmetic_crystal_class_entry(
+    arithmetic_number: ArithmeticNumber,
+) -> ArithmeticCrystalClassEntry {
+    ARITHMETIC_CRYSTAL_CLASS_DATABASE[arithmetic_number as usize - 1]
+}
+
+pub fn iter_arithmetic_crystal_entry() -> impl Iterator<Item = ArithmeticCrystalClassEntry> {
+    ARITHMETIC_CRYSTAL_CLASS_DATABASE.iter().copied()
+}
+
 // Ordered the same as https://dictionary.iucr.org/Arithmetic_crystal_class
-pub const ARITHMETIC_CRYSTAL_CLASS_DATABASE: [ArithmeticCrystalClassEntry; 73] = [
+const ARITHMETIC_CRYSTAL_CLASS_DATABASE: [ArithmeticCrystalClassEntry; 73] = [
     // Crystal system: triclinic
     (1, "1P", GeometricCrystalClass::C1, BravaisClass::aP),
     (2, "-1P", GeometricCrystalClass::Ci, BravaisClass::aP),
@@ -93,9 +103,3 @@ pub const ARITHMETIC_CRYSTAL_CLASS_DATABASE: [ArithmeticCrystalClassEntry; 73] =
     (72, "m-3mF", GeometricCrystalClass::Oh, BravaisClass::cF),
     (73, "m-3mI", GeometricCrystalClass::Oh, BravaisClass::cI),
 ];
-
-pub fn arithmetic_crystal_class_entry(
-    arithmetic_number: ArithmeticNumber,
-) -> ArithmeticCrystalClassEntry {
-    ARITHMETIC_CRYSTAL_CLASS_DATABASE[arithmetic_number as usize - 1]
-}
