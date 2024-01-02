@@ -12,80 +12,84 @@ use crate::base::operation::{Operations, Permutation, Rotation};
 use crate::base::tolerance::{AngleTolerance, EPS};
 
 #[derive(Debug)]
-pub struct SymmetrySearchResult {
+pub struct SymmetrySearch {
+    /// Operations in the given primitive cell
     pub operations: Operations,
     pub permutations: Vec<Permutation>,
     pub bravais_group: Vec<Rotation>,
 }
 
-/// Return coset representatives of the space group w.r.t. its translation subgroup.
-/// Assume `primitive_cell` is a primitive cell and its basis vectors are Minkowski reduced.
-/// Possible replacements for spglib/src/spacegroup.h::spa_search_spacegroup
-pub fn search_symmetry_operations_from_primitive(
-    primitive_cell: &Cell,
-    symprec: f64,
-    angle_tolerance: AngleTolerance,
-) -> Result<SymmetrySearchResult, MoyoError> {
-    // Check if symprec is sufficiently small
-    let minimum_basis_norm = primitive_cell.lattice.basis.column(0).norm();
-    let rough_symprec = 2.0 * symprec;
-    if rough_symprec > minimum_basis_norm / 2.0 {
-        return Err(MoyoError::TooSmallSymprecError);
-    }
+impl SymmetrySearch {
+    /// Return coset representatives of the space group w.r.t. its translation subgroup.
+    /// Assume `primitive_cell` is a primitive cell and its basis vectors are Minkowski reduced.
+    /// Possible replacements for spglib/src/spacegroup.h::spa_search_spacegroup
+    pub fn new(
+        primitive_cell: &Cell,
+        symprec: f64,
+        angle_tolerance: AngleTolerance,
+    ) -> Result<Self, MoyoError> {
+        // Check if symprec is sufficiently small
+        let minimum_basis_norm = primitive_cell.lattice.basis.column(0).norm();
+        let rough_symprec = 2.0 * symprec;
+        if rough_symprec > minimum_basis_norm / 2.0 {
+            return Err(MoyoError::TooSmallSymprecError);
+        }
 
-    // Search symmetry operations
-    let bravais_group = search_bravais_group(&primitive_cell.lattice, symprec, angle_tolerance)?;
-    let pivot_site_indices = pivot_site_indices(&primitive_cell.numbers);
-    let mut symmetries_tmp = vec![];
-    let src = pivot_site_indices[0];
-    for rotation in bravais_group.iter() {
-        for dst in pivot_site_indices.iter() {
-            // Try to overlap the `src`-th site to the `dst`-th site
-            let translation = primitive_cell.positions[*dst]
-                - rotation.map(|e| e as f64) * primitive_cell.positions[src];
-            let new_positions: Vec<Position> = primitive_cell
-                .positions
-                .iter()
-                .map(|pos| rotation.map(|e| e as f64) * pos + translation)
-                .collect();
+        // Search symmetry operations
+        let bravais_group =
+            search_bravais_group(&primitive_cell.lattice, symprec, angle_tolerance)?;
+        let pivot_site_indices = pivot_site_indices(&primitive_cell.numbers);
+        let mut symmetries_tmp = vec![];
+        let src = pivot_site_indices[0];
+        for rotation in bravais_group.iter() {
+            for dst in pivot_site_indices.iter() {
+                // Try to overlap the `src`-th site to the `dst`-th site
+                let translation = primitive_cell.positions[*dst]
+                    - rotation.map(|e| e as f64) * primitive_cell.positions[src];
+                let new_positions: Vec<Position> = primitive_cell
+                    .positions
+                    .iter()
+                    .map(|pos| rotation.map(|e| e as f64) * pos + translation)
+                    .collect();
 
-            if let Some(permutation) =
-                solve_correspondence(primitive_cell, &new_positions, rough_symprec)
-            {
-                symmetries_tmp.push((*rotation, translation, permutation));
-                // If a translation part is found, it should be unique (up to lattice translations)
-                break;
+                if let Some(permutation) =
+                    solve_correspondence(primitive_cell, &new_positions, rough_symprec)
+                {
+                    symmetries_tmp.push((*rotation, translation, permutation));
+                    // If a translation part is found, it should be unique (up to lattice translations)
+                    break;
+                }
             }
         }
-    }
-    assert!(!symmetries_tmp.is_empty());
+        assert!(!symmetries_tmp.is_empty());
 
-    // Purify symmetry operations by permutations
-    let mut rotations = vec![];
-    let mut translations = vec![];
-    let mut permutations = vec![];
-    for (rotation, rough_translation, permutation) in symmetries_tmp.iter() {
-        let (translation, distance) = symmetrize_translation_from_permutation(
-            primitive_cell,
-            permutation,
-            rotation,
-            rough_translation,
-        );
-        if distance < symprec {
-            rotations.push(*rotation);
-            translations.push(translation);
-            permutations.push(permutation.clone());
+        // Purify symmetry operations by permutations
+        let mut rotations = vec![];
+        let mut translations = vec![];
+        let mut permutations = vec![];
+        for (rotation, rough_translation, permutation) in symmetries_tmp.iter() {
+            let (translation, distance) = symmetrize_translation_from_permutation(
+                primitive_cell,
+                permutation,
+                rotation,
+                rough_translation,
+            );
+            if distance < symprec {
+                rotations.push(*rotation);
+                translations.push(translation);
+                permutations.push(permutation.clone());
+            }
         }
-    }
-    if rotations.is_empty() {
-        return Err(MoyoError::SymmetrySearchError);
-    }
+        if rotations.is_empty() {
+            return Err(MoyoError::SymmetrySearchError);
+        }
 
-    Ok(SymmetrySearchResult {
-        operations: Operations::new(primitive_cell.lattice.clone(), rotations, translations),
-        permutations,
-        bravais_group,
-    })
+        Ok(Self {
+            operations: Operations::new(primitive_cell.lattice.clone(), rotations, translations),
+            permutations,
+            bravais_group,
+        })
+    }
 }
 
 /// Relevant to spglib.c/symmetry.c::get_lattice_symmetry

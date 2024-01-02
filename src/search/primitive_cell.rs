@@ -15,7 +15,7 @@ use crate::base::transformation::{OriginShift, Transformation, TransformationMat
 use crate::math::hnf::HNF;
 
 #[derive(Debug)]
-pub struct PrimitiveCellSearchResult {
+pub struct PrimitiveCellSearch {
     pub primitive_cell: Cell,
     /// Transformation matrix from the primitive cell to the input cell
     pub trans_mat: TransformationMatrix,
@@ -27,139 +27,124 @@ pub struct PrimitiveCellSearchResult {
     pub permutations: Vec<Permutation>,
 }
 
-impl PrimitiveCellSearchResult {
-    pub fn new(
-        primitive_cell: Cell,
-        trans_mat: TransformationMatrix,
-        site_mapping: SiteMapping,
-        translations: Vec<Translation>,
-        permutations: Vec<Permutation>,
-    ) -> Self {
-        Self {
-            primitive_cell,
-            trans_mat,
-            site_mapping,
-            translations,
-            permutations,
+impl PrimitiveCellSearch {
+    /// Return primitive cell and transformation matrix from the primitive cell to the input cell
+    /// Possible replacements for spglib/src/primitive.h::prm_get_primitive
+    pub fn new(cell: &Cell, symprec: f64) -> Result<Self, MoyoError> {
+        // cell.lattice.basis * reduced_trans_mat = reduced_cell.lattice.basis
+        let (reduced_lattice, reduced_trans_mat) = cell.lattice.minkowski_reduce()?;
+        let reduced_cell = cell.transform(&Transformation::new(
+            reduced_trans_mat,
+            OriginShift::zeros(),
+        ));
+
+        // Check if symprec is sufficiently small
+        let minimum_basis_norm = reduced_lattice
+            .basis
+            .column_iter()
+            .map(|v| v.norm())
+            .fold(f64::INFINITY, f64::min);
+        let rough_symprec = 2.0 * symprec;
+        if rough_symprec > minimum_basis_norm / 2.0 {
+            return Err(MoyoError::TooSmallSymprecError);
         }
-    }
-}
 
-/// Return primitive cell and transformation matrix from the primitive cell to the input cell
-/// Possible replacements for spglib/src/primitive.h::prm_get_primitive
-pub fn search_primitive_cell(
-    cell: &Cell,
-    symprec: f64,
-) -> Result<PrimitiveCellSearchResult, MoyoError> {
-    // cell.lattice.basis * reduced_trans_mat = reduced_cell.lattice.basis
-    let (reduced_lattice, reduced_trans_mat) = cell.lattice.minkowski_reduce()?;
-    let reduced_cell = cell.transform(&Transformation::new(
-        reduced_trans_mat,
-        OriginShift::zeros(),
-    ));
+        // Try possible translations: overlap the `src`the site to the `dst`th site
+        let pivot_site_indices = pivot_site_indices(&reduced_cell.numbers);
+        let mut permutations_translations_tmp = vec![];
+        let src = pivot_site_indices[0];
+        for dst in pivot_site_indices.iter() {
+            let translation = reduced_cell.positions[*dst] - reduced_cell.positions[src];
+            let new_positions: Vec<Position> = reduced_cell
+                .positions
+                .iter()
+                .map(|pos| pos + translation)
+                .collect();
 
-    // Check if symprec is sufficiently small
-    let minimum_basis_norm = reduced_lattice
-        .basis
-        .column_iter()
-        .map(|v| v.norm())
-        .fold(f64::INFINITY, f64::min);
-    let rough_symprec = 2.0 * symprec;
-    if rough_symprec > minimum_basis_norm / 2.0 {
-        return Err(MoyoError::TooSmallSymprecError);
-    }
-
-    // Try possible translations: overlap the `src`the site to the `dst`th site
-    let pivot_site_indices = pivot_site_indices(&reduced_cell.numbers);
-    let mut permutations_translations_tmp = vec![];
-    let src = pivot_site_indices[0];
-    for dst in pivot_site_indices.iter() {
-        let translation = reduced_cell.positions[*dst] - reduced_cell.positions[src];
-        let new_positions: Vec<Position> = reduced_cell
-            .positions
-            .iter()
-            .map(|pos| pos + translation)
-            .collect();
-
-        // Because the translation may not be optimal to minimize distance between input and acted positions,
-        // use a larger symprec (diameter of a Ball) for finding correspondence
-        if let Some(permutation) =
-            solve_correspondence(&reduced_cell, &new_positions, rough_symprec)
-        {
-            permutations_translations_tmp.push((permutation, translation));
+            // Because the translation may not be optimal to minimize distance between input and acted positions,
+            // use a larger symprec (diameter of a Ball) for finding correspondence
+            if let Some(permutation) =
+                solve_correspondence(&reduced_cell, &new_positions, rough_symprec)
+            {
+                permutations_translations_tmp.push((permutation, translation));
+            }
         }
-    }
-    assert!(!permutations_translations_tmp.is_empty());
+        assert!(!permutations_translations_tmp.is_empty());
 
-    // Purify translations by permutations
-    let mut translations = vec![];
-    let mut permutations = vec![];
-    for (permutation, rough_translation) in permutations_translations_tmp.iter() {
-        let (translation, distance) = symmetrize_translation_from_permutation(
+        // Purify translations by permutations
+        let mut translations = vec![];
+        let mut permutations = vec![];
+        for (permutation, rough_translation) in permutations_translations_tmp.iter() {
+            let (translation, distance) = symmetrize_translation_from_permutation(
+                &reduced_cell,
+                permutation,
+                &Rotation::identity(),
+                rough_translation,
+            );
+            if distance < symprec {
+                translations.push(translation);
+                permutations.push(permutation.clone());
+            }
+        }
+
+        let size = translations.len() as i32;
+        assert!(size > 0);
+        if reduced_cell.num_atoms() % (size as usize) != 0 {
+            return Err(MoyoError::PrimitiveCellSearchError);
+        }
+
+        // Recover a transformation matrix from primitive to input cell
+        let mut columns: Vec<Vector3<i32>> = vec![
+            Vector3::new(size, 0, 0),
+            Vector3::new(0, size, 0),
+            Vector3::new(0, 0, size),
+        ];
+        for translation in translations.iter() {
+            columns.push((translation * (size as f64)).map(|e| e.round() as i32));
+        }
+        let hnf = HNF::new(&OMatrix::<i32, U3, Dyn>::from_columns(&columns));
+        let trans_mat_inv =
+            Matrix3::<i32>::from_columns(&[hnf.h.column(0), hnf.h.column(1), hnf.h.column(2)])
+                .map(|e| e as f64)
+                / (size as f64);
+        let trans_mat = trans_mat_inv
+            .try_inverse()
+            .ok_or(MoyoError::PrimitiveCellSearchError)?
+            .map(|e| e.round() as i32);
+        if relative_ne!(
+            trans_mat.map(|e| e as f64).determinant(),
+            size as f64,
+            epsilon = EPS
+        ) {
+            return Err(MoyoError::PrimitiveCellSearchError);
+        }
+
+        // Primitive cell
+        let (primitive_cell, site_mapping) = primitive_cell_from_transformation(
             &reduced_cell,
-            permutation,
-            &Rotation::identity(),
-            rough_translation,
-        );
-        if distance < symprec {
-            translations.push(translation);
-            permutations.push(permutation.clone());
-        }
-    }
+            &trans_mat,
+            &translations,
+            &permutations,
+        )
+        .ok_or(MoyoError::PrimitiveCellSearchError)?;
 
-    let size = translations.len() as i32;
-    assert!(size > 0);
-    if reduced_cell.num_atoms() % (size as usize) != 0 {
-        return Err(MoyoError::PrimitiveCellSearchError);
-    }
-
-    // Recover a transformation matrix from primitive to input cell
-    let mut columns: Vec<Vector3<i32>> = vec![
-        Vector3::new(size, 0, 0),
-        Vector3::new(0, size, 0),
-        Vector3::new(0, 0, size),
-    ];
-    for translation in translations.iter() {
-        columns.push((translation * (size as f64)).map(|e| e.round() as i32));
-    }
-    let hnf = HNF::new(&OMatrix::<i32, U3, Dyn>::from_columns(&columns));
-    let trans_mat_inv =
-        Matrix3::<i32>::from_columns(&[hnf.h.column(0), hnf.h.column(1), hnf.h.column(2)])
+        // (input cell) --(reduced_trans_mat)--> (Minkowski reduced cell) <--(trans_mat)-- (primitive cell)
+        let inv_reduced_trans_mat = reduced_trans_mat
             .map(|e| e as f64)
-            / (size as f64);
-    let trans_mat = trans_mat_inv
-        .try_inverse()
-        .ok_or(MoyoError::PrimitiveCellSearchError)?
-        .map(|e| e.round() as i32);
-    if relative_ne!(
-        trans_mat.map(|e| e as f64).determinant(),
-        size as f64,
-        epsilon = EPS
-    ) {
-        return Err(MoyoError::PrimitiveCellSearchError);
+            .try_inverse()
+            .unwrap()
+            .map(|e| e as i32);
+        Ok(Self {
+            primitive_cell,
+            trans_mat: trans_mat * inv_reduced_trans_mat,
+            site_mapping,
+            translations: translations
+                .iter()
+                .map(|translation| reduced_trans_mat.map(|e| e as f64) * translation)
+                .collect(),
+            permutations,
+        })
     }
-
-    // Primitive cell
-    let (primitive_cell, site_mapping) =
-        primitive_cell_from_transformation(&reduced_cell, &trans_mat, &translations, &permutations)
-            .ok_or(MoyoError::PrimitiveCellSearchError)?;
-
-    // (input cell) --(reduced_trans_mat)--> (Minkowski reduced cell) <--(trans_mat)-- (primitive cell)
-    let inv_reduced_trans_mat = reduced_trans_mat
-        .map(|e| e as f64)
-        .try_inverse()
-        .unwrap()
-        .map(|e| e as i32);
-    Ok(PrimitiveCellSearchResult::new(
-        primitive_cell,
-        trans_mat * inv_reduced_trans_mat,
-        site_mapping,
-        translations
-            .iter()
-            .map(|translation| reduced_trans_mat.map(|e| e as f64) * translation)
-            .collect(),
-        permutations,
-    ))
 }
 
 fn primitive_cell_from_transformation(
@@ -217,7 +202,7 @@ mod tests {
     use crate::base::lattice::Lattice;
     use crate::base::operation::Translation;
 
-    use super::search_primitive_cell;
+    use super::PrimitiveCellSearch;
 
     #[test]
     fn test_search_primitive_cell() {
@@ -240,7 +225,7 @@ mod tests {
                 vec![0, 0, 0, 0],
             );
 
-            let result = search_primitive_cell(&cell, symprec).unwrap();
+            let result = PrimitiveCellSearch::new(&cell, symprec).unwrap();
             assert_eq!(result.site_mapping, vec![0, 0, 0, 0]);
             assert_relative_eq!(
                 result.primitive_cell.positions[0],
@@ -261,7 +246,7 @@ mod tests {
                 vec![Vector3::new(0.0, 0.0, 0.0), Vector3::new(0.5, 0.0, 0.5)],
                 vec![0, 0],
             );
-            let result = search_primitive_cell(&cell, symprec).unwrap();
+            let result = PrimitiveCellSearch::new(&cell, symprec).unwrap();
             assert_eq!(result.site_mapping, vec![0, 0]);
             assert_eq!(result.primitive_cell.numbers[0], 0);
             assert_relative_eq!(result.translations[0], Translation::new(0.0, 0.0, 0.0));

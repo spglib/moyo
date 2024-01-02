@@ -31,6 +31,13 @@ impl AbstractOperations {
         }
     }
 
+    pub fn from_operations(operations: &Operations) -> Self {
+        Self::new(
+            operations.rotations.clone(),
+            operations.translations.clone(),
+        )
+    }
+
     pub fn num_operations(&self) -> usize {
         self.rotations.len()
     }
