@@ -4,14 +4,12 @@ use std::ops::Mul;
 use nalgebra::base::{Matrix3, Vector3};
 
 use super::lattice::Lattice;
+use super::transformation::{
+    Linear, OriginShift, Transformation, UnimodularLinear, UnimodularTransformation,
+};
 
 pub type Rotation = Matrix3<i32>;
 pub type Translation = Vector3<f64>;
-
-#[derive(Debug, PartialEq, Clone)]
-pub struct Permutation {
-    pub mapping: Vec<usize>,
-}
 
 #[derive(Debug)]
 /// Symmetry operation without basis information
@@ -33,8 +31,8 @@ impl AbstractOperations {
 
     pub fn from_operations(operations: &Operations) -> Self {
         Self::new(
-            operations.rotations.clone(),
-            operations.translations.clone(),
+            operations.operations.rotations.clone(),
+            operations.operations.translations.clone(),
         )
     }
 
@@ -43,12 +41,43 @@ impl AbstractOperations {
     }
 
     /// (P, p)^-1 (W, w) (P, p)
-    pub fn transform(&self, linear: &Matrix3<f64>, origin_shift: &Vector3<f64>) -> Self {
+    /// This function may decrease the number of operations if the transformation is not compatible with an operation.
+    pub fn transform(&self, transformation: &Transformation) -> Self {
+        let linear_inv = transformation.trans_mat.try_inverse().unwrap();
         let mut new_rotations = vec![];
         let mut new_translations = vec![];
         for (rotation, translation) in self.rotations.iter().zip(self.translations.iter()) {
-            let (new_rotation, new_translation) =
-                transform_operation(rotation, translation, linear, origin_shift);
+            if let Some((new_rotation, new_translation)) = transform_operation(
+                rotation,
+                translation,
+                &transformation.trans_mat,
+                &linear_inv,
+                &transformation.origin_shift,
+            ) {
+                new_rotations.push(new_rotation);
+                new_translations.push(new_translation);
+            }
+        }
+        Self::new(new_rotations, new_translations)
+    }
+
+    pub fn transform_unimodular(&self, transformation: &UnimodularTransformation) -> Self {
+        let linear_inv = transformation
+            .trans_mat
+            .map(|e| e as f64)
+            .try_inverse()
+            .unwrap()
+            .map(|e| e.round() as i32);
+        let mut new_rotations = vec![];
+        let mut new_translations = vec![];
+        for (rotation, translation) in self.rotations.iter().zip(self.translations.iter()) {
+            let (new_rotation, new_translation) = transform_operation_unimodular(
+                rotation,
+                translation,
+                &transformation.trans_mat,
+                &linear_inv,
+                &transformation.origin_shift,
+            );
             new_rotations.push(new_rotation);
             new_translations.push(new_translation);
         }
@@ -59,86 +88,89 @@ impl AbstractOperations {
 fn transform_operation(
     rotation: &Rotation,
     translation: &Translation,
-    linear: &Matrix3<f64>,
-    origin_shift: &Vector3<f64>,
-) -> (Rotation, Translation) {
-    let linear_inv = linear.try_inverse().unwrap();
+    linear: &Linear,
+    linear_inv: &Linear,
+    origin_shift: &OriginShift,
+) -> Option<(Rotation, Translation)> {
     let new_rotation = (linear_inv * rotation.map(|e| e as f64) * linear).map(|e| e.round() as i32);
-    let new_translation =
-        linear_inv * (rotation.map(|e| e as f64) * origin_shift + translation - origin_shift);
-    (new_rotation, new_translation)
-}
 
-pub fn traverse(generators: &Vec<Rotation>) -> Vec<Rotation> {
-    let mut queue = VecDeque::new();
-    let mut visited = HashSet::new();
-    let mut group = vec![];
-
-    queue.push_back(Rotation::identity());
-
-    while !queue.is_empty() {
-        let element = queue.pop_front().unwrap();
-        if visited.contains(&element) {
-            continue;
-        }
-        visited.insert(element);
-        group.push(element);
-
-        for generator in generators {
-            let product = element * generator;
-            queue.push_back(product);
-        }
+    // Check if `new_rotation` is an integer matrix
+    let recovered =
+        (linear * new_rotation.map(|e| e as f64) * linear_inv).map(|e| e.round() as i32);
+    if recovered != *rotation {
+        return None;
     }
 
-    group
+    let new_translation =
+        linear_inv * (rotation.map(|e| e as f64) * origin_shift + translation - origin_shift);
+    Some((new_rotation, new_translation))
+}
+
+fn transform_operation_unimodular(
+    rotation: &Rotation,
+    translation: &Translation,
+    linear: &UnimodularLinear,
+    linear_inv: &UnimodularLinear,
+    origin_shift: &OriginShift,
+) -> (Rotation, Translation) {
+    let new_rotation = linear_inv * rotation * linear;
+    let new_translation = linear_inv.map(|e| e as f64)
+        * (rotation.map(|e| e as f64) * origin_shift + translation - origin_shift);
+    (new_rotation, new_translation)
 }
 
 #[derive(Debug)]
 /// Symmetry operation on a given basis
 pub struct Operations {
     pub lattice: Lattice,
-    //
-    pub rotations: Vec<Rotation>,
-    pub translations: Vec<Translation>,
+    pub operations: AbstractOperations,
 }
 
 impl Operations {
     pub fn new(lattice: Lattice, rotations: Vec<Rotation>, translations: Vec<Translation>) -> Self {
-        if translations.len() != rotations.len() {
-            panic!("rotations and translations should be the same length");
-        }
         Self {
             lattice,
-            rotations,
-            translations,
+            operations: AbstractOperations::new(rotations, translations),
         }
     }
 
     pub fn num_operations(&self) -> usize {
-        self.rotations.len()
+        self.operations.rotations.len()
     }
 
     pub fn cartesian_rotations(&self) -> Vec<Matrix3<f64>> {
         let inv_basis = self.lattice.basis.try_inverse().unwrap();
-        self.rotations
+        self.operations
+            .rotations
             .iter()
             .map(|r| self.lattice.basis * r.map(|e| e as f64) * inv_basis)
-            // .map(|r| inv_basis * r.map(|e| e as f64) * self.lattice.basis)
             .collect()
     }
 
-    pub fn transform(&self, linear: &Matrix3<f64>, origin_shift: &Vector3<f64>) -> Self {
-        let new_lattice = self.lattice.transform(linear);
-        let mut new_rotations = vec![];
-        let mut new_translations = vec![];
-        for (rotation, translation) in self.rotations.iter().zip(self.translations.iter()) {
-            let (new_rotation, new_translation) =
-                transform_operation(rotation, translation, linear, origin_shift);
-            new_rotations.push(new_rotation);
-            new_translations.push(new_translation);
-        }
-        Self::new(new_lattice, new_rotations, new_translations)
+    pub fn transform(&self, transformation: &Transformation) -> Self {
+        let new_lattice = self.lattice.transform(&transformation.trans_mat);
+        let new_operations = self.operations.transform(transformation);
+        Self::new(
+            new_lattice,
+            new_operations.rotations,
+            new_operations.translations,
+        )
     }
+
+    pub fn transform_unimodular(&self, transformation: &UnimodularTransformation) -> Self {
+        let new_lattice = self.lattice.transform_unimodular(&transformation.trans_mat);
+        let new_operations = self.operations.transform_unimodular(&transformation);
+        Self::new(
+            new_lattice,
+            new_operations.rotations,
+            new_operations.translations,
+        )
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Permutation {
+    pub mapping: Vec<usize>,
 }
 
 impl Permutation {
@@ -174,6 +206,30 @@ impl Mul for Permutation {
         let mapping = (0..self.size()).map(|i| self.apply(rhs.apply(i))).collect();
         Self::new(mapping)
     }
+}
+
+pub fn traverse(generators: &Vec<Rotation>) -> Vec<Rotation> {
+    let mut queue = VecDeque::new();
+    let mut visited = HashSet::new();
+    let mut group = vec![];
+
+    queue.push_back(Rotation::identity());
+
+    while !queue.is_empty() {
+        let element = queue.pop_front().unwrap();
+        if visited.contains(&element) {
+            continue;
+        }
+        visited.insert(element);
+        group.push(element);
+
+        for generator in generators {
+            let product = element * generator;
+            queue.push_back(product);
+        }
+    }
+
+    group
 }
 
 #[cfg(test)]

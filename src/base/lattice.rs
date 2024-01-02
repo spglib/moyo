@@ -6,7 +6,7 @@ use crate::math::niggli::{is_niggli_reduced, niggli_reduce};
 
 use super::error::MoyoError;
 use super::tolerance::EPS;
-use super::transformation::TransformationMatrix;
+use super::transformation::{Linear, UnimodularLinear};
 
 pub type ColumnBasis = Matrix3<f64>;
 
@@ -21,20 +21,26 @@ impl Lattice {
         Self { basis }
     }
 
-    pub fn transform(&self, trans_mat: &Matrix3<f64>) -> Self {
+    pub fn transform(&self, trans_mat: &Linear) -> Self {
         Self {
             basis: self.basis * trans_mat,
         }
     }
 
-    pub fn minkowski_reduce(&self) -> Result<(Self, TransformationMatrix), MoyoError> {
+    pub fn transform_unimodular(&self, trans_mat: &UnimodularLinear) -> Self {
+        Self {
+            basis: self.basis * trans_mat.map(|e| e as f64),
+        }
+    }
+
+    pub fn minkowski_reduce(&self) -> Result<(Self, UnimodularLinear), MoyoError> {
         let (reduced_basis, trans_mat) = minkowski_reduce(&self.basis);
         let reduced_lattice = Self {
             basis: reduced_basis,
         };
 
         if relative_ne!(
-            self.transform(&trans_mat.map(|e| e as f64)).basis,
+            self.transform_unimodular(&trans_mat).basis,
             reduced_lattice.basis,
             epsilon = EPS
         ) {
@@ -52,14 +58,14 @@ impl Lattice {
         is_minkowski_reduced(&self.basis)
     }
 
-    pub fn niggli_reduce(&self) -> Result<(Self, TransformationMatrix), MoyoError> {
+    pub fn niggli_reduce(&self) -> Result<(Self, UnimodularLinear), MoyoError> {
         let (reduced_basis, trans_mat) = niggli_reduce(&self.basis);
         let reduced_lattice = Self {
             basis: reduced_basis,
         };
 
         if relative_ne!(
-            self.transform(&trans_mat.map(|e| e as f64)).basis,
+            self.transform_unimodular(&trans_mat).basis,
             reduced_lattice.basis,
             epsilon = EPS
         ) {
@@ -77,14 +83,14 @@ impl Lattice {
         is_niggli_reduced(&self.basis)
     }
 
-    pub fn delaunay_reduce(&self) -> Result<(Self, TransformationMatrix), MoyoError> {
+    pub fn delaunay_reduce(&self) -> Result<(Self, UnimodularLinear), MoyoError> {
         let (reduced_basis, trans_mat) = delaunay_reduce(&self.basis);
         let reduced_lattice = Self {
             basis: reduced_basis,
         };
 
         if relative_ne!(
-            self.transform(&trans_mat.map(|e| e as f64)).basis,
+            self.transform_unimodular(&trans_mat).basis,
             reduced_lattice.basis,
             epsilon = EPS
         ) {

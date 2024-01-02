@@ -6,7 +6,7 @@ use strum_macros::EnumIter;
 use super::hall_symbol_database::{hall_symbol_entry, HallNumber};
 use crate::base::operation::{AbstractOperations, Rotation, Translation};
 use crate::base::tolerance::EPS;
-use crate::base::transformation::{OriginShift, TransformationMatrix};
+use crate::base::transformation::{Linear, OriginShift, Transformation};
 
 const MAX_DENOMINATOR: i32 = 12;
 
@@ -56,38 +56,38 @@ impl Centering {
 
     /// Inverse matrices of https://github.com/spglib/spglib/blob/39a95560dd831c2d16f162126921ac1e519efa31/src/spacegroup.c#L373-L384
     /// Transformation matrix from primitive to conventional cell.
-    pub fn transformation_matrix(&self) -> TransformationMatrix {
+    pub fn transformation_matrix(&self) -> Linear {
         match self {
-            Centering::P => TransformationMatrix::identity(),
-            Centering::A => TransformationMatrix::new(
-                1, 0, 0, //
-                0, 1, 1, //
-                0, -1, 1, //
+            Centering::P => Linear::identity(),
+            Centering::A => Linear::new(
+                1., 0., 0., //
+                0., 1., 1., //
+                0., -1., 1., //
             ),
-            Centering::B => TransformationMatrix::new(
-                1, 0, -1, //
-                0, 1, 0, //
-                1, 0, 1, //
+            Centering::B => Linear::new(
+                1., 0., -1., //
+                0., 1., 0., //
+                1., 0., 1., //
             ),
-            Centering::C => TransformationMatrix::new(
-                1, -1, 0, //
-                1, 1, 0, //
-                0, 0, 1, //
+            Centering::C => Linear::new(
+                1., -1., 0., //
+                1., 1., 0., //
+                0., 0., 1., //
             ),
-            Centering::R => TransformationMatrix::new(
-                1, 0, 1, //
-                -1, 1, 1, //
-                0, -1, 1, //
+            Centering::R => Linear::new(
+                1., 0., 1., //
+                -1., 1., 1., //
+                0., -1., 1., //
             ),
-            Centering::I => TransformationMatrix::new(
-                0, 1, 1, //
-                1, 0, 1, //
-                1, 1, 0, //
+            Centering::I => Linear::new(
+                0., 1., 1., //
+                1., 0., 1., //
+                1., 1., 0., //
             ),
-            Centering::F => TransformationMatrix::new(
-                -1, 1, 1, //
-                1, -1, 1, //
-                1, 1, -1, //
+            Centering::F => Linear::new(
+                -1., 1., 1., //
+                1., -1., 1., //
+                1., 1., -1., //
             ),
         }
     }
@@ -215,7 +215,7 @@ impl HallSymbol {
     pub fn primitive_generators(&self) -> AbstractOperations {
         let prim_trans_mat = self.centering.inverse();
         self.generators
-            .transform(&prim_trans_mat, &OriginShift::zeros())
+            .transform(&Transformation::new(prim_trans_mat, OriginShift::zeros()))
     }
 
     fn tokenize(hall_symbol: &str) -> Vec<&str> {

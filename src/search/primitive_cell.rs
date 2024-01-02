@@ -11,14 +11,14 @@ use crate::base::error::MoyoError;
 use crate::base::lattice::Lattice;
 use crate::base::operation::{Permutation, Rotation, Translation};
 use crate::base::tolerance::EPS;
-use crate::base::transformation::{OriginShift, Transformation, TransformationMatrix};
+use crate::base::transformation::{Linear, OriginShift, UnimodularTransformation};
 use crate::math::hnf::HNF;
 
 #[derive(Debug)]
 pub struct PrimitiveCellSearch {
     pub primitive_cell: Cell,
     /// Transformation matrix from the primitive cell to the input cell
-    pub trans_mat: TransformationMatrix,
+    pub trans_mat: Linear,
     /// Mapping from sites of the input cell to those of the primitive cell (many-to-one)
     pub site_mapping: SiteMapping,
     /// Translations in the **input** cell
@@ -33,7 +33,7 @@ impl PrimitiveCellSearch {
     pub fn new(cell: &Cell, symprec: f64) -> Result<Self, MoyoError> {
         // cell.lattice.basis * reduced_trans_mat = reduced_cell.lattice.basis
         let (reduced_lattice, reduced_trans_mat) = cell.lattice.minkowski_reduce()?;
-        let reduced_cell = cell.transform(&Transformation::new(
+        let reduced_cell = cell.transform(&UnimodularTransformation::new(
             reduced_trans_mat,
             OriginShift::zeros(),
         ));
@@ -109,8 +109,7 @@ impl PrimitiveCellSearch {
                 / (size as f64);
         let trans_mat = trans_mat_inv
             .try_inverse()
-            .ok_or(MoyoError::PrimitiveCellSearchError)?
-            .map(|e| e.round() as i32);
+            .ok_or(MoyoError::PrimitiveCellSearchError)?;
         if relative_ne!(
             trans_mat.map(|e| e as f64).determinant(),
             size as f64,
@@ -132,8 +131,7 @@ impl PrimitiveCellSearch {
         let inv_reduced_trans_mat = reduced_trans_mat
             .map(|e| e as f64)
             .try_inverse()
-            .unwrap()
-            .map(|e| e as i32);
+            .ok_or(MoyoError::PrimitiveCellSearchError)?;
         Ok(Self {
             primitive_cell,
             trans_mat: trans_mat * inv_reduced_trans_mat,
@@ -149,7 +147,7 @@ impl PrimitiveCellSearch {
 
 fn primitive_cell_from_transformation(
     cell: &Cell,
-    trans_mat: &TransformationMatrix,
+    trans_mat: &Linear,
     translations: &Vec<Translation>,
     permutations: &[Permutation],
 ) -> Option<(Cell, SiteMapping)> {

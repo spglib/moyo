@@ -5,7 +5,7 @@ use nalgebra::{Dyn, Matrix3, OMatrix, OVector, Vector3, U3};
 use super::point_group::PointGroup;
 use crate::base::error::MoyoError;
 use crate::base::operation::AbstractOperations;
-use crate::base::transformation::{OriginShift, Transformation, TransformationMatrix};
+use crate::base::transformation::{OriginShift, UnimodularLinear, UnimodularTransformation};
 use crate::data::arithmetic_crystal_class::{arithmetic_crystal_class_entry, ArithmeticNumber};
 use crate::data::classification::CrystalSystem;
 use crate::data::hall_symbol::HallSymbol;
@@ -19,7 +19,7 @@ pub struct SpaceGroup {
     pub number: Number,
     pub hall_number: HallNumber,
     /// Transformation to the representative for `hall_number` in primitive
-    pub transformation: Transformation,
+    pub transformation: UnimodularTransformation,
 }
 
 impl SpaceGroup {
@@ -52,7 +52,7 @@ impl SpaceGroup {
                     return Ok(Self {
                         number: entry.number,
                         hall_number,
-                        transformation: Transformation::new(trans_mat, origin_shift),
+                        transformation: UnimodularTransformation::new(trans_mat, origin_shift),
                     });
                 }
             }
@@ -64,22 +64,22 @@ impl SpaceGroup {
 
 fn correction_transformation_matrices(
     arithmetic_number: ArithmeticNumber,
-) -> Vec<TransformationMatrix> {
+) -> Vec<UnimodularLinear> {
     let (_, _, geometric_crystal_class, _) = arithmetic_crystal_class_entry(arithmetic_number);
     let crystal_system = CrystalSystem::from_geometric_crystal_class(geometric_crystal_class);
 
     // conventional -> conventional(cell choice 1 for monoclinic, abc for orthorhombic)
     let convs = match crystal_system {
         CrystalSystem::Monoclinic => vec![
-            TransformationMatrix::identity(),
+            UnimodularLinear::identity(),
             // b2 to b1
-            TransformationMatrix::new(
+            UnimodularLinear::new(
                 0, 0, -1, //
                 0, 1, 0, //
                 1, 0, -1, //
             ),
             // b3 to b1
-            TransformationMatrix::new(
+            UnimodularLinear::new(
                 -1, 0, 1, //
                 0, 1, 0, //
                 -1, 0, 0, //
@@ -87,45 +87,45 @@ fn correction_transformation_matrices(
         ],
         CrystalSystem::Orthorhombic => vec![
             // abc
-            TransformationMatrix::identity(),
+            UnimodularLinear::identity(),
             // ba-c
-            TransformationMatrix::new(
+            UnimodularLinear::new(
                 0, 1, 0, //
                 1, 0, 0, //
                 0, 0, -1, //
             ),
             // cab
-            TransformationMatrix::new(
+            UnimodularLinear::new(
                 0, 0, 1, //
                 1, 0, 0, //
                 0, 1, 0, //
             ),
             // -cba
-            TransformationMatrix::new(
+            UnimodularLinear::new(
                 0, 0, -1, //
                 0, 1, 0, //
                 1, 0, 0, //
             ),
             // bca
-            TransformationMatrix::new(
+            UnimodularLinear::new(
                 0, 1, 0, //
                 0, 0, 1, //
                 1, 0, 0, //
             ),
             // a-cb
-            TransformationMatrix::new(
+            UnimodularLinear::new(
                 1, 0, 0, //
                 0, 0, -1, //
                 0, 1, 0, //
             ),
         ],
-        _ => vec![TransformationMatrix::identity()],
+        _ => vec![UnimodularLinear::identity()],
     };
 
     // primitive -> conventional -> conventional(cell choice 1 for monoclinic, abc for orthorhombic) -> primitive
     let centering =
         PointGroupRepresentative::from_arithmetic_crystal_class(arithmetic_number).centering;
-    let corrections: Vec<TransformationMatrix> = convs
+    let corrections: Vec<UnimodularLinear> = convs
         .iter()
         .map(|trans_corr| {
             let corr = centering.transformation_matrix().map(|e| e as f64)
@@ -141,12 +141,14 @@ fn correction_transformation_matrices(
 /// Search for origin_shift such that (trans_mat, origin_shift) transforms <prim_operations> into <db_prim_generators>
 fn match_origin_shift(
     prim_operations: &AbstractOperations,
-    trans_mat: &TransformationMatrix,
+    trans_mat: &UnimodularLinear,
     db_prim_generators: &AbstractOperations,
     epsilon: f64,
 ) -> Option<OriginShift> {
-    let new_prim_operations =
-        prim_operations.transform(&trans_mat.map(|e| e as f64), &OriginShift::zeros());
+    let new_prim_operations = prim_operations.transform_unimodular(&UnimodularTransformation::new(
+        *trans_mat,
+        OriginShift::zeros(),
+    ));
     let mut hm_translations = HashMap::new();
     for (rotation, translation) in new_prim_operations
         .rotations
@@ -193,9 +195,9 @@ fn match_origin_shift(
 
     match solve_mod1(&a, &b, epsilon) {
         Some(s) => {
-            let mut origin_shfit = trans_mat.map(|e| e as f64) * s;
-            origin_shfit -= origin_shfit.map(|e| e.round());
-            Some(origin_shfit)
+            let mut origin_shift = trans_mat.map(|e| e as f64) * s;
+            origin_shift -= origin_shift.map(|e| e.round());
+            Some(origin_shift)
         }
         None => None,
     }
@@ -242,7 +244,7 @@ mod tests {
     use nalgebra::{matrix, vector, Dyn, OMatrix, OVector, RowVector3, U3};
 
     use crate::base::tolerance::EPS;
-    use crate::base::transformation::OriginShift;
+    use crate::base::transformation::{OriginShift, Transformation, UnimodularTransformation};
     use crate::data::hall_symbol::HallSymbol;
     use crate::data::hall_symbol_database::hall_symbol_entry;
     use crate::data::setting::Setting;
@@ -272,7 +274,8 @@ mod tests {
 
         // conventional -> primitive
         let linear = hall_symbol.centering.inverse();
-        let prim_operations = operations.transform(&linear, &OriginShift::zeros());
+        let prim_operations =
+            operations.transform(&Transformation::new(linear, OriginShift::zeros()));
 
         // The correction transformation matrices should change the group into P1c1, P1a1, and P1n1
         let entry = hall_symbol_entry(hall_number);
@@ -283,8 +286,8 @@ mod tests {
             vector![-0.5, 0.0, -0.5],
         ];
         for (i, corr) in corrections.iter().enumerate() {
-            let corr_prim_operations =
-                prim_operations.transform(&corr.map(|e| e as f64), &OriginShift::zeros());
+            let corr_prim_operations = prim_operations
+                .transform_unimodular(&&UnimodularTransformation::new(*corr, OriginShift::zeros()));
             let mut hm_translations = HashMap::new();
             for (rotation, translation) in corr_prim_operations
                 .rotations
@@ -305,13 +308,13 @@ mod tests {
     #[test]
     fn test_identify_space_group() {
         for hall_number in 1..=530 {
-            dbg!(hall_number);
             let hall_symbol = HallSymbol::from_hall_number(hall_number);
             let operations = hall_symbol.traverse();
 
             // conventional -> primitive
             let linear = hall_symbol.centering.inverse();
-            let prim_operations = operations.transform(&linear, &OriginShift::zeros());
+            let prim_operations =
+                operations.transform(&Transformation::new(linear, OriginShift::zeros()));
 
             let space_group = SpaceGroup::new(&prim_operations, Setting::Spglib, 1e-8).unwrap();
 
@@ -331,10 +334,10 @@ mod tests {
 
             let matched_hall_symbol = HallSymbol::from_hall_number(space_group.hall_number);
             let matched_operations = matched_hall_symbol.traverse();
-            let matched_prim_operations = matched_operations.transform(
-                &matched_hall_symbol.centering.inverse(),
-                &OriginShift::zeros(),
-            );
+            let matched_prim_operations = matched_operations.transform(&Transformation::new(
+                matched_hall_symbol.centering.inverse(),
+                OriginShift::zeros(),
+            ));
             let mut hm_translations = HashMap::new();
             for (rotation, translation) in matched_prim_operations
                 .rotations
@@ -345,10 +348,8 @@ mod tests {
             }
 
             // Check transformation
-            let transformed_prim_operations = prim_operations.transform(
-                &space_group.transformation.trans_mat_as_f64(),
-                &space_group.transformation.origin_shift,
-            );
+            let transformed_prim_operations =
+                prim_operations.transform_unimodular(&space_group.transformation);
             assert_eq!(
                 matched_prim_operations.rotations.len(),
                 transformed_prim_operations.rotations.len()

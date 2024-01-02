@@ -2,7 +2,7 @@ extern crate nalgebra as na;
 use na::base::Vector3;
 
 use super::lattice::Lattice;
-use super::transformation::Transformation;
+use super::transformation::UnimodularTransformation;
 
 pub type Position = Vector3<f64>;
 pub type AtomicSpecie = i32;
@@ -31,10 +31,7 @@ impl Cell {
         self.positions.len()
     }
 
-    pub fn transform(&self, transformation: &Transformation) -> Self {
-        if transformation.size != 1 {
-            panic!("transformation matrix should have determinant of -1 or 1");
-        }
+    pub fn transform(&self, transformation: &UnimodularTransformation) -> Self {
         let new_lattice = self
             .lattice
             .transform(&transformation.trans_mat.map(|e| e as f64));

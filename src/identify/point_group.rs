@@ -6,7 +6,7 @@ use nalgebra::{Dyn, Matrix3, OMatrix, OVector, U9};
 
 use crate::base::error::MoyoError;
 use crate::base::operation::Rotation;
-use crate::base::transformation::TransformationMatrix;
+use crate::base::transformation::{Linear, UnimodularLinear};
 use crate::data::arithmetic_crystal_class::{iter_arithmetic_crystal_entry, ArithmeticNumber};
 use crate::data::classification::{CrystalSystem, GeometricCrystalClass};
 use crate::data::hall_symbol::Centering;
@@ -18,9 +18,9 @@ use crate::math::integer_system::IntegerLinearSystem;
 pub struct PointGroup {
     pub arithmetic_number: ArithmeticNumber,
     /// Transformation matrix to the representative for `arithmetic_number` in the primitive basis
-    pub prim_trans_mat: TransformationMatrix,
+    pub prim_trans_mat: UnimodularLinear,
     /// Transformation matrix to the representative for `arithmetic_number` in the conventional basis
-    pub conv_trans_mat: TransformationMatrix,
+    pub conv_trans_mat: Linear,
 }
 
 impl PointGroup {
@@ -36,13 +36,13 @@ impl PointGroup {
             CrystalSystem::Triclinic => match geometric_crystal_class {
                 GeometricCrystalClass::C1 => Ok(PointGroup {
                     arithmetic_number: 1,
-                    prim_trans_mat: TransformationMatrix::identity(),
-                    conv_trans_mat: TransformationMatrix::identity(),
+                    prim_trans_mat: UnimodularLinear::identity(),
+                    conv_trans_mat: Linear::identity(),
                 }),
                 GeometricCrystalClass::Ci => Ok(PointGroup {
                     arithmetic_number: 2,
-                    prim_trans_mat: TransformationMatrix::identity(),
-                    conv_trans_mat: TransformationMatrix::identity(),
+                    prim_trans_mat: UnimodularLinear::identity(),
+                    conv_trans_mat: Linear::identity(),
                 }),
                 _ => unreachable!(),
             },
@@ -92,11 +92,14 @@ fn match_with_cubic_point_group(
             let prim_trans_mat_inv = centering.inverse();
             let compatible = generators.iter().all(|i| {
                 let rotation = prim_rotations[*i];
-                let tmp_mat = prim_trans_mat_inv * (rotation * prim_trans_mat).map(|e| e as f64);
-                let tmp_mat_int = tmp_mat.map(|e| e.round() as i32);
-                (rotation * prim_trans_mat - prim_trans_mat * tmp_mat_int)
-                    .iter()
-                    .all(|e| *e == 0)
+                let new_rotation =
+                    (prim_trans_mat_inv * rotation.map(|e| e as f64) * prim_trans_mat)
+                        .map(|e| e.round() as i32);
+                let recovered =
+                    (prim_trans_mat * new_rotation.map(|e| e as f64) * prim_trans_mat_inv)
+                        .map(|e| e.round() as i32);
+
+                (rotation - recovered).iter().all(|e| *e == 0)
             });
             if !compatible {
                 return None;
@@ -143,13 +146,13 @@ fn match_with_cubic_point_group(
             // conv_trans_mat: self -> conventional
             // The dimension of linear integer system should be one for cubic.
             assert_eq!(trans_mat_basis.len(), 1);
-            let mut conv_trans_mat = trans_mat_basis[0];
+            let mut conv_trans_mat = trans_mat_basis[0].map(|e| e as f64);
 
             // Guarantee det > 0
-            let mut det = conv_trans_mat.map(|e| e as f64).determinant().round() as i32;
+            let mut det = conv_trans_mat.determinant().round() as i32;
             match det.cmp(&0) {
                 Ordering::Less => {
-                    conv_trans_mat *= -1;
+                    conv_trans_mat *= -1.0;
                     det *= -1;
                 }
                 Ordering::Equal => continue,
@@ -163,8 +166,8 @@ fn match_with_cubic_point_group(
                     continue;
                 }
                 // conv_trans_mat: self -> conventional
-                let prim_trans_mat = (conv_trans_mat.map(|e| e as f64) * centering.inverse())
-                    .map(|e| e.round() as i32);
+                let prim_trans_mat =
+                    (conv_trans_mat * centering.inverse()).map(|e| e.round() as i32);
 
                 return Ok(PointGroup {
                     arithmetic_number: *arithmetic_crystal_class,
@@ -229,15 +232,15 @@ fn match_with_point_group(
                     .multi_cartesian_product()
                 {
                     // prim_trans_mat: self -> DB(primitive)
-                    let mut prim_trans_mat = TransformationMatrix::zeros();
+                    let mut prim_trans_mat = UnimodularLinear::zeros();
                     for (i, matrix) in trans_mat_basis.iter().enumerate() {
                         prim_trans_mat += comb[i] * matrix;
                     }
                     let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
                     if det == 1 {
                         // conv_trans_mat: self -> DB(conventional)
-                        let conv_trans_mat =
-                            prim_trans_mat * point_group_db.centering.transformation_matrix();
+                        let conv_trans_mat = prim_trans_mat.map(|e| e as f64)
+                            * point_group_db.centering.transformation_matrix();
                         return Ok(PointGroup {
                             arithmetic_number: arithmetic_number_db,
                             prim_trans_mat,
@@ -276,7 +279,7 @@ fn sylvester(a: &Vec<Matrix3<i32>>, b: &Vec<Matrix3<i32>>) -> Option<Vec<Matrix3
             .row_iter()
             .map(|e| {
                 // Vectorization operator is column-major
-                TransformationMatrix::new(
+                UnimodularLinear::new(
                     e[0], e[1], e[2], //
                     e[3], e[4], e[5], //
                     e[6], e[7], e[8], //

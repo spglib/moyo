@@ -1,6 +1,6 @@
 use nalgebra::{vector, Matrix3, Vector3, U3};
 
-use crate::base::transformation::TransformationMatrix;
+use crate::base::transformation::UnimodularLinear;
 
 use super::cycle_checker::CycleChecker;
 use super::elementary::{adding_column_matrix, changing_column_sign_matrix};
@@ -23,7 +23,7 @@ pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
             }
             for j in i + 1..4 {
                 if superbase[i].dot(&superbase[j]) > EPS {
-                    let mut trans_mat_tmp = TransformationMatrix::identity();
+                    let mut trans_mat_tmp = UnimodularLinear::identity();
                     for k in 0..3 {
                         if (k == i) || (k == j) {
                             continue;
@@ -63,7 +63,7 @@ pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
     let mut argsort = (0..7).collect::<Vec<_>>();
     argsort.sort_by(|&i, &j| norms[i].partial_cmp(&norms[j]).unwrap());
 
-    let trans_mat_shortest = TransformationMatrix::from_columns(&[
+    let trans_mat_shortest = UnimodularLinear::from_columns(&[
         basis_candidates[argsort[0]],
         basis_candidates[argsort[1]],
         basis_candidates[argsort[2]],
