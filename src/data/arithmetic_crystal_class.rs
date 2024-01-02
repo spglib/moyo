@@ -94,7 +94,7 @@ pub const ARITHMETIC_CRYSTAL_CLASS_DATABASE: [ArithmeticCrystalClassEntry; 73] =
     (73, "m-3mI", GeometricCrystalClass::Oh, BravaisClass::cI),
 ];
 
-pub fn get_arithmetic_crystal_class_entry(
+pub fn arithmetic_crystal_class_entry(
     arithmetic_number: ArithmeticNumber,
 ) -> ArithmeticCrystalClassEntry {
     ARITHMETIC_CRYSTAL_CLASS_DATABASE[arithmetic_number as usize - 1]

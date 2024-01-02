@@ -4327,6 +4327,6 @@ pub const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
     ),
 ];
 
-pub fn get_hall_symbol_entry(hall_number: HallNumber) -> HallSymbolEntry {
+pub fn hall_symbol_entry(hall_number: HallNumber) -> HallSymbolEntry {
     HALL_SYMBOL_DATABASE[(hall_number - 1) as usize].clone()
 }

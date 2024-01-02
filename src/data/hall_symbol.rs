@@ -3,7 +3,7 @@ use std::collections::{HashMap, VecDeque};
 use nalgebra::{matrix, Matrix3, Vector3};
 use strum_macros::EnumIter;
 
-use super::hall_symbol_database::{get_hall_symbol_entry, HallNumber};
+use super::hall_symbol_database::{hall_symbol_entry, HallNumber};
 use crate::base::operation::{AbstractOperations, Rotation, Translation};
 use crate::base::tolerance::EPS;
 use crate::base::transformation::{OriginShift, TransformationMatrix};
@@ -25,8 +25,8 @@ const MAX_DENOMINATOR: i32 = 12;
 #[derive(Debug)]
 pub struct HallSymbol {
     pub hall_symbol: String,
-    pub lattice_symbol: Centering,
-    pub centerings: Vec<Translation>,
+    pub centering: Centering,
+    pub centering_translations: Vec<Translation>,
     pub generators: AbstractOperations,
 }
 
@@ -132,7 +132,7 @@ impl HallSymbol {
         }
 
         // From translation subgroup
-        let centerings = Self::lattice_points(lattice_symbol)
+        let centering_translations = Self::lattice_points(lattice_symbol)
             .iter()
             .filter(|&&translation| relative_ne!(translation, Translation::zeros(), epsilon = EPS))
             .cloned()
@@ -158,8 +158,8 @@ impl HallSymbol {
 
         Some(Self {
             hall_symbol: hall_symbol.to_string(),
-            lattice_symbol,
-            centerings,
+            centering: lattice_symbol,
+            centering_translations,
             generators: AbstractOperations::new(rotations, translations),
         })
     }
@@ -208,12 +208,12 @@ impl HallSymbol {
     }
 
     pub fn from_hall_number(hall_number: HallNumber) -> Self {
-        let entry = get_hall_symbol_entry(hall_number);
+        let entry = hall_symbol_entry(hall_number);
         Self::new(entry.hall_symbol).unwrap()
     }
 
     pub fn primitive_generators(&self) -> AbstractOperations {
-        let prim_trans_mat = self.lattice_symbol.inverse();
+        let prim_trans_mat = self.centering.inverse();
         self.generators
             .transform(&prim_trans_mat, &OriginShift::zeros())
     }
@@ -580,13 +580,13 @@ mod tests {
     fn test_hall_symbol_small(
         #[case] hall_symbol: &str,
         #[case] lattice_symbol: Centering,
-        #[case] num_centerings: usize,
+        #[case] num_centering_translations: usize,
         #[case] num_generators: usize,
         #[case] num_operations: usize, // without centerings
     ) {
         let hs = HallSymbol::new(hall_symbol).unwrap();
-        assert_eq!(hs.lattice_symbol, lattice_symbol);
-        assert_eq!(hs.centerings.len(), num_centerings);
+        assert_eq!(hs.centering, lattice_symbol);
+        assert_eq!(hs.centering_translations.len(), num_centering_translations);
         assert_eq!(hs.generators.num_operations(), num_generators);
         let operations = hs.traverse();
         assert_eq!(operations.num_operations(), num_operations);

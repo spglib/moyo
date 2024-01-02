@@ -14,7 +14,7 @@ pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
 
     let mut cc = CycleChecker::new();
     loop {
-        let superbase = get_superbase(&reduced_basis);
+        let superbase = superbase(&reduced_basis);
 
         let mut update = false;
         for i in 0..3 {
@@ -74,7 +74,7 @@ pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
     (reduced_basis, trans_mat)
 }
 
-fn get_superbase(basis: &Matrix3<f64>) -> Vec<Vector3<f64>> {
+fn superbase(basis: &Matrix3<f64>) -> Vec<Vector3<f64>> {
     let mut superbase = vec![];
     let mut sum_vec = Vector3::<f64>::zeros();
     for base in basis.column_iter() {

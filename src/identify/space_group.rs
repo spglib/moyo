@@ -6,10 +6,10 @@ use super::point_group::PointGroup;
 use crate::base::error::MoyoError;
 use crate::base::operation::AbstractOperations;
 use crate::base::transformation::{OriginShift, Transformation, TransformationMatrix};
-use crate::data::arithmetic_crystal_class::{get_arithmetic_crystal_class_entry, ArithmeticNumber};
+use crate::data::arithmetic_crystal_class::{arithmetic_crystal_class_entry, ArithmeticNumber};
 use crate::data::classification::CrystalSystem;
 use crate::data::hall_symbol::HallSymbol;
-use crate::data::hall_symbol_database::{get_hall_symbol_entry, HallNumber, Number};
+use crate::data::hall_symbol_database::{hall_symbol_entry, HallNumber, Number};
 use crate::data::point_group::PointGroupRepresentative;
 use crate::data::setting::Setting;
 use crate::math::snf::SNF;
@@ -34,7 +34,7 @@ impl SpaceGroup {
         let point_group = PointGroup::new(&prim_operations.rotations)?;
 
         for hall_number in setting.hall_numbers() {
-            let entry = get_hall_symbol_entry(hall_number);
+            let entry = hall_symbol_entry(hall_number);
             if entry.arithmetic_number != point_group.arithmetic_number {
                 continue;
             }
@@ -43,8 +43,7 @@ impl SpaceGroup {
             let db_prim_generators = hall_symbol.primitive_generators();
 
             // Try several correction transformation matrices for monoclinic and orthorhombic
-            for trans_mat_corr in
-                get_correction_transformation_matrices(point_group.arithmetic_number)
+            for trans_mat_corr in correction_transformation_matrices(point_group.arithmetic_number)
             {
                 let trans_mat = point_group.prim_trans_mat * trans_mat_corr;
                 if let Some(origin_shift) =
@@ -63,10 +62,10 @@ impl SpaceGroup {
     }
 }
 
-fn get_correction_transformation_matrices(
+fn correction_transformation_matrices(
     arithmetic_number: ArithmeticNumber,
 ) -> Vec<TransformationMatrix> {
-    let (_, _, geometric_crystal_class, _) = get_arithmetic_crystal_class_entry(arithmetic_number);
+    let (_, _, geometric_crystal_class, _) = arithmetic_crystal_class_entry(arithmetic_number);
     let crystal_system = CrystalSystem::from_geometric_crystal_class(geometric_crystal_class);
 
     // conventional -> conventional(cell choice 1 for monoclinic, abc for orthorhombic)
@@ -245,10 +244,10 @@ mod tests {
     use crate::base::tolerance::EPS;
     use crate::base::transformation::OriginShift;
     use crate::data::hall_symbol::HallSymbol;
-    use crate::data::hall_symbol_database::get_hall_symbol_entry;
+    use crate::data::hall_symbol_database::hall_symbol_entry;
     use crate::data::setting::Setting;
 
-    use super::{get_correction_transformation_matrices, solve_mod1, SpaceGroup};
+    use super::{correction_transformation_matrices, solve_mod1, SpaceGroup};
 
     #[test]
     fn test_solve_mod1() {
@@ -266,18 +265,18 @@ mod tests {
     }
 
     #[test]
-    fn test_get_correction_transformation_matrices() {
+    fn test_correction_transformation_matrices() {
         let hall_number = 21; // P 1 c 1
         let hall_symbol = HallSymbol::from_hall_number(hall_number);
         let operations = hall_symbol.traverse();
 
         // conventional -> primitive
-        let linear = hall_symbol.lattice_symbol.inverse();
+        let linear = hall_symbol.centering.inverse();
         let prim_operations = operations.transform(&linear, &OriginShift::zeros());
 
         // The correction transformation matrices should change the group into P1c1, P1a1, and P1n1
-        let entry = get_hall_symbol_entry(hall_number);
-        let corrections = get_correction_transformation_matrices(entry.arithmetic_number);
+        let entry = hall_symbol_entry(hall_number);
+        let corrections = correction_transformation_matrices(entry.arithmetic_number);
         let expects = vec![
             vector![0.0, 0.0, 0.5],
             vector![0.5, 0.0, 0.0],
@@ -311,13 +310,13 @@ mod tests {
             let operations = hall_symbol.traverse();
 
             // conventional -> primitive
-            let linear = hall_symbol.lattice_symbol.inverse();
+            let linear = hall_symbol.centering.inverse();
             let prim_operations = operations.transform(&linear, &OriginShift::zeros());
 
             let space_group = SpaceGroup::new(&prim_operations, Setting::Spglib, 1e-8).unwrap();
 
             // Check space group type
-            let entry = get_hall_symbol_entry(hall_number);
+            let entry = hall_symbol_entry(hall_number);
             assert_eq!(space_group.number, entry.number);
 
             // Check transformation matrix
@@ -333,7 +332,7 @@ mod tests {
             let matched_hall_symbol = HallSymbol::from_hall_number(space_group.hall_number);
             let matched_operations = matched_hall_symbol.traverse();
             let matched_prim_operations = matched_operations.transform(
-                &matched_hall_symbol.lattice_symbol.inverse(),
+                &matched_hall_symbol.centering.inverse(),
                 &OriginShift::zeros(),
             );
             let mut hm_translations = HashMap::new();
