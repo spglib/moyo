@@ -110,11 +110,7 @@ impl PrimitiveCellSearch {
         let trans_mat = trans_mat_inv
             .try_inverse()
             .ok_or(MoyoError::PrimitiveCellSearchError)?;
-        if relative_ne!(
-            trans_mat.map(|e| e as f64).determinant(),
-            size as f64,
-            epsilon = EPS
-        ) {
+        if relative_ne!(trans_mat.determinant(), size as f64, epsilon = EPS) {
             return Err(MoyoError::PrimitiveCellSearchError);
         }
 
@@ -151,7 +147,7 @@ fn primitive_cell_from_transformation(
     translations: &Vec<Translation>,
     permutations: &[Permutation],
 ) -> Option<(Cell, SiteMapping)> {
-    let trans_mat_inv = trans_mat.map(|e| e as f64).try_inverse().unwrap();
+    let trans_mat_inv = trans_mat.try_inverse().unwrap();
     let new_lattice = Lattice::new(cell.lattice.basis * trans_mat_inv);
 
     // Create site mapping from union-find tree

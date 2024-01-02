@@ -128,7 +128,7 @@ fn correction_transformation_matrices(
     let corrections: Vec<UnimodularLinear> = convs
         .iter()
         .map(|trans_corr| {
-            let corr = centering.transformation_matrix().map(|e| e as f64)
+            let corr = centering.transformation_matrix()
                 * trans_corr.map(|e| e as f64)
                 * centering.inverse();
             corr.map(|e| e.round() as i32)

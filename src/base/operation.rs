@@ -159,7 +159,7 @@ impl Operations {
 
     pub fn transform_unimodular(&self, transformation: &UnimodularTransformation) -> Self {
         let new_lattice = self.lattice.transform_unimodular(&transformation.trans_mat);
-        let new_operations = self.operations.transform_unimodular(&transformation);
+        let new_operations = self.operations.transform_unimodular(transformation);
         Self::new(
             new_lattice,
             new_operations.rotations,

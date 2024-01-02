@@ -94,10 +94,7 @@ impl Centering {
 
     /// Transformation matrix from conventional to primitive cell.
     pub fn inverse(&self) -> Matrix3<f64> {
-        self.transformation_matrix()
-            .map(|e| e as f64)
-            .try_inverse()
-            .unwrap()
+        self.transformation_matrix().try_inverse().unwrap()
     }
 }
 

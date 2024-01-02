@@ -155,7 +155,7 @@ impl PointGroupRepresentative {
     }
 
     pub fn primitive_generators(&self) -> Vec<Rotation> {
-        let prim_trans_mat_inv = self.centering.transformation_matrix().map(|e| e as f64);
+        let prim_trans_mat_inv = self.centering.transformation_matrix();
         let prim_trans_mat = self.centering.inverse();
         self.generators
             .iter()
