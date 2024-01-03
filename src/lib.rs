@@ -9,9 +9,7 @@ pub mod math;
 pub mod search;
 pub mod symmetrize;
 
-use union_find::{QuickFindUf, UnionByRank, UnionFind};
-
-use crate::base::cell::Cell;
+use crate::base::cell::{orbits_from_permutations, Cell};
 use crate::base::error::MoyoError;
 use crate::base::operation::AbstractOperations;
 use crate::base::tolerance::AngleTolerance;
@@ -30,6 +28,7 @@ pub struct MoyoDataset {
     // Symmetry operations in the input cell
     pub operations: AbstractOperations,
     /// Spglib's `crystallographic_orbits` not `equivalent_atoms`
+    /// For example, orbits=[0, 0, 2, 2, 2, 2] means the first two atoms are equivalent and the last four atoms are equivalent.
     pub orbits: Vec<usize>,
     // Site symmetry
     // TODO: wyckoffs
@@ -117,20 +116,14 @@ fn orbits_in_cell(
     prim_cell_search: &PrimitiveCellSearch,
     symmetry_search: &SymmetrySearch,
 ) -> Vec<usize> {
-    // Orbits in primitive cell
-    let prim_num_atoms = prim_cell_search.primitive_cell.num_atoms();
-    let mut uf = QuickFindUf::<UnionByRank>::new(prim_num_atoms);
-    for permutation in symmetry_search.permutations.iter() {
-        for pi in 0..prim_num_atoms {
-            uf.union(pi, permutation.apply(pi));
-        }
-    }
-    let prim_site_mapping = (0..prim_num_atoms)
-        .map(|pi| uf.find(pi))
-        .collect::<Vec<_>>();
+    // prim_site_mapping: [prim_num_atoms] -> [prim_num_atoms]
+    let prim_orbits = orbits_from_permutations(
+        prim_cell_search.primitive_cell.num_atoms(),
+        &symmetry_search.permutations,
+    );
 
     let num_atoms = prim_cell_search.site_mapping.len();
     (0..num_atoms)
-        .map(|i| prim_site_mapping[prim_cell_search.site_mapping[i]])
-        .collect()
+        .map(|i| prim_orbits[prim_cell_search.site_mapping[i]])
+        .collect::<Vec<_>>()
 }

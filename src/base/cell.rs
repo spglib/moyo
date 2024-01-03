@@ -1,12 +1,13 @@
-extern crate nalgebra as na;
-use na::base::Vector3;
+use nalgebra::Vector3;
+use std::collections::BTreeMap;
+use union_find::{QuickFindUf, UnionByRank, UnionFind};
 
 use super::lattice::Lattice;
+use super::operation::Permutation;
 use super::transformation::UnimodularTransformation;
 
 pub type Position = Vector3<f64>;
 pub type AtomicSpecie = i32;
-pub type SiteMapping = Vec<usize>;
 
 #[derive(Debug)]
 pub struct Cell {
@@ -53,14 +54,57 @@ impl Cell {
     // }
 }
 
+/// If and only if the `i`th and `j`th atoms are equivalent, `orbits[i] == orbits[j]`.
+/// For each orbit, only one of them satisfies `orbits[i] == i`.
+pub fn orbits_from_permutations(num_atoms: usize, permutations: &[Permutation]) -> Vec<usize> {
+    let mut uf = QuickFindUf::<UnionByRank>::new(num_atoms);
+    for permutation in permutations.iter() {
+        for i in 0..num_atoms {
+            uf.union(i, permutation.apply(i));
+        }
+    }
+    let mut identifier_mapping = BTreeMap::new();
+    for i in 0..num_atoms {
+        if identifier_mapping.contains_key(&uf.find(i)) {
+            continue;
+        }
+        identifier_mapping.insert(uf.find(i), i);
+    }
+
+    (0..num_atoms)
+        .map(|i| *identifier_mapping.get(&uf.find(i)).unwrap())
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use std::panic;
 
     use nalgebra::{vector, Matrix3};
 
-    use super::Cell;
+    use super::{orbits_from_permutations, Cell};
     use crate::base::lattice::Lattice;
+    use crate::base::operation::Permutation;
+
+    #[test]
+    fn test_site_mapping_from_permutations() {
+        {
+            let num_atoms = 3;
+            let permutations = vec![Permutation::new(vec![2, 1, 0])];
+            assert_eq!(
+                orbits_from_permutations(num_atoms, &permutations),
+                vec![0, 1, 0]
+            );
+        }
+        {
+            let num_atoms = 3;
+            let permutations = vec![Permutation::new(vec![1, 0, 2])];
+            assert_eq!(
+                orbits_from_permutations(num_atoms, &permutations),
+                vec![0, 0, 2]
+            );
+        }
+    }
 
     #[test]
     fn test_mismatched_length() {

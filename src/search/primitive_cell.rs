@@ -1,12 +1,11 @@
-use std::collections::BTreeSet;
+use std::collections::BTreeMap;
 
 use nalgebra::{Dyn, Matrix3, OMatrix, Vector3, U3};
-use union_find::{QuickFindUf, UnionByRank, UnionFind};
 
 use super::solve::{
     pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
 };
-use crate::base::cell::{Cell, Position, SiteMapping};
+use crate::base::cell::{orbits_from_permutations, Cell, Position};
 use crate::base::error::MoyoError;
 use crate::base::lattice::Lattice;
 use crate::base::operation::{Permutation, Rotation, Translation};
@@ -20,7 +19,7 @@ pub struct PrimitiveCellSearch {
     /// Transformation matrix from the primitive cell to the input cell
     pub linear: Linear,
     /// Mapping from sites of the input cell to those of the primitive cell (many-to-one)
-    pub site_mapping: SiteMapping,
+    pub site_mapping: Vec<usize>,
     /// Translations in the **input** cell
     pub translations: Vec<Translation>,
     /// Permutations induced by translations in the input cell
@@ -159,33 +158,24 @@ fn primitive_cell_from_transformation(
     trans_mat: &Linear,
     translations: &Vec<Translation>,
     permutations: &[Permutation],
-) -> Option<(Cell, SiteMapping)> {
+) -> Option<(Cell, Vec<usize>)> {
     let trans_mat_inv = trans_mat.try_inverse().unwrap();
     let new_lattice = Lattice::new(cell.lattice.basis * trans_mat_inv);
 
-    // Create site mapping from union-find tree
     let num_atoms = cell.num_atoms();
-    let mut uf = QuickFindUf::<UnionByRank>::new(num_atoms);
-    for permutation in permutations.iter() {
-        for i in 0..num_atoms {
-            uf.union(i, permutation.apply(i));
-        }
-    }
-    let site_mapping: SiteMapping = (0..num_atoms).map(|i| uf.find(i)).collect();
-    let mut orbits_set = BTreeSet::new();
-    for i in 0..num_atoms {
-        orbits_set.insert(uf.find(i));
-    }
-    let orbits = orbits_set.into_iter().collect::<Vec<_>>();
+    let orbits = orbits_from_permutations(num_atoms, permutations);
+    let representatives = (0..num_atoms)
+        .filter(|&i| orbits[i] == i)
+        .collect::<Vec<_>>();
 
     // Eq. (25) of https://arxiv.org/pdf/2211.15008.pdf
-    let mut new_positions = vec![Vector3::zeros(); orbits.len()];
-    let mut new_numbers = vec![0; orbits.len()];
+    let mut new_positions = vec![Vector3::zeros(); representatives.len()];
+    let mut new_numbers = vec![0; representatives.len()];
     let inverse_permutations = permutations
         .iter()
         .map(|permutation| permutation.inverse())
         .collect::<Vec<_>>();
-    for orbit in orbits.iter() {
+    for orbit in representatives.iter() {
         let mut acc = Vector3::zeros();
         for (inv_perm, translation) in inverse_permutations.iter().zip(translations.iter()) {
             let mut frac_displacements =
@@ -198,7 +188,20 @@ fn primitive_cell_from_transformation(
     }
 
     let primitive_cell = Cell::new(new_lattice, new_positions, new_numbers);
+    let site_mapping = site_mapping_from_orbits(&orbits);
     Some((primitive_cell, site_mapping))
+}
+
+fn site_mapping_from_orbits(orbits: &Vec<usize>) -> Vec<usize> {
+    let mut mapping = BTreeMap::new();
+    for ri in orbits.iter() {
+        if mapping.contains_key(&ri) {
+            continue;
+        }
+        mapping.insert(ri, mapping.len());
+    }
+
+    orbits.iter().map(|ri| *mapping.get(&ri).unwrap()).collect()
 }
 
 #[cfg(test)]
@@ -209,7 +212,13 @@ mod tests {
     use crate::base::lattice::Lattice;
     use crate::base::operation::Translation;
 
-    use super::PrimitiveCellSearch;
+    use super::{site_mapping_from_orbits, PrimitiveCellSearch};
+
+    #[test]
+    fn test_site_mapping_from_orbits() {
+        let orbits = vec![0, 0, 2, 2, 0, 6];
+        assert_eq!(site_mapping_from_orbits(&orbits), vec![0, 0, 1, 1, 0, 2]);
+    }
 
     #[test]
     fn test_search_primitive_cell() {
