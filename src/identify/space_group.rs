@@ -239,9 +239,9 @@ fn solve_mod1(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
     use nalgebra::{matrix, vector, Dyn, OMatrix, OVector, RowVector3, U3};
+    use rstest::rstest;
+    use std::collections::HashMap;
 
     use crate::base::tolerance::EPS;
     use crate::base::transformation::{OriginShift, Transformation, UnimodularTransformation};
@@ -305,8 +305,10 @@ mod tests {
         }
     }
 
-    #[test]
-    fn test_identify_space_group() {
+    #[rstest]
+    #[case(Setting::Spglib)]
+    #[case(Setting::Standard)]
+    fn test_identify_space_group(#[case] setting: Setting) {
         for hall_number in 1..=530 {
             let hall_symbol = HallSymbol::from_hall_number(hall_number);
             let operations = hall_symbol.traverse();
@@ -316,7 +318,7 @@ mod tests {
             let prim_operations =
                 operations.transform(&Transformation::new(linear, OriginShift::zeros()));
 
-            let space_group = SpaceGroup::new(&prim_operations, Setting::Spglib, 1e-8).unwrap();
+            let space_group = SpaceGroup::new(&prim_operations, setting, 1e-8).unwrap();
 
             // Check space group type
             let entry = hall_symbol_entry(hall_number);
@@ -326,7 +328,7 @@ mod tests {
             assert_eq!(
                 space_group
                     .transformation
-                    .trans_mat_as_f64()
+                    .linear_as_f64()
                     .determinant()
                     .round() as i32,
                 1

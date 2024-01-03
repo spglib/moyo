@@ -32,10 +32,8 @@ impl Cell {
     }
 
     pub fn transform(&self, transformation: &UnimodularTransformation) -> Self {
-        let new_lattice = self
-            .lattice
-            .transform(&transformation.trans_mat.map(|e| e as f64));
-        let pinv = transformation.trans_mat_as_f64().try_inverse().unwrap();
+        let new_lattice = self.lattice.transform_unimodular(&transformation.linear);
+        let pinv = transformation.linear_as_f64().try_inverse().unwrap();
         let new_positions = self
             .positions
             .iter()
@@ -53,4 +51,24 @@ impl Cell {
     // pub fn expand_transform(&self, transformation: &Transformation) -> (Self, SiteMapping) {
     //     unimplemented!()
     // }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::panic;
+
+    use nalgebra::{vector, Matrix3};
+
+    use super::Cell;
+    use crate::base::lattice::Lattice;
+
+    #[test]
+    fn test_mismatched_length() {
+        let lattice = Lattice::new(Matrix3::<f64>::identity());
+        let positions = vec![vector![0.0, 0.0, 0.0], vector![0.5, 0.5, 0.5]];
+        let numbers = vec![1];
+
+        let result = panic::catch_unwind(|| Cell::new(lattice, positions, numbers));
+        assert!(result.is_err());
+    }
 }

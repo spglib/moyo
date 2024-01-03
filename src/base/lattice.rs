@@ -5,7 +5,6 @@ use crate::math::minkowski::{is_minkowski_reduced, minkowski_reduce};
 use crate::math::niggli::{is_niggli_reduced, niggli_reduce};
 
 use super::error::MoyoError;
-use super::tolerance::EPS;
 use super::transformation::{Linear, UnimodularLinear};
 
 pub type ColumnBasis = Matrix3<f64>;
@@ -39,13 +38,6 @@ impl Lattice {
             basis: reduced_basis,
         };
 
-        if relative_ne!(
-            self.transform_unimodular(&trans_mat).basis,
-            reduced_lattice.basis,
-            epsilon = EPS
-        ) {
-            return Err(MoyoError::MinkowskiReductionError);
-        }
         if !reduced_lattice.is_minkowski_reduced() {
             return Err(MoyoError::MinkowskiReductionError);
         }
@@ -64,13 +56,6 @@ impl Lattice {
             basis: reduced_basis,
         };
 
-        if relative_ne!(
-            self.transform_unimodular(&trans_mat).basis,
-            reduced_lattice.basis,
-            epsilon = EPS
-        ) {
-            return Err(MoyoError::NiggliReductionError);
-        }
         if !reduced_lattice.is_niggli_reduced() {
             return Err(MoyoError::NiggliReductionError);
         }
@@ -89,14 +74,6 @@ impl Lattice {
             basis: reduced_basis,
         };
 
-        if relative_ne!(
-            self.transform_unimodular(&trans_mat).basis,
-            reduced_lattice.basis,
-            epsilon = EPS
-        ) {
-            return Err(MoyoError::DelaunayReductionError);
-        }
-
         Ok((reduced_lattice, trans_mat))
     }
 
@@ -106,5 +83,30 @@ impl Lattice {
 
     pub fn cartesian_coords(&self, fractional_coords: &Vector3<f64>) -> Vector3<f64> {
         self.basis * fractional_coords
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use nalgebra::matrix;
+
+    use super::Lattice;
+
+    #[test]
+    fn test_metric_tensor() {
+        let lattice = Lattice::new(matrix![
+            1.0, 1.0, 1.0;
+            1.0, 1.0, -1.0;
+            1.0, 0.0, 0.0;
+        ]);
+        let metric_tensor = lattice.metric_tensor();
+        assert_relative_eq!(
+            metric_tensor,
+            matrix![
+                3.0, 2.0, 0.0;
+                2.0, 2.0, 0.0;
+                0.0, 0.0, 2.0;
+            ]
+        );
     }
 }

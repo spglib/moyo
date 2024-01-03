@@ -43,14 +43,14 @@ impl AbstractOperations {
     /// (P, p)^-1 (W, w) (P, p)
     /// This function may decrease the number of operations if the transformation is not compatible with an operation.
     pub fn transform(&self, transformation: &Transformation) -> Self {
-        let linear_inv = transformation.trans_mat.try_inverse().unwrap();
+        let linear_inv = transformation.linear.try_inverse().unwrap();
         let mut new_rotations = vec![];
         let mut new_translations = vec![];
         for (rotation, translation) in self.rotations.iter().zip(self.translations.iter()) {
             if let Some((new_rotation, new_translation)) = transform_operation(
                 rotation,
                 translation,
-                &transformation.trans_mat,
+                &transformation.linear,
                 &linear_inv,
                 &transformation.origin_shift,
             ) {
@@ -63,8 +63,7 @@ impl AbstractOperations {
 
     pub fn transform_unimodular(&self, transformation: &UnimodularTransformation) -> Self {
         let linear_inv = transformation
-            .trans_mat
-            .map(|e| e as f64)
+            .linear_as_f64()
             .try_inverse()
             .unwrap()
             .map(|e| e.round() as i32);
@@ -74,7 +73,7 @@ impl AbstractOperations {
             let (new_rotation, new_translation) = transform_operation_unimodular(
                 rotation,
                 translation,
-                &transformation.trans_mat,
+                &transformation.linear,
                 &linear_inv,
                 &transformation.origin_shift,
             );
@@ -148,7 +147,7 @@ impl Operations {
     }
 
     pub fn transform(&self, transformation: &Transformation) -> Self {
-        let new_lattice = self.lattice.transform(&transformation.trans_mat);
+        let new_lattice = self.lattice.transform(&transformation.linear);
         let new_operations = self.operations.transform(transformation);
         Self::new(
             new_lattice,
@@ -158,7 +157,7 @@ impl Operations {
     }
 
     pub fn transform_unimodular(&self, transformation: &UnimodularTransformation) -> Self {
-        let new_lattice = self.lattice.transform_unimodular(&transformation.trans_mat);
+        let new_lattice = self.lattice.transform_unimodular(&transformation.linear);
         let new_operations = self.operations.transform_unimodular(transformation);
         Self::new(
             new_lattice,
@@ -236,10 +235,34 @@ pub fn traverse(generators: &Vec<Rotation>) -> Vec<Rotation> {
 mod tests {
     use std::vec;
 
-    use nalgebra::matrix;
+    use nalgebra::{matrix, Matrix3};
 
     use super::{Operations, Permutation, Translation};
     use crate::base::lattice::Lattice;
+    use crate::base::transformation::{OriginShift, Transformation};
+
+    #[test]
+    fn test_incompatible_transformation() {
+        let transformation = Transformation::new(
+            matrix![
+                1.0, 0.0, 0.0;
+                0.0, 1.0, 0.0;
+                0.0, 0.0, 2.0;
+            ],
+            OriginShift::zeros(),
+        );
+        // threefold rotation
+        let operations = Operations::new(
+            Lattice::new(Matrix3::<f64>::identity()),
+            vec![matrix![
+                0, 0, 1;
+                1, 0, 0;
+                0, 1, 0;
+            ]],
+            vec![Translation::zeros()],
+        );
+        assert_eq!(operations.transform(&transformation).num_operations(), 0);
+    }
 
     #[test]
     fn test_cartesian_rotations() {
