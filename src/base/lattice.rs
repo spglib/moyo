@@ -84,6 +84,10 @@ impl Lattice {
     pub fn cartesian_coords(&self, fractional_coords: &Vector3<f64>) -> Vector3<f64> {
         self.basis * fractional_coords
     }
+
+    pub fn volume(&self) -> f64 {
+        self.basis.determinant().abs()
+    }
 }
 
 #[cfg(test)]

@@ -9,41 +9,42 @@ pub mod math;
 pub mod search;
 pub mod symmetrize;
 
-use nalgebra::Matrix3;
+use union_find::{QuickFindUf, UnionByRank, UnionFind};
 
 use crate::base::cell::Cell;
 use crate::base::error::MoyoError;
-use crate::base::operation::{AbstractOperations, Operations, Permutation};
+use crate::base::operation::AbstractOperations;
 use crate::base::tolerance::AngleTolerance;
-use crate::base::transformation::Transformation;
+use crate::base::transformation::{OriginShift, Transformation};
 use crate::data::hall_symbol_database::{HallNumber, Number};
 use crate::data::setting::Setting;
 use crate::identify::space_group::SpaceGroup;
 use crate::search::primitive_cell::PrimitiveCellSearch;
 use crate::search::symmetry_search::SymmetrySearch;
 
+#[derive(Debug)]
 pub struct MoyoDataset {
     // Space-group type
     pub number: Number,
     pub hall_number: HallNumber,
     // Symmetry operations in the input cell
-    pub operations: Operations,
-    pub permutations: Vec<Permutation>,
-    // Site symmetry
+    pub operations: AbstractOperations,
     /// Spglib's `crystallographic_orbits` not `equivalent_atoms`
     pub orbits: Vec<usize>,
+    // Site symmetry
     // TODO: wyckoffs
     // TODO: site_symmetry_symbols
     // Standardized cell
-    /// Transformation from the standardized cell to the input cell.
-    pub std_transformation: Transformation,
-    pub std_rotation: Matrix3<f64>,
-    pub std_cell: Cell,
+    // Transformation from the standardized cell to the input cell.
+    // TODO: pub std_transformation: Transformation,
+    // TODO: pub std_rotation: Matrix3<f64>,
+    // TODO: pub std_cell: Cell,
     // Standardized primitive cell
-    /// Transformation from the standardized primitive cell to the input cell.
-    pub std_prim_transformation: Transformation,
-    pub std_prim_cell: Cell,
-    pub mapping_to_std_prim: Vec<usize>,
+    // Transformation from the standardized primitive cell to the input cell.
+    // TODO: pub std_prim_transformation: Transformation,
+    // TODO: pub std_prim_cell: Cell,
+    // TODO: pub mapping_to_std_prim: Vec<usize>,
+    // TODO: pub std_prim_permutations: Vec<Permutation>,
 }
 
 impl MoyoDataset {
@@ -59,25 +60,77 @@ impl MoyoDataset {
             SymmetrySearch::new(&prim_cell_search.primitive_cell, symprec, angle_tolerance)?;
         let prim_operations = AbstractOperations::from_operations(&symmetry_search.operations);
 
+        // Symmetry in the input cell
+        let operations = operations_in_cell(&prim_cell_search, &prim_operations);
+        let orbits = orbits_in_cell(&prim_cell_search, &symmetry_search);
+
         // Space-group type identification
         let epsilon = symprec
             / prim_cell_search
                 .primitive_cell
                 .lattice
-                .basis
-                .determinant()
-                .abs()
+                .volume()
                 .powf(1.0 / 3.0);
         let space_group = SpaceGroup::new(&prim_operations, setting, epsilon)?;
 
-        // Ok(Self {
-        //     number: space_group.number,
-        //     hall_number: space_group.hall_number,
-        // })
-        unimplemented!();
+        Ok(Self {
+            number: space_group.number,
+            hall_number: space_group.hall_number,
+            operations,
+            orbits,
+        })
     }
 
     pub fn num_operations(&self) -> usize {
         self.operations.num_operations()
     }
+}
+
+fn operations_in_cell(
+    prim_cell_search: &PrimitiveCellSearch,
+    prim_operations: &AbstractOperations,
+) -> AbstractOperations {
+    let mut rotations = vec![];
+    let mut translations = vec![];
+    let input_operations = prim_operations.transform(&Transformation::new(
+        prim_cell_search.linear,
+        OriginShift::zeros(),
+    ));
+    for t1 in prim_cell_search.translations.iter() {
+        for (rotation, t2) in input_operations
+            .rotations
+            .iter()
+            .zip(input_operations.translations.iter())
+        {
+            // (E, t1) (rotation, t2) = (rotation, t1 + t2)
+            rotations.push(rotation.clone());
+            let mut t12 = t1 + t2;
+            t12 -= t12.map(|x| x.round());
+            translations.push(t12);
+        }
+    }
+
+    AbstractOperations::new(rotations, translations)
+}
+
+fn orbits_in_cell(
+    prim_cell_search: &PrimitiveCellSearch,
+    symmetry_search: &SymmetrySearch,
+) -> Vec<usize> {
+    // Orbits in primitive cell
+    let prim_num_atoms = prim_cell_search.primitive_cell.num_atoms();
+    let mut uf = QuickFindUf::<UnionByRank>::new(prim_num_atoms);
+    for permutation in symmetry_search.permutations.iter() {
+        for pi in 0..prim_num_atoms {
+            uf.union(pi, permutation.apply(pi));
+        }
+    }
+    let prim_site_mapping = (0..prim_num_atoms)
+        .map(|pi| uf.find(pi))
+        .collect::<Vec<_>>();
+
+    let num_atoms = prim_cell_search.site_mapping.len();
+    (0..num_atoms)
+        .map(|i| prim_site_mapping[prim_cell_search.site_mapping[i]])
+        .collect()
 }

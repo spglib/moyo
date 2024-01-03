@@ -98,8 +98,6 @@ fn search_bravais_group(
     symprec: f64,
     angle_tolerance: AngleTolerance,
 ) -> Result<Vec<Rotation>, MoyoError> {
-    assert!(minkowski_lattice.is_minkowski_reduced());
-
     // Candidate column vectors for rotation matrix
     let lengths = minkowski_lattice
         .basis

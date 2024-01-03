@@ -18,7 +18,7 @@ use crate::math::hnf::HNF;
 pub struct PrimitiveCellSearch {
     pub primitive_cell: Cell,
     /// Transformation matrix from the primitive cell to the input cell
-    pub trans_mat: Linear,
+    pub linear: Linear,
     /// Mapping from sites of the input cell to those of the primitive cell (many-to-one)
     pub site_mapping: SiteMapping,
     /// Translations in the **input** cell
@@ -122,15 +122,28 @@ impl PrimitiveCellSearch {
             &permutations,
         )
         .ok_or(MoyoError::PrimitiveCellSearchError)?;
+        let (_, prim_trans_mat) = primitive_cell.lattice.minkowski_reduce()?;
+        let reduced_prim_cell = primitive_cell.transform(&UnimodularTransformation::new(
+            prim_trans_mat,
+            OriginShift::zeros(),
+        ));
 
-        // (input cell) --(reduced_trans_mat)--> (Minkowski reduced cell) <--(trans_mat)-- (primitive cell)
+        // (input cell)
+        //    -[reduced_trans_mat]-> (reduced cell)
+        //    <-[trans_mat]- (primitive cell)
+        //    -[prim_trans_mat]-> (reduced primitive cell)
+        let inv_prim_trans_mat = prim_trans_mat
+            .map(|e| e as f64)
+            .try_inverse()
+            .unwrap()
+            .map(|e| e.round() as i32);
         let inv_reduced_trans_mat = reduced_trans_mat
             .map(|e| e as f64)
             .try_inverse()
             .ok_or(MoyoError::PrimitiveCellSearchError)?;
         Ok(Self {
-            primitive_cell,
-            trans_mat: trans_mat * inv_reduced_trans_mat,
+            primitive_cell: reduced_prim_cell,
+            linear: inv_prim_trans_mat.map(|e| e as f64) * trans_mat * inv_reduced_trans_mat,
             site_mapping,
             translations: translations
                 .iter()
