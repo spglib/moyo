@@ -17,7 +17,7 @@ use crate::base::transformation::{OriginShift, Transformation};
 use crate::data::hall_symbol_database::{HallNumber, Number};
 use crate::data::setting::Setting;
 use crate::identify::space_group::SpaceGroup;
-use crate::search::primitive_cell::PrimitiveCellSearch;
+use crate::search::primitive_cell::PrimitiveCell;
 use crate::search::symmetry_search::SymmetrySearch;
 
 #[derive(Debug)]
@@ -36,7 +36,7 @@ pub struct MoyoDataset {
     // Standardized cell
     // Transformation from the standardized cell to the input cell.
     // TODO: pub std_transformation: Transformation,
-    // TODO: pub std_rotation: Matrix3<f64>,
+    // TODO: pub std_rotation_matrix: Matrix3<f64>,
     // TODO: pub std_cell: Cell,
     // Standardized primitive cell
     // Transformation from the standardized primitive cell to the input cell.
@@ -54,22 +54,16 @@ impl MoyoDataset {
         setting: Setting,
     ) -> Result<Self, MoyoError> {
         // Symmetry search
-        let prim_cell_search = PrimitiveCellSearch::new(cell, symprec)?;
-        let symmetry_search =
-            SymmetrySearch::new(&prim_cell_search.primitive_cell, symprec, angle_tolerance)?;
+        let prim_cell = PrimitiveCell::new(cell, symprec)?;
+        let symmetry_search = SymmetrySearch::new(&prim_cell.cell, symprec, angle_tolerance)?;
         let prim_operations = AbstractOperations::from_operations(&symmetry_search.operations);
 
         // Symmetry in the input cell
-        let operations = operations_in_cell(&prim_cell_search, &prim_operations);
-        let orbits = orbits_in_cell(&prim_cell_search, &symmetry_search);
+        let operations = operations_in_cell(&prim_cell, &prim_operations);
+        let orbits = orbits_in_cell(&prim_cell, &symmetry_search);
 
         // Space-group type identification
-        let epsilon = symprec
-            / prim_cell_search
-                .primitive_cell
-                .lattice
-                .volume()
-                .powf(1.0 / 3.0);
+        let epsilon = symprec / prim_cell.cell.lattice.volume().powf(1.0 / 3.0);
         let space_group = SpaceGroup::new(&prim_operations, setting, epsilon)?;
 
         Ok(Self {
@@ -86,16 +80,14 @@ impl MoyoDataset {
 }
 
 fn operations_in_cell(
-    prim_cell_search: &PrimitiveCellSearch,
+    prim_cell: &PrimitiveCell,
     prim_operations: &AbstractOperations,
 ) -> AbstractOperations {
     let mut rotations = vec![];
     let mut translations = vec![];
-    let input_operations = prim_operations.transform(&Transformation::new(
-        prim_cell_search.linear,
-        OriginShift::zeros(),
-    ));
-    for t1 in prim_cell_search.translations.iter() {
+    let input_operations =
+        prim_operations.transform(&Transformation::new(prim_cell.linear, OriginShift::zeros()));
+    for t1 in prim_cell.translations.iter() {
         for (rotation, t2) in input_operations
             .rotations
             .iter()
@@ -112,18 +104,13 @@ fn operations_in_cell(
     AbstractOperations::new(rotations, translations)
 }
 
-fn orbits_in_cell(
-    prim_cell_search: &PrimitiveCellSearch,
-    symmetry_search: &SymmetrySearch,
-) -> Vec<usize> {
+fn orbits_in_cell(prim_cell: &PrimitiveCell, symmetry_search: &SymmetrySearch) -> Vec<usize> {
     // prim_site_mapping: [prim_num_atoms] -> [prim_num_atoms]
-    let prim_orbits = orbits_from_permutations(
-        prim_cell_search.primitive_cell.num_atoms(),
-        &symmetry_search.permutations,
-    );
+    let prim_orbits =
+        orbits_from_permutations(prim_cell.cell.num_atoms(), &symmetry_search.permutations);
 
-    let num_atoms = prim_cell_search.site_mapping.len();
+    let num_atoms = prim_cell.site_mapping.len();
     (0..num_atoms)
-        .map(|i| prim_orbits[prim_cell_search.site_mapping[i]])
+        .map(|i| prim_orbits[prim_cell.site_mapping[i]])
         .collect::<Vec<_>>()
 }

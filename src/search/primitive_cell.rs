@@ -14,8 +14,9 @@ use crate::base::transformation::{Linear, OriginShift, UnimodularTransformation}
 use crate::math::hnf::HNF;
 
 #[derive(Debug)]
-pub struct PrimitiveCellSearch {
-    pub primitive_cell: Cell,
+pub struct PrimitiveCell {
+    /// Primitive cell
+    pub cell: Cell,
     /// Transformation matrix from the primitive cell to the input cell
     pub linear: Linear,
     /// Mapping from sites of the input cell to those of the primitive cell (many-to-one)
@@ -26,7 +27,7 @@ pub struct PrimitiveCellSearch {
     pub permutations: Vec<Permutation>,
 }
 
-impl PrimitiveCellSearch {
+impl PrimitiveCell {
     /// Return primitive cell and transformation matrix from the primitive cell to the input cell
     /// Possible replacements for spglib/src/primitive.h::prm_get_primitive
     pub fn new(cell: &Cell, symprec: f64) -> Result<Self, MoyoError> {
@@ -89,7 +90,7 @@ impl PrimitiveCellSearch {
         let size = translations.len() as i32;
         assert!(size > 0);
         if reduced_cell.num_atoms() % (size as usize) != 0 {
-            return Err(MoyoError::PrimitiveCellSearchError);
+            return Err(MoyoError::PrimitiveCellError);
         }
 
         // Recover a transformation matrix from primitive to input cell
@@ -108,9 +109,9 @@ impl PrimitiveCellSearch {
                 / (size as f64);
         let trans_mat = trans_mat_inv
             .try_inverse()
-            .ok_or(MoyoError::PrimitiveCellSearchError)?;
+            .ok_or(MoyoError::PrimitiveCellError)?;
         if relative_ne!(trans_mat.determinant(), size as f64, epsilon = EPS) {
-            return Err(MoyoError::PrimitiveCellSearchError);
+            return Err(MoyoError::PrimitiveCellError);
         }
 
         // Primitive cell
@@ -120,7 +121,7 @@ impl PrimitiveCellSearch {
             &translations,
             &permutations,
         )
-        .ok_or(MoyoError::PrimitiveCellSearchError)?;
+        .ok_or(MoyoError::PrimitiveCellError)?;
         let (_, prim_trans_mat) = primitive_cell.lattice.minkowski_reduce()?;
         let reduced_prim_cell = primitive_cell.transform(&UnimodularTransformation::new(
             prim_trans_mat,
@@ -139,9 +140,9 @@ impl PrimitiveCellSearch {
         let inv_reduced_trans_mat = reduced_trans_mat
             .map(|e| e as f64)
             .try_inverse()
-            .ok_or(MoyoError::PrimitiveCellSearchError)?;
+            .ok_or(MoyoError::PrimitiveCellError)?;
         Ok(Self {
-            primitive_cell: reduced_prim_cell,
+            cell: reduced_prim_cell,
             linear: inv_prim_trans_mat.map(|e| e as f64) * trans_mat * inv_reduced_trans_mat,
             site_mapping,
             translations: translations
@@ -212,7 +213,7 @@ mod tests {
     use crate::base::lattice::Lattice;
     use crate::base::operation::Translation;
 
-    use super::{site_mapping_from_orbits, PrimitiveCellSearch};
+    use super::{site_mapping_from_orbits, PrimitiveCell};
 
     #[test]
     fn test_site_mapping_from_orbits() {
@@ -241,14 +242,14 @@ mod tests {
                 vec![0, 0, 0, 0],
             );
 
-            let result = PrimitiveCellSearch::new(&cell, symprec).unwrap();
+            let result = PrimitiveCell::new(&cell, symprec).unwrap();
             assert_eq!(result.site_mapping, vec![0, 0, 0, 0]);
             assert_relative_eq!(
-                result.primitive_cell.positions[0],
+                result.cell.positions[0],
                 Vector3::zeros(),
                 epsilon = symprec
             );
-            assert_eq!(result.primitive_cell.numbers[0], 0);
+            assert_eq!(result.cell.numbers[0], 0);
         }
 
         // bcc in non-minkowski-reduced cell
@@ -262,9 +263,9 @@ mod tests {
                 vec![Vector3::new(0.0, 0.0, 0.0), Vector3::new(0.5, 0.0, 0.5)],
                 vec![0, 0],
             );
-            let result = PrimitiveCellSearch::new(&cell, symprec).unwrap();
+            let result = PrimitiveCell::new(&cell, symprec).unwrap();
             assert_eq!(result.site_mapping, vec![0, 0]);
-            assert_eq!(result.primitive_cell.numbers[0], 0);
+            assert_eq!(result.cell.numbers[0], 0);
             assert_relative_eq!(result.translations[0], Translation::new(0.0, 0.0, 0.0));
             assert_relative_eq!(result.translations[1], Translation::new(0.5, 0.0, 0.5));
         }

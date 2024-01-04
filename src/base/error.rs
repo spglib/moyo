@@ -11,7 +11,7 @@ pub enum MoyoError {
     #[error("Too small symprec")]
     TooSmallSymprecError,
     #[error("Primitive cell search failed")]
-    PrimitiveCellSearchError,
+    PrimitiveCellError,
     #[error("Bravais group search failed")]
     BravaisGroupSearchError,
     #[error("Symmetry search failed")]
