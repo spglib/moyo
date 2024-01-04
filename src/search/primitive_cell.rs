@@ -193,7 +193,7 @@ fn primitive_cell_from_transformation(
     Some((primitive_cell, site_mapping))
 }
 
-fn site_mapping_from_orbits(orbits: &Vec<usize>) -> Vec<usize> {
+fn site_mapping_from_orbits(orbits: &[usize]) -> Vec<usize> {
     let mut mapping = BTreeMap::new();
     for ri in orbits.iter() {
         if mapping.contains_key(&ri) {

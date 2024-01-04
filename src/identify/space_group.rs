@@ -65,7 +65,8 @@ impl SpaceGroup {
 fn correction_transformation_matrices(
     arithmetic_number: ArithmeticNumber,
 ) -> Vec<UnimodularLinear> {
-    let (_, _, geometric_crystal_class, _) = arithmetic_crystal_class_entry(arithmetic_number);
+    let geometric_crystal_class =
+        arithmetic_crystal_class_entry(arithmetic_number).geometric_crystal_class;
     let crystal_system = CrystalSystem::from_geometric_crystal_class(geometric_crystal_class);
 
     // conventional -> conventional(cell choice 1 for monoclinic, abc for orthorhombic)

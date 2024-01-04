@@ -94,7 +94,7 @@ fn operations_in_cell(
             .zip(input_operations.translations.iter())
         {
             // (E, t1) (rotation, t2) = (rotation, t1 + t2)
-            rotations.push(rotation.clone());
+            rotations.push(*rotation);
             let mut t12 = t1 + t2;
             t12 -= t12.map(|x| x.round());
             translations.push(t12);
