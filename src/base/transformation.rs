@@ -5,7 +5,7 @@ pub type Linear = Matrix3<f64>;
 pub type OriginShift = Vector3<f64>;
 
 /// Represent change of origin and basis for an affine space
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct UnimodularTransformation {
     pub linear: UnimodularLinear,
     pub origin_shift: OriginShift,
@@ -30,7 +30,7 @@ impl UnimodularTransformation {
 }
 
 /// Represent change of origin and basis for an affine space
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Transformation {
     pub linear: Linear,
     pub origin_shift: OriginShift,

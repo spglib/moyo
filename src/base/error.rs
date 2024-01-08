@@ -20,4 +20,6 @@ pub enum MoyoError {
     ArithmeticCrystalClassIdentificationError,
     #[error("Space group type identification failed")]
     SpaceGroupTypeIdentificationError,
+    #[error("Standardization failed")]
+    StandardizationError,
 }

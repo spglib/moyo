@@ -17,11 +17,8 @@
 ### Module dependency
 
 ```
-math <- base
-base <- data
-base <- search
-base <- identify
-data <- identify
+math <- base <- data <- identify <- standardize <- lib
+        ^---- search <--------------|
 ```
 
 ## Acknowledgments
