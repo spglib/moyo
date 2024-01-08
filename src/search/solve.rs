@@ -2,8 +2,7 @@ use std::collections::BTreeMap;
 
 use nalgebra::Vector3;
 
-use crate::base::cell::{AtomicSpecie, Cell, Position};
-use crate::base::operation::{Permutation, Rotation, Translation};
+use crate::base::{AtomicSpecie, Cell, Permutation, Position, Rotation, Translation};
 
 /// Choose atomic specie with the smallest occurrence
 pub fn pivot_site_indices(numbers: &[AtomicSpecie]) -> Vec<usize> {
@@ -113,9 +112,7 @@ pub fn symmetrize_translation_from_permutation(
 mod tests {
     use nalgebra::{matrix, Vector3};
 
-    use crate::base::cell::Cell;
-    use crate::base::lattice::Lattice;
-    use crate::base::operation::{Permutation, Rotation, Translation};
+    use crate::base::{Cell, Lattice, Permutation, Rotation, Translation};
 
     use super::{
         pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,

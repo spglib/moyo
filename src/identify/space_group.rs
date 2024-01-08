@@ -3,16 +3,11 @@ use std::collections::HashMap;
 use nalgebra::{Dyn, Matrix3, OMatrix, OVector, Vector3, U3};
 
 use super::point_group::PointGroup;
-use crate::base::error::MoyoError;
-use crate::base::operation::AbstractOperations;
-use crate::base::transformation::{OriginShift, UnimodularLinear, UnimodularTransformation};
-use crate::data::arithmetic_crystal_class::{arithmetic_crystal_class_entry, ArithmeticNumber};
-use crate::data::classification::CrystalSystem;
-use crate::data::hall_symbol::HallSymbol;
-use crate::data::hall_symbol_database::{hall_symbol_entry, HallNumber, Number};
-use crate::data::point_group::PointGroupRepresentative;
-use crate::data::setting::Setting;
-use crate::math::snf::SNF;
+use crate::base::{
+    AbstractOperations, MoyoError, OriginShift, UnimodularLinear, UnimodularTransformation,
+};
+use crate::data::{arithmetic_crystal_class_entry, ArithmeticNumber, CrystalSystem, HallSymbol, hall_symbol_entry, HallNumber, Number, PointGroupRepresentative, Setting};
+use crate::math::SNF;
 
 #[derive(Debug)]
 pub struct SpaceGroup {
@@ -244,11 +239,8 @@ mod tests {
     use rstest::rstest;
     use std::collections::HashMap;
 
-    use crate::base::tolerance::EPS;
-    use crate::base::transformation::{OriginShift, Transformation, UnimodularTransformation};
-    use crate::data::hall_symbol::HallSymbol;
-    use crate::data::hall_symbol_database::hall_symbol_entry;
-    use crate::data::setting::Setting;
+    use crate::base::{OriginShift, Transformation, UnimodularTransformation, EPS};
+    use crate::data::{HallSymbol, hall_symbol_entry, Setting};
 
     use super::{correction_transformation_matrices, solve_mod1, SpaceGroup};
 

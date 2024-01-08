@@ -5,13 +5,11 @@ use nalgebra::{Dyn, Matrix3, OMatrix, Vector3, U3};
 use super::solve::{
     pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
 };
-use crate::base::cell::{orbits_from_permutations, Cell, Position};
-use crate::base::error::MoyoError;
-use crate::base::lattice::Lattice;
-use crate::base::operation::{Permutation, Rotation, Translation};
-use crate::base::tolerance::EPS;
-use crate::base::transformation::{Linear, OriginShift, UnimodularTransformation};
-use crate::math::hnf::HNF;
+use crate::base::{
+    orbits_from_permutations, Cell, Lattice, Linear, MoyoError, OriginShift, Permutation, Position,
+    Rotation, Translation, UnimodularTransformation, EPS,
+};
+use crate::math::HNF;
 
 #[derive(Debug)]
 pub struct PrimitiveCell {
@@ -209,9 +207,7 @@ fn site_mapping_from_orbits(orbits: &[usize]) -> Vec<usize> {
 mod tests {
     use nalgebra::{matrix, Vector3};
 
-    use crate::base::cell::Cell;
-    use crate::base::lattice::Lattice;
-    use crate::base::operation::Translation;
+    use crate::base::{Cell, Lattice, Translation};
 
     use super::{site_mapping_from_orbits, PrimitiveCell};
 

@@ -1,4 +1,4 @@
-use crate::data::classification::{BravaisClass, GeometricCrystalClass};
+use super::classification::{BravaisClass, GeometricCrystalClass};
 
 pub type ArithmeticNumber = i32;
 

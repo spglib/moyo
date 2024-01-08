@@ -4,21 +4,19 @@ extern crate approx;
 
 pub mod base;
 pub mod data;
-pub mod identify;
-pub mod math;
-pub mod search;
-pub mod symmetrize;
 
-use crate::base::cell::{orbits_from_permutations, Cell};
-use crate::base::error::MoyoError;
-use crate::base::operation::AbstractOperations;
-use crate::base::tolerance::AngleTolerance;
-use crate::base::transformation::{OriginShift, Transformation};
-use crate::data::hall_symbol_database::{HallNumber, Number};
-use crate::data::setting::Setting;
-use crate::identify::space_group::SpaceGroup;
-use crate::search::primitive_cell::PrimitiveCell;
-use crate::search::symmetry_search::SymmetrySearch;
+mod identify;
+mod math;
+mod search;
+mod symmetrize;
+
+use crate::base::{
+    orbits_from_permutations, AbstractOperations, AngleTolerance, Cell, MoyoError, OriginShift,
+    Transformation,
+};
+use crate::data::{HallNumber, Number, Setting};
+use crate::identify::SpaceGroup;
+use crate::search::{PrimitiveCell, SymmetrySearch};
 
 #[derive(Debug)]
 pub struct MoyoDataset {

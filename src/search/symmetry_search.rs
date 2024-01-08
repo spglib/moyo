@@ -5,11 +5,9 @@ use nalgebra::{Matrix3, Vector3};
 use super::solve::{
     pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
 };
-use crate::base::cell::{Cell, Position};
-use crate::base::error::MoyoError;
-use crate::base::lattice::Lattice;
-use crate::base::operation::{Operations, Permutation, Rotation};
-use crate::base::tolerance::{AngleTolerance, EPS};
+use crate::base::{
+    AngleTolerance, Cell, Lattice, MoyoError, Operations, Permutation, Position, Rotation, EPS,
+};
 
 #[derive(Debug)]
 pub struct SymmetrySearch {
@@ -226,8 +224,7 @@ mod tests {
     use nalgebra::matrix;
 
     use super::search_bravais_group;
-    use crate::base::lattice::Lattice;
-    use crate::base::tolerance::AngleTolerance;
+    use crate::base::{AngleTolerance, Lattice};
 
     #[test]
     fn test_search_bravais_group() {

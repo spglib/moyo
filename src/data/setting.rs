@@ -1,4 +1,4 @@
-use crate::data::hall_symbol_database::HallNumber;
+use super::hall_symbol_database::HallNumber;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Setting {

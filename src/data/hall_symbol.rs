@@ -4,9 +4,9 @@ use nalgebra::{matrix, Matrix3, Vector3};
 use strum_macros::EnumIter;
 
 use super::hall_symbol_database::{hall_symbol_entry, HallNumber};
-use crate::base::operation::{AbstractOperations, Rotation, Translation};
-use crate::base::tolerance::EPS;
-use crate::base::transformation::{Linear, OriginShift, Transformation};
+use crate::base::{
+    AbstractOperations, Linear, OriginShift, Rotation, Transformation, Translation, EPS,
+};
 
 const MAX_DENOMINATOR: i32 = 12;
 
@@ -163,6 +163,7 @@ impl HallSymbol {
 
     /// Traverse all the symmetry operations up to translations by conventional cell.
     /// The order of operations is guaranteed to be fixed.
+    /// TODO: refactor with crate::base::operation::traverse
     pub fn traverse(&self) -> AbstractOperations {
         let mut queue = VecDeque::new();
         let mut hm_translations = HashMap::new();

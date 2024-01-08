@@ -3,14 +3,12 @@ use std::cmp::Ordering;
 use itertools::Itertools;
 use nalgebra::{Dyn, Matrix3, OMatrix, OVector, U9};
 
-use crate::base::error::MoyoError;
-use crate::base::operation::Rotation;
-use crate::base::transformation::{Linear, UnimodularLinear};
-use crate::data::arithmetic_crystal_class::{iter_arithmetic_crystal_entry, ArithmeticNumber};
-use crate::data::classification::{CrystalSystem, GeometricCrystalClass};
-use crate::data::hall_symbol::Centering;
-use crate::data::point_group::PointGroupRepresentative;
-use crate::math::integer_system::IntegerLinearSystem;
+use crate::base::{Linear, MoyoError, Rotation, UnimodularLinear};
+use crate::data::{
+    iter_arithmetic_crystal_entry, ArithmeticNumber, Centering, CrystalSystem,
+    GeometricCrystalClass, PointGroupRepresentative,
+};
+use crate::math::IntegerLinearSystem;
 
 /// Crystallographic point group with group-type information
 #[derive(Debug)]
@@ -360,7 +358,7 @@ mod tests {
     use std::collections::HashSet;
 
     use super::{PointGroup, PointGroupRepresentative};
-    use crate::base::operation::traverse;
+    use crate::base::traverse;
 
     #[test]
     fn test_point_group_match() {

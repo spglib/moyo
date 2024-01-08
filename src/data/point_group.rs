@@ -1,7 +1,7 @@
-use crate::base::operation::Rotation;
-use crate::data::arithmetic_crystal_class::ArithmeticNumber;
-use crate::data::classification::GeometricCrystalClass;
-use crate::data::hall_symbol::{Centering, HallSymbol};
+use super::arithmetic_crystal_class::ArithmeticNumber;
+use super::classification::GeometricCrystalClass;
+use super::hall_symbol::{Centering, HallSymbol};
+use crate::base::Rotation;
 
 #[derive(Debug)]
 /// Specific crystallographic point group in database
@@ -172,7 +172,7 @@ mod tests {
     use strum::IntoEnumIterator;
 
     use super::PointGroupRepresentative;
-    use crate::base::operation::traverse;
+    use crate::base::traverse;
     use crate::data::classification::GeometricCrystalClass;
 
     fn order(geometric_crystal_class: GeometricCrystalClass) -> usize {

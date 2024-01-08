@@ -1,10 +1,7 @@
 use nalgebra::{matrix, vector, Matrix3, Vector3};
 
-use moyo::base::cell::Cell;
-use moyo::base::lattice::Lattice;
-use moyo::base::operation::AbstractOperations;
-use moyo::base::tolerance::AngleTolerance;
-use moyo::data::setting::Setting;
+use moyo::base::{AbstractOperations, AngleTolerance, Cell, Lattice};
+use moyo::data::Setting;
 use moyo::MoyoDataset;
 
 /// O(num_atoms^2)

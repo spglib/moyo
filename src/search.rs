@@ -1,3 +1,6 @@
-pub mod primitive_cell;
+mod primitive_cell;
 mod solve;
-pub mod symmetry_search;
+mod symmetry_search;
+
+pub(crate) use primitive_cell::PrimitiveCell;
+pub(crate) use symmetry_search::SymmetrySearch;

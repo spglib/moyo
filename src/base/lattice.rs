@@ -1,22 +1,20 @@
 use nalgebra::base::{Matrix3, Vector3};
 
-use crate::math::delaunay::delaunay_reduce;
-use crate::math::minkowski::{is_minkowski_reduced, minkowski_reduce};
-use crate::math::niggli::{is_niggli_reduced, niggli_reduce};
+use crate::math::{
+    delaunay_reduce, is_minkowski_reduced, is_niggli_reduced, minkowski_reduce, niggli_reduce,
+};
 
 use super::error::MoyoError;
 use super::transformation::{Linear, UnimodularLinear};
 
-pub type ColumnBasis = Matrix3<f64>;
-
 #[derive(Debug, Clone)]
 pub struct Lattice {
     /// basis.column(i) is the i-th basis vector
-    pub basis: ColumnBasis,
+    pub basis: Matrix3<f64>,
 }
 
 impl Lattice {
-    pub fn new(basis: ColumnBasis) -> Self {
+    pub fn new(basis: Matrix3<f64>) -> Self {
         Self { basis }
     }
 

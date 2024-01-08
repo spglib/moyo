@@ -1,17 +1,12 @@
 use nalgebra::linalg::{Cholesky, QR};
 use nalgebra::{vector, Matrix3};
 
-use crate::base::cell::Cell;
-use crate::base::error::MoyoError;
-use crate::base::lattice::Lattice;
-use crate::base::operation::Rotation;
-use crate::base::tolerance::EPS;
-use crate::base::transformation::{OriginShift, Transformation, UnimodularTransformation};
-use crate::data::arithmetic_crystal_class::arithmetic_crystal_class_entry;
-use crate::data::classification::LatticeSystem;
-use crate::data::hall_symbol_database::hall_symbol_entry;
-use crate::identify::space_group::SpaceGroup;
-use crate::search::primitive_cell::PrimitiveCell;
+use crate::base::{
+    Cell, Lattice, MoyoError, OriginShift, Rotation, Transformation, UnimodularTransformation, EPS,
+};
+use crate::data::{arithmetic_crystal_class_entry, hall_symbol_entry, LatticeSystem};
+use crate::identify::SpaceGroup;
+use crate::search::PrimitiveCell;
 
 pub struct StandardizedCell {
     pub cell: Cell,
@@ -90,10 +85,8 @@ mod tests {
     use nalgebra::matrix;
 
     use super::symmetrize_lattice;
-    use crate::base::lattice::Lattice;
-    use crate::base::operation::traverse;
-    use crate::data::classification::GeometricCrystalClass;
-    use crate::data::point_group::PointGroupRepresentative;
+    use crate::base::{traverse, Lattice};
+    use crate::data::{GeometricCrystalClass, PointGroupRepresentative};
 
     #[test]
     fn test_symmetrize_lattice_cubic() {

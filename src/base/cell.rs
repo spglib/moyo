@@ -1,5 +1,6 @@
-use nalgebra::Vector3;
 use std::collections::BTreeMap;
+
+use nalgebra::Vector3;
 use union_find::{QuickFindUf, UnionByRank, UnionFind};
 
 use super::lattice::Lattice;
