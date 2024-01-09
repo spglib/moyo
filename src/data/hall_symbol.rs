@@ -54,7 +54,7 @@ impl Centering {
 
     /// Inverse matrices of https://github.com/spglib/spglib/blob/39a95560dd831c2d16f162126921ac1e519efa31/src/spacegroup.c#L373-L384
     /// Transformation matrix from primitive to conventional cell.
-    pub fn transformation_matrix(&self) -> Linear {
+    pub fn linear(&self) -> Linear {
         match self {
             Centering::P => Linear::identity(),
             Centering::A => Linear::new(
@@ -92,10 +92,7 @@ impl Centering {
 
     /// Transformation matrix from conventional to primitive cell.
     pub fn inverse(&self) -> Matrix3<f64> {
-        self.transformation_matrix()
-            .map(|e| e as f64)
-            .try_inverse()
-            .unwrap()
+        self.linear().map(|e| e as f64).try_inverse().unwrap()
     }
 }
 
@@ -212,7 +209,7 @@ impl HallSymbol {
     }
 
     pub fn primitive_generators(&self) -> Operations {
-        Transformation::from_linear(self.centering.transformation_matrix())
+        Transformation::from_linear(self.centering.linear())
             .inverse_transform_operations(&self.generators)
     }
 
@@ -567,6 +564,7 @@ mod tests {
     use strum::IntoEnumIterator;
 
     use super::{Centering, HallSymbol};
+    use crate::base::Transformation;
     use crate::data::hall_symbol_database::iter_hall_symbol_entry;
 
     #[rstest]
@@ -601,9 +599,10 @@ mod tests {
     #[test]
     fn test_conventional_transformation_matrix() {
         for centering in Centering::iter() {
-            let prim_trans_mat = centering.transformation_matrix();
-            let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
-            assert_eq!(det, centering.order() as i32);
+            assert_eq!(
+                Transformation::from_linear(centering.linear()).size,
+                centering.order()
+            );
         }
     }
 }

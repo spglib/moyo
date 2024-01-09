@@ -31,6 +31,7 @@ impl PrimitiveCell {
     pub fn new(cell: &Cell, symprec: f64) -> Result<Self, MoyoError> {
         // cell.lattice.basis * reduced_trans_mat = reduced_cell.lattice.basis
         let (reduced_lattice, reduced_trans_mat) = cell.lattice.minkowski_reduce()?;
+        dbg!(&reduced_trans_mat);
         let reduced_cell =
             UnimodularTransformation::from_linear(reduced_trans_mat).transform_cell(cell);
 

@@ -19,9 +19,9 @@ pub struct UnimodularTransformation {
 
 impl UnimodularTransformation {
     pub fn new(linear: UnimodularLinear, origin_shift: OriginShift) -> Self {
-        let size = linear.map(|e| e as f64).determinant().round().abs() as usize;
-        if size != 1 {
-            panic!("transformation matrix should be unimodular");
+        let det = linear.map(|e| e as f64).determinant().round() as i32;
+        if det != 1 {
+            panic!("Determinant of transformation matrix should be one.");
         }
 
         let linear_inv = linear
@@ -84,6 +84,7 @@ impl UnimodularTransformation {
 pub struct Transformation {
     pub linear: Linear,
     pub origin_shift: OriginShift,
+    pub size: usize,
     linear_inv: Matrix3<f64>,
 }
 
@@ -91,9 +92,15 @@ impl Transformation {
     pub fn new(linear: Linear, origin_shift: OriginShift) -> Self {
         let linear_inv = linear.map(|e| e as f64).try_inverse().unwrap();
 
+        let det = linear.map(|e| e as f64).determinant().round() as i32;
+        if det <= 0 {
+            panic!("Determinant of transformation matrix should be positive.");
+        }
+
         Self {
             linear,
             origin_shift,
+            size: det as usize,
             linear_inv,
         }
     }
@@ -139,6 +146,7 @@ impl Transformation {
     }
 
     /// (P, p) (W, w) (P, p)^-1
+    /// This function may decrease the number of operations if the transformation is not compatible with an operation.
     pub fn inverse_transform_operations(&self, operations: &Operations) -> Operations {
         let mut new_rotations = vec![];
         let mut new_translations = vec![];
@@ -161,9 +169,13 @@ impl Transformation {
         Operations::new(new_rotations, new_translations)
     }
 
-    // Apply `trans`, which may increase the number of atoms in the cell.
-    // Mapping from sites of the new cell to those of the original cell is also returned.
+    // The transformation may increase the number of atoms in the cell.
     pub fn transform_cell(&self, cell: &Cell) -> Cell {
+        unimplemented!()
+    }
+
+    // The transformation may decrease the number of atoms in the cell.
+    pub fn inverse_transform_cell(&self, cell: &Cell) -> Cell {
         unimplemented!()
     }
 }

@@ -69,6 +69,12 @@ pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
     trans_mat *= trans_mat_shortest;
     reduced_basis *= trans_mat_shortest.map(|e| e as f64);
 
+    // Preserve parity
+    if trans_mat.map(|e| e as f64).determinant() < 0. {
+        reduced_basis *= -1.;
+        trans_mat *= -1;
+    }
+
     (reduced_basis, trans_mat)
 }
 

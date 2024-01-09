@@ -8,10 +8,17 @@ const EPS: f64 = 1e-8;
 
 /// basis is column-wise
 pub fn minkowski_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
-    let mut minkowski_basis = *basis;
+    let mut reduced_basis = *basis;
     let mut trans_mat = Matrix3::<i32>::identity();
-    minkowski_reduce_greedy(&mut minkowski_basis, &mut trans_mat, 3);
-    (minkowski_basis, trans_mat)
+    minkowski_reduce_greedy(&mut reduced_basis, &mut trans_mat, 3);
+
+    // Preserve parity
+    if trans_mat.map(|e| e as f64).determinant() < 0. {
+        reduced_basis *= -1.;
+        trans_mat *= -1;
+    }
+
+    (reduced_basis, trans_mat)
 }
 
 /// Implement Fig.3 in [1]
