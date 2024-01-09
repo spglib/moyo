@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use itertools::Itertools;
 use nalgebra::{Dyn, Matrix3, OMatrix, OVector, U9};
 
-use crate::base::{Linear, MoyoError, Rotation, UnimodularLinear};
+use crate::base::{MoyoError, Rotation, UnimodularLinear};
 use crate::data::{
     iter_arithmetic_crystal_entry, ArithmeticNumber, Centering, CrystalSystem,
     GeometricCrystalClass, PointGroupRepresentative,
@@ -16,8 +16,6 @@ pub struct PointGroup {
     pub arithmetic_number: ArithmeticNumber,
     /// Transformation matrix to the representative for `arithmetic_number` in the primitive basis
     pub prim_trans_mat: UnimodularLinear,
-    /// Transformation matrix to the representative for `arithmetic_number` in the conventional basis
-    pub conv_trans_mat: Linear,
 }
 
 impl PointGroup {
@@ -34,12 +32,10 @@ impl PointGroup {
                 GeometricCrystalClass::C1 => Ok(PointGroup {
                     arithmetic_number: 1,
                     prim_trans_mat: UnimodularLinear::identity(),
-                    conv_trans_mat: Linear::identity(),
                 }),
                 GeometricCrystalClass::Ci => Ok(PointGroup {
                     arithmetic_number: 2,
                     prim_trans_mat: UnimodularLinear::identity(),
-                    conv_trans_mat: Linear::identity(),
                 }),
                 _ => unreachable!(),
             },
@@ -151,7 +147,6 @@ fn match_with_cubic_point_group(
                 return Ok(PointGroup {
                     arithmetic_number: *arithmetic_crystal_class,
                     prim_trans_mat,
-                    conv_trans_mat,
                 });
             }
         }
@@ -216,13 +211,9 @@ fn match_with_point_group(
                     }
                     let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
                     if det == 1 {
-                        // conv_trans_mat: self -> DB(conventional)
-                        let conv_trans_mat = prim_trans_mat.map(|e| e as f64)
-                            * point_group_db.centering.transformation_matrix();
                         return Ok(PointGroup {
                             arithmetic_number: entry.arithmetic_number,
                             prim_trans_mat,
-                            conv_trans_mat,
                         });
                     }
                 }
@@ -397,29 +388,6 @@ mod tests {
                 .collect();
             for rotation in prim_rotations_actual {
                 assert!(prim_rotations_set.contains(&rotation));
-            }
-
-            // Compare rotations with the conventional
-            let mut conv_rotations_set = HashSet::new();
-            for rotation in traverse(&point_group_db.generators) {
-                conv_rotations_set.insert(rotation);
-            }
-            let conv_trans_inv = point_group
-                .conv_trans_mat
-                .map(|e| e as f64)
-                .try_inverse()
-                .unwrap();
-            let conv_rotations_actual: Vec<_> = prim_rotations
-                .iter()
-                .map(|r| {
-                    let ret = conv_trans_inv
-                        * r.map(|e| e as f64)
-                        * point_group.conv_trans_mat.map(|e| e as f64);
-                    ret.map(|e| e.round() as i32)
-                })
-                .collect();
-            for rotation in conv_rotations_actual {
-                assert!(conv_rotations_set.contains(&rotation));
             }
         }
     }

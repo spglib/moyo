@@ -125,8 +125,7 @@ fn correction_transformation_matrices(
     let corrections: Vec<UnimodularLinear> = convs
         .iter()
         .map(|trans_corr| {
-            let corr = centering.transformation_matrix()
-                * trans_corr.map(|e| e as f64)
+            let corr = (centering.transformation_matrix() * trans_corr).map(|e| e as f64)
                 * centering.inverse();
             corr.map(|e| e.round() as i32)
         })
@@ -265,8 +264,9 @@ mod tests {
         let operations = hall_symbol.traverse();
 
         // conventional -> primitive
-        let linear = hall_symbol.centering.inverse();
-        let prim_operations = Transformation::from_linear(linear).transform_operations(&operations);
+        let prim_operations =
+            Transformation::from_linear(hall_symbol.centering.transformation_matrix())
+                .inverse_transform_operations(&operations);
 
         // The correction transformation matrices should change the group into P1c1, P1a1, and P1n1
         let entry = hall_symbol_entry(hall_number);
@@ -306,9 +306,9 @@ mod tests {
             let operations = hall_symbol.traverse();
 
             // conventional -> primitive
-            let linear = hall_symbol.centering.inverse();
             let prim_operations =
-                Transformation::from_linear(linear).transform_operations(&operations);
+                Transformation::from_linear(hall_symbol.centering.transformation_matrix())
+                    .inverse_transform_operations(&operations);
 
             let space_group = SpaceGroup::new(&prim_operations, setting, 1e-8).unwrap();
 
@@ -329,8 +329,9 @@ mod tests {
             let matched_hall_symbol = HallSymbol::from_hall_number(space_group.hall_number);
             let matched_operations = matched_hall_symbol.traverse();
             let matched_prim_operations =
-                Transformation::from_linear(matched_hall_symbol.centering.inverse())
-                    .transform_operations(&matched_operations);
+                Transformation::from_linear(matched_hall_symbol.centering.transformation_matrix())
+                    .inverse_transform_operations(&matched_operations);
+
             let mut hm_translations = HashMap::new();
             for (rotation, translation) in matched_prim_operations
                 .rotations

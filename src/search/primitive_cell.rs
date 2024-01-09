@@ -6,8 +6,8 @@ use super::solve::{
     pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
 };
 use crate::base::{
-    orbits_from_permutations, Cell, Lattice, Linear, MoyoError, Permutation, Position, Rotation,
-    Translation, UnimodularTransformation, EPS,
+    orbits_from_permutations, Cell, Linear, MoyoError, Permutation, Position, Rotation,
+    Transformation, Translation, UnimodularTransformation, EPS,
 };
 use crate::math::HNF;
 
@@ -105,8 +105,13 @@ impl PrimitiveCell {
                 / (size as f64);
         let trans_mat = trans_mat_inv
             .try_inverse()
-            .ok_or(MoyoError::PrimitiveCellError)?;
-        if relative_ne!(trans_mat.determinant(), size as f64, epsilon = EPS) {
+            .ok_or(MoyoError::PrimitiveCellError)?
+            .map(|e| e.round() as i32);
+        if relative_ne!(
+            trans_mat.map(|e| e as f64).determinant(),
+            size as f64,
+            epsilon = EPS
+        ) {
             return Err(MoyoError::PrimitiveCellError);
         }
 
@@ -137,7 +142,8 @@ impl PrimitiveCell {
             .ok_or(MoyoError::PrimitiveCellError)?;
         Ok(Self {
             cell: reduced_prim_cell,
-            linear: inv_prim_trans_mat.map(|e| e as f64) * trans_mat * inv_reduced_trans_mat,
+            linear: ((inv_prim_trans_mat * trans_mat).map(|e| e as f64) * inv_reduced_trans_mat)
+                .map(|e| e.round() as i32),
             site_mapping,
             translations: translations
                 .iter()
@@ -154,8 +160,8 @@ fn primitive_cell_from_transformation(
     translations: &Vec<Translation>,
     permutations: &[Permutation],
 ) -> Option<(Cell, Vec<usize>)> {
-    let trans_mat_inv = trans_mat.try_inverse().unwrap();
-    let new_lattice = Lattice::new(cell.lattice.basis * trans_mat_inv);
+    let new_lattice =
+        Transformation::from_linear(*trans_mat).inverse_transform_lattice(&cell.lattice);
 
     let num_atoms = cell.num_atoms();
     let orbits = orbits_from_permutations(num_atoms, permutations);

@@ -5,7 +5,7 @@ use super::lattice::Lattice;
 use super::operation::{Operations, Rotation, Translation};
 
 pub type UnimodularLinear = Matrix3<i32>;
-pub type Linear = Matrix3<f64>;
+pub type Linear = Matrix3<i32>;
 pub type OriginShift = Vector3<f64>;
 
 /// Represent change of origin and basis for an affine space
@@ -84,7 +84,7 @@ impl UnimodularTransformation {
 pub struct Transformation {
     pub linear: Linear,
     pub origin_shift: OriginShift,
-    linear_inv: Linear,
+    linear_inv: Matrix3<f64>,
 }
 
 impl Transformation {
@@ -102,8 +102,16 @@ impl Transformation {
         Self::new(linear, OriginShift::zeros())
     }
 
+    pub fn linear_as_f64(&self) -> Matrix3<f64> {
+        self.linear.map(|e| e as f64)
+    }
+
     pub fn transform_lattice(&self, lattice: &Lattice) -> Lattice {
-        Lattice::new(lattice.basis * self.linear)
+        Lattice::new(lattice.basis * self.linear_as_f64())
+    }
+
+    pub fn inverse_transform_lattice(&self, lattice: &Lattice) -> Lattice {
+        Lattice::new(lattice.basis * self.linear_inv)
     }
 
     /// (P, p)^-1 (W, w) (P, p)
@@ -116,11 +124,34 @@ impl Transformation {
             .iter()
             .zip(operations.translations.iter())
         {
-            if let Some((new_rotation, new_translation)) = transform_operation(
+            if let Some((new_rotation, new_translation)) = transform_operation_as_f64(
                 rotation,
                 translation,
-                &self.linear,
+                &self.linear.map(|e| e as f64),
                 &self.linear_inv,
+                &self.origin_shift,
+            ) {
+                new_rotations.push(new_rotation);
+                new_translations.push(new_translation);
+            }
+        }
+        Operations::new(new_rotations, new_translations)
+    }
+
+    /// (P, p) (W, w) (P, p)^-1
+    pub fn inverse_transform_operations(&self, operations: &Operations) -> Operations {
+        let mut new_rotations = vec![];
+        let mut new_translations = vec![];
+        for (rotation, translation) in operations
+            .rotations
+            .iter()
+            .zip(operations.translations.iter())
+        {
+            if let Some((new_rotation, new_translation)) = transform_operation_as_f64(
+                rotation,
+                translation,
+                &self.linear_inv,
+                &self.linear.map(|e| e as f64),
                 &self.origin_shift,
             ) {
                 new_rotations.push(new_rotation);
@@ -132,16 +163,16 @@ impl Transformation {
 
     // Apply `trans`, which may increase the number of atoms in the cell.
     // Mapping from sites of the new cell to those of the original cell is also returned.
-    // pub fn expand_transform(&self, transformation: &Transformation) -> (Self, SiteMapping) {
-    //     unimplemented!()
-    // }
+    pub fn transform_cell(&self, cell: &Cell) -> Cell {
+        unimplemented!()
+    }
 }
 
-fn transform_operation(
+fn transform_operation_as_f64(
     rotation: &Rotation,
     translation: &Translation,
-    linear: &Linear,
-    linear_inv: &Linear,
+    linear: &Matrix3<f64>,
+    linear_inv: &Matrix3<f64>,
     origin_shift: &OriginShift,
 ) -> Option<(Rotation, Translation)> {
     let new_rotation = (linear_inv * rotation.map(|e| e as f64) * linear).map(|e| e.round() as i32);
@@ -170,9 +201,9 @@ mod tests {
     #[test]
     fn test_incompatible_transformation() {
         let transformation = Transformation::from_linear(matrix![
-            1.0, 0.0, 0.0;
-            0.0, 1.0, 0.0;
-            0.0, 0.0, 2.0;
+            1, 0, 0;
+            0, 1, 0;
+            0, 0, 2;
         ]);
         // threefold rotation
         let operations = Operations::new(

@@ -58,41 +58,44 @@ impl Centering {
         match self {
             Centering::P => Linear::identity(),
             Centering::A => Linear::new(
-                1., 0., 0., //
-                0., 1., 1., //
-                0., -1., 1., //
+                1, 0, 0, //
+                0, 1, 1, //
+                0, -1, 1, //
             ),
             Centering::B => Linear::new(
-                1., 0., -1., //
-                0., 1., 0., //
-                1., 0., 1., //
+                1, 0, -1, //
+                0, 1, 0, //
+                1, 0, 1, //
             ),
             Centering::C => Linear::new(
-                1., -1., 0., //
-                1., 1., 0., //
-                0., 0., 1., //
+                1, -1, 0, //
+                1, 1, 0, //
+                0, 0, 1, //
             ),
             Centering::R => Linear::new(
-                1., 0., 1., //
-                -1., 1., 1., //
-                0., -1., 1., //
+                1, 0, 1, //
+                -1, 1, 1, //
+                0, -1, 1, //
             ),
             Centering::I => Linear::new(
-                0., 1., 1., //
-                1., 0., 1., //
-                1., 1., 0., //
+                0, 1, 1, //
+                1, 0, 1, //
+                1, 1, 0, //
             ),
             Centering::F => Linear::new(
-                -1., 1., 1., //
-                1., -1., 1., //
-                1., 1., -1., //
+                -1, 1, 1, //
+                1, -1, 1, //
+                1, 1, -1, //
             ),
         }
     }
 
     /// Transformation matrix from conventional to primitive cell.
     pub fn inverse(&self) -> Matrix3<f64> {
-        self.transformation_matrix().try_inverse().unwrap()
+        self.transformation_matrix()
+            .map(|e| e as f64)
+            .try_inverse()
+            .unwrap()
     }
 }
 
@@ -209,8 +212,8 @@ impl HallSymbol {
     }
 
     pub fn primitive_generators(&self) -> Operations {
-        let prim_trans_mat = self.centering.inverse();
-        Transformation::from_linear(prim_trans_mat).transform_operations(&self.generators)
+        Transformation::from_linear(self.centering.transformation_matrix())
+            .inverse_transform_operations(&self.generators)
     }
 
     fn tokenize(hall_symbol: &str) -> Vec<&str> {
