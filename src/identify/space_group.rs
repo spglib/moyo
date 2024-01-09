@@ -6,7 +6,10 @@ use super::point_group::PointGroup;
 use crate::base::{
     AbstractOperations, MoyoError, OriginShift, UnimodularLinear, UnimodularTransformation,
 };
-use crate::data::{arithmetic_crystal_class_entry, ArithmeticNumber, CrystalSystem, HallSymbol, hall_symbol_entry, HallNumber, Number, PointGroupRepresentative, Setting};
+use crate::data::{
+    arithmetic_crystal_class_entry, hall_symbol_entry, ArithmeticNumber, CrystalSystem, HallNumber,
+    HallSymbol, Number, PointGroupRepresentative, Setting,
+};
 use crate::math::SNF;
 
 #[derive(Debug)]
@@ -141,10 +144,8 @@ fn match_origin_shift(
     db_prim_generators: &AbstractOperations,
     epsilon: f64,
 ) -> Option<OriginShift> {
-    let new_prim_operations = prim_operations.transform_unimodular(&UnimodularTransformation::new(
-        *trans_mat,
-        OriginShift::zeros(),
-    ));
+    let new_prim_operations =
+        prim_operations.transform_unimodular(&UnimodularTransformation::from_linear(*trans_mat));
     let mut hm_translations = HashMap::new();
     for (rotation, translation) in new_prim_operations
         .rotations
@@ -239,8 +240,8 @@ mod tests {
     use rstest::rstest;
     use std::collections::HashMap;
 
-    use crate::base::{OriginShift, Transformation, UnimodularTransformation, EPS};
-    use crate::data::{HallSymbol, hall_symbol_entry, Setting};
+    use crate::base::{Transformation, UnimodularTransformation, EPS};
+    use crate::data::{hall_symbol_entry, HallSymbol, Setting};
 
     use super::{correction_transformation_matrices, solve_mod1, SpaceGroup};
 
@@ -267,8 +268,7 @@ mod tests {
 
         // conventional -> primitive
         let linear = hall_symbol.centering.inverse();
-        let prim_operations =
-            operations.transform(&Transformation::new(linear, OriginShift::zeros()));
+        let prim_operations = operations.transform(&Transformation::from_linear(linear));
 
         // The correction transformation matrices should change the group into P1c1, P1a1, and P1n1
         let entry = hall_symbol_entry(hall_number);
@@ -280,7 +280,7 @@ mod tests {
         ];
         for (i, corr) in corrections.iter().enumerate() {
             let corr_prim_operations = prim_operations
-                .transform_unimodular(&&UnimodularTransformation::new(*corr, OriginShift::zeros()));
+                .transform_unimodular(&&UnimodularTransformation::from_linear(*corr));
             let mut hm_translations = HashMap::new();
             for (rotation, translation) in corr_prim_operations
                 .rotations
@@ -308,8 +308,7 @@ mod tests {
 
             // conventional -> primitive
             let linear = hall_symbol.centering.inverse();
-            let prim_operations =
-                operations.transform(&Transformation::new(linear, OriginShift::zeros()));
+            let prim_operations = operations.transform(&Transformation::from_linear(linear));
 
             let space_group = SpaceGroup::new(&prim_operations, setting, 1e-8).unwrap();
 
@@ -329,10 +328,9 @@ mod tests {
 
             let matched_hall_symbol = HallSymbol::from_hall_number(space_group.hall_number);
             let matched_operations = matched_hall_symbol.traverse();
-            let matched_prim_operations = matched_operations.transform(&Transformation::new(
-                matched_hall_symbol.centering.inverse(),
-                OriginShift::zeros(),
-            ));
+            let matched_prim_operations = matched_operations.transform(
+                &Transformation::from_linear(matched_hall_symbol.centering.inverse()),
+            );
             let mut hm_translations = HashMap::new();
             for (rotation, translation) in matched_prim_operations
                 .rotations

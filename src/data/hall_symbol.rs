@@ -4,9 +4,7 @@ use nalgebra::{matrix, Matrix3, Vector3};
 use strum_macros::EnumIter;
 
 use super::hall_symbol_database::{hall_symbol_entry, HallNumber};
-use crate::base::{
-    AbstractOperations, Linear, OriginShift, Rotation, Transformation, Translation, EPS,
-};
+use crate::base::{AbstractOperations, Linear, Rotation, Transformation, Translation, EPS};
 
 const MAX_DENOMINATOR: i32 = 12;
 
@@ -213,7 +211,7 @@ impl HallSymbol {
     pub fn primitive_generators(&self) -> AbstractOperations {
         let prim_trans_mat = self.centering.inverse();
         self.generators
-            .transform(&Transformation::new(prim_trans_mat, OriginShift::zeros()))
+            .transform(&Transformation::from_linear(prim_trans_mat))
     }
 
     fn tokenize(hall_symbol: &str) -> Vec<&str> {

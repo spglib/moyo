@@ -2,7 +2,7 @@ use nalgebra::linalg::{Cholesky, QR};
 use nalgebra::{vector, Matrix3};
 
 use crate::base::{
-    Cell, Lattice, MoyoError, OriginShift, Rotation, Transformation, UnimodularTransformation, EPS,
+    Cell, Lattice, MoyoError, Rotation, Transformation, UnimodularTransformation, EPS,
 };
 use crate::data::{arithmetic_crystal_class_entry, hall_symbol_entry, LatticeSystem};
 use crate::identify::SpaceGroup;
@@ -29,7 +29,7 @@ impl StandardizedCell {
         let prim_transform = match lattice_system {
             LatticeSystem::Triclinic => {
                 let (_, linear) = prim_cell.cell.lattice.niggli_reduce()?;
-                UnimodularTransformation::new(linear, OriginShift::zeros())
+                UnimodularTransformation::from_linear(linear)
             }
             _ => space_group.transformation.clone(),
         };

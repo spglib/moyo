@@ -11,8 +11,7 @@ mod search;
 mod symmetrize;
 
 use crate::base::{
-    orbits_from_permutations, AbstractOperations, AngleTolerance, Cell, MoyoError, OriginShift,
-    Transformation,
+    orbits_from_permutations, AbstractOperations, AngleTolerance, Cell, MoyoError, Transformation,
 };
 use crate::data::{HallNumber, Number, Setting};
 use crate::identify::SpaceGroup;
@@ -84,7 +83,7 @@ fn operations_in_cell(
     let mut rotations = vec![];
     let mut translations = vec![];
     let input_operations =
-        prim_operations.transform(&Transformation::new(prim_cell.linear, OriginShift::zeros()));
+        prim_operations.transform(&Transformation::from_linear(prim_cell.linear));
     for t1 in prim_cell.translations.iter() {
         for (rotation, t2) in input_operations
             .rotations

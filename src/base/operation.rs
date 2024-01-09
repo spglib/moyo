@@ -239,18 +239,15 @@ mod tests {
 
     use super::{Operations, Permutation, Translation};
     use crate::base::lattice::Lattice;
-    use crate::base::transformation::{OriginShift, Transformation};
+    use crate::base::transformation::Transformation;
 
     #[test]
     fn test_incompatible_transformation() {
-        let transformation = Transformation::new(
-            matrix![
-                1.0, 0.0, 0.0;
-                0.0, 1.0, 0.0;
-                0.0, 0.0, 2.0;
-            ],
-            OriginShift::zeros(),
-        );
+        let transformation = Transformation::from_linear(matrix![
+            1.0, 0.0, 0.0;
+            0.0, 1.0, 0.0;
+            0.0, 0.0, 2.0;
+        ]);
         // threefold rotation
         let operations = Operations::new(
             Lattice::new(Matrix3::<f64>::identity()),

@@ -24,6 +24,10 @@ impl UnimodularTransformation {
         }
     }
 
+    pub fn from_linear(linear: UnimodularLinear) -> Self {
+        Self::new(linear, OriginShift::zeros())
+    }
+
     pub fn linear_as_f64(&self) -> Matrix3<f64> {
         self.linear.map(|e| e as f64)
     }
@@ -42,5 +46,9 @@ impl Transformation {
             linear,
             origin_shift,
         }
+    }
+
+    pub fn from_linear(linear: Linear) -> Self {
+        Self::new(linear, OriginShift::zeros())
     }
 }

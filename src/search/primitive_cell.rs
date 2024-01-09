@@ -6,8 +6,8 @@ use super::solve::{
     pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
 };
 use crate::base::{
-    orbits_from_permutations, Cell, Lattice, Linear, MoyoError, OriginShift, Permutation, Position,
-    Rotation, Translation, UnimodularTransformation, EPS,
+    orbits_from_permutations, Cell, Lattice, Linear, MoyoError, Permutation, Position, Rotation,
+    Translation, UnimodularTransformation, EPS,
 };
 use crate::math::HNF;
 
@@ -31,10 +31,8 @@ impl PrimitiveCell {
     pub fn new(cell: &Cell, symprec: f64) -> Result<Self, MoyoError> {
         // cell.lattice.basis * reduced_trans_mat = reduced_cell.lattice.basis
         let (reduced_lattice, reduced_trans_mat) = cell.lattice.minkowski_reduce()?;
-        let reduced_cell = cell.transform(&UnimodularTransformation::new(
-            reduced_trans_mat,
-            OriginShift::zeros(),
-        ));
+        let reduced_cell =
+            cell.transform(&UnimodularTransformation::from_linear(reduced_trans_mat));
 
         // Check if symprec is sufficiently small
         let minimum_basis_norm = reduced_lattice
@@ -121,10 +119,8 @@ impl PrimitiveCell {
         )
         .ok_or(MoyoError::PrimitiveCellError)?;
         let (_, prim_trans_mat) = primitive_cell.lattice.minkowski_reduce()?;
-        let reduced_prim_cell = primitive_cell.transform(&UnimodularTransformation::new(
-            prim_trans_mat,
-            OriginShift::zeros(),
-        ));
+        let reduced_prim_cell =
+            primitive_cell.transform(&UnimodularTransformation::from_linear(prim_trans_mat));
 
         // (input cell)
         //    -[reduced_trans_mat]-> (reduced cell)
