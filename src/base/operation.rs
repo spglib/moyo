@@ -10,12 +10,12 @@ pub type Translation = Vector3<f64>;
 
 #[derive(Debug)]
 /// Symmetry operation without basis information
-pub struct AbstractOperations {
+pub struct Operations {
     pub rotations: Vec<Rotation>,
     pub translations: Vec<Translation>,
 }
 
-impl AbstractOperations {
+impl Operations {
     pub fn new(rotations: Vec<Rotation>, translations: Vec<Translation>) -> Self {
         if translations.len() != rotations.len() {
             panic!("rotations and translations should be the same length");
@@ -26,43 +26,15 @@ impl AbstractOperations {
         }
     }
 
-    pub fn from_operations(operations: &Operations) -> Self {
-        Self::new(
-            operations.operations.rotations.clone(),
-            operations.operations.translations.clone(),
-        )
-    }
-
     pub fn num_operations(&self) -> usize {
         self.rotations.len()
     }
-}
 
-#[derive(Debug)]
-/// Symmetry operation on a given basis
-pub struct Operations {
-    pub lattice: Lattice,
-    pub operations: AbstractOperations,
-}
-
-impl Operations {
-    pub fn new(lattice: Lattice, rotations: Vec<Rotation>, translations: Vec<Translation>) -> Self {
-        Self {
-            lattice,
-            operations: AbstractOperations::new(rotations, translations),
-        }
-    }
-
-    pub fn num_operations(&self) -> usize {
-        self.operations.rotations.len()
-    }
-
-    pub fn cartesian_rotations(&self) -> Vec<Matrix3<f64>> {
-        let inv_basis = self.lattice.basis.try_inverse().unwrap();
-        self.operations
-            .rotations
+    pub fn cartesian_rotations(&self, lattice: &Lattice) -> Vec<Matrix3<f64>> {
+        let inv_basis = lattice.basis.try_inverse().unwrap();
+        self.rotations
             .iter()
-            .map(|r| self.lattice.basis * r.map(|e| e as f64) * inv_basis)
+            .map(|r| lattice.basis * r.map(|e| e as f64) * inv_basis)
             .collect()
     }
 }
@@ -137,8 +109,8 @@ mod tests {
 
     use nalgebra::matrix;
 
-    use super::{Operations, Permutation, Translation};
-    use crate::base::lattice::Lattice;
+    use super::{Permutation, Translation};
+    use crate::base::{lattice::Lattice, Operations};
 
     #[test]
     fn test_cartesian_rotations() {
@@ -154,9 +126,9 @@ mod tests {
         ]];
         let translations = vec![Translation::zeros()];
 
-        let operations = Operations::new(lattice, rotations, translations);
+        let operations = Operations::new(rotations, translations);
 
-        let actual = operations.cartesian_rotations()[0];
+        let actual = operations.cartesian_rotations(&lattice)[0];
         let expect = matrix![
             -0.5, -f64::sqrt(3.0) / 2.0, 0.0;
             f64::sqrt(3.0) / 2.0, -0.5, 0.0;

@@ -11,7 +11,7 @@ mod search;
 mod symmetrize;
 
 use crate::base::{
-    orbits_from_permutations, AbstractOperations, AngleTolerance, Cell, MoyoError, Transformation,
+    orbits_from_permutations, AngleTolerance, Cell, MoyoError, Operations, Transformation,
 };
 use crate::data::{HallNumber, Number, Setting};
 use crate::identify::SpaceGroup;
@@ -23,7 +23,7 @@ pub struct MoyoDataset {
     pub number: Number,
     pub hall_number: HallNumber,
     // Symmetry operations in the input cell
-    pub operations: AbstractOperations,
+    pub operations: Operations,
     /// Spglib's `crystallographic_orbits` not `equivalent_atoms`
     /// For example, orbits=[0, 0, 2, 2, 2, 2] means the first two atoms are equivalent and the last four atoms are equivalent.
     pub orbits: Vec<usize>,
@@ -53,15 +53,14 @@ impl MoyoDataset {
         // Symmetry search
         let prim_cell = PrimitiveCell::new(cell, symprec)?;
         let symmetry_search = SymmetrySearch::new(&prim_cell.cell, symprec, angle_tolerance)?;
-        let prim_operations = AbstractOperations::from_operations(&symmetry_search.operations);
 
         // Symmetry in the input cell
-        let operations = operations_in_cell(&prim_cell, &prim_operations);
+        let operations = operations_in_cell(&prim_cell, &symmetry_search.operations);
         let orbits = orbits_in_cell(&prim_cell, &symmetry_search);
 
         // Space-group type identification
         let epsilon = symprec / prim_cell.cell.lattice.volume().powf(1.0 / 3.0);
-        let space_group = SpaceGroup::new(&prim_operations, setting, epsilon)?;
+        let space_group = SpaceGroup::new(&symmetry_search.operations, setting, epsilon)?;
 
         Ok(Self {
             number: space_group.number,
@@ -76,14 +75,11 @@ impl MoyoDataset {
     }
 }
 
-fn operations_in_cell(
-    prim_cell: &PrimitiveCell,
-    prim_operations: &AbstractOperations,
-) -> AbstractOperations {
+fn operations_in_cell(prim_cell: &PrimitiveCell, prim_operations: &Operations) -> Operations {
     let mut rotations = vec![];
     let mut translations = vec![];
-    let input_operations = Transformation::from_linear(prim_cell.linear)
-        .transform_abstract_operations(prim_operations);
+    let input_operations =
+        Transformation::from_linear(prim_cell.linear).transform_operations(prim_operations);
     for t1 in prim_cell.translations.iter() {
         for (rotation, t2) in input_operations
             .rotations
@@ -98,7 +94,7 @@ fn operations_in_cell(
         }
     }
 
-    AbstractOperations::new(rotations, translations)
+    Operations::new(rotations, translations)
 }
 
 fn orbits_in_cell(prim_cell: &PrimitiveCell, symmetry_search: &SymmetrySearch) -> Vec<usize> {

@@ -1,11 +1,11 @@
 use nalgebra::{matrix, vector, Matrix3, Vector3};
 
-use moyo::base::{AbstractOperations, AngleTolerance, Cell, Lattice};
+use moyo::base::{AngleTolerance, Cell, Lattice, Operations};
 use moyo::data::Setting;
 use moyo::MoyoDataset;
 
 /// O(num_atoms^2)
-fn check_operations(cell: &Cell, operations: &AbstractOperations) -> bool {
+fn check_operations(cell: &Cell, operations: &Operations) -> bool {
     // Check uniqueness
     let num_operations = operations.num_operations();
     for i in 0..num_operations {

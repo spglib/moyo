@@ -83,7 +83,7 @@ impl SymmetrySearch {
         }
 
         Ok(Self {
-            operations: Operations::new(primitive_cell.lattice.clone(), rotations, translations),
+            operations: Operations::new(rotations, translations),
             permutations,
             bravais_group,
         })

@@ -2,7 +2,7 @@ use nalgebra::base::{Matrix3, Vector3};
 
 use super::cell::Cell;
 use super::lattice::Lattice;
-use super::operation::{AbstractOperations, Operations, Rotation, Translation};
+use super::operation::{Operations, Rotation, Translation};
 
 pub type UnimodularLinear = Matrix3<i32>;
 pub type Linear = Matrix3<f64>;
@@ -49,10 +49,7 @@ impl UnimodularTransformation {
         Lattice::new(lattice.basis * self.linear_as_f64())
     }
 
-    pub fn transform_abstract_operations(
-        &self,
-        operations: &AbstractOperations,
-    ) -> AbstractOperations {
+    pub fn transform_operations(&self, operations: &Operations) -> Operations {
         let mut new_rotations = vec![];
         let mut new_translations = vec![];
         for (rotation, translation) in operations
@@ -67,17 +64,7 @@ impl UnimodularTransformation {
             new_rotations.push(new_rotation);
             new_translations.push(new_translation);
         }
-        AbstractOperations::new(new_rotations, new_translations)
-    }
-
-    pub fn transform_operations(&self, operations: &Operations) -> Operations {
-        let new_lattice = self.transform_lattice(&operations.lattice);
-        let new_operations = self.transform_abstract_operations(&operations.operations);
-        Operations::new(
-            new_lattice,
-            new_operations.rotations,
-            new_operations.translations,
-        )
+        Operations::new(new_rotations, new_translations)
     }
 
     pub fn transform_cell(&self, cell: &Cell) -> Cell {
@@ -121,10 +108,7 @@ impl Transformation {
 
     /// (P, p)^-1 (W, w) (P, p)
     /// This function may decrease the number of operations if the transformation is not compatible with an operation.
-    pub fn transform_abstract_operations(
-        &self,
-        operations: &AbstractOperations,
-    ) -> AbstractOperations {
+    pub fn transform_operations(&self, operations: &Operations) -> Operations {
         let mut new_rotations = vec![];
         let mut new_translations = vec![];
         for (rotation, translation) in operations
@@ -143,17 +127,7 @@ impl Transformation {
                 new_translations.push(new_translation);
             }
         }
-        AbstractOperations::new(new_rotations, new_translations)
-    }
-
-    pub fn transform_operations(&self, operations: &Operations) -> Operations {
-        let new_lattice = self.transform_lattice(&operations.lattice);
-        let new_operations = self.transform_abstract_operations(&operations.operations);
-        Operations::new(
-            new_lattice,
-            new_operations.rotations,
-            new_operations.translations,
-        )
+        Operations::new(new_rotations, new_translations)
     }
 
     // Apply `trans`, which may increase the number of atoms in the cell.
@@ -188,10 +162,9 @@ fn transform_operation(
 mod tests {
     use std::vec;
 
-    use nalgebra::{matrix, Matrix3};
+    use nalgebra::matrix;
 
     use super::Transformation;
-    use crate::base::lattice::Lattice;
     use crate::base::operation::{Operations, Translation};
 
     #[test]
@@ -203,7 +176,6 @@ mod tests {
         ]);
         // threefold rotation
         let operations = Operations::new(
-            Lattice::new(Matrix3::<f64>::identity()),
             vec![matrix![
                 0, 0, 1;
                 1, 0, 0;

@@ -4,7 +4,7 @@ use nalgebra::{matrix, Matrix3, Vector3};
 use strum_macros::EnumIter;
 
 use super::hall_symbol_database::{hall_symbol_entry, HallNumber};
-use crate::base::{AbstractOperations, Linear, Rotation, Transformation, Translation, EPS};
+use crate::base::{Linear, Operations, Rotation, Transformation, Translation, EPS};
 
 const MAX_DENOMINATOR: i32 = 12;
 
@@ -25,7 +25,7 @@ pub struct HallSymbol {
     pub hall_symbol: String,
     pub centering: Centering,
     pub centering_translations: Vec<Translation>,
-    pub generators: AbstractOperations,
+    pub generators: Operations,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, EnumIter)]
@@ -155,14 +155,14 @@ impl HallSymbol {
             hall_symbol: hall_symbol.to_string(),
             centering: lattice_symbol,
             centering_translations,
-            generators: AbstractOperations::new(rotations, translations),
+            generators: Operations::new(rotations, translations),
         })
     }
 
     /// Traverse all the symmetry operations up to translations by conventional cell.
     /// The order of operations is guaranteed to be fixed.
     /// TODO: refactor with crate::base::operation::traverse
-    pub fn traverse(&self) -> AbstractOperations {
+    pub fn traverse(&self) -> Operations {
         let mut queue = VecDeque::new();
         let mut hm_translations = HashMap::new();
         let mut rotations = vec![];
@@ -200,7 +200,7 @@ impl HallSymbol {
             }
         }
 
-        AbstractOperations::new(rotations, translations)
+        Operations::new(rotations, translations)
     }
 
     pub fn from_hall_number(hall_number: HallNumber) -> Self {
@@ -208,9 +208,9 @@ impl HallSymbol {
         Self::new(entry.hall_symbol).unwrap()
     }
 
-    pub fn primitive_generators(&self) -> AbstractOperations {
+    pub fn primitive_generators(&self) -> Operations {
         let prim_trans_mat = self.centering.inverse();
-        Transformation::from_linear(prim_trans_mat).transform_abstract_operations(&self.generators)
+        Transformation::from_linear(prim_trans_mat).transform_operations(&self.generators)
     }
 
     fn tokenize(hall_symbol: &str) -> Vec<&str> {
