@@ -79,6 +79,8 @@ impl Mul for Permutation {
     }
 }
 
+#[allow(dead_code)]
+/// Used for testing
 pub fn traverse(generators: &Vec<Rotation>) -> Vec<Rotation> {
     let mut queue = VecDeque::new();
     let mut visited = HashSet::new();
