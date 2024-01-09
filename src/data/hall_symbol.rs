@@ -210,8 +210,7 @@ impl HallSymbol {
 
     pub fn primitive_generators(&self) -> AbstractOperations {
         let prim_trans_mat = self.centering.inverse();
-        self.generators
-            .transform(&Transformation::from_linear(prim_trans_mat))
+        Transformation::from_linear(prim_trans_mat).transform_abstract_operations(&self.generators)
     }
 
     fn tokenize(hall_symbol: &str) -> Vec<&str> {

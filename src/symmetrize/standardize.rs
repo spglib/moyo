@@ -33,7 +33,7 @@ impl StandardizedCell {
             }
             _ => space_group.transformation.clone(),
         };
-        let std_prim_cell = prim_cell.cell.transform(&prim_transform);
+        let std_prim_cell = prim_transform.transform_cell(&prim_cell.cell);
 
         // To (conventional) standardized cell
 

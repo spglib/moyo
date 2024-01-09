@@ -144,8 +144,8 @@ fn match_origin_shift(
     db_prim_generators: &AbstractOperations,
     epsilon: f64,
 ) -> Option<OriginShift> {
-    let new_prim_operations =
-        prim_operations.transform_unimodular(&UnimodularTransformation::from_linear(*trans_mat));
+    let new_prim_operations = UnimodularTransformation::from_linear(*trans_mat)
+        .transform_abstract_operations(prim_operations);
     let mut hm_translations = HashMap::new();
     for (rotation, translation) in new_prim_operations
         .rotations
@@ -268,7 +268,8 @@ mod tests {
 
         // conventional -> primitive
         let linear = hall_symbol.centering.inverse();
-        let prim_operations = operations.transform(&Transformation::from_linear(linear));
+        let prim_operations =
+            Transformation::from_linear(linear).transform_abstract_operations(&operations);
 
         // The correction transformation matrices should change the group into P1c1, P1a1, and P1n1
         let entry = hall_symbol_entry(hall_number);
@@ -279,8 +280,9 @@ mod tests {
             vector![-0.5, 0.0, -0.5],
         ];
         for (i, corr) in corrections.iter().enumerate() {
-            let corr_prim_operations = prim_operations
-                .transform_unimodular(&&UnimodularTransformation::from_linear(*corr));
+            let corr_prim_operations = UnimodularTransformation::from_linear(*corr)
+                .transform_abstract_operations(&prim_operations);
+
             let mut hm_translations = HashMap::new();
             for (rotation, translation) in corr_prim_operations
                 .rotations
@@ -308,7 +310,8 @@ mod tests {
 
             // conventional -> primitive
             let linear = hall_symbol.centering.inverse();
-            let prim_operations = operations.transform(&Transformation::from_linear(linear));
+            let prim_operations =
+                Transformation::from_linear(linear).transform_abstract_operations(&operations);
 
             let space_group = SpaceGroup::new(&prim_operations, setting, 1e-8).unwrap();
 
@@ -328,9 +331,9 @@ mod tests {
 
             let matched_hall_symbol = HallSymbol::from_hall_number(space_group.hall_number);
             let matched_operations = matched_hall_symbol.traverse();
-            let matched_prim_operations = matched_operations.transform(
-                &Transformation::from_linear(matched_hall_symbol.centering.inverse()),
-            );
+            let matched_prim_operations =
+                Transformation::from_linear(matched_hall_symbol.centering.inverse())
+                    .transform_abstract_operations(&matched_operations);
             let mut hm_translations = HashMap::new();
             for (rotation, translation) in matched_prim_operations
                 .rotations
@@ -341,8 +344,9 @@ mod tests {
             }
 
             // Check transformation
-            let transformed_prim_operations =
-                prim_operations.transform_unimodular(&space_group.transformation);
+            let transformed_prim_operations = space_group
+                .transformation
+                .transform_abstract_operations(&prim_operations);
             assert_eq!(
                 matched_prim_operations.rotations.len(),
                 transformed_prim_operations.rotations.len()

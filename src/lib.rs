@@ -82,8 +82,8 @@ fn operations_in_cell(
 ) -> AbstractOperations {
     let mut rotations = vec![];
     let mut translations = vec![];
-    let input_operations =
-        prim_operations.transform(&Transformation::from_linear(prim_cell.linear));
+    let input_operations = Transformation::from_linear(prim_cell.linear)
+        .transform_abstract_operations(prim_operations);
     for t1 in prim_cell.translations.iter() {
         for (rotation, t2) in input_operations
             .rotations

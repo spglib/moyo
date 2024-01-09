@@ -5,7 +5,6 @@ use union_find::{QuickFindUf, UnionByRank, UnionFind};
 
 use super::lattice::Lattice;
 use super::operation::Permutation;
-use super::transformation::UnimodularTransformation;
 
 pub type Position = Vector3<f64>;
 pub type AtomicSpecie = i32;
@@ -32,27 +31,6 @@ impl Cell {
     pub fn num_atoms(&self) -> usize {
         self.positions.len()
     }
-
-    pub fn transform(&self, transformation: &UnimodularTransformation) -> Self {
-        let new_lattice = self.lattice.transform_unimodular(&transformation.linear);
-        let pinv = transformation.linear_as_f64().try_inverse().unwrap();
-        let new_positions = self
-            .positions
-            .iter()
-            .map(|pos| pinv * (pos - transformation.origin_shift))
-            .collect();
-        Self {
-            lattice: new_lattice,
-            positions: new_positions,
-            numbers: self.numbers.clone(),
-        }
-    }
-
-    // Apply `trans`, which may increase the number of atoms in the cell.
-    // Mapping from sites of the new cell to those of the original cell is also returned.
-    // pub fn expand_transform(&self, transformation: &Transformation) -> (Self, SiteMapping) {
-    //     unimplemented!()
-    // }
 }
 
 /// If and only if the `i`th and `j`th atoms are equivalent, `orbits[i] == orbits[j]`.

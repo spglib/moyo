@@ -5,7 +5,6 @@ use crate::math::{
 };
 
 use super::error::MoyoError;
-use super::transformation::{Linear, UnimodularLinear};
 
 #[derive(Debug, Clone)]
 pub struct Lattice {
@@ -18,19 +17,7 @@ impl Lattice {
         Self { basis }
     }
 
-    pub fn transform(&self, trans_mat: &Linear) -> Self {
-        Self {
-            basis: self.basis * trans_mat,
-        }
-    }
-
-    pub fn transform_unimodular(&self, trans_mat: &UnimodularLinear) -> Self {
-        Self {
-            basis: self.basis * trans_mat.map(|e| e as f64),
-        }
-    }
-
-    pub fn minkowski_reduce(&self) -> Result<(Self, UnimodularLinear), MoyoError> {
+    pub fn minkowski_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
         let (reduced_basis, trans_mat) = minkowski_reduce(&self.basis);
         let reduced_lattice = Self {
             basis: reduced_basis,
@@ -48,7 +35,7 @@ impl Lattice {
         is_minkowski_reduced(&self.basis)
     }
 
-    pub fn niggli_reduce(&self) -> Result<(Self, UnimodularLinear), MoyoError> {
+    pub fn niggli_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
         let (reduced_basis, trans_mat) = niggli_reduce(&self.basis);
         let reduced_lattice = Self {
             basis: reduced_basis,
@@ -66,7 +53,7 @@ impl Lattice {
         is_niggli_reduced(&self.basis)
     }
 
-    pub fn delaunay_reduce(&self) -> Result<(Self, UnimodularLinear), MoyoError> {
+    pub fn delaunay_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
         let (reduced_basis, trans_mat) = delaunay_reduce(&self.basis);
         let reduced_lattice = Self {
             basis: reduced_basis,

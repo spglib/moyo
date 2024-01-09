@@ -32,7 +32,7 @@ impl PrimitiveCell {
         // cell.lattice.basis * reduced_trans_mat = reduced_cell.lattice.basis
         let (reduced_lattice, reduced_trans_mat) = cell.lattice.minkowski_reduce()?;
         let reduced_cell =
-            cell.transform(&UnimodularTransformation::from_linear(reduced_trans_mat));
+            UnimodularTransformation::from_linear(reduced_trans_mat).transform_cell(cell);
 
         // Check if symprec is sufficiently small
         let minimum_basis_norm = reduced_lattice
@@ -120,7 +120,7 @@ impl PrimitiveCell {
         .ok_or(MoyoError::PrimitiveCellError)?;
         let (_, prim_trans_mat) = primitive_cell.lattice.minkowski_reduce()?;
         let reduced_prim_cell =
-            primitive_cell.transform(&UnimodularTransformation::from_linear(prim_trans_mat));
+            UnimodularTransformation::from_linear(prim_trans_mat).transform_cell(&primitive_cell);
 
         // (input cell)
         //    -[reduced_trans_mat]-> (reduced cell)
