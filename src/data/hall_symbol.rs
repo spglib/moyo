@@ -161,7 +161,6 @@ impl HallSymbol {
 
     /// Traverse all the symmetry operations up to translations by conventional cell.
     /// The order of operations is guaranteed to be fixed.
-    /// TODO: refactor with crate::base::operation::traverse
     pub fn traverse(&self) -> Operations {
         let mut queue = VecDeque::new();
         let mut hm_translations = HashMap::new();

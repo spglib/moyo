@@ -1,10 +1,55 @@
+#[macro_use]
+extern crate approx;
+
 use nalgebra::{matrix, vector, Matrix3, Vector3};
 
 use moyo::base::{AngleTolerance, Cell, Lattice, Operations};
 use moyo::data::Setting;
 use moyo::MoyoDataset;
 
-/// O(num_atoms^2)
+/// Sanity-check MoyoDataset
+fn assert_dataset(
+    cell: &Cell,
+    dataset: &MoyoDataset,
+    symprec: f64,
+    angle_tolerance: AngleTolerance,
+    setting: Setting,
+) {
+    // operations
+    assert!(check_operations(&cell, &dataset.operations));
+
+    // std_rotation_matrix
+    assert_relative_eq!(
+        dataset.std_rotation_matrix * cell.lattice.basis * dataset.std_linear,
+        dataset.std_cell.lattice.basis
+    );
+
+    // std_cell
+    let std_dataset =
+        MoyoDataset::new(&dataset.std_cell, symprec, angle_tolerance, setting).unwrap();
+    assert_eq!(std_dataset.number, dataset.number);
+    assert_eq!(std_dataset.hall_number, dataset.hall_number);
+    assert!(check_operations(&dataset.std_cell, &std_dataset.operations));
+
+    // TODO: std_linear
+    // TODO: std_origin_shift
+
+    // prim_std_cell
+    let prim_std_dataset =
+        MoyoDataset::new(&dataset.prim_std_cell, symprec, angle_tolerance, setting).unwrap();
+    assert_eq!(prim_std_dataset.number, dataset.number);
+    assert_eq!(prim_std_dataset.hall_number, dataset.hall_number);
+    assert!(check_operations(
+        &dataset.prim_std_cell,
+        &prim_std_dataset.operations
+    ));
+
+    // TODO: prim_std_linear
+    // TODO: prim_origin_shift
+}
+
+/// Return true if `operations` preserve `cell`.
+/// O(num_atoms^2 * num_operations)
 fn check_operations(cell: &Cell, operations: &Operations) -> bool {
     // Check uniqueness
     let num_operations = operations.num_operations();
@@ -65,10 +110,11 @@ fn test_with_fcc() {
     let cell = Cell::new(lattice, positions, numbers);
 
     let symprec = 1e-4;
-    let dataset =
-        MoyoDataset::new(&cell, symprec, AngleTolerance::Default, Setting::Spglib).unwrap();
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Spglib;
+    let dataset = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
 
-    assert!(check_operations(&cell, &dataset.operations));
+    assert_dataset(&cell, &dataset, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 225); // Fm-3m
     assert_eq!(dataset.hall_number, 523);
@@ -98,10 +144,11 @@ fn test_with_rutile() {
     let cell = Cell::new(lattice, positions, numbers);
 
     let symprec = 1e-4;
-    let dataset =
-        MoyoDataset::new(&cell, symprec, AngleTolerance::Default, Setting::Spglib).unwrap();
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Spglib;
+    let dataset = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
 
-    assert!(check_operations(&cell, &dataset.operations));
+    assert_dataset(&cell, &dataset, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 136); // P4_2/mnm
     assert_eq!(dataset.hall_number, 419);

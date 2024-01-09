@@ -151,9 +151,6 @@ fn match_origin_shift(
         hm_translations.insert(*rotation, *translation);
     }
 
-    // dbg!(&new_prim_operations);
-    // dbg!(&db_prim_generators);
-
     // Find origin_shift `c`: (P, c)^-1 G (P, c) = G_db
     //     (P, c) = (P, 0) (P, 0)^-1 (P, c) = (P, 0) (E, P^-1 c)
     //     s := P^-1 c

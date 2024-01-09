@@ -26,11 +26,6 @@ pub fn niggli_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
         };
         reduced_basis = basis * trans_mat.map(|e| e as f64);
 
-        // if branch {
-        //     let params = NiggliParameters::new(&reduced_basis);
-        //     dbg!(step, &params);
-        // }
-
         if branch && (step == 2 || step == 5 || step == 6 || step == 7 || step == 8) {
             step = 1;
         } else {
@@ -487,13 +482,6 @@ mod tests {
                 rng.gen::<i8>() as f64,
             );
             let (reduced_basis, trans_mat) = niggli_reduce(&basis);
-
-            if !is_niggli_reduced(&reduced_basis) {
-                let params = NiggliParameters::new(&reduced_basis);
-                dbg!(&basis);
-                dbg!(&reduced_basis);
-                dbg!(&params);
-            }
 
             assert!(is_niggli_reduced(&reduced_basis));
             assert_relative_eq!(basis * trans_mat.map(|e| e as f64), reduced_basis);

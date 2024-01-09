@@ -4,11 +4,14 @@ use nalgebra::{vector, Matrix3};
 use crate::base::{
     Cell, Lattice, MoyoError, Rotation, Transformation, UnimodularTransformation, EPS,
 };
-use crate::data::{arithmetic_crystal_class_entry, hall_symbol_entry, LatticeSystem};
+use crate::data::{arithmetic_crystal_class_entry, hall_symbol_entry, HallSymbol, LatticeSystem};
 use crate::identify::SpaceGroup;
 use crate::search::PrimitiveCell;
 
 pub struct StandardizedCell {
+    pub prim_cell: Cell,
+    /// Transformation from the input primitive cell to the primitive standardized cell.
+    pub prim_transformation: UnimodularTransformation,
     pub cell: Cell,
     /// Transformation from the input primitive cell to the standardized cell.
     pub transformation: Transformation,
@@ -21,25 +24,44 @@ impl StandardizedCell {
     /// For triclinic space groups, Niggli reduction is performed.
     /// Basis vectors are rotated to be a upper triangular matrix.
     pub fn new(prim_cell: &PrimitiveCell, space_group: &SpaceGroup) -> Result<Self, MoyoError> {
-        let arithmetic_number = hall_symbol_entry(space_group.hall_number).arithmetic_number;
+        let entry = hall_symbol_entry(space_group.hall_number);
+        let arithmetic_number = entry.arithmetic_number;
         let bravais_class = arithmetic_crystal_class_entry(arithmetic_number).bravais_class;
         let lattice_system = LatticeSystem::from_bravais_class(bravais_class);
 
         // To standardized primitive cell
-        let prim_transform = match lattice_system {
+        let prim_transformation = match lattice_system {
             LatticeSystem::Triclinic => {
                 let (_, linear) = prim_cell.cell.lattice.niggli_reduce()?;
                 UnimodularTransformation::from_linear(linear)
             }
             _ => space_group.transformation.clone(),
         };
-        let std_prim_cell = prim_transform.transform_cell(&prim_cell.cell);
+        let prim_std_cell = prim_transformation.transform_cell(&prim_cell.cell);
 
         // To (conventional) standardized cell
+        let conv_trans = Transformation::from_linear(entry.centering.linear());
+        let std_cell = conv_trans.transform_cell(&prim_std_cell);
 
         // Symmetrize lattice
+        let std_rotations = HallSymbol::from_hall_number(entry.hall_number)
+            .traverse()
+            .rotations;
+        let (_, rotation_matrix) = symmetrize_lattice(&std_cell.lattice, &std_rotations);
 
-        unimplemented!()
+        // TODO: match Wyckoff positions
+
+        Ok(StandardizedCell {
+            prim_cell: prim_std_cell.rotate(&rotation_matrix),
+            prim_transformation: prim_transformation.clone(),
+            cell: std_cell.rotate(&rotation_matrix),
+            // prim_transformation * (conv_trans.linear, 0)
+            transformation: Transformation::new(
+                prim_transformation.linear * conv_trans.linear,
+                prim_transformation.origin_shift,
+            ),
+            rotation_matrix,
+        })
     }
 }
 

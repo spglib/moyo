@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use nalgebra::Vector3;
+use nalgebra::{Matrix3, Vector3};
 use union_find::{QuickFindUf, UnionByRank, UnionFind};
 
 use super::lattice::Lattice;
@@ -30,6 +30,14 @@ impl Cell {
 
     pub fn num_atoms(&self) -> usize {
         self.positions.len()
+    }
+
+    pub fn rotate(&self, rotation_matrix: &Matrix3<f64>) -> Self {
+        Self::new(
+            self.lattice.rotate(rotation_matrix),
+            self.positions.clone(),
+            self.numbers.clone(),
+        )
     }
 }
 

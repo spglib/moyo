@@ -15,7 +15,7 @@ use crate::math::HNF;
 pub struct PrimitiveCell {
     /// Primitive cell
     pub cell: Cell,
-    /// Transformation matrix from the primitive cell to the input cell
+    /// Transformation matrix from the **primitive** cell to the input cell
     pub linear: Linear,
     /// Mapping from sites of the input cell to those of the primitive cell (many-to-one)
     pub site_mapping: Vec<usize>,
@@ -31,7 +31,6 @@ impl PrimitiveCell {
     pub fn new(cell: &Cell, symprec: f64) -> Result<Self, MoyoError> {
         // cell.lattice.basis * reduced_trans_mat = reduced_cell.lattice.basis
         let (reduced_lattice, reduced_trans_mat) = cell.lattice.minkowski_reduce()?;
-        dbg!(&reduced_trans_mat);
         let reduced_cell =
             UnimodularTransformation::from_linear(reduced_trans_mat).transform_cell(cell);
 

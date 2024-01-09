@@ -73,6 +73,12 @@ impl Lattice {
     pub fn volume(&self) -> f64 {
         self.basis.determinant().abs()
     }
+
+    pub fn rotate(&self, rotation_matrix: &Matrix3<f64>) -> Self {
+        Self {
+            basis: rotation_matrix * self.basis,
+        }
+    }
 }
 
 #[cfg(test)]

@@ -10,12 +10,16 @@ mod math;
 mod search;
 mod symmetrize;
 
+use nalgebra::Matrix3;
+
 use crate::base::{
-    orbits_from_permutations, AngleTolerance, Cell, MoyoError, Operations, Transformation,
+    orbits_from_permutations, AngleTolerance, Cell, MoyoError, Operations, OriginShift,
+    Transformation,
 };
 use crate::data::{HallNumber, Number, Setting};
 use crate::identify::SpaceGroup;
 use crate::search::{PrimitiveCell, SymmetrySearch};
+use crate::symmetrize::StandardizedCell;
 
 #[derive(Debug)]
 pub struct MoyoDataset {
@@ -31,14 +35,19 @@ pub struct MoyoDataset {
     // TODO: wyckoffs
     // TODO: site_symmetry_symbols
     // Standardized cell
-    // Transformation from the standardized cell to the input cell.
-    // TODO: pub std_transformation: Transformation,
-    // TODO: pub std_rotation_matrix: Matrix3<f64>,
-    // TODO: pub std_cell: Cell,
-    // Standardized primitive cell
-    // Transformation from the standardized primitive cell to the input cell.
-    // TODO: pub std_prim_transformation: Transformation,
-    // TODO: pub std_prim_cell: Cell,
+    pub std_cell: Cell,
+    /// Linear part of transformation from the input cell to the standardized cell.
+    pub std_linear: Matrix3<f64>,
+    /// Origin shift of transformation from the input cell to the standardized cell.
+    pub std_origin_shift: OriginShift,
+    /// Rigid rotation
+    pub std_rotation_matrix: Matrix3<f64>,
+    // Primitive standardized cell
+    pub prim_std_cell: Cell,
+    /// Linear part of transformation from the input cell to the primitive standardized cell.
+    pub prim_std_linear: Matrix3<f64>,
+    /// Origin shift of transformation from the input cell to the primitive standardized cell.
+    pub prim_std_origin_shift: OriginShift,
     // TODO: pub mapping_to_std_prim: Vec<usize>,
     // TODO: pub std_prim_permutations: Vec<Permutation>,
 }
@@ -62,11 +71,36 @@ impl MoyoDataset {
         let epsilon = symprec / prim_cell.cell.lattice.volume().powf(1.0 / 3.0);
         let space_group = SpaceGroup::new(&symmetry_search.operations, setting, epsilon)?;
 
+        // Standardized cell
+        let std_cell = StandardizedCell::new(&prim_cell, &space_group)?;
+
+        // cell <-(prim_cell.linear, 0)- prim_cell.cell -(std_cell.transformation)-> std_cell.cell
+        // (std_linear, std_origin_shift) = (prim_cell.linear^-1, 0) * std_cell.transformation
+        let prim_cell_linear_inv = prim_cell.linear.map(|e| e as f64).try_inverse().unwrap();
+        let std_linear = prim_cell_linear_inv * std_cell.transformation.linear_as_f64();
+        let std_origin_shift = prim_cell_linear_inv * std_cell.transformation.origin_shift;
+
+        // (prim_std_linear, prim_std_origin_shift) = (prim_cell.linear^-1, 0) * std_cell.prim_transformation
+        let prim_std_linear = prim_cell_linear_inv * std_cell.prim_transformation.linear_as_f64();
+        let prim_std_origin_shift =
+            prim_cell_linear_inv * std_cell.prim_transformation.origin_shift;
+
         Ok(Self {
+            // Space-group type
             number: space_group.number,
             hall_number: space_group.hall_number,
+            // Symmetry operations in the input cell
             operations,
             orbits,
+            // Standardized cell
+            std_cell: std_cell.cell,
+            std_linear,
+            std_origin_shift,
+            std_rotation_matrix: std_cell.rotation_matrix,
+            // Primitive standardized cell
+            prim_std_cell: std_cell.prim_cell,
+            prim_std_linear,
+            prim_std_origin_shift,
         })
     }
 
