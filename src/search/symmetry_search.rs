@@ -10,14 +10,14 @@ use crate::base::{
 };
 
 #[derive(Debug)]
-pub struct SymmetrySearch {
+pub struct PrimitiveSymmetrySearch {
     /// Operations in the given primitive cell
     pub operations: Operations,
     pub permutations: Vec<Permutation>,
     pub bravais_group: Vec<Rotation>,
 }
 
-impl SymmetrySearch {
+impl PrimitiveSymmetrySearch {
     /// Return coset representatives of the space group w.r.t. its translation subgroup.
     /// Assume `primitive_cell` is a primitive cell and its basis vectors are Minkowski reduced.
     /// Possible replacements for spglib/src/spacegroup.h::spa_search_spacegroup
@@ -79,7 +79,7 @@ impl SymmetrySearch {
             }
         }
         if rotations.is_empty() {
-            return Err(MoyoError::SymmetrySearchError);
+            return Err(MoyoError::PrimitiveSymmetrySearchError);
         }
 
         Ok(Self {

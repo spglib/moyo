@@ -43,7 +43,14 @@ fn assert_dataset(
         &prim_std_dataset.operations
     ));
 
-    // TODO: prim_std_linear
+    // prim_std_linear should be an inverse of an integer matrix
+    let prim_std_linear_inv = dataset
+        .prim_std_linear
+        .map(|e| e as f64)
+        .try_inverse()
+        .unwrap();
+    assert_relative_eq!(prim_std_linear_inv, prim_std_linear_inv.map(|e| e.round()));
+
     // TODO: prim_origin_shift
 }
 

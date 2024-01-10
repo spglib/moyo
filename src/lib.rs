@@ -18,7 +18,7 @@ use crate::base::{
 };
 use crate::data::{HallNumber, Number, Setting};
 use crate::identify::SpaceGroup;
-use crate::search::{PrimitiveCell, SymmetrySearch};
+use crate::search::{PrimitiveCell, PrimitiveSymmetrySearch};
 use crate::symmetrize::StandardizedCell;
 
 #[derive(Debug)]
@@ -70,11 +70,8 @@ impl MoyoDataset {
         setting: Setting,
     ) -> Result<Self, MoyoError> {
         // Symmetry search
-        let prim_cell = PrimitiveCell::new(cell, symprec)?;
-        let symmetry_search = SymmetrySearch::new(&prim_cell.cell, symprec, angle_tolerance)?;
-
-        // Symmetry in the input cell
-        let operations = operations_in_cell(&prim_cell, &symmetry_search.operations);
+        let (operations, prim_cell, symmetry_search) =
+            _search_symmetry(cell, symprec, angle_tolerance)?;
         let orbits = orbits_in_cell(&prim_cell, &symmetry_search);
 
         // Space-group type identification
@@ -119,6 +116,27 @@ impl MoyoDataset {
     }
 }
 
+/// Return symmetry operations in the input cell.
+pub fn search_symmetry(
+    cell: &Cell,
+    symprec: f64,
+    angle_tolerance: AngleTolerance,
+) -> Result<Operations, MoyoError> {
+    let (operations, _, _) = _search_symmetry(cell, symprec, angle_tolerance)?;
+    Ok(operations)
+}
+
+fn _search_symmetry(
+    cell: &Cell,
+    symprec: f64,
+    angle_tolerance: AngleTolerance,
+) -> Result<(Operations, PrimitiveCell, PrimitiveSymmetrySearch), MoyoError> {
+    let prim_cell = PrimitiveCell::new(cell, symprec)?;
+    let symmetry_search = PrimitiveSymmetrySearch::new(&prim_cell.cell, symprec, angle_tolerance)?;
+    let operations = operations_in_cell(&prim_cell, &symmetry_search.operations);
+    Ok((operations, prim_cell, symmetry_search))
+}
+
 fn operations_in_cell(prim_cell: &PrimitiveCell, prim_operations: &Operations) -> Operations {
     let mut rotations = vec![];
     let mut translations = vec![];
@@ -140,7 +158,10 @@ fn operations_in_cell(prim_cell: &PrimitiveCell, prim_operations: &Operations) -
     Operations::new(rotations, translations)
 }
 
-fn orbits_in_cell(prim_cell: &PrimitiveCell, symmetry_search: &SymmetrySearch) -> Vec<usize> {
+fn orbits_in_cell(
+    prim_cell: &PrimitiveCell,
+    symmetry_search: &PrimitiveSymmetrySearch,
+) -> Vec<usize> {
     // prim_site_mapping: [prim_num_atoms] -> [prim_num_atoms]
     let prim_orbits =
         orbits_from_permutations(prim_cell.cell.num_atoms(), &symmetry_search.permutations);
