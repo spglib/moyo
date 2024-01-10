@@ -185,8 +185,7 @@ fn match_origin_shift(
 
     match solve_mod1(&a, &b, epsilon) {
         Some(s) => {
-            let mut origin_shift = trans_mat.map(|e| e as f64) * s;
-            origin_shift -= origin_shift.map(|e| e.round());
+            let origin_shift = (trans_mat.map(|e| e as f64) * s).map(|e| e % 1.);
             Some(origin_shift)
         }
         None => None,
@@ -214,12 +213,11 @@ fn solve_mod1(
         }
     }
 
-    let mut x = snf.r.map(|e| e as f64) * y;
-    x -= x.map(|e| e.round()); // mod 1
+    let x = (snf.r.map(|e| e as f64) * y).map(|e| e % 1.);
 
     // Check solution
     let mut residual = a.map(|e| e as f64) * x - b;
-    residual -= residual.map(|e| e.round()); // mod 1
+    residual -= residual.map(|e| e.round()); // in [-0.5, 0.5]
     if residual.iter().any(|e| e.abs() > epsilon) {
         return None;
     }
@@ -350,7 +348,7 @@ mod tests {
             {
                 assert!(hm_translations.contains_key(rotation));
                 let mut diff = *hm_translations.get(rotation).unwrap() - translation;
-                diff -= diff.map(|e| e.round());
+                diff -= diff.map(|e| e.round()); // in [-0.5, 0.5]
                 assert_relative_eq!(diff, vector![0.0, 0.0, 0.0])
             }
         }

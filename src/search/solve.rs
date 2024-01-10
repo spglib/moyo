@@ -44,7 +44,7 @@ pub fn solve_correspondence(
             }
 
             let mut frac_displacement = reduced_cell.positions[j] - new_positions[i];
-            frac_displacement -= frac_displacement.map(|e| e.round());
+            frac_displacement -= frac_displacement.map(|e| e.round()); // in [-0.5, 0.5]
             let distance = reduced_cell
                 .lattice
                 .cartesian_coords(&frac_displacement)

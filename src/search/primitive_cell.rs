@@ -181,7 +181,7 @@ fn primitive_cell_from_transformation(
         for (inv_perm, translation) in inverse_permutations.iter().zip(translations.iter()) {
             let mut frac_displacements =
                 cell.positions[inv_perm.apply(*orbit)] + translation - cell.positions[*orbit];
-            frac_displacements -= frac_displacements.map(|e| e.round());
+            frac_displacements -= frac_displacements.map(|e| e.round()); // in [-0.5, 0.5]
             acc += frac_displacements;
         }
         new_positions[*orbit] = cell.positions[*orbit] + acc / (translations.len() as f64);

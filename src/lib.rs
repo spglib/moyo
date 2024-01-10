@@ -23,18 +23,26 @@ use crate::symmetrize::StandardizedCell;
 
 #[derive(Debug)]
 pub struct MoyoDataset {
+    // ------------------------------------------------------------------------
     // Space-group type
+    // ------------------------------------------------------------------------
     pub number: Number,
     pub hall_number: HallNumber,
+    // ------------------------------------------------------------------------
     // Symmetry operations in the input cell
+    // ------------------------------------------------------------------------
     pub operations: Operations,
     /// Spglib's `crystallographic_orbits` not `equivalent_atoms`
     /// For example, orbits=[0, 0, 2, 2, 2, 2] means the first two atoms are equivalent and the last four atoms are equivalent.
     pub orbits: Vec<usize>,
+    // ------------------------------------------------------------------------
     // Site symmetry
+    // ------------------------------------------------------------------------
     // TODO: wyckoffs
     // TODO: site_symmetry_symbols
+    // ------------------------------------------------------------------------
     // Standardized cell
+    // ------------------------------------------------------------------------
     pub std_cell: Cell,
     /// Linear part of transformation from the input cell to the standardized cell.
     pub std_linear: Matrix3<f64>,
@@ -42,7 +50,9 @@ pub struct MoyoDataset {
     pub std_origin_shift: OriginShift,
     /// Rigid rotation
     pub std_rotation_matrix: Matrix3<f64>,
+    // ------------------------------------------------------------------------
     // Primitive standardized cell
+    // ------------------------------------------------------------------------
     pub prim_std_cell: Cell,
     /// Linear part of transformation from the input cell to the primitive standardized cell.
     pub prim_std_linear: Matrix3<f64>,
@@ -122,8 +132,7 @@ fn operations_in_cell(prim_cell: &PrimitiveCell, prim_operations: &Operations) -
         {
             // (E, t1) (rotation, t2) = (rotation, t1 + t2)
             rotations.push(*rotation);
-            let mut t12 = t1 + t2;
-            t12 -= t12.map(|x| x.round());
+            let t12 = (t1 + t2).map(|e| e % 1.);
             translations.push(t12);
         }
     }

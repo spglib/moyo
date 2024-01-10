@@ -31,7 +31,6 @@ fn assert_dataset(
     assert_eq!(std_dataset.hall_number, dataset.hall_number);
     assert!(check_operations(&dataset.std_cell, &std_dataset.operations));
 
-    // TODO: std_linear
     // TODO: std_origin_shift
 
     // prim_std_cell

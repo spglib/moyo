@@ -201,8 +201,7 @@ impl Transformation {
         for (pos, number) in cell.positions.iter().zip(cell.numbers.iter()) {
             for lattice_point in lattice_points.iter() {
                 // Fractional coordinates in the new sublattice
-                let mut new_position = self.linear_inv * (pos + lattice_point);
-                new_position -= new_position.map(|e| e.round());
+                let new_position = (self.linear_inv * (pos + lattice_point)).map(|e| e % 1.);
                 new_positions.push(new_position);
                 new_numbers.push(*number);
             }
