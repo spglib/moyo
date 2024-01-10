@@ -1,11 +1,6 @@
 use nalgebra::base::allocator::Allocator;
 use nalgebra::{DefaultAllocator, Dim, DimMin, OMatrix};
 
-use super::elementary::{
-    adding_column_matrix, adding_row_matrix, changing_column_sign_matrix, swapping_column_matrix,
-    swapping_row_matrix,
-};
-
 /// Hermite normal form of MxN matrix such that d = l * basis * r
 #[derive(Debug)]
 pub struct SNF<M: DimMin<N>, N: Dim>
@@ -49,16 +44,19 @@ where
 
                 // Move pivot element to (s, s)
                 d.swap_rows(s, pivot.0);
-                l = swapping_row_matrix(m, s, pivot.0) * l;
+                l.swap_rows(s, pivot.0);
                 d.swap_columns(s, pivot.1);
-                r *= swapping_column_matrix(n, s, pivot.1);
+                r.swap_columns(s, pivot.1);
 
                 // Guarantee that h[(s, s)] is positive
                 if d[(s, s)] < 0 {
                     for i in 0..m.value() {
                         d[(i, s)] *= -1;
                     }
-                    r *= changing_column_sign_matrix(n, s);
+                    // r *= changing_column_sign_matrix(n, s);
+                    for i in 0..n.value() {
+                        r[(i, s)] *= -1;
+                    }
                 }
                 assert_ne!(d[(s, s)], 0);
 
@@ -73,7 +71,10 @@ where
                         for j in 0..n.value() {
                             d[(i, j)] -= k * d[(s, j)];
                         }
-                        l = adding_row_matrix(m, s, i, -k) * l;
+                        // l[(i, :)] -= k * l[(s, :)]
+                        for j in 0..m.value() {
+                            l[(i, j)] -= k * l[(s, j)];
+                        }
                     }
                 }
 
@@ -87,7 +88,10 @@ where
                         for i in 0..m.value() {
                             d[(i, j)] -= k * d[(i, s)];
                         }
-                        r *= adding_column_matrix(n, s, j, -k);
+                        // r[(:, j)] -= k * r[(:, s)]
+                        for i in 0..n.value() {
+                            r[(i, j)] -= k * r[(i, s)];
+                        }
                     }
                 }
 

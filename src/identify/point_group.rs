@@ -353,7 +353,6 @@ mod tests {
 
     #[test]
     fn test_point_group_match() {
-        // TODO: this test takes ~6 seconds with debug build. We may need to speed up `PointGroup::match_arithmetic`
         for arithmetic_number in 1..=73 {
             let point_group_db =
                 PointGroupRepresentative::from_arithmetic_crystal_class(arithmetic_number);
