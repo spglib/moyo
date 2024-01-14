@@ -7,6 +7,7 @@ use super::elementary::{
 
 /// Hermite normal form of (M, N) matrix such that h = basis * r
 #[derive(Debug)]
+#[allow(clippy::upper_case_acronyms)]
 pub struct HNF<M: Dim, N: Dim>
 where
     DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, N, N>,

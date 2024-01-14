@@ -74,7 +74,7 @@ mod tests {
     use crate::base::operation::Permutation;
 
     #[test]
-    fn test_site_mapping_from_permutations() {
+    fn test_orbits_from_permutations() {
         {
             let num_atoms = 3;
             let permutations = vec![Permutation::new(vec![2, 1, 0])];

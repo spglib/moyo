@@ -17,7 +17,8 @@ pub struct PrimitiveCell {
     pub cell: Cell,
     /// Transformation matrix from the **primitive** cell to the input cell
     pub linear: Linear,
-    /// Mapping from sites of the input cell to those of the primitive cell (many-to-one)
+    /// Mapping from sites of the input cell to those of the primitive cell (many-to-one).
+    /// The `i`th atom in the input cell is equivalent to the `site_mapping[i]`th atom in the **primitive** cell.
     pub site_mapping: Vec<usize>,
     /// Translations in the **input** cell
     pub translations: Vec<Translation>,

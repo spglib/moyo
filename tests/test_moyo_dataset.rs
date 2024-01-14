@@ -16,7 +16,11 @@ fn assert_dataset(
     setting: Setting,
 ) {
     // operations
-    assert!(check_operations(&cell, &dataset.operations));
+    assert!(check_operations(
+        &cell,
+        &dataset.operations,
+        &dataset.orbits
+    ));
 
     // std_rotation_matrix
     assert_relative_eq!(
@@ -29,7 +33,11 @@ fn assert_dataset(
         MoyoDataset::new(&dataset.std_cell, symprec, angle_tolerance, setting).unwrap();
     assert_eq!(std_dataset.number, dataset.number);
     assert_eq!(std_dataset.hall_number, dataset.hall_number);
-    assert!(check_operations(&dataset.std_cell, &std_dataset.operations));
+    assert!(check_operations(
+        &dataset.std_cell,
+        &std_dataset.operations,
+        &std_dataset.orbits
+    ));
 
     // TODO: std_origin_shift
 
@@ -40,7 +48,8 @@ fn assert_dataset(
     assert_eq!(prim_std_dataset.hall_number, dataset.hall_number);
     assert!(check_operations(
         &dataset.prim_std_cell,
-        &prim_std_dataset.operations
+        &prim_std_dataset.operations,
+        &prim_std_dataset.orbits
     ));
 
     // prim_std_linear should be an inverse of an integer matrix
@@ -56,7 +65,7 @@ fn assert_dataset(
 
 /// Return true if `operations` preserve `cell`.
 /// O(num_atoms^2 * num_operations)
-fn check_operations(cell: &Cell, operations: &Operations) -> bool {
+fn check_operations(cell: &Cell, operations: &Operations, orbits: &Vec<usize>) -> bool {
     // Check uniqueness
     let num_operations = operations.num_operations();
     for i in 0..num_operations {
@@ -91,6 +100,10 @@ fn check_operations(cell: &Cell, operations: &Operations) -> bool {
                 if diff.iter().all(|x| x.abs() < 1e-4) {
                     visited[j] = true;
                     overlap = true;
+                    // Check if belong to the same orbit
+                    if orbits[i] != orbits[j] {
+                        return false;
+                    }
                     break;
                 }
             }

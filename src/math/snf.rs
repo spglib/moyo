@@ -3,6 +3,7 @@ use nalgebra::{DefaultAllocator, Dim, DimMin, OMatrix};
 
 /// Hermite normal form of MxN matrix such that d = l * basis * r
 #[derive(Debug)]
+#[allow(clippy::upper_case_acronyms)]
 pub struct SNF<M: DimMin<N>, N: Dim>
 where
     DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, M, M> + Allocator<i32, N, N>,
