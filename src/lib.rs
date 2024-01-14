@@ -177,9 +177,7 @@ fn orbits_in_cell(
     for i in 0..num_atoms {
         // prim_cell.site_mapping: [num_atoms] -> [prim_num_atoms]
         let key = prim_orbits[prim_cell.site_mapping[i]]; // in [prim_num_atoms]
-        if !map.contains_key(&key) {
-            map.insert(key, i);
-        }
+        map.entry(key).or_insert(i);
         orbits.push(*map.get(&key).unwrap());
     }
     orbits

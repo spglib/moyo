@@ -52,10 +52,7 @@ pub fn orbits_from_permutations(num_atoms: usize, permutations: &[Permutation]) 
     }
     let mut identifier_mapping = BTreeMap::new();
     for i in 0..num_atoms {
-        if identifier_mapping.contains_key(&uf.find(i)) {
-            continue;
-        }
-        identifier_mapping.insert(uf.find(i), i);
+        identifier_mapping.entry(uf.find(i)).or_insert(i);
     }
 
     (0..num_atoms)
