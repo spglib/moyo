@@ -1,4 +1,5 @@
 use itertools::iproduct;
+use std::collections::HashSet;
 
 use nalgebra::{Matrix3, Vector3};
 
@@ -187,7 +188,18 @@ fn search_bravais_group(
         return Err(MoyoError::BravaisGroupSearchError);
     }
 
-    // TODO: reproduce rotation operations by group multiplication
+    // Check to reproduce rotation operations by group multiplication
+    let mut rotation_set = HashSet::new();
+    for rotation in rotations.iter() {
+        rotation_set.insert(rotation.clone());
+    }
+    for (r1, r2) in iproduct!(rotation_set.iter(), rotation_set.iter()) {
+        let r12 = r1 * r2;
+        if !rotation_set.contains(&r12) {
+            return Err(MoyoError::BravaisGroupSearchError);
+        }
+    }
+
     Ok(rotations)
 }
 
