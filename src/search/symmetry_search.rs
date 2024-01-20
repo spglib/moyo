@@ -186,6 +186,8 @@ fn search_bravais_group(
     if rotations.is_empty() {
         return Err(MoyoError::BravaisGroupSearchError);
     }
+
+    // TODO: reproduce rotation operations by group multiplication
     Ok(rotations)
 }
 
@@ -200,11 +202,9 @@ fn compare_nondiagonal_matrix_tensor_element(
     symprec: f64,
     angle_tolerance: AngleTolerance,
 ) -> bool {
-    let cos_org = basis.column(col1).dot(&basis.column(col2))
-        / (basis.column(col1).norm() * basis.column(col2).norm());
-    let cos_new = b1.dot(b2) / (b1.norm() * b2.norm());
-    let cos_dtheta =
-        cos_org * cos_new + (1.0 - cos_org.powi(2)).sqrt() * (1.0 - cos_new.powi(2)).sqrt();
+    let theta_org = basis.column(col1).angle(&basis.column(col2));
+    let theta_new = b1.angle(&b2);
+    let cos_dtheta = theta_org.cos() * theta_new.cos() + theta_org.sin() * theta_new.sin();
 
     match angle_tolerance {
         AngleTolerance::Radian(angle_tolerance) => cos_dtheta.acos().abs() < angle_tolerance,
@@ -214,7 +214,7 @@ fn compare_nondiagonal_matrix_tensor_element(
             let length_ave2 = (basis.column(col1).norm() + b1.norm())
                 * (basis.column(col2).norm() + b2.norm())
                 / 4.0;
-            (sin_dtheta2 * length_ave2).sqrt() < symprec
+            sin_dtheta2 * length_ave2 < symprec * symprec
         }
     }
 }
@@ -252,6 +252,17 @@ mod tests {
             let rotations =
                 search_bravais_group(&lattice, symprec, AngleTolerance::Default).unwrap();
             assert_eq!(rotations.len(), 24);
+        }
+
+        {
+            let lattice = Lattice::new(matrix![
+                0.5, 0.5, 0.0;
+                0.0, 0.5, 0.5;
+                0.5, 0.0, 0.5;
+            ]);
+            let rotations =
+                search_bravais_group(&lattice, symprec, AngleTolerance::Default).unwrap();
+            assert_eq!(rotations.len(), 48);
         }
     }
 }
