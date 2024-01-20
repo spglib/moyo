@@ -3,54 +3,68 @@ extern crate approx;
 
 use nalgebra::{matrix, vector, Matrix3, Vector3};
 
-use moyo::base::{AngleTolerance, Cell, Lattice, Operations};
+use moyo::base::{AngleTolerance, Cell, Lattice, Permutation, Rotation, Translation};
 use moyo::data::Setting;
 use moyo::MoyoDataset;
 
 /// Sanity-check MoyoDataset
 fn assert_dataset(
     cell: &Cell,
-    dataset: &MoyoDataset,
     symprec: f64,
     angle_tolerance: AngleTolerance,
     setting: Setting,
-) {
-    // operations
-    assert!(check_operations(
-        &cell,
-        &dataset.operations,
-        &dataset.orbits
-    ));
+) -> MoyoDataset {
+    let dataset = MoyoDataset::new(cell, symprec, angle_tolerance, setting).unwrap();
 
-    // std_rotation_matrix
-    assert_relative_eq!(
-        dataset.std_rotation_matrix * cell.lattice.basis * dataset.std_linear,
-        dataset.std_cell.lattice.basis
-    );
+    // Check if operations are unique
+    let num_operations = dataset.operations.num_operations();
+    for i in 0..num_operations {
+        for j in i + 1..num_operations {
+            if dataset.operations.rotations[i] != dataset.operations.rotations[j] {
+                continue;
+            }
+            let mut diff = dataset.operations.translations[i] - dataset.operations.translations[j];
+            diff -= diff.map(|x| x.round());
+            assert!(diff.iter().any(|x| x.abs() > 1e-4));
+        }
+    }
+
+    for (rotation, translation) in dataset
+        .operations
+        .rotations
+        .iter()
+        .zip(dataset.operations.translations.iter())
+    {
+        // Check if operation induces permutation
+        let permutation = permutation_from_operation(cell, rotation, translation).unwrap();
+
+        // For pure translation, check if mapped to the same site
+        if rotation == &Rotation::identity() {
+            for i in 0..cell.num_atoms() {
+                let j = permutation.apply(i);
+                assert_eq!(dataset.mapping_std_prim[i], dataset.mapping_std_prim[j]);
+            }
+        }
+
+        for i in 0..cell.num_atoms() {
+            let j = permutation.apply(i);
+            assert_eq!(cell.numbers[i], cell.numbers[j]);
+            // Check if belong to the same orbit
+            assert_eq!(dataset.orbits[i], dataset.orbits[j]);
+        }
+    }
 
     // std_cell
     let std_dataset =
         MoyoDataset::new(&dataset.std_cell, symprec, angle_tolerance, setting).unwrap();
     assert_eq!(std_dataset.number, dataset.number);
     assert_eq!(std_dataset.hall_number, dataset.hall_number);
-    assert!(check_operations(
-        &dataset.std_cell,
-        &std_dataset.operations,
-        &std_dataset.orbits
-    ));
-
-    // TODO: std_origin_shift
 
     // prim_std_cell
     let prim_std_dataset =
         MoyoDataset::new(&dataset.prim_std_cell, symprec, angle_tolerance, setting).unwrap();
     assert_eq!(prim_std_dataset.number, dataset.number);
     assert_eq!(prim_std_dataset.hall_number, dataset.hall_number);
-    assert!(check_operations(
-        &dataset.prim_std_cell,
-        &prim_std_dataset.operations,
-        &prim_std_dataset.orbits
-    ));
 
     // prim_std_linear should be an inverse of an integer matrix
     let prim_std_linear_inv = dataset
@@ -60,60 +74,51 @@ fn assert_dataset(
         .unwrap();
     assert_relative_eq!(prim_std_linear_inv, prim_std_linear_inv.map(|e| e.round()));
 
+    // Check std_rotation_matrix and std_linear
+    assert_relative_eq!(
+        dataset.std_rotation_matrix * cell.lattice.basis * dataset.std_linear,
+        dataset.std_cell.lattice.basis
+    );
+    // Check std_rotation_matrix and prim_std_linear
+    assert_relative_eq!(
+        dataset.std_rotation_matrix * cell.lattice.basis * dataset.prim_std_linear,
+        dataset.prim_std_cell.lattice.basis
+    );
+    // TODO: std_origin_shift
     // TODO: prim_origin_shift
+
+    dataset
 }
 
-/// Return true if `operations` preserve `cell`.
-/// O(num_atoms^2 * num_operations)
-fn check_operations(cell: &Cell, operations: &Operations, orbits: &Vec<usize>) -> bool {
-    // Check uniqueness
-    let num_operations = operations.num_operations();
-    for i in 0..num_operations {
-        for j in i + 1..num_operations {
-            if operations.rotations[i] != operations.rotations[j] {
+/// O(num_atoms^2)
+fn permutation_from_operation(
+    cell: &Cell,
+    rotation: &Rotation,
+    translation: &Translation,
+) -> Option<Permutation> {
+    let mut visited = vec![false; cell.num_atoms()];
+    let mut mapping = vec![0; cell.num_atoms()];
+    for i in 0..cell.num_atoms() {
+        let new_pos = rotation.map(|e| e as f64) * cell.positions[i] + translation;
+        let mut overlap = false;
+        for j in 0..cell.num_atoms() {
+            if visited[j] {
                 continue;
             }
-            let mut diff = operations.translations[i] - operations.translations[j];
+            let mut diff = new_pos - cell.positions[j];
             diff -= diff.map(|x| x.round());
             if diff.iter().all(|x| x.abs() < 1e-4) {
-                return false;
+                visited[j] = true;
+                mapping[i] = j;
+                overlap = true;
+                break;
             }
         }
-    }
-
-    // Check if overlap
-    for (rotation, translation) in operations
-        .rotations
-        .iter()
-        .zip(operations.translations.iter())
-    {
-        let mut visited = vec![false; cell.num_atoms()];
-        for i in 0..cell.num_atoms() {
-            let new_pos = rotation.map(|e| e as f64) * cell.positions[i] + translation;
-            let mut overlap = false;
-            for j in 0..cell.num_atoms() {
-                if visited[j] {
-                    continue;
-                }
-                let mut diff = new_pos - cell.positions[j];
-                diff -= diff.map(|x| x.round());
-                if diff.iter().all(|x| x.abs() < 1e-4) {
-                    visited[j] = true;
-                    overlap = true;
-                    // Check if belong to the same orbit
-                    if orbits[i] != orbits[j] {
-                        return false;
-                    }
-                    break;
-                }
-            }
-            if !overlap {
-                return false;
-            }
+        if !overlap {
+            return None;
         }
     }
-
-    true
+    Some(Permutation::new(mapping))
 }
 
 #[test]
@@ -131,9 +136,10 @@ fn test_with_fcc() {
     let symprec = 1e-4;
     let angle_tolerance = AngleTolerance::Default;
     let setting = Setting::Spglib;
-    let dataset = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
 
-    assert_dataset(&cell, &dataset, symprec, angle_tolerance, setting);
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 225); // Fm-3m
     assert_eq!(dataset.hall_number, 523);
@@ -165,9 +171,10 @@ fn test_with_rutile() {
     let symprec = 1e-4;
     let angle_tolerance = AngleTolerance::Default;
     let setting = Setting::Spglib;
-    let dataset = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
 
-    assert_dataset(&cell, &dataset, symprec, angle_tolerance, setting);
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 136); // P4_2/mnm
     assert_eq!(dataset.hall_number, 419);

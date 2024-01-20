@@ -60,9 +60,9 @@ pub struct MoyoDataset {
     pub prim_std_linear: Matrix3<f64>,
     /// Origin shift of transformation from the input cell to the primitive standardized cell.
     pub prim_std_origin_shift: OriginShift,
-    // /// Mapping sites in the input cell to those in the primitive standardized cell.
-    // /// The `i`th atom in the input cell is mapped to the `mapping_to_std_prim[i]`th atom in the primitive standardized cell.
-    // pub mapping_std_prim: Vec<usize>,
+    /// Mapping sites in the input cell to those in the primitive standardized cell.
+    /// The `i`th atom in the input cell is mapped to the `mapping_to_std_prim[i]`th atom in the primitive standardized cell.
+    pub mapping_std_prim: Vec<usize>,
     // TODO: pub std_prim_permutations: Vec<Permutation>,
 }
 
@@ -111,6 +111,7 @@ impl MoyoDataset {
             prim_std_cell: std_cell.prim_cell,
             prim_std_linear,
             prim_std_origin_shift,
+            mapping_std_prim: prim_cell.site_mapping, // StandardizedCell does not change the site order
             // Site symmetry
             orbits,
         })
