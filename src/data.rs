@@ -4,6 +4,7 @@ mod hall_symbol;
 mod hall_symbol_database;
 mod point_group;
 mod setting;
+mod wyckoff;
 
 pub use arithmetic_crystal_class::{
     arithmetic_crystal_class_entry, iter_arithmetic_crystal_entry, ArithmeticCrystalClassEntry,

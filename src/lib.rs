@@ -74,8 +74,10 @@ impl MoyoDataset {
         setting: Setting,
     ) -> Result<Self, MoyoError> {
         // Symmetry search
-        let (operations, prim_cell, symmetry_search) =
-            _search_symmetry(cell, symprec, angle_tolerance)?;
+        let prim_cell = PrimitiveCell::new(cell, symprec)?;
+        let symmetry_search =
+            PrimitiveSymmetrySearch::new(&prim_cell.cell, symprec, angle_tolerance)?;
+        let operations = operations_in_cell(&prim_cell, &symmetry_search.operations);
         let orbits = orbits_in_cell(&prim_cell, &symmetry_search);
 
         // Space-group type identification
@@ -120,27 +122,6 @@ impl MoyoDataset {
     pub fn num_operations(&self) -> usize {
         self.operations.num_operations()
     }
-}
-
-/// Return symmetry operations in the input cell.
-pub fn search_symmetry(
-    cell: &Cell,
-    symprec: f64,
-    angle_tolerance: AngleTolerance,
-) -> Result<Operations, MoyoError> {
-    let (operations, _, _) = _search_symmetry(cell, symprec, angle_tolerance)?;
-    Ok(operations)
-}
-
-fn _search_symmetry(
-    cell: &Cell,
-    symprec: f64,
-    angle_tolerance: AngleTolerance,
-) -> Result<(Operations, PrimitiveCell, PrimitiveSymmetrySearch), MoyoError> {
-    let prim_cell = PrimitiveCell::new(cell, symprec)?;
-    let symmetry_search = PrimitiveSymmetrySearch::new(&prim_cell.cell, symprec, angle_tolerance)?;
-    let operations = operations_in_cell(&prim_cell, &symmetry_search.operations);
-    Ok((operations, prim_cell, symmetry_search))
 }
 
 fn operations_in_cell(prim_cell: &PrimitiveCell, prim_operations: &Operations) -> Operations {
