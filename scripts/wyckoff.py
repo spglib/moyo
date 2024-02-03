@@ -28,7 +28,7 @@ def main(wyckoff_input):
     print(f"const WYCKOFF_DATABASE: [WyckoffPosition; {len(all_data)}] = [")
     for data in all_data:
         hall_number, multiplicity, letter, site_symmetry, coordinates = data
-        print(f'    WyckoffPosition::new({hall_number}, {multiplicity}, "{letter}", "{site_symmetry}", "{coordinates}"),')
+        print(f'    WyckoffPosition::new({hall_number}, {multiplicity}, \'{letter}\', "{site_symmetry}", "{coordinates}"),')
     print("];")
 
 
