@@ -1,12 +1,15 @@
+use itertools::izip;
 use nalgebra::linalg::{Cholesky, QR};
-use nalgebra::{vector, Matrix3};
+use nalgebra::{vector, Matrix3, Vector3};
 
+use super::site_symmetry::WyckoffPositionAssignment;
 use crate::base::{
-    Cell, Lattice, MoyoError, Rotation, Transformation, UnimodularTransformation, EPS,
+    Cell, Lattice, MoyoError, Operations, Permutation, Position, Rotation, Transformation,
+    UnimodularTransformation, EPS,
 };
 use crate::data::{arithmetic_crystal_class_entry, hall_symbol_entry, HallSymbol, LatticeSystem};
 use crate::identify::SpaceGroup;
-use crate::search::PrimitiveCell;
+use crate::search::{PrimitiveCell, PrimitiveSymmetrySearch};
 
 pub struct StandardizedCell {
     pub prim_cell: Cell,
@@ -17,13 +20,21 @@ pub struct StandardizedCell {
     pub transformation: Transformation,
     /// Rotation matrix to map the lattice of the input primitive cell to that of the standardized cell.
     pub rotation_matrix: Matrix3<f64>,
+    /// Mapping from the site in the `cell` to that in the `prim_cell`
+    pub site_mapping: Vec<usize>,
 }
 
 impl StandardizedCell {
     /// Standardize the input **primitive** cell.
     /// For triclinic space groups, Niggli reduction is performed.
     /// Basis vectors are rotated to be a upper triangular matrix.
-    pub fn new(prim_cell: &PrimitiveCell, space_group: &SpaceGroup) -> Result<Self, MoyoError> {
+    /// TODO: option not to rotate basis vectors
+    pub fn new(
+        prim_cell: &PrimitiveCell,
+        symmetry_search: &PrimitiveSymmetrySearch,
+        space_group: &SpaceGroup,
+        symprec: f64,
+    ) -> Result<Self, MoyoError> {
         let entry = hall_symbol_entry(space_group.hall_number);
         let arithmetic_number = entry.arithmetic_number;
         let bravais_class = arithmetic_crystal_class_entry(arithmetic_number).bravais_class;
@@ -37,19 +48,30 @@ impl StandardizedCell {
             }
             _ => space_group.transformation.clone(),
         };
-        let prim_std_cell = prim_transformation.transform_cell(&prim_cell.cell);
+        let new_prim_positions = symmetrize_positions(
+            &prim_cell.cell,
+            &symmetry_search.operations,
+            &symmetry_search.permutations,
+        );
+        // Note: prim_transformation.transform_cell does not change the order of sites
+        let prim_std_cell = prim_transformation.transform_cell(&Cell::new(
+            prim_cell.cell.lattice.clone(),
+            new_prim_positions,
+            prim_cell.cell.numbers.clone(),
+        ));
+
+        // TODO: match Wyckoff positions
+        let conv_trans = Transformation::from_linear(entry.centering.linear());
+        WyckoffPositionAssignment::new(&prim_cell.cell, symmetry_search, &conv_trans, symprec)?;
 
         // To (conventional) standardized cell
-        let conv_trans = Transformation::from_linear(entry.centering.linear());
-        let std_cell = conv_trans.transform_cell(&prim_std_cell);
+        let (std_cell, site_mapping) = conv_trans.transform_cell(&prim_std_cell);
 
         // Symmetrize lattice
         let std_rotations = HallSymbol::from_hall_number(entry.hall_number)
             .traverse()
             .rotations;
         let (_, rotation_matrix) = symmetrize_lattice(&std_cell.lattice, &std_rotations);
-
-        // TODO: match Wyckoff positions
 
         Ok(StandardizedCell {
             prim_cell: prim_std_cell.rotate(&rotation_matrix),
@@ -61,8 +83,43 @@ impl StandardizedCell {
                 prim_transformation.origin_shift,
             ),
             rotation_matrix,
+            site_mapping,
         })
     }
+}
+
+/// Symmetrize positions by site symmetry groups
+fn symmetrize_positions(
+    cell: &Cell,
+    operations: &Operations,
+    permutations: &Vec<Permutation>,
+) -> Vec<Position> {
+    let inverse_permutations = permutations
+        .iter()
+        .map(|permutation| permutation.inverse())
+        .collect::<Vec<_>>();
+    (0..cell.num_atoms())
+        .map(|i| {
+            let mut acc = Vector3::zeros();
+            let mut order = 0;
+            for (inv_perm, rotation, translation) in izip!(
+                inverse_permutations.iter(),
+                operations.rotations.iter(),
+                operations.translations.iter(),
+            ) {
+                if inv_perm.apply(i) == i {
+                    continue;
+                }
+                let mut frac_displacements =
+                    rotation.map(|e| e as f64) * cell.positions[inv_perm.apply(i)] + translation
+                        - cell.positions[i];
+                frac_displacements -= frac_displacements.map(|e| e.round()); // in [-0.5, 0.5]
+                acc += frac_displacements;
+                order += 1;
+            }
+            cell.positions[i] + acc / (order as f64)
+        })
+        .collect::<Vec<_>>()
 }
 
 fn symmetrize_lattice(lattice: &Lattice, rotations: &Vec<Rotation>) -> (Lattice, Matrix3<f64>) {

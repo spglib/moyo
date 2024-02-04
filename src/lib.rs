@@ -40,8 +40,11 @@ pub struct MoyoDataset {
     /// The `i`th atom in the input cell is equivalent to the `orbits[i]`th atom in the **input** cell.
     /// For example, orbits=[0, 0, 2, 2, 2, 2] means the first two atoms are equivalent and the last four atoms are equivalent to each other.
     pub orbits: Vec<usize>,
-    // TODO: wyckoffs
-    // TODO: site_symmetry_symbols
+    // TODO: /// Wyckoff letters for each site in the input cell.
+    // TODO: pub wyckoffs: Vec<char>,
+    // TODO: /// Site symmetry symbols for each site in the input cell.
+    // TODO: /// The orientation of the site symmetry is w.r.t. the standardized cell.
+    // TODO: pub site_symmetry_symbols: Vec<String>,
     // ------------------------------------------------------------------------
     // Standardized cell
     // ------------------------------------------------------------------------
@@ -63,7 +66,6 @@ pub struct MoyoDataset {
     /// Mapping sites in the input cell to those in the primitive standardized cell.
     /// The `i`th atom in the input cell is mapped to the `mapping_to_std_prim[i]`th atom in the primitive standardized cell.
     pub mapping_std_prim: Vec<usize>,
-    // TODO: pub std_prim_permutations: Vec<Permutation>,
 }
 
 impl MoyoDataset {
@@ -85,7 +87,7 @@ impl MoyoDataset {
         let space_group = SpaceGroup::new(&symmetry_search.operations, setting, epsilon)?;
 
         // Standardized cell
-        let std_cell = StandardizedCell::new(&prim_cell, &space_group)?;
+        let std_cell = StandardizedCell::new(&prim_cell, &symmetry_search, &space_group, symprec)?;
 
         // cell <-(prim_cell.linear, 0)- prim_cell.cell -(std_cell.transformation)-> std_cell.cell
         // (std_linear, std_origin_shift) = (prim_cell.linear^-1, 0) * std_cell.transformation
@@ -113,7 +115,7 @@ impl MoyoDataset {
             prim_std_cell: std_cell.prim_cell,
             prim_std_linear,
             prim_std_origin_shift,
-            mapping_std_prim: prim_cell.site_mapping, // StandardizedCell does not change the site order
+            mapping_std_prim: prim_cell.site_mapping, // StandardizedCell.prim_cell and prim_cell have the same site order
             // Site symmetry
             orbits,
         })

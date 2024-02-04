@@ -22,4 +22,6 @@ pub enum MoyoError {
     SpaceGroupTypeIdentificationError,
     #[error("Standardization failed")]
     StandardizationError,
+    #[error("Wyckoff position assignment failed")]
+    WyckoffPositionAssignmentError,
 }

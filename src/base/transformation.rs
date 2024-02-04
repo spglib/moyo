@@ -172,7 +172,8 @@ impl Transformation {
     }
 
     // The transformation may increase the number of atoms in the cell.
-    pub fn transform_cell(&self, cell: &Cell) -> Cell {
+    // Return the transformed cell and mapping from sites in the transformed cell to sites in the original cell.
+    pub fn transform_cell(&self, cell: &Cell) -> (Cell, Vec<usize>) {
         let new_lattice = self.transform_lattice(&cell.lattice);
 
         // Let self.linear be M.
@@ -198,16 +199,21 @@ impl Transformation {
 
         let mut new_positions = vec![];
         let mut new_numbers = vec![];
-        for (pos, number) in cell.positions.iter().zip(cell.numbers.iter()) {
+        let mut site_mapping = vec![];
+        for (i, (pos, number)) in cell.positions.iter().zip(cell.numbers.iter()).enumerate() {
             for lattice_point in lattice_points.iter() {
                 // Fractional coordinates in the new sublattice
                 let new_position = (self.linear_inv * (pos + lattice_point)).map(|e| e % 1.);
                 new_positions.push(new_position);
                 new_numbers.push(*number);
+                site_mapping.push(i);
             }
         }
 
-        Cell::new(new_lattice, new_positions, new_numbers)
+        (
+            Cell::new(new_lattice, new_positions, new_numbers),
+            site_mapping,
+        )
     }
 }
 
