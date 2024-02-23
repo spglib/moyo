@@ -291,6 +291,18 @@ fn test_with_corundum() {
     assert_eq!(dataset.number, 167);
     assert_eq!(dataset.hall_number, 460); // Hexagonal setting
     assert_eq!(dataset.num_operations(), 36);
-    // assert_eq!(dataset.orbits, vec![0, 0, 2, 2, 2, 2]);
-    // assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'f', 'f', 'f', 'f']);
+    assert_eq!(
+        dataset.orbits,
+        vec![
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
+            12, 12, 12, 12, 12,
+        ]
+    );
+    assert_eq!(
+        dataset.wyckoffs,
+        vec![
+            'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'c', 'e', 'e', 'e', 'e', 'e',
+            'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
+        ]
+    );
 }

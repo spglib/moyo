@@ -95,21 +95,27 @@ impl StandardizedCell {
             multiplicities[mapping[i]] += 1;
         }
         // Assign Wyckoff positions to representative sites: orbit -> WyckoffPosition
-        let representative_wyckoffs: Result<Vec<_>, MoyoError> = multiplicities
-            .iter()
-            .enumerate()
-            .map(|(orbit, multiplicity)| {
-                let i = remapping[orbit];
-                assign_wyckoff_position(
-                    &std_cell.positions[i],
-                    *multiplicity,
-                    space_group.hall_number,
-                    &std_cell.lattice,
-                    symprec,
-                )
-            })
-            .collect();
-        let representative_wyckoffs = representative_wyckoffs?;
+        let mut representative_wyckoffs = vec![None; num_orbits];
+        for i in 0..std_cell.num_atoms() {
+            let orbit = mapping[i];
+            if !representative_wyckoffs[orbit].is_none() {
+                continue;
+            }
+
+            if let Ok(wyckoff) = assign_wyckoff_position(
+                &std_cell.positions[i],
+                multiplicities[orbit],
+                space_group.hall_number,
+                &std_cell.lattice,
+                symprec,
+            ) {
+                representative_wyckoffs[orbit] = Some(wyckoff);
+            }
+        }
+        let representative_wyckoffs = representative_wyckoffs
+            .into_iter()
+            .map(|wyckoff| wyckoff.ok_or(MoyoError::WyckoffPositionAssignmentError))
+            .collect::<Result<Vec<_>, _>>()?;
 
         let wyckoffs = (0..std_cell.num_atoms())
             .map(|i| representative_wyckoffs[mapping[orbits[i]]].clone())
