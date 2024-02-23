@@ -142,11 +142,11 @@ impl StandardizedCell {
 /// * `site_mapping` - Mapping from the site in cell to that in its primitive cell
 pub fn orbits_in_cell(
     prim_num_atoms: usize,
-    prim_permutations: &Vec<Permutation>,
+    prim_permutations: &[Permutation],
     site_mapping: &Vec<usize>,
 ) -> Vec<usize> {
     // prim_orbits: [prim_num_atoms] -> [prim_num_atoms]
-    let prim_orbits = orbits_from_permutations(prim_num_atoms, &prim_permutations);
+    let prim_orbits = orbits_from_permutations(prim_num_atoms, prim_permutations);
 
     let num_atoms = site_mapping.len();
     let mut map = HashMap::new();
@@ -175,7 +175,7 @@ fn assign_wyckoff_position(
         // argmin_{y in Q^3, n in Z^3} | space.linear * y + space.origin - position - offset |
         //    = argmin_{y in Q^3, n in Z^3} | L^-1 * D * R^-1 * y + space.origin - position - offset |
         //    = argmin_{y in Q^3, n in Z^3} | D * R^-1 * y - L * (offset + position - space.origin) |
-        let space = WyckoffPositionSpace::new(&wyckoff.coordinates);
+        let space = WyckoffPositionSpace::new(wyckoff.coordinates);
         let snf = SNF::new(&space.linear);
         for offset in iproduct!(-1..=1, -1..=1, -1..=1) {
             let offset = Vector3::new(offset.0 as f64, offset.1 as f64, offset.2 as f64);

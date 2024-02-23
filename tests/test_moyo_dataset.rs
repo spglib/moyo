@@ -186,6 +186,44 @@ fn test_with_rutile() {
     assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'f', 'f', 'f', 'f']);
 }
 
+#[test]
+fn test_with_hcp() {
+    // hcp, P6_3/mmc (No. 194)
+    // https://next-gen.materialsproject.org/materials/mp-153
+    let a = 3.17;
+    let c = 5.14;
+    let lattice = Lattice::new(matrix![
+        a, -a / 2.0, 0.0;
+        0.0, a * 3.0_f64.sqrt() / 2.0, 0.0;
+        0.0, 0.0, c;
+    ]);
+    let positions = vec![
+        // 2c
+        Vector3::new(1.0 / 3.0, 2.0 / 3.0, 1.0 / 4.0),
+        Vector3::new(2.0 / 3.0, 1.0 / 3.0, 3.0 / 4.0),
+    ];
+    let numbers = vec![0, 0];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+
+    assert_eq!(dataset.number, 194);
+    assert_eq!(dataset.hall_number, 488);
+    assert_eq!(dataset.num_operations(), 24);
+    assert_eq!(dataset.orbits, vec![0, 0]);
+    // 2c and 2d belong to the same Wyckoff set
+    assert_eq!(dataset.wyckoffs[0], dataset.wyckoffs[1]);
+    if dataset.wyckoffs[0] != 'c' && dataset.wyckoffs[0] != 'd' {
+        panic!("Unexpected Wyckoff letter: {}", dataset.wyckoffs[0]);
+    }
+}
+
 // TODO: #[test]
 fn test_with_corundum() {
     // Corundum structure, R-3c (No. 167)
@@ -249,5 +287,4 @@ fn test_with_corundum() {
     assert_eq!(dataset.num_operations(), 36);
     // assert_eq!(dataset.orbits, vec![0, 0, 2, 2, 2, 2]);
     // assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'f', 'f', 'f', 'f']);
-    dbg!(&dataset);
 }

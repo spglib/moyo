@@ -191,7 +191,7 @@ fn search_bravais_group(
     // Check to reproduce rotation operations by group multiplication
     let mut rotation_set = HashSet::new();
     for rotation in rotations.iter() {
-        rotation_set.insert(rotation.clone());
+        rotation_set.insert(*rotation);
     }
     for (r1, r2) in iproduct!(rotation_set.iter(), rotation_set.iter()) {
         let r12 = r1 * r2;
@@ -215,7 +215,7 @@ fn compare_nondiagonal_matrix_tensor_element(
     angle_tolerance: AngleTolerance,
 ) -> bool {
     let theta_org = basis.column(col1).angle(&basis.column(col2));
-    let theta_new = b1.angle(&b2);
+    let theta_new = b1.angle(b2);
     let cos_dtheta = theta_org.cos() * theta_new.cos() + theta_org.sin() * theta_new.sin();
 
     match angle_tolerance {

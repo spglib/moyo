@@ -19,7 +19,7 @@ impl WyckoffPositionSpace {
 
     pub fn new(coordinates: &str) -> Self {
         let coordinates = coordinates.replace(' ', "");
-        let terms = coordinates.split(",").collect::<Vec<_>>();
+        let terms = coordinates.split(',').collect::<Vec<_>>();
         assert_eq!(terms.len(), 3);
 
         let mut linear = Matrix3::zeros();
@@ -51,7 +51,7 @@ impl WyckoffPositionSpace {
             }
 
             for (sign, token) in tokens_with_sign {
-                if token.chars().last().unwrap().is_digit(10) {
+                if token.chars().last().unwrap().is_ascii_digit() {
                     // translation case
                     let nums = token.split('/').collect::<Vec<_>>();
                     if nums.len() == 1 {
