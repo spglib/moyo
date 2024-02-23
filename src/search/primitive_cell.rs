@@ -155,6 +155,7 @@ impl PrimitiveCell {
     }
 }
 
+/// Transform `cell` to a primitive cell by inverse of `trans_mat`
 fn primitive_cell_from_transformation(
     cell: &Cell,
     trans_mat: &Linear,
@@ -185,7 +186,8 @@ fn primitive_cell_from_transformation(
             frac_displacements -= frac_displacements.map(|e| e.round()); // in [-0.5, 0.5]
             acc += frac_displacements;
         }
-        new_positions[i] = cell.positions[orbit_i] + acc / (translations.len() as f64);
+        new_positions[i] = trans_mat.map(|e| e as f64)
+            * (cell.positions[orbit_i] + acc / (translations.len() as f64));
         new_numbers[i] = cell.numbers[orbit_i];
     }
 
@@ -268,5 +270,42 @@ mod tests {
             assert_relative_eq!(result.translations[0], Translation::new(0.0, 0.0, 0.0));
             assert_relative_eq!(result.translations[1], Translation::new(0.5, 0.0, 0.5));
         }
+    }
+
+    #[test]
+    fn test_rhombohedral_lattice() {
+        let a = 4.0;
+        let b = 7.0;
+        let rhombohedral_lattice = Lattice::new(matrix![
+            3.0_f64.sqrt() / 2.0 * a, -3.0_f64.sqrt() / 2.0 * a, 0.0;
+            0.5 * a, 0.5 * a, -a;
+            b, b, b;
+        ]);
+        let trans_mat = matrix![
+            1, 0, 1;
+            -1, 1, 1;
+            0, -1, 1;
+        ];
+
+        let lattice = Lattice::new(rhombohedral_lattice.basis * trans_mat.map(|e| e as f64));
+        let cell = Cell::new(
+            lattice,
+            vec![
+                Vector3::new(0.0, 0.0, 0.0),
+                Vector3::new(2.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0),
+                Vector3::new(1.0 / 3.0, 2.0 / 3.0, 2.0 / 3.0),
+                Vector3::new(0.0, 0.0, 0.1),
+                Vector3::new(2.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0 + 0.1),
+                Vector3::new(1.0 / 3.0, 2.0 / 3.0, 2.0 / 3.0 + 0.1),
+            ],
+            vec![0, 0, 0, 0, 0, 0],
+        );
+        let symprec = 1e-4;
+        let prim_cell = PrimitiveCell::new(&cell, symprec).unwrap();
+        assert_relative_eq!(
+            prim_cell.cell.lattice.basis * prim_cell.linear.map(|e| e as f64),
+            cell.lattice.basis,
+            epsilon = 1e-8
+        );
     }
 }

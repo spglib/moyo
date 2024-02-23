@@ -9,7 +9,7 @@ use super::operation::Permutation;
 pub type Position = Vector3<f64>;
 pub type AtomicSpecie = i32;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Cell {
     pub lattice: Lattice,
     pub positions: Vec<Position>,

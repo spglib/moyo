@@ -72,17 +72,23 @@ fn assert_dataset(
         .map(|e| e as f64)
         .try_inverse()
         .unwrap();
-    assert_relative_eq!(prim_std_linear_inv, prim_std_linear_inv.map(|e| e.round()));
+    assert_relative_eq!(
+        prim_std_linear_inv,
+        prim_std_linear_inv.map(|e| e.round()),
+        epsilon = 1e-8
+    );
 
     // Check std_rotation_matrix and std_linear
     assert_relative_eq!(
         dataset.std_rotation_matrix * cell.lattice.basis * dataset.std_linear,
-        dataset.std_cell.lattice.basis
+        dataset.std_cell.lattice.basis,
+        epsilon = 1e-8
     );
     // Check std_rotation_matrix and prim_std_linear
     assert_relative_eq!(
         dataset.std_rotation_matrix * cell.lattice.basis * dataset.prim_std_linear,
-        dataset.prim_std_cell.lattice.basis
+        dataset.prim_std_cell.lattice.basis,
+        epsilon = 1e-8
     );
     // TODO: std_origin_shift
     // TODO: prim_origin_shift
@@ -224,7 +230,7 @@ fn test_with_hcp() {
     }
 }
 
-// TODO: #[test]
+#[test]
 fn test_with_corundum() {
     // Corundum structure, R-3c (No. 167)
     // https://materialsproject.org/materials/mp-1143
@@ -237,37 +243,37 @@ fn test_with_corundum() {
     ]);
     let positions = vec![
         // Al (12c)
-        Vector3::new(0.00000000, 0.00000000, 0.14790400),
-        Vector3::new(0.33333333, 0.66666667, 0.01876267),
-        Vector3::new(0.33333333, 0.66666667, 0.31457067),
-        Vector3::new(0.66666667, 0.33333333, 0.18542933),
-        Vector3::new(0.66666667, 0.33333333, 0.48123733),
-        Vector3::new(0.00000000, 0.00000000, 0.35209600),
-        Vector3::new(0.00000000, 0.00000000, 0.64790400),
-        Vector3::new(0.33333333, 0.66666667, 0.51876267),
         Vector3::new(0.33333333, 0.66666667, 0.81457067),
         Vector3::new(0.66666667, 0.33333333, 0.68542933),
+        Vector3::new(0.00000000, 0.00000000, 0.64790400),
+        Vector3::new(0.33333333, 0.66666667, 0.51876267),
+        Vector3::new(0.00000000, 0.00000000, 0.14790400),
+        Vector3::new(0.33333333, 0.66666667, 0.01876267),
         Vector3::new(0.66666667, 0.33333333, 0.98123733),
         Vector3::new(0.00000000, 0.00000000, 0.85209600),
+        Vector3::new(0.66666667, 0.33333333, 0.48123733),
+        Vector3::new(0.00000000, 0.00000000, 0.35209600),
+        Vector3::new(0.33333333, 0.66666667, 0.31457067),
+        Vector3::new(0.66666667, 0.33333333, 0.18542933),
         // O (18e)
-        Vector3::new(0.30614600, 0.00000000, 0.25000000),
-        Vector3::new(0.66666667, 0.02718733, 0.08333333),
-        Vector3::new(0.00000000, 0.30614600, 0.25000000),
-        Vector3::new(0.69385400, 0.69385400, 0.25000000),
-        Vector3::new(0.97281267, 0.63947933, 0.08333333),
-        Vector3::new(0.36052067, 0.33333333, 0.08333333),
-        Vector3::new(0.97281267, 0.33333333, 0.58333333),
-        Vector3::new(0.33333333, 0.36052067, 0.41666667),
-        Vector3::new(0.66666667, 0.63947933, 0.58333333),
-        Vector3::new(0.36052067, 0.02718733, 0.58333333),
-        Vector3::new(0.63947933, 0.97281267, 0.41666667),
-        Vector3::new(0.02718733, 0.66666667, 0.41666667),
-        Vector3::new(0.63947933, 0.66666667, 0.91666667),
-        Vector3::new(0.00000000, 0.69385400, 0.75000000),
-        Vector3::new(0.33333333, 0.97281267, 0.91666667),
-        Vector3::new(0.02718733, 0.36052067, 0.91666667),
-        Vector3::new(0.30614600, 0.30614600, 0.75000000),
-        Vector3::new(0.69385400, 0.00000000, 0.75000000),
+        Vector3::new(0.36052117, 0.33333333, 0.58333333),
+        Vector3::new(0.69385450, 0.69385450, 0.75000000),
+        Vector3::new(0.97281217, 0.63947883, 0.58333333),
+        Vector3::new(0.66666667, 0.02718783, 0.58333333),
+        Vector3::new(0.00000000, 0.30614550, 0.75000000),
+        Vector3::new(0.30614550, 0.00000000, 0.75000000),
+        Vector3::new(0.02718783, 0.66666667, 0.91666667),
+        Vector3::new(0.36052117, 0.02718783, 0.08333333),
+        Vector3::new(0.63947883, 0.97281217, 0.91666667),
+        Vector3::new(0.33333333, 0.36052117, 0.91666667),
+        Vector3::new(0.66666667, 0.63947883, 0.08333333),
+        Vector3::new(0.97281217, 0.33333333, 0.08333333),
+        Vector3::new(0.69385450, 0.00000000, 0.25000000),
+        Vector3::new(0.02718783, 0.36052117, 0.41666667),
+        Vector3::new(0.30614550, 0.30614550, 0.25000000),
+        Vector3::new(0.00000000, 0.69385450, 0.25000000),
+        Vector3::new(0.33333333, 0.97281217, 0.41666667),
+        Vector3::new(0.63947883, 0.66666667, 0.41666667),
     ];
     let numbers = vec![
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
