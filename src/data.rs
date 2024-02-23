@@ -19,3 +19,4 @@ pub use hall_symbol_database::{
 };
 pub use point_group::PointGroupRepresentative;
 pub use setting::Setting;
+pub use wyckoff::{iter_wyckoff_positions, WyckoffPosition, WyckoffPositionSpace};

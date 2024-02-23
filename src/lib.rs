@@ -11,16 +11,12 @@ mod search;
 mod symmetrize;
 
 use nalgebra::Matrix3;
-use std::collections::HashMap;
 
-use crate::base::{
-    orbits_from_permutations, AngleTolerance, Cell, MoyoError, Operations, OriginShift,
-    Transformation,
-};
+use crate::base::{AngleTolerance, Cell, MoyoError, Operations, OriginShift, Transformation};
 use crate::data::{HallNumber, Number, Setting};
 use crate::identify::SpaceGroup;
 use crate::search::{PrimitiveCell, PrimitiveSymmetrySearch};
-use crate::symmetrize::StandardizedCell;
+use crate::symmetrize::{orbits_in_cell, StandardizedCell};
 
 #[derive(Debug)]
 pub struct MoyoDataset {
@@ -40,11 +36,11 @@ pub struct MoyoDataset {
     /// The `i`th atom in the input cell is equivalent to the `orbits[i]`th atom in the **input** cell.
     /// For example, orbits=[0, 0, 2, 2, 2, 2] means the first two atoms are equivalent and the last four atoms are equivalent to each other.
     pub orbits: Vec<usize>,
-    // TODO: /// Wyckoff letters for each site in the input cell.
-    // TODO: pub wyckoffs: Vec<char>,
-    // TODO: /// Site symmetry symbols for each site in the input cell.
-    // TODO: /// The orientation of the site symmetry is w.r.t. the standardized cell.
-    // TODO: pub site_symmetry_symbols: Vec<String>,
+    /// Wyckoff letters for each site in the input cell.
+    pub wyckoffs: Vec<char>,
+    /// Site symmetry symbols for each site in the input cell.
+    /// The orientation of the site symmetry is w.r.t. the standardized cell.
+    pub site_symmetry_symbols: Vec<String>,
     // ------------------------------------------------------------------------
     // Standardized cell
     // ------------------------------------------------------------------------
@@ -80,7 +76,6 @@ impl MoyoDataset {
         let symmetry_search =
             PrimitiveSymmetrySearch::new(&prim_cell.cell, symprec, angle_tolerance)?;
         let operations = operations_in_cell(&prim_cell, &symmetry_search.operations);
-        let orbits = orbits_in_cell(&prim_cell, &symmetry_search);
 
         // Space-group type identification
         let epsilon = symprec / prim_cell.cell.lattice.volume().powf(1.0 / 3.0);
@@ -88,6 +83,27 @@ impl MoyoDataset {
 
         // Standardized cell
         let std_cell = StandardizedCell::new(&prim_cell, &symmetry_search, &space_group, symprec)?;
+
+        // site symmetry
+        let orbits = orbits_in_cell(
+            prim_cell.cell.num_atoms(),
+            &symmetry_search.permutations,
+            &prim_cell.site_mapping,
+        );
+        // StandardizedCell.prim_cell and prim_cell have the same site order
+        let mapping_std_prim = prim_cell.site_mapping.clone();
+        let mut std_prim_wyckoffs = vec![None; prim_cell.cell.num_atoms()];
+        for (i, wyckoff) in std_cell.wyckoffs.iter().enumerate() {
+            let j = std_cell.site_mapping[i];
+            if std_prim_wyckoffs[j].is_none() {
+                std_prim_wyckoffs[j] = Some(wyckoff.clone());
+            }
+        }
+        let wyckoffs: Option<Vec<_>> = mapping_std_prim
+            .iter()
+            .map(|&i| std_prim_wyckoffs[i].clone())
+            .collect();
+        let wyckoffs = wyckoffs.ok_or(MoyoError::WyckoffPositionAssignmentError)?;
 
         // cell <-(prim_cell.linear, 0)- prim_cell.cell -(std_cell.transformation)-> std_cell.cell
         // (std_linear, std_origin_shift) = (prim_cell.linear^-1, 0) * std_cell.transformation
@@ -115,9 +131,14 @@ impl MoyoDataset {
             prim_std_cell: std_cell.prim_cell,
             prim_std_linear,
             prim_std_origin_shift,
-            mapping_std_prim: prim_cell.site_mapping, // StandardizedCell.prim_cell and prim_cell have the same site order
+            mapping_std_prim,
             // Site symmetry
             orbits,
+            wyckoffs: wyckoffs.iter().map(|w| w.letter).collect(),
+            site_symmetry_symbols: wyckoffs
+                .iter()
+                .map(|w| w.site_symmetry.to_string())
+                .collect(),
         })
     }
 
@@ -145,24 +166,4 @@ fn operations_in_cell(prim_cell: &PrimitiveCell, prim_operations: &Operations) -
     }
 
     Operations::new(rotations, translations)
-}
-
-fn orbits_in_cell(
-    prim_cell: &PrimitiveCell,
-    symmetry_search: &PrimitiveSymmetrySearch,
-) -> Vec<usize> {
-    // prim_orbits: [prim_num_atoms] -> [prim_num_atoms]
-    let prim_orbits =
-        orbits_from_permutations(prim_cell.cell.num_atoms(), &symmetry_search.permutations);
-
-    let num_atoms = prim_cell.site_mapping.len();
-    let mut map = HashMap::new();
-    let mut orbits = vec![]; // [num_atoms] -> [num_atoms]
-    for i in 0..num_atoms {
-        // prim_cell.site_mapping: [num_atoms] -> [prim_num_atoms]
-        let key = prim_orbits[prim_cell.site_mapping[i]]; // in [prim_num_atoms]
-        map.entry(key).or_insert(i);
-        orbits.push(*map.get(&key).unwrap());
-    }
-    orbits
 }

@@ -87,6 +87,8 @@ fn assert_dataset(
     // TODO: std_origin_shift
     // TODO: prim_origin_shift
 
+    assert_eq!(dataset.mapping_std_prim.len(), cell.num_atoms());
+
     dataset
 }
 
@@ -145,6 +147,7 @@ fn test_with_fcc() {
     assert_eq!(dataset.hall_number, 523);
     assert_eq!(dataset.num_operations(), 48 * 4);
     assert_eq!(dataset.orbits, vec![0, 0, 0, 0]);
+    assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'a', 'a']);
 }
 
 #[test]
@@ -180,4 +183,71 @@ fn test_with_rutile() {
     assert_eq!(dataset.hall_number, 419);
     assert_eq!(dataset.num_operations(), 16);
     assert_eq!(dataset.orbits, vec![0, 0, 2, 2, 2, 2]);
+    assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'f', 'f', 'f', 'f']);
+}
+
+// TODO: #[test]
+fn test_with_corundum() {
+    // Corundum structure, R-3c (No. 167)
+    // https://materialsproject.org/materials/mp-1143
+    let a = 4.80502783;
+    let c = 13.11625361;
+    let lattice = Lattice::new(matrix![
+        a, -a / 2.0, 0.0;
+        0.0, a * 3.0_f64.sqrt() / 2.0, 0.0;
+        0.0, 0.0, c;
+    ]);
+    let positions = vec![
+        // Al (12c)
+        Vector3::new(0.00000000, 0.00000000, 0.14790400),
+        Vector3::new(0.33333333, 0.66666667, 0.01876267),
+        Vector3::new(0.33333333, 0.66666667, 0.31457067),
+        Vector3::new(0.66666667, 0.33333333, 0.18542933),
+        Vector3::new(0.66666667, 0.33333333, 0.48123733),
+        Vector3::new(0.00000000, 0.00000000, 0.35209600),
+        Vector3::new(0.00000000, 0.00000000, 0.64790400),
+        Vector3::new(0.33333333, 0.66666667, 0.51876267),
+        Vector3::new(0.33333333, 0.66666667, 0.81457067),
+        Vector3::new(0.66666667, 0.33333333, 0.68542933),
+        Vector3::new(0.66666667, 0.33333333, 0.98123733),
+        Vector3::new(0.00000000, 0.00000000, 0.85209600),
+        // O (18e)
+        Vector3::new(0.30614600, 0.00000000, 0.25000000),
+        Vector3::new(0.66666667, 0.02718733, 0.08333333),
+        Vector3::new(0.00000000, 0.30614600, 0.25000000),
+        Vector3::new(0.69385400, 0.69385400, 0.25000000),
+        Vector3::new(0.97281267, 0.63947933, 0.08333333),
+        Vector3::new(0.36052067, 0.33333333, 0.08333333),
+        Vector3::new(0.97281267, 0.33333333, 0.58333333),
+        Vector3::new(0.33333333, 0.36052067, 0.41666667),
+        Vector3::new(0.66666667, 0.63947933, 0.58333333),
+        Vector3::new(0.36052067, 0.02718733, 0.58333333),
+        Vector3::new(0.63947933, 0.97281267, 0.41666667),
+        Vector3::new(0.02718733, 0.66666667, 0.41666667),
+        Vector3::new(0.63947933, 0.66666667, 0.91666667),
+        Vector3::new(0.00000000, 0.69385400, 0.75000000),
+        Vector3::new(0.33333333, 0.97281267, 0.91666667),
+        Vector3::new(0.02718733, 0.36052067, 0.91666667),
+        Vector3::new(0.30614600, 0.30614600, 0.75000000),
+        Vector3::new(0.69385400, 0.00000000, 0.75000000),
+    ];
+    let numbers = vec![
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    ];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+
+    assert_eq!(dataset.number, 167);
+    assert_eq!(dataset.hall_number, 460); // Hexagonal setting
+    assert_eq!(dataset.num_operations(), 36);
+    // assert_eq!(dataset.orbits, vec![0, 0, 2, 2, 2, 2]);
+    // assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'f', 'f', 'f', 'f']);
+    dbg!(&dataset);
 }

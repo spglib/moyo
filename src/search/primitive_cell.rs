@@ -177,16 +177,16 @@ fn primitive_cell_from_transformation(
         .iter()
         .map(|permutation| permutation.inverse())
         .collect::<Vec<_>>();
-    for orbit in representatives.iter() {
+    for (i, &orbit_i) in representatives.iter().enumerate() {
         let mut acc = Vector3::zeros();
         for (inv_perm, translation) in inverse_permutations.iter().zip(translations.iter()) {
             let mut frac_displacements =
-                cell.positions[inv_perm.apply(*orbit)] + translation - cell.positions[*orbit];
+                cell.positions[inv_perm.apply(orbit_i)] + translation - cell.positions[orbit_i];
             frac_displacements -= frac_displacements.map(|e| e.round()); // in [-0.5, 0.5]
             acc += frac_displacements;
         }
-        new_positions[*orbit] = cell.positions[*orbit] + acc / (translations.len() as f64);
-        new_numbers[*orbit] = cell.numbers[*orbit];
+        new_positions[i] = cell.positions[orbit_i] + acc / (translations.len() as f64);
+        new_numbers[i] = cell.numbers[orbit_i];
     }
 
     let primitive_cell = Cell::new(new_lattice, new_positions, new_numbers);

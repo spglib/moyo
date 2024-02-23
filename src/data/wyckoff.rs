@@ -1,8 +1,8 @@
-use nalgebra::{coordinates, Matrix3, Vector3};
+use nalgebra::{Matrix3, Vector3};
 
 use super::hall_symbol_database::HallNumber;
 
-struct WyckoffPositionSpace {
+pub struct WyckoffPositionSpace {
     pub linear: Matrix3<i32>,
     pub origin: Vector3<f64>,
 }
@@ -82,7 +82,8 @@ impl WyckoffPositionSpace {
     }
 }
 
-struct WyckoffPosition {
+#[derive(Debug, Clone)]
+pub struct WyckoffPosition {
     pub hall_number: HallNumber,
     /// Multiplicity in conventional cell
     pub multiplicity: usize,
@@ -108,6 +109,15 @@ impl WyckoffPosition {
             coordinates,
         }
     }
+}
+
+pub fn iter_wyckoff_positions(
+    hall_number: HallNumber,
+    multiplicity: usize,
+) -> impl Iterator<Item = &'static WyckoffPosition> {
+    WYCKOFF_DATABASE
+        .iter()
+        .filter(move |wp| wp.hall_number == hall_number && wp.multiplicity == multiplicity)
 }
 
 const WYCKOFF_DATABASE: [WyckoffPosition; 3467] = [
