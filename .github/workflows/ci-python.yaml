@@ -36,7 +36,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: ${{ matrix.target }}-wheels
           path: dist
       - name: pytest
         if: ${{ startsWith(matrix.target, 'x86_64') }}
@@ -82,7 +82,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: ${{ matrix.target }}-wheels
           path: dist
       - name: pytest
         if: ${{ !startsWith(matrix.target, 'aarch64') }}
@@ -112,7 +112,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: ${{ matrix.target }}-wheels
           path: dist
       - name: pytest
         if: ${{ !startsWith(matrix.target, 'aarch64') }}
