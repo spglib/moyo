@@ -59,7 +59,7 @@ jobs:
             pip3 install -U pip pytest
           run: |
             set -e
-            pip3 install moyo_py --find-links dist --force-reinstall
+            pip3 install moyo --find-links dist --force-reinstall
             cd moyo_py && pytest -v
 
   windows:
