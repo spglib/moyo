@@ -199,8 +199,8 @@ fn test_with_hcp() {
     let a = 3.17;
     let c = 5.14;
     let lattice = Lattice::new(matrix![
-        a, -a / 2.0, 0.0;
-        0.0, a * 3.0_f64.sqrt() / 2.0, 0.0;
+        a, 0.0, 0.0;
+        -a / 2.0, a * 3.0_f64.sqrt() / 2.0, 0.0;
         0.0, 0.0, c;
     ]);
     let positions = vec![
@@ -237,8 +237,8 @@ fn test_with_corundum() {
     let a = 4.80502783;
     let c = 13.11625361;
     let lattice = Lattice::new(matrix![
-        a, -a / 2.0, 0.0;
-        0.0, a * 3.0_f64.sqrt() / 2.0, 0.0;
+        a, 0.0, 0.0;
+        -a / 2.0, a * 3.0_f64.sqrt() / 2.0, 0.0;
         0.0, 0.0, c;
     ]);
     let positions = vec![

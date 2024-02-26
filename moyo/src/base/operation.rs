@@ -117,8 +117,8 @@ mod tests {
     #[test]
     fn test_cartesian_rotations() {
         let lattice = Lattice::new(matrix![
-            1.0, -0.5, 0.0;
-            0.0, f64::sqrt(3.0) / 2.0, 0.0;
+            1.0, 0.0, 0.0;
+            -0.5, f64::sqrt(3.0) / 2.0, 0.0;
             0.0, 0.0, 1.0;
         ]);
         let rotations = vec![matrix![

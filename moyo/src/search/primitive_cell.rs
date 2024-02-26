@@ -210,7 +210,7 @@ fn site_mapping_from_orbits(orbits: &[usize]) -> Vec<usize> {
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::{matrix, Vector3};
+    use nalgebra::{matrix, Matrix3, Vector3};
 
     use crate::base::{Cell, Lattice, Translation};
 
@@ -229,11 +229,7 @@ mod tests {
         // Conventional fcc
         {
             let cell = Cell::new(
-                Lattice::new(matrix![
-                    1.0, 0.0, 0.0;
-                    0.0, 1.0, 0.0;
-                    0.0, 0.0, 1.0;
-                ]),
+                Lattice::new(Matrix3::identity()),
                 vec![
                     Vector3::new(0.5 * symprec, 0.0, 0.0),
                     Vector3::new(0.0, 0.5, 0.5 + 0.5 * symprec),
@@ -257,8 +253,8 @@ mod tests {
         {
             let cell = Cell::new(
                 Lattice::new(matrix![
-                    1.0, 0.0, 0.0;
                     1.0, 1.0, 0.0;
+                    0.0, 1.0, 0.0;
                     0.0, 0.0, 1.0;
                 ]),
                 vec![Vector3::new(0.0, 0.0, 0.0), Vector3::new(0.5, 0.0, 0.5)],
@@ -277,9 +273,9 @@ mod tests {
         let a = 4.0;
         let b = 7.0;
         let rhombohedral_lattice = Lattice::new(matrix![
-            3.0_f64.sqrt() / 2.0 * a, -3.0_f64.sqrt() / 2.0 * a, 0.0;
-            0.5 * a, 0.5 * a, -a;
-            b, b, b;
+            3.0_f64.sqrt() / 2.0 * a, 0.5 * a, b;
+            -3.0_f64.sqrt() / 2.0 * a, 0.5 * a, b;
+            0.0, -a, b;
         ]);
         let trans_mat = matrix![
             1, 0, 1;
@@ -287,7 +283,8 @@ mod tests {
             0, -1, 1;
         ];
 
-        let lattice = Lattice::new(rhombohedral_lattice.basis * trans_mat.map(|e| e as f64));
+        let lattice =
+            Lattice::new((rhombohedral_lattice.basis * trans_mat.map(|e| e as f64)).transpose());
         let cell = Cell::new(
             lattice,
             vec![
@@ -302,6 +299,9 @@ mod tests {
         );
         let symprec = 1e-4;
         let prim_cell = PrimitiveCell::new(&cell, symprec).unwrap();
+        dbg!(prim_cell.cell.lattice.volume());
+        dbg!(cell.lattice.volume());
+
         assert_relative_eq!(
             prim_cell.cell.lattice.basis * prim_cell.linear.map(|e| e as f64),
             cell.lattice.basis,

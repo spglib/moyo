@@ -13,8 +13,11 @@ pub struct Lattice {
 }
 
 impl Lattice {
-    pub fn new(basis: Matrix3<f64>) -> Self {
-        Self { basis }
+    /// Create a new lattice from row basis vectors
+    pub fn new(row_basis: Matrix3<f64>) -> Self {
+        Self {
+            basis: row_basis.transpose(),
+        }
     }
 
     pub fn minkowski_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
@@ -91,8 +94,8 @@ mod tests {
     fn test_metric_tensor() {
         let lattice = Lattice::new(matrix![
             1.0, 1.0, 1.0;
-            1.0, 1.0, -1.0;
-            1.0, 0.0, 0.0;
+            1.0, 1.0, 0.0;
+            1.0, -1.0, 0.0;
         ]);
         let metric_tensor = lattice.metric_tensor();
         assert_relative_eq!(

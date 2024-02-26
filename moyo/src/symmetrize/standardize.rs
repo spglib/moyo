@@ -270,7 +270,7 @@ fn symmetrize_lattice(lattice: &Lattice, rotations: &Vec<Rotation>) -> (Lattice,
     let mut rotation_matrix = QR::new(tri_basis * lattice.basis.try_inverse().unwrap()).q();
     // Remove axis-direction freedom
     rotation_matrix *= signs;
-    (Lattice::new(tri_basis), rotation_matrix)
+    (Lattice::new(tri_basis.transpose()), rotation_matrix)
 }
 
 fn sign(x: f64) -> f64 {

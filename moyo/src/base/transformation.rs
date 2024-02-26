@@ -48,7 +48,7 @@ impl UnimodularTransformation {
     }
 
     pub fn transform_lattice(&self, lattice: &Lattice) -> Lattice {
-        Lattice::new(lattice.basis * self.linear_as_f64())
+        Lattice::new((lattice.basis * self.linear_as_f64()).transpose())
     }
 
     pub fn transform_operations(&self, operations: &Operations) -> Operations {
@@ -116,11 +116,11 @@ impl Transformation {
     }
 
     pub fn transform_lattice(&self, lattice: &Lattice) -> Lattice {
-        Lattice::new(lattice.basis * self.linear_as_f64())
+        Lattice::new((lattice.basis * self.linear_as_f64()).transpose())
     }
 
     pub fn inverse_transform_lattice(&self, lattice: &Lattice) -> Lattice {
-        Lattice::new(lattice.basis * self.linear_inv)
+        Lattice::new((lattice.basis * self.linear_inv).transpose())
     }
 
     /// (P, p)^-1 (W, w) (P, p)

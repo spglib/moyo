@@ -110,7 +110,7 @@ pub fn symmetrize_translation_from_permutation(
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::{matrix, Vector3};
+    use nalgebra::{Matrix3, Vector3};
 
     use crate::base::{Cell, Lattice, Permutation, Rotation, Translation};
 
@@ -130,11 +130,7 @@ mod tests {
     fn test_solve_correspondence() {
         // Conventional fcc
         let reduced_cell = Cell::new(
-            Lattice::new(matrix![
-                1.0, 0.0, 0.0;
-                0.0, 1.0, 0.0;
-                0.0, 0.0, 1.0;
-            ]),
+            Lattice::new(Matrix3::identity()),
             vec![
                 Vector3::new(0.0, 0.0, 0.0),
                 Vector3::new(0.0, 0.5, 0.5),
@@ -175,11 +171,7 @@ mod tests {
         // Conventional fcc
         let symprec = 1e-2;
         let distorted_reduced_cell = Cell::new(
-            Lattice::new(matrix![
-                1.0, 0.0, 0.0;
-                0.0, 1.0, 0.0;
-                0.0, 0.0, 1.0;
-            ]),
+            Lattice::new(Matrix3::identity()),
             vec![
                 Vector3::new(0.0, 0.0, 0.0),
                 Vector3::new(0.0, 0.5, 0.5 + 0.5 * symprec),

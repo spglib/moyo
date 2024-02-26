@@ -257,8 +257,8 @@ mod tests {
         {
             // 6/mmm
             let lattice = Lattice::new(matrix![
-                1.0, -0.5, 0.0;
-                0.0, f64::sqrt(3.0) / 2.0, 0.0;
+                1.0, 0.0, 0.0;
+                -0.5, f64::sqrt(3.0) / 2.0, 0.0;
                 0.0, 0.0, 1.0;
             ]);
             let rotations =
@@ -268,9 +268,9 @@ mod tests {
 
         {
             let lattice = Lattice::new(matrix![
+                0.5, 0.0, 0.5;
                 0.5, 0.5, 0.0;
                 0.0, 0.5, 0.5;
-                0.5, 0.0, 0.5;
             ]);
             let rotations =
                 search_bravais_group(&lattice, symprec, AngleTolerance::Default).unwrap();
