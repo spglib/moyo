@@ -8,7 +8,7 @@ use super::lattice::Lattice;
 pub type Rotation = Matrix3<i32>;
 pub type Translation = Vector3<f64>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// Symmetry operation without basis information
 pub struct Operations {
     pub rotations: Vec<Rotation>,

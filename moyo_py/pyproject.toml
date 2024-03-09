@@ -8,6 +8,11 @@ requires-python = ">=3.8"
 description = "Python binding of Moyo"
 license-files = { paths = ["LICENSE-MIT", "LICENSE-APACHE"] }
 
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
 [tool.maturin]
 python-source = "python"
 module-name = "moyo._moyo"

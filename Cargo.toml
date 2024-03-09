@@ -6,3 +6,14 @@ members = [
 ]
 
 resolver = "2"
+
+[workspace.package]
+authors = ["Kohei Shinohara <kshinohara0508@gmail.com>"]
+description = "Library for Crystal Symmetry in Rust"
+edition = "2021"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/spglib/moyo"
+
+[workspace.dependencies]
+nalgebra = "0.32.3"
