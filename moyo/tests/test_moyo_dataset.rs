@@ -231,6 +231,49 @@ fn test_with_hcp() {
 }
 
 #[test]
+fn test_with_wurtzite() {
+    // P6_3mc (No. 186)
+    // https://next-gen.materialsproject.org/materials/mp-560588
+    let a = 3.81;
+    let c = 6.24;
+    let lattice = Lattice::new(matrix![
+        a, 0.0, 0.0;
+        -a / 2.0, a * 3.0_f64.sqrt() / 2.0, 0.0;
+        0.0, 0.0, c;
+    ]);
+    let z1_2b = 0.00014;
+    let z2_2b = 0.37486;
+    let positions = vec![
+        // 2b
+        Vector3::new(1.0 / 3.0, 2.0 / 3.0, z1_2b),
+        Vector3::new(2.0 / 3.0, 1.0 / 3.0, z1_2b + 0.5),
+        // 2b
+        Vector3::new(1.0 / 3.0, 2.0 / 3.0, z2_2b),
+        Vector3::new(2.0 / 3.0, 1.0 / 3.0, z2_2b + 0.5),
+    ];
+    let numbers = vec![0, 0, 1, 1];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-2;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+
+    assert_eq!(dataset.number, 186);
+    assert_eq!(dataset.hall_number, 480);
+    assert_eq!(dataset.num_operations(), 12);
+    assert_eq!(dataset.orbits, vec![0, 0, 2, 2]);
+    // 2a and 2b belong to the same Wyckoff set
+    assert_eq!(dataset.wyckoffs[0], dataset.wyckoffs[1]);
+    if dataset.wyckoffs[0] != 'a' && dataset.wyckoffs[0] != 'b' {
+        panic!("Unexpected Wyckoff letter: {}", dataset.wyckoffs[0]);
+    }
+}
+
+#[test]
 fn test_with_corundum() {
     // Corundum structure, R-3c (No. 167)
     // https://materialsproject.org/materials/mp-1143
