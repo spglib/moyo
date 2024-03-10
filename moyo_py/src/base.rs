@@ -53,6 +53,11 @@ impl PyStructure {
     pub fn numbers(&self) -> Vec<i32> {
         self.0.numbers.clone()
     }
+
+    #[getter]
+    pub fn num_atoms(&self) -> usize {
+        self.0.num_atoms()
+    }
 }
 
 impl From<PyStructure> for Cell {
@@ -107,6 +112,11 @@ impl PyOperations {
             .iter()
             .map(|x| x.as_ref().clone())
             .collect()
+    }
+
+    #[getter]
+    pub fn num_operations(&self) -> usize {
+        self.0.num_operations()
     }
 }
 

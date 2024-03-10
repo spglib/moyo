@@ -30,7 +30,13 @@ class Operations:
 # data
 ###############################################################################
 
-Setting = int | Literal["spglib", "standard"]
+class Setting:
+    @classmethod
+    def spglib(cls) -> Setting: ...
+    @classmethod
+    def standard(cls) -> Setting: ...
+    @classmethod
+    def hall_number(cls, hall_number: int) -> Setting: ...
 
 ###############################################################################
 # lib
