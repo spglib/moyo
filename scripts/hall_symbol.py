@@ -199,6 +199,7 @@ def number_to_arithmetic_crystal_class():
     df = pd.DataFrame({"number": numbers, "arithmetic_number": arithmetic_numbers})
     return df
 
+
 @click.command()
 @click.argument("spg_input", type=click.File("r"))
 def main(spg_input):
@@ -225,19 +226,21 @@ def main(spg_input):
     )
     df_hall["setting"].fillna(value="", inplace=True)
     df_hall["HM_symbol_short"] = (
-        df_hall.HM_symbol_short_all.str.split("=")
-        .apply(lambda lst: lst[0])
-        .str.rstrip(" ")
+        df_hall.HM_symbol_short_all.str.split("=").apply(lambda lst: lst[0]).str.rstrip(" ")
     )
     df_hall.drop(columns=["HM_symbol_short_all"], inplace=True)
-    df_hall["centering"] = df_hall['hall_symbol'].apply(lambda s: f"Centering::{s[0]}" if s[0] != '-' else f"Centering::{s[1]}")
+    df_hall["centering"] = df_hall["hall_symbol"].apply(
+        lambda s: f"Centering::{s[0]}" if s[0] != "-" else f"Centering::{s[1]}"
+    )
 
     df_arith = number_to_arithmetic_crystal_class()
 
     df = pd.merge(df_hall, df_arith, on="number", how="left")
 
     for _, row in df.iterrows():
-        print(f'HallSymbolEntry::new({row["hall_number"]}, {row["number"]}, {row["arithmetic_number"]}, \"{row["setting"]}\", \"{row["hall_symbol"]}\", \"{row["HM_symbol_short"]}\", \"{row["HM_symbol_full"]}\", {row["centering"]}),')
+        print(
+            f'HallSymbolEntry::new({row["hall_number"]}, {row["number"]}, {row["arithmetic_number"]}, "{row["setting"]}", "{row["hall_symbol"]}", "{row["HM_symbol_short"]}", "{row["HM_symbol_full"]}", {row["centering"]}),'  # noqa: E501
+        )
 
 
 if __name__ == "__main__":

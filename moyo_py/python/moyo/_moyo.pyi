@@ -20,7 +20,6 @@ class Structure:
     @property
     def numbers(self) -> list[int]: ...
 
-
 class Operations:
     @property
     def rotations(self) -> list[list[list[float]]]: ...

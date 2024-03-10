@@ -1,0 +1,58 @@
+# Work around for some misconfigured virtualenv
+# https://github.com/pre-commit/pre-commit/issues/1375
+default_language_version:
+  python: python3
+
+fail_fast: false
+
+repos:
+  # Misc
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.17
+    hooks:
+      - id: mdformat
+        additional_dependencies:
+          - mdformat-gfm
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.27.3
+    hooks:
+      - id: check-github-workflows
+  # Rust
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo fmt
+        entry: cargo fmt --
+        language: system
+        types: [rust]
+        pass_filenames: false # This makes it a lot faster
+      - id: cargo-deny  # cargo install --locked cargo-deny
+        name: cargo deny
+        entry: cargo deny --all-features check --
+        language: system
+        pass_filenames: false
+        stages: [manual]  # because it's slow
+      - id: cargo-check
+        name: cargo check
+        entry: cargo check --all-features --all-targets --
+        language: system
+        pass_filenames: false
+        types: [rust]
+        stages: [manual]  # because it's slow
+  # Python
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.13
+    hooks:
+      - id: ruff-format
+        args: ["--config", "moyo_py/pyproject.toml"]
+      - id: ruff
+        args: [ "--fix", "--show-fixes", "--config", "moyo_py/pyproject.toml"]
+        types_or: [python, pyi]

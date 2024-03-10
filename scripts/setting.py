@@ -28,21 +28,21 @@ def main(spg_input):
     )
     df_hall["setting"].fillna(value="", inplace=True)
 
-    print('spglib')
+    print("spglib")
     spglib = []
     for number in range(1, 231):
         df_tmp = df_hall[df_hall["number"] == number].sort_values("hall_number")
-        spglib.append(df_tmp.iloc[0]['hall_number'])
+        spglib.append(df_tmp.iloc[0]["hall_number"])
     print(spglib)
 
-    print('standard')
+    print("standard")
     standard = []
     for number in range(1, 231):
         df_tmp = df_hall[df_hall["number"] == number].sort_values("hall_number")
-        if df_tmp[df_tmp['setting'] == "2"].empty:
-            standard.append(df_tmp.iloc[0]['hall_number'])
+        if df_tmp[df_tmp["setting"] == "2"].empty:
+            standard.append(df_tmp.iloc[0]["hall_number"])
         else:
-            standard.append(df_tmp[df_tmp['setting'] == "2"].iloc[0]['hall_number'])
+            standard.append(df_tmp[df_tmp["setting"] == "2"].iloc[0]["hall_number"])
     print(standard)
 
 

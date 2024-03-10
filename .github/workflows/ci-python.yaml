@@ -3,7 +3,7 @@
 #
 #    maturin generate-ci github
 #
-name: moyo_py CI
+name: Test Python implementation
 
 on:
   push:
