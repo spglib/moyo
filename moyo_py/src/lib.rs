@@ -19,7 +19,7 @@ pub struct PyMoyoDataset(MoyoDataset);
 #[pymethods]
 impl PyMoyoDataset {
     #[new]
-    #[pyo3(signature = (structure, *, symprec=1e-5, angle_tolerance=None, setting=None))]
+    #[pyo3(signature = (structure, *, symprec=1e-4, angle_tolerance=None, setting=None))]
     pub fn new(
         structure: &PyStructure,
         symprec: f64,

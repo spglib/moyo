@@ -40,7 +40,7 @@ class MoyoDataset:
     def __init__(
         self,
         structure: Structure,
-        symprec: float = 1e-5,
+        symprec: float = 1e-4,
         angle_tolerance: float | None = None,
         setting: Setting | None = None,
     ): ...

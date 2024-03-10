@@ -254,7 +254,7 @@ fn test_with_wurtzite() {
     let numbers = vec![0, 0, 1, 1];
     let cell = Cell::new(lattice, positions, numbers);
 
-    let symprec = 1e-2;
+    let symprec = 1e-4;
     let angle_tolerance = AngleTolerance::Default;
     let setting = Setting::Standard;
 

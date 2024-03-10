@@ -4,6 +4,9 @@ set positional-arguments
 default:
     just --list
 
+build-python:
+    maturin develop --release --manifest-path moyo_py/Cargo.toml
+
 install-python:
     maturin develop --release --manifest-path moyo_py/Cargo.toml
     pip install -e "moyo_py[dev]"

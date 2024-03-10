@@ -15,11 +15,17 @@ def wurtzite() -> moyo.Structure:
         [-a / 2.0, a * sqrt(3.0) / 2.0, 0.0],
         [0.0, 0.0, c],
     ]
+    z1_2b = 0.00014
+    z2_2b = 0.37486
     positions = [
-        [1 / 3, 2 / 3, 0.00014],
-        [1 / 3, 2 / 3, 0.37486],
+        # 2b
+        [1 / 3, 2 / 3, z1_2b],
+        [2 / 3, 1 / 3, z1_2b + 0.5],
+        # 2b
+        [1 / 3, 2 / 3, z2_2b],
+        [2 / 3, 1 / 3, z2_2b + 0.5],
     ]
-    numbers = [0, 1]
+    numbers = [0, 0, 1, 1]
 
     structure = moyo.Structure(basis, positions, numbers)
     return structure
