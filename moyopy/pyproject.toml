@@ -4,11 +4,24 @@ build-backend = "maturin"
 
 [project]
 name = "moyopy"
-requires-python = ">=3.8"
+authors = [
+    {name = "Kohei Shinohara", email = "kshinohara0508@gmail.com"},
+]
 description = "Python binding of Moyo"
-license-files = { paths = ["LICENSE-MIT", "LICENSE-APACHE"] }
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+requires-python = ">=3.8"
 dynamic = [
     'version',
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
 ]
 
 [project.optional-dependencies]
