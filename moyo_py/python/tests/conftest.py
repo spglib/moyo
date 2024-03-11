@@ -6,7 +6,7 @@ import moyo
 
 
 @pytest.fixture
-def wurtzite() -> moyo.Structure:
+def wurtzite() -> moyo.Cell:
     # https://next-gen.materialsproject.org/materials/mp-560588
     a = 3.81
     c = 6.24
@@ -27,5 +27,5 @@ def wurtzite() -> moyo.Structure:
     ]
     numbers = [0, 0, 1, 1]
 
-    structure = moyo.Structure(basis, positions, numbers)
-    return structure
+    cell = moyo.Cell(basis, positions, numbers)
+    return cell

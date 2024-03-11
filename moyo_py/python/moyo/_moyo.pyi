@@ -6,7 +6,7 @@ from typing import Literal
 # base
 ###############################################################################
 
-class Structure:
+class Cell:
     def __init__(
         self,
         basis: list[list[float]],

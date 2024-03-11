@@ -4,8 +4,9 @@ use pyo3::prelude::*;
 
 use moyo::base::{Cell, Lattice, MoyoError, Operations};
 
+// Unfortunately, "PyCell" is already reversed by pyo3...
 #[derive(Debug, Clone)]
-#[pyclass(name = "Structure")]
+#[pyclass(name = "Cell")]
 #[pyo3(module = "moyo")]
 pub struct PyStructure(Cell);
 
