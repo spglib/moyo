@@ -10,6 +10,7 @@ build-python:
 install-python:
     maturin develop --release --manifest-path moyopy/Cargo.toml
     pip install -e "moyopy[dev]"
+    pre-commit install
 
 test-python:
     pytest -v moyopy/python/tests

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Literal
-
 ###############################################################################
 # base
 ###############################################################################
@@ -45,7 +43,7 @@ class Setting:
 class MoyoDataset:
     def __init__(
         self,
-        structure: Structure,
+        cell: Cell,
         symprec: float = 1e-4,
         angle_tolerance: float | None = None,
         setting: Setting | None = None,
@@ -63,7 +61,7 @@ class MoyoDataset:
     @property
     def site_symmetry_symbols(self) -> list[str]: ...
     @property
-    def std_cell(self) -> Structure: ...
+    def std_cell(self) -> Cell: ...
     @property
     def std_linear(self) -> list[list[float]]: ...
     @property
@@ -71,7 +69,7 @@ class MoyoDataset:
     @property
     def std_rotation_matrix(self) -> list[list[float]]: ...
     @property
-    def prim_std_cell(self) -> Structure: ...
+    def prim_std_cell(self) -> Cell: ...
     @property
     def prim_std_linear(self) -> list[list[float]]: ...
     @property

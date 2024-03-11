@@ -20,9 +20,9 @@ pub struct PyMoyoDataset(MoyoDataset);
 #[pymethods]
 impl PyMoyoDataset {
     #[new]
-    #[pyo3(signature = (structure, *, symprec=1e-4, angle_tolerance=None, setting=None))]
+    #[pyo3(signature = (cell, *, symprec=1e-4, angle_tolerance=None, setting=None))]
     pub fn new(
-        structure: &PyStructure,
+        cell: &PyStructure,
         symprec: f64,
         angle_tolerance: Option<f64>,
         setting: Option<PySetting>,
@@ -39,12 +39,7 @@ impl PyMoyoDataset {
             Setting::Spglib
         };
 
-        let dataset = MoyoDataset::new(
-            &structure.to_owned().into(),
-            symprec,
-            angle_tolerance,
-            setting,
-        )?;
+        let dataset = MoyoDataset::new(&cell.to_owned().into(), symprec, angle_tolerance, setting)?;
         Ok(PyMoyoDataset(dataset))
     }
 
