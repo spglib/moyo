@@ -5,17 +5,17 @@ default:
     just --list
 
 build-python:
-    maturin develop --release --manifest-path moyo_py/Cargo.toml
+    maturin develop --release --manifest-path moyopy/Cargo.toml
 
 install-python:
-    maturin develop --release --manifest-path moyo_py/Cargo.toml
-    pip install -e "moyo_py[dev]"
+    maturin develop --release --manifest-path moyopy/Cargo.toml
+    pip install -e "moyopy[dev]"
 
 test-python:
-    pytest -v moyo_py/python/tests
+    pytest -v moyopy/python/tests
 
 pre-commit:
     pre-commit run --all-files
 
 clean:
-    rm moyo_py/python/moyo/*.so
+    rm moyopy/python/moyo/*.so

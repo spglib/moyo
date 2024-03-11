@@ -2,11 +2,11 @@ from math import sqrt
 
 import pytest
 
-import moyo
+import moyopy
 
 
 @pytest.fixture
-def wurtzite() -> moyo.Cell:
+def wurtzite() -> moyopy.Cell:
     # https://next-gen.materialsproject.org/materials/mp-560588
     a = 3.81
     c = 6.24
@@ -27,5 +27,5 @@ def wurtzite() -> moyo.Cell:
     ]
     numbers = [0, 0, 1, 1]
 
-    cell = moyo.Cell(basis, positions, numbers)
+    cell = moyopy.Cell(basis, positions, numbers)
     return cell

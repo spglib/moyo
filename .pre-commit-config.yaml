@@ -52,7 +52,7 @@ repos:
     rev: v0.1.13
     hooks:
       - id: ruff-format
-        args: ["--config", "moyo_py/pyproject.toml"]
+        args: ["--config", "moyopy/pyproject.toml"]
       - id: ruff
-        args: [ "--fix", "--show-fixes", "--config", "moyo_py/pyproject.toml"]
+        args: [ "--fix", "--show-fixes", "--config", "moyopy/pyproject.toml"]
         types_or: [python, pyi]

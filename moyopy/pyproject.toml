@@ -3,10 +3,13 @@ requires = ["maturin>=1,<2"]
 build-backend = "maturin"
 
 [project]
-name = "moyo"
+name = "moyopy"
 requires-python = ">=3.8"
 description = "Python binding of Moyo"
 license-files = { paths = ["LICENSE-MIT", "LICENSE-APACHE"] }
+dynamic = [
+    'version',
+]
 
 [project.optional-dependencies]
 dev = [
@@ -15,7 +18,7 @@ dev = [
 
 [tool.maturin]
 python-source = "python"
-module-name = "moyo._moyo"
+module-name = "moyopy._moyo"
 # "extension-module" tells pyo3 we want to build an extension module (skips linking against libpython.so)
 features = ["pyo3/extension-module"]
 
