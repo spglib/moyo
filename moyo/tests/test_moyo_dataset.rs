@@ -211,6 +211,9 @@ fn test_with_hcp() {
     let numbers = vec![0, 0];
     let cell = Cell::new(lattice, positions, numbers);
 
+    let serialized = serde_json::to_string(&cell).unwrap();
+    println!("{:?}", serialized);
+
     let symprec = 1e-4;
     let angle_tolerance = AngleTolerance::Default;
     let setting = Setting::Standard;

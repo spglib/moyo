@@ -16,4 +16,4 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/spglib/moyo"
 
 [workspace.dependencies]
-nalgebra = "0.32.3"
+nalgebra = { version = "0.32.3", features = ["serde-serialize"] }

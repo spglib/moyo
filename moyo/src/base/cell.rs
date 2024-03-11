@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 
 use nalgebra::{Matrix3, Vector3};
+use serde::{Deserialize, Serialize};
 use union_find::{QuickFindUf, UnionByRank, UnionFind};
 
 use super::lattice::Lattice;
@@ -9,7 +10,7 @@ use super::operation::Permutation;
 pub type Position = Vector3<f64>;
 pub type AtomicSpecie = i32;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Cell {
     pub lattice: Lattice,
     pub positions: Vec<Position>,

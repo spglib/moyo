@@ -1,4 +1,5 @@
 use nalgebra::base::{Matrix3, Vector3};
+use serde::{Deserialize, Serialize};
 
 use crate::math::{
     delaunay_reduce, is_minkowski_reduced, is_niggli_reduced, minkowski_reduce, niggli_reduce,
@@ -6,7 +7,7 @@ use crate::math::{
 
 use super::error::MoyoError;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Lattice {
     /// basis.column(i) is the i-th basis vector
     pub basis: Matrix3<f64>,
