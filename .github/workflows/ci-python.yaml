@@ -28,6 +28,8 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+      - name: Install uv
+        run: pip install uv
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -45,8 +47,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          pip install moyopy --find-links dist --force-reinstall
-          pip install pytest
+          uv pip install moyopy[dev] --find-links dist --force-reinstall
           cd moyopy && pytest -v
       - name: pytest
         if: ${{ !startsWith(matrix.target, 'x86') && matrix.target != 'ppc64' }}
@@ -75,6 +76,8 @@ jobs:
         with:
           python-version: '3.10'
           architecture: ${{ matrix.target }}
+      - name: Install uv
+        run: pip install uv
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -91,8 +94,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          pip install moyopy --find-links dist --force-reinstall
-          pip install pytest
+          uv pip install moyopy[dev] --find-links dist --force-reinstall
           cd moyopy && pytest -v
 
   macos:
@@ -105,6 +107,8 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+      - name: Install uv
+        run: pip install uv
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -121,8 +125,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          pip install moyopy --find-links dist --force-reinstall
-          pip install pytest
+          uv pip install moyopy[dev] --find-links dist --force-reinstall
           cd moyopy && pytest -v
 
   sdist:
