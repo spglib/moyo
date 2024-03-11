@@ -1,6 +1,11 @@
-# Moyo
+# moyo
 
 🚧 This project is under construction 🚧
+
+## Interfaces
+
+- [Rust](moyo/README.md): core implementation
+- [Python](moyopy/README.md)
 
 ## Goals
 
@@ -13,15 +18,6 @@
 
 - Crystallographic groups in other than three dimensions
 - Matching two similar crystal structures
-
-## Details
-
-### Module dependency
-
-```
-math <- base <- data <- identify <- standardize <- lib
-        ^---- search <--------------|
-```
 
 ## Acknowledgments
 
