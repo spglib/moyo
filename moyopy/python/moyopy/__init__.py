@@ -1,1 +1,1 @@
-from ._moyo import *  # noqa: F403
+from ._moyopy import *  # noqa: F403

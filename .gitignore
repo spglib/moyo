@@ -356,5 +356,5 @@ docs/_build/
 flamegraph.svg
 output/
 target/
-
 *.so
+*.json

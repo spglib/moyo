@@ -131,7 +131,7 @@ pub fn moyo_version() -> &'static str {
 
 /// A Python module implemented in Rust.
 #[pymodule]
-fn _moyo(_py: Python, m: &PyModule) -> PyResult<()> {
+fn _moyopy(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add("__version__", moyo_version())?;
 
     // lib

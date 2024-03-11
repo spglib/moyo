@@ -32,11 +32,12 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
     "pytest",
+    "pre-commit",
 ]
 
 [tool.maturin]
 python-source = "python"
-module-name = "moyopy._moyo"
+module-name = "moyopy._moyopy"
 # "extension-module" tells pyo3 we want to build an extension module (skips linking against libpython.so)
 features = ["pyo3/extension-module"]
 

@@ -8,9 +8,9 @@ build-python:
     maturin develop --release --manifest-path moyopy/Cargo.toml
 
 install-python:
+    python -m pip install nv maturin
     maturin develop --release --manifest-path moyopy/Cargo.toml
-    pip install nv
-    uv pip install -e "moyopy[dev]"
+    python -m uv pip install -e "moyopy[dev]"
     pre-commit install
 
 test-python:

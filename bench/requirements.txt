@@ -1,0 +1,2 @@
+matbench-discovery==1.1.1
+ipython
