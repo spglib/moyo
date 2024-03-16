@@ -261,9 +261,9 @@ impl HallSymbol {
             return None;
         }
         let origin_shift = Vector3::<f64>::new(
-            (tokens[0].parse::<i32>().unwrap() / MAX_DENOMINATOR) as f64,
-            (tokens[1].parse::<i32>().unwrap() / MAX_DENOMINATOR) as f64,
-            (tokens[2].parse::<i32>().unwrap() / MAX_DENOMINATOR) as f64,
+            tokens[0].parse::<f64>().unwrap() / MAX_DENOMINATOR as f64,
+            tokens[1].parse::<f64>().unwrap() / MAX_DENOMINATOR as f64,
+            tokens[2].parse::<f64>().unwrap() / MAX_DENOMINATOR as f64,
         );
         Some(origin_shift)
     }
@@ -559,6 +559,7 @@ impl HallSymbol {
 
 #[cfg(test)]
 mod tests {
+    use nalgebra::{matrix, vector};
     use rstest::rstest;
     use strum::IntoEnumIterator;
 
@@ -570,6 +571,7 @@ mod tests {
     #[case("P 2 2ab -1ab", Centering::P, 0, 3, 8)] // No. 51
     #[case("P 31 2 (0 0 4)", Centering::P, 0, 2, 6)] // No. 151
     #[case("P 65", Centering::P, 0, 1, 6)] // No. 170
+    #[case("P 61 2 (0 0 5)", Centering::P, 0, 2, 12)] // No. 178
     #[case("-P 6c 2c", Centering::P, 0, 3, 24)] // No. 194
     #[case("F 4d 2 3", Centering::F, 3, 3, 24)] // No. 210
     fn test_hall_symbol_small(
@@ -585,6 +587,32 @@ mod tests {
         assert_eq!(hs.generators.num_operations(), num_generators);
         let operations = hs.traverse();
         assert_eq!(operations.num_operations(), num_operations);
+    }
+
+    #[test]
+    fn test_hall_symbol_generators() {
+        // No. 178
+        let hs = HallSymbol::new("P 61 2 (0 0 5)").unwrap();
+        let generators = hs.generators;
+        assert_eq!(generators.num_operations(), 2);
+        assert_eq!(
+            generators.rotations[0],
+            matrix![
+                1, -1, 0;
+                1, 0, 0;
+                0, 0, 1;
+            ]
+        );
+        assert_relative_eq!(generators.translations[0], vector![0.0, 0.0, 1.0 / 6.0]);
+        assert_eq!(
+            generators.rotations[1],
+            matrix![
+                0, -1, 0;
+                -1, 0, 0;
+                0, 0, -1;
+            ]
+        );
+        assert_relative_eq!(generators.translations[1], vector![0.0, 0.0, 5.0 / 6.0]);
     }
 
     #[test]

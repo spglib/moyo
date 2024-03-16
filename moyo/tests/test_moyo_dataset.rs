@@ -349,3 +349,43 @@ fn test_with_corundum() {
         ]
     );
 }
+
+#[test]
+#[allow(non_snake_case)]
+fn test_with_hexagonal_Sc() {
+    // P6_122 (No. 178)
+    // https://legacy.materialsproject.org/materials/mp-601273/
+    let a = 3.234;
+    let c = 16.386;
+    let lattice = Lattice::new(matrix![
+        a, 0.0, 0.0;
+        -a / 2.0, a * 3.0_f64.sqrt() / 2.0, 0.0;
+        0.0, 0.0, c;
+    ]);
+    let x_6a = 0.4702;
+    let positions = vec![
+        // 6a
+        Vector3::new(x_6a, 0.0, 0.0),
+        Vector3::new(0.0, x_6a, 1.0 / 3.0),
+        Vector3::new(-x_6a, -x_6a, 2.0 / 3.0),
+        Vector3::new(-x_6a, 0.0, 0.5),
+        Vector3::new(0.0, -x_6a, 5.0 / 6.0),
+        Vector3::new(x_6a, x_6a, 1.0 / 6.0),
+    ];
+    let numbers = vec![0, 0, 0, 0, 0, 0];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+
+    assert_eq!(dataset.number, 178);
+    assert_eq!(dataset.hall_number, 472);
+    assert_eq!(dataset.num_operations(), 12);
+    assert_eq!(dataset.orbits, vec![0, 0, 0, 0, 0, 0]);
+    assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'a', 'a', 'a', 'a']);
+}
