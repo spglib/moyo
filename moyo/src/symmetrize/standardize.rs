@@ -71,6 +71,7 @@ impl StandardizedCell {
         })
     }
 
+    #[allow(clippy::type_complexity)]
     fn standardize_and_symmetrize_cell(
         prim_cell: &PrimitiveCell,
         symmetry_search: &PrimitiveSymmetrySearch,
@@ -116,7 +117,7 @@ impl StandardizedCell {
             prim_operations.rotations.iter(),
             symmetry_search.permutations.iter()
         ) {
-            permutation_mapping.insert(prim_rotation.clone(), permutation.clone());
+            permutation_mapping.insert(*prim_rotation, permutation.clone());
         }
         let prim_std_permutations = prim_std_operations
             .rotations
@@ -161,7 +162,7 @@ impl StandardizedCell {
 
     fn assign_wyckoffs(
         prim_std_cell: &Cell,
-        prim_std_permutations: &Vec<Permutation>,
+        prim_std_permutations: &[Permutation],
         std_cell: &Cell,
         site_mapping: &Vec<usize>,
         hall_number: HallNumber,
@@ -170,8 +171,8 @@ impl StandardizedCell {
         // Group sites in std_cell by crystallographic orbits
         let orbits = orbits_in_cell(
             prim_std_cell.num_atoms(),
-            &prim_std_permutations,
-            &site_mapping,
+            prim_std_permutations,
+            site_mapping,
         );
         let mut num_orbits = 0;
         let mut mapping = vec![0; std_cell.num_atoms()]; // [std_cell.num_atoms()] -> [num_orbits]
@@ -193,14 +194,14 @@ impl StandardizedCell {
         }
         // Assign Wyckoff positions to representative sites: orbit -> WyckoffPosition
         let mut representative_wyckoffs = vec![None; num_orbits];
-        for i in 0..std_cell.num_atoms() {
+        for (i, position) in std_cell.positions.iter().enumerate() {
             let orbit = mapping[i];
-            if !representative_wyckoffs[orbit].is_none() {
+            if representative_wyckoffs[orbit].is_some() {
                 continue;
             }
 
             if let Ok(wyckoff) = assign_wyckoff_position(
-                &std_cell.positions[i],
+                position,
                 multiplicities[orbit],
                 hall_number,
                 &std_cell.lattice,

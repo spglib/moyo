@@ -47,6 +47,13 @@ repos:
         pass_filenames: false
         types: [rust]
         stages: [manual]  # because it's slow
+      - id: cargo-clippy
+        name: cargo clippy
+        entry: cargo clippy --
+        language: system
+        pass_filenames: false
+        types: [rust]
+        stages: [manual]  # because it's slow
   # Python
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.1.13

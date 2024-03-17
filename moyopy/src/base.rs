@@ -42,7 +42,7 @@ impl PyStructure {
 
     #[getter]
     pub fn basis(&self) -> [[f64; 3]; 3] {
-        self.0.lattice.basis.as_ref().clone().into()
+        *self.0.lattice.basis.as_ref()
     }
 
     #[getter]
@@ -99,20 +99,12 @@ pub struct PyOperations(Operations);
 impl PyOperations {
     #[getter]
     pub fn rotations(&self) -> Vec<[[i32; 3]; 3]> {
-        self.0
-            .rotations
-            .iter()
-            .map(|x| x.as_ref().clone().into())
-            .collect()
+        self.0.rotations.iter().map(|x| *x.as_ref()).collect()
     }
 
     #[getter]
     pub fn translations(&self) -> Vec<[f64; 3]> {
-        self.0
-            .translations
-            .iter()
-            .map(|x| x.as_ref().clone())
-            .collect()
+        self.0.translations.iter().map(|x| *x.as_ref()).collect()
     }
 
     #[getter]

@@ -19,5 +19,8 @@ test-python:
 pre-commit:
     pre-commit run --all-files
 
+pre-commit-all:
+    pre-commit run --all-files --hook-stage manual
+
 clean:
     rm moyopy/python/moyo/*.so

@@ -116,11 +116,11 @@ impl Transformation {
     }
 
     pub fn transform_lattice(&self, lattice: &Lattice) -> Lattice {
-        self.transform_lattice_with_linear(&lattice, &self.linear_as_f64())
+        self.transform_lattice_with_linear(lattice, &self.linear_as_f64())
     }
 
     pub fn inverse_transform_lattice(&self, lattice: &Lattice) -> Lattice {
-        self.transform_lattice_with_linear(&lattice, &self.linear_inv)
+        self.transform_lattice_with_linear(lattice, &self.linear_inv)
     }
 
     fn transform_lattice_with_linear(&self, lattice: &Lattice, linear: &Matrix3<f64>) -> Lattice {
