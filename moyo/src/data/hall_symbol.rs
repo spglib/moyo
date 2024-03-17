@@ -25,6 +25,7 @@ pub struct HallSymbol {
     pub hall_symbol: String,
     pub centering: Centering,
     pub centering_translations: Vec<Translation>,
+    /// Generators of the space group except pure translations
     pub generators: Operations,
 }
 

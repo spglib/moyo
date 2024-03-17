@@ -299,8 +299,6 @@ mod tests {
         );
         let symprec = 1e-4;
         let prim_cell = PrimitiveCell::new(&cell, symprec).unwrap();
-        dbg!(prim_cell.cell.lattice.volume());
-        dbg!(cell.lattice.volume());
 
         assert_relative_eq!(
             prim_cell.cell.lattice.basis * prim_cell.linear.map(|e| e as f64),

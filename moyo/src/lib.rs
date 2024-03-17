@@ -62,6 +62,11 @@ pub struct MoyoDataset {
     /// Mapping sites in the input cell to those in the primitive standardized cell.
     /// The `i`th atom in the input cell is mapped to the `mapping_to_std_prim[i]`th atom in the primitive standardized cell.
     pub mapping_std_prim: Vec<usize>,
+    // ------------------------------------------------------------------------
+    // Final parameters
+    // ------------------------------------------------------------------------
+    // pub symprec: f64,
+    // pub angle_tolerance: AngleTolerance,
 }
 
 impl MoyoDataset {

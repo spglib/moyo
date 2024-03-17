@@ -389,3 +389,31 @@ fn test_with_hexagonal_Sc() {
     assert_eq!(dataset.orbits, vec![0, 0, 0, 0, 0, 0]);
     assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'a', 'a', 'a', 'a']);
 }
+
+#[test]
+#[allow(non_snake_case)]
+fn test_with_trigonal_Sc() {
+    // https://next-gen.materialsproject.org/materials/mp-1055932
+    let lattice = Lattice::new(matrix![
+        -0.882444, 0.564392, -3.041088;
+        -1.66822, -2.81974, -0.089223;
+        -1.521212, 2.804144, -0.808507;
+    ]);
+    let positions = vec![Vector3::new(0.999917, 3.2999999999999996e-05, 1.7e-05)];
+    let numbers = vec![0];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+
+    // assert_eq!(dataset.number, 178);
+    // assert_eq!(dataset.hall_number, 472);
+    // assert_eq!(dataset.num_operations(), 12);
+    // assert_eq!(dataset.orbits, vec![0, 0, 0, 0, 0, 0]);
+    // assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'a', 'a', 'a', 'a']);
+}

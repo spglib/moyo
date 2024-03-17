@@ -88,15 +88,11 @@ pub fn symmetrize_translation_from_permutation(
         })
         .sum::<Vector3<_>>()
         / (num_atoms as f64);
-    let new_positions = reduced_cell
-        .positions
-        .iter()
-        .map(|pos| rotation.map(|e| e as f64) * pos + translation)
-        .collect::<Vec<_>>();
     let distance = (0..num_atoms)
         .map(|i| {
-            let mut frac_displacement =
-                reduced_cell.positions[permutation.apply(i)] - new_positions[i];
+            let mut frac_displacement = rotation.map(|e| e as f64) * reduced_cell.positions[i]
+                + translation
+                - reduced_cell.positions[permutation.apply(i)];
             frac_displacement -= frac_displacement.map(|e| e.round());
             reduced_cell
                 .lattice

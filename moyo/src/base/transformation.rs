@@ -116,11 +116,15 @@ impl Transformation {
     }
 
     pub fn transform_lattice(&self, lattice: &Lattice) -> Lattice {
-        Lattice::new((lattice.basis * self.linear_as_f64()).transpose())
+        self.transform_lattice_with_linear(&lattice, &self.linear_as_f64())
     }
 
     pub fn inverse_transform_lattice(&self, lattice: &Lattice) -> Lattice {
-        Lattice::new((lattice.basis * self.linear_inv).transpose())
+        self.transform_lattice_with_linear(&lattice, &self.linear_inv)
+    }
+
+    fn transform_lattice_with_linear(&self, lattice: &Lattice, linear: &Matrix3<f64>) -> Lattice {
+        Lattice::new((lattice.basis * linear).transpose())
     }
 
     /// (P, p)^-1 (W, w) (P, p)
@@ -162,7 +166,7 @@ impl Transformation {
                 translation,
                 &self.linear_inv,
                 &self.linear.map(|e| e as f64),
-                &self.origin_shift,
+                &(-self.linear_as_f64() * self.origin_shift),
             ) {
                 new_rotations.push(new_rotation);
                 new_translations.push(new_translation);
@@ -217,6 +221,7 @@ impl Transformation {
     }
 }
 
+/// Transform operation (rotation, translation) by transformation (linear, origin_shift).
 fn transform_operation_as_f64(
     rotation: &Rotation,
     translation: &Translation,

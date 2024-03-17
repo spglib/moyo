@@ -18,7 +18,7 @@ def main():
 
     time_moyopy = 0
     time_spglib = 0
-    with tqdm(df.iterrows()) as pbar:
+    with tqdm(df.iterrows(), total=len(df)) as pbar:
         for material_id, row in pbar:
             structure = ComputedStructureEntry.from_dict(row["entry"]).structure
             basis = structure.lattice.matrix

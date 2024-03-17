@@ -41,6 +41,52 @@ impl StandardizedCell {
         space_group: &SpaceGroup,
         symprec: f64,
     ) -> Result<Self, MoyoError> {
+        let (
+            prim_std_cell,
+            prim_std_permutations,
+            prim_transformation,
+            std_cell,
+            transformation,
+            rotation_matrix,
+            site_mapping,
+        ) = Self::standardize_and_symmetrize_cell(prim_cell, symmetry_search, space_group)?;
+
+        let wyckoffs = Self::assign_wyckoffs(
+            &prim_std_cell,
+            &prim_std_permutations,
+            &std_cell,
+            &site_mapping,
+            space_group.hall_number,
+            symprec,
+        )?;
+
+        Ok(StandardizedCell {
+            prim_cell: prim_std_cell,
+            prim_transformation,
+            cell: std_cell,
+            wyckoffs,
+            transformation,
+            rotation_matrix,
+            site_mapping,
+        })
+    }
+
+    fn standardize_and_symmetrize_cell(
+        prim_cell: &PrimitiveCell,
+        symmetry_search: &PrimitiveSymmetrySearch,
+        space_group: &SpaceGroup,
+    ) -> Result<
+        (
+            Cell,
+            Vec<Permutation>,
+            UnimodularTransformation,
+            Cell,
+            Transformation,
+            Matrix3<f64>,
+            Vec<usize>,
+        ),
+        MoyoError,
+    > {
         let entry = hall_symbol_entry(space_group.hall_number);
         let arithmetic_number = entry.arithmetic_number;
         let bravais_class = arithmetic_crystal_class_entry(arithmetic_number).bravais_class;
@@ -54,26 +100,77 @@ impl StandardizedCell {
             }
             _ => space_group.transformation.clone(),
         };
-        let new_prim_positions = symmetrize_positions(
-            &prim_cell.cell,
-            &symmetry_search.operations,
-            &symmetry_search.permutations,
+        let prim_std_cell_tmp = prim_transformation.transform_cell(&prim_cell.cell);
+
+        // Symmetrize positions of prim_std_cell by refined symmetry operations
+        // - Prepare operations in primitive standard
+        let hs = HallSymbol::from_hall_number(space_group.hall_number);
+        let conv_std_operations = hs.traverse();
+        let prim_std_operations = Transformation::from_linear(entry.centering.linear())
+            .inverse_transform_operations(&conv_std_operations);
+
+        // - Reorder permutations
+        let mut permutation_mapping = HashMap::new();
+        let prim_operations = prim_transformation.transform_operations(&symmetry_search.operations);
+        for (prim_rotation, permutation) in izip!(
+            prim_operations.rotations.iter(),
+            symmetry_search.permutations.iter()
+        ) {
+            permutation_mapping.insert(prim_rotation.clone(), permutation.clone());
+        }
+        let prim_std_permutations = prim_std_operations
+            .rotations
+            .iter()
+            .map(|rotation| permutation_mapping.get(rotation).unwrap().clone())
+            .collect();
+        let new_prim_std_positions = symmetrize_positions(
+            &prim_std_cell_tmp,
+            &prim_std_operations,
+            &prim_std_permutations,
         );
+
         // Note: prim_transformation.transform_cell does not change the order of sites
-        let prim_std_cell = prim_transformation.transform_cell(&Cell::new(
-            prim_cell.cell.lattice.clone(),
-            new_prim_positions,
-            prim_cell.cell.numbers.clone(),
-        ));
+        let prim_std_cell = Cell::new(
+            prim_std_cell_tmp.lattice.clone(),
+            new_prim_std_positions,
+            prim_std_cell_tmp.numbers.clone(),
+        );
 
         // To (conventional) standardized cell
         let conv_trans = Transformation::from_linear(entry.centering.linear());
         let (std_cell, site_mapping) = conv_trans.transform_cell(&prim_std_cell);
 
+        // Symmetrize lattice
+        let (_, rotation_matrix) =
+            symmetrize_lattice(&std_cell.lattice, &conv_std_operations.rotations);
+
+        Ok((
+            prim_std_cell.rotate(&rotation_matrix),
+            prim_std_permutations,
+            prim_transformation.clone(),
+            std_cell.rotate(&rotation_matrix),
+            // prim_transformation * (conv_trans.linear, 0)
+            Transformation::new(
+                prim_transformation.linear * conv_trans.linear,
+                prim_transformation.origin_shift,
+            ),
+            rotation_matrix,
+            site_mapping,
+        ))
+    }
+
+    fn assign_wyckoffs(
+        prim_std_cell: &Cell,
+        prim_std_permutations: &Vec<Permutation>,
+        std_cell: &Cell,
+        site_mapping: &Vec<usize>,
+        hall_number: HallNumber,
+        symprec: f64,
+    ) -> Result<Vec<WyckoffPosition>, MoyoError> {
         // Group sites in std_cell by crystallographic orbits
         let orbits = orbits_in_cell(
-            prim_cell.cell.num_atoms(),
-            &symmetry_search.permutations,
+            prim_std_cell.num_atoms(),
+            &prim_std_permutations,
             &site_mapping,
         );
         let mut num_orbits = 0;
@@ -105,7 +202,7 @@ impl StandardizedCell {
             if let Ok(wyckoff) = assign_wyckoff_position(
                 &std_cell.positions[i],
                 multiplicities[orbit],
-                space_group.hall_number,
+                hall_number,
                 &std_cell.lattice,
                 symprec,
             ) {
@@ -120,26 +217,7 @@ impl StandardizedCell {
         let wyckoffs = (0..std_cell.num_atoms())
             .map(|i| representative_wyckoffs[mapping[orbits[i]]].clone())
             .collect::<Vec<_>>();
-
-        // Symmetrize lattice
-        let std_rotations = HallSymbol::from_hall_number(entry.hall_number)
-            .traverse()
-            .rotations;
-        let (_, rotation_matrix) = symmetrize_lattice(&std_cell.lattice, &std_rotations);
-
-        Ok(StandardizedCell {
-            prim_cell: prim_std_cell.rotate(&rotation_matrix),
-            prim_transformation: prim_transformation.clone(),
-            cell: std_cell.rotate(&rotation_matrix),
-            wyckoffs,
-            // prim_transformation * (conv_trans.linear, 0)
-            transformation: Transformation::new(
-                prim_transformation.linear * conv_trans.linear,
-                prim_transformation.origin_shift,
-            ),
-            rotation_matrix,
-            site_mapping,
-        })
+        Ok(wyckoffs)
     }
 }
 
@@ -175,35 +253,26 @@ fn assign_wyckoff_position(
 ) -> Result<WyckoffPosition, MoyoError> {
     for wyckoff in iter_wyckoff_positions(hall_number, multiplicity) {
         // Find variable `y` and integers offset `offset` such that
-        //    | space.linear * y + space.origin - position - offset | < symprec.
+        //    | lattice * (space.linear * y + space.origin - position - offset) | < symprec.
         // Let SNF decomposition of space.linear be
         //    D = L * space.linear * R.
-        // argmin_{y in Q^3, n in Z^3} | space.linear * y + space.origin - position - offset |
-        //    = argmin_{y in Q^3, n in Z^3} | L^-1 * D * R^-1 * y + space.origin - position - offset |
-        //    = argmin_{y in Q^3, n in Z^3} | D * R^-1 * y - L * (offset + position - space.origin) |
+        // lattice * (space.linear * y + space.origin - position - offset)
+        //    = lattice * (L^-1 * D * R^-1 * y + space.origin - position - offset)
+        //    = lattice * L^-1 * (D * R^-1 * y + L * (space.origin - position - offset))
+
+        //    = lattice * (D * R^-1 * y - L * (offset + position - space.origin)
         let space = WyckoffPositionSpace::new(wyckoff.coordinates);
         let snf = SNF::new(&space.linear);
         for offset in iproduct!(-1..=1, -1..=1, -1..=1) {
             let offset = Vector3::new(offset.0 as f64, offset.1 as f64, offset.2 as f64);
             let b = snf.l.map(|e| e as f64) * (offset + position - space.origin);
             let mut rinvy = Vector3::zeros();
-            let mut valid = true;
             for i in 0..3 {
-                if snf.d[(i, i)] == 0 {
-                    let mut bi = Vector3::zeros();
-                    bi[i] = b[i];
-                    if lattice.cartesian_coords(&bi).norm() > symprec {
-                        valid = false;
-                        break;
-                    }
-                } else {
+                if snf.d[(i, i)] != 0 {
                     rinvy[i] = b[i] / snf.d[(i, i)] as f64;
                 }
             }
 
-            if !valid {
-                continue;
-            }
             let y = snf.r.map(|e| e as f64) * rinvy;
             let diff = space.linear.map(|e| e as f64) * y + space.origin - position - offset;
             if lattice.cartesian_coords(&diff).norm() < symprec {
@@ -232,9 +301,6 @@ fn symmetrize_positions(
                 operations.rotations.iter(),
                 operations.translations.iter(),
             ) {
-                if inv_perm.apply(i) == i {
-                    continue;
-                }
                 let mut frac_displacements =
                     rotation.map(|e| e as f64) * cell.positions[inv_perm.apply(i)] + translation
                         - cell.positions[i];
