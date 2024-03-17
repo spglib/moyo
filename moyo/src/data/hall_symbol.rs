@@ -1,3 +1,4 @@
+use std::collections::hash_map::Entry;
 use std::collections::{HashMap, VecDeque};
 
 use nalgebra::{matrix, Matrix3, Vector3};
@@ -172,10 +173,11 @@ impl HallSymbol {
 
         while !queue.is_empty() {
             let (rotation_lhs, translation_lhs) = queue.pop_front().unwrap();
-            if hm_translations.contains_key(&rotation_lhs) {
+            let entry = hm_translations.entry(rotation_lhs);
+            if let Entry::Occupied(_) = entry {
                 continue;
             }
-            hm_translations.insert(rotation_lhs, translation_lhs);
+            entry.or_insert(translation_lhs);
             rotations.push(rotation_lhs);
             translations.push(translation_lhs);
 
@@ -185,17 +187,17 @@ impl HallSymbol {
                 .iter()
                 .zip(self.generators.translations.iter())
             {
-                let rotation = rotation_lhs * rotation_rhs;
-                let translation =
+                let new_rotation = rotation_lhs * rotation_rhs;
+                let new_translation =
                     rotation_lhs.map(|e| e as f64) * translation_rhs + translation_lhs;
-                let translation_mod1 = translation.map(|e| {
+                let new_translation_mod1 = new_translation.map(|e| {
                     let mut eint = (e * (MAX_DENOMINATOR as f64)).round() as i32;
                     eint = eint.rem_euclid(MAX_DENOMINATOR);
                     (eint as f64) / (MAX_DENOMINATOR as f64)
                 });
 
-                if !hm_translations.contains_key(&rotation) {
-                    queue.push_back((rotation, translation_mod1));
+                if !hm_translations.contains_key(&new_rotation) {
+                    queue.push_back((new_rotation, new_translation_mod1));
                 }
             }
         }

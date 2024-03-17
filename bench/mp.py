@@ -39,6 +39,7 @@ def main():
                 pbar.set_postfix_str(f"{material_id=} number={moyopy_dataset.number}")
             except:  # noqa: E722
                 print(f"Failed: {material_id=}")
+                print(f"Elapsed time: {time_moyopy=}, {time_spglib=}")
 
                 with open(f"{material_id}.json", "w") as f:
                     json.dump(structure.as_dict(), f, indent=4)

@@ -16,6 +16,9 @@ install-python:
 test-python:
     pytest -v moyopy/python/tests
 
+profile:
+    cargo flamegraph --test test_moyo_dataset --root
+
 pre-commit:
     pre-commit run --all-files
 

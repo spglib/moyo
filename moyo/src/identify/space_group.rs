@@ -168,11 +168,8 @@ fn match_origin_shift(
         .enumerate()
     {
         // Correction transformation matrix may not be normalizer of the point group. For example, mm2 -> 2mm
-        if !hm_translations.contains_key(rotation) {
-            return None;
-        }
+        let target_translation = hm_translations.get(rotation)?;
 
-        let target_translation = hm_translations.get(rotation).unwrap();
         let ak = rotation - Matrix3::<i32>::identity();
         let bk = other_translation - target_translation;
         for i in 0..3 {

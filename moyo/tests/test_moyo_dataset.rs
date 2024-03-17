@@ -403,7 +403,7 @@ fn test_with_trigonal_Sc() {
     let numbers = vec![0];
     let cell = Cell::new(lattice, positions, numbers);
 
-    let symprec = 1e-4;
+    let symprec = 1e-1; // This structure is distorted
     let angle_tolerance = AngleTolerance::Default;
     let setting = Setting::Standard;
 
@@ -411,9 +411,9 @@ fn test_with_trigonal_Sc() {
     assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
-    // assert_eq!(dataset.number, 178);
-    // assert_eq!(dataset.hall_number, 472);
-    // assert_eq!(dataset.num_operations(), 12);
-    // assert_eq!(dataset.orbits, vec![0, 0, 0, 0, 0, 0]);
-    // assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'a', 'a', 'a', 'a']);
+    assert_eq!(dataset.number, 166);
+    assert_eq!(dataset.hall_number, 458);
+    assert_eq!(dataset.num_operations(), 12); // Rhombohedral setting
+    assert_eq!(dataset.orbits, vec![0]);
+    assert_eq!(dataset.wyckoffs, vec!['a']);
 }

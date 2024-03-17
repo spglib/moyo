@@ -196,13 +196,15 @@ fn primitive_cell_from_transformation(
     Some((primitive_cell, site_mapping))
 }
 
-#[allow(clippy::map_entry)]
 fn site_mapping_from_orbits(orbits: &[usize]) -> Vec<usize> {
     let mut mapping = BTreeMap::new();
+    let mut count = 0;
     for ri in orbits.iter() {
-        if !mapping.contains_key(&ri) {
-            mapping.insert(ri, mapping.len());
-        }
+        mapping.entry(ri).or_insert_with(|| {
+            let value = count;
+            count += 1;
+            value
+        });
     }
 
     orbits.iter().map(|ri| *mapping.get(&ri).unwrap()).collect()
