@@ -12,8 +12,8 @@ pub use operation::{Operations, Permutation, Rotation, Translation};
 pub use tolerance::AngleTolerance;
 pub use transformation::{Linear, OriginShift};
 
-pub(crate) use cell::orbits_from_permutations;
+pub use cell::orbits_from_permutations;
 #[allow(unused_imports)]
-pub(crate) use operation::traverse;
-pub(crate) use tolerance::EPS;
-pub(crate) use transformation::{Transformation, UnimodularLinear, UnimodularTransformation};
+pub use operation::traverse;
+pub use tolerance::EPS;
+pub use transformation::{Transformation, UnimodularLinear, UnimodularTransformation};
