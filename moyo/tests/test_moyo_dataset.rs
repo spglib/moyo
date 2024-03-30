@@ -2,6 +2,9 @@
 extern crate approx;
 
 use nalgebra::{matrix, vector, Matrix3, Vector3};
+use serde_json;
+use std::fs;
+use std::path::Path;
 
 use moyo::base::{AngleTolerance, Cell, Lattice, Permutation, Rotation, Translation};
 use moyo::data::Setting;
@@ -416,4 +419,25 @@ fn test_with_trigonal_Sc() {
     assert_eq!(dataset.num_operations(), 12); // Rhombohedral setting
     assert_eq!(dataset.orbits, vec![0]);
     assert_eq!(dataset.wyckoffs, vec!['a']);
+}
+
+#[test]
+#[allow(non_snake_case)]
+fn test_with_clathrate_Si() {
+    // https://next-gen.materialsproject.org/materials/mp-1201492/
+    // Pa-3
+    let path = Path::new("tests/assets/mp-1201492.json");
+    let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+
+    let symprec = 1e-4;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+
+    assert_eq!(dataset.number, 205);
+    assert_eq!(dataset.hall_number, 501);
+    assert_eq!(dataset.num_operations(), 24);
 }
