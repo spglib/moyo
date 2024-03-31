@@ -4,7 +4,7 @@ use std::collections::HashSet;
 use nalgebra::{Matrix3, Vector3};
 
 use super::solve::{
-    pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
+    pivot_site_indices, solve_correspondence_naive, symmetrize_translation_from_permutation,
 };
 use crate::base::{
     AngleTolerance, Cell, Lattice, MoyoError, Operations, Permutation, Position, Rotation, EPS,
@@ -52,7 +52,7 @@ impl PrimitiveSymmetrySearch {
                     .collect();
 
                 if let Some(permutation) =
-                    solve_correspondence(primitive_cell, &new_positions, rough_symprec)
+                    solve_correspondence_naive(primitive_cell, &new_positions, rough_symprec)
                 {
                     symmetries_tmp.push((*rotation, translation, permutation));
                     // If a translation part is found, it should be unique (up to lattice translations)

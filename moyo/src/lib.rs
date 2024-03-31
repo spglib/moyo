@@ -4,11 +4,10 @@ extern crate approx;
 
 pub mod base;
 pub mod data;
-
-mod identify;
-mod math;
-mod search;
-mod symmetrize;
+pub mod identify;
+pub mod math;
+pub mod search;
+pub mod symmetrize;
 
 use nalgebra::Matrix3;
 
