@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use itertools::iproduct;
 use kiddo::{KdTree, SquaredEuclidean};
-use nalgebra::Vector3;
+use nalgebra::{matrix, Vector3};
 
 use crate::base::{AtomicSpecie, Cell, Lattice, Permutation, Position, Rotation, Translation};
 
@@ -23,9 +23,18 @@ pub struct PeriodicNeighbor {
 impl PeriodicKdTree {
     /// Construct a periodic kd-tree from the given **Minkowski-reduced** cell.
     pub fn new(reduced_cell: &Cell, symprec: f64) -> Self {
-        let basis = reduced_cell.lattice.basis;
         // Twice the padding for safety
-        let padding = 2.0 * symprec / (3.0 * (basis * basis.transpose()).trace()).sqrt();
+        let padding = 2.0 * symprec
+            / (3.0 * (reduced_cell.lattice.basis * reduced_cell.lattice.basis.transpose()).trace())
+                .sqrt();
+
+        // Randomly rotate lattice to avoid align along x,y,z axes
+        let random_rotation_matrix = matrix![
+            1.54407599, 1.85427383, 1.28175466;
+            1.79032253, 1.59655   , 0.67848383;
+            1.39057248, 1.77092511, 0.13151589;
+        ];
+        let new_lattice = reduced_cell.lattice.rotate(&random_rotation_matrix);
 
         let mut entries = vec![];
         let mut indices = vec![];
@@ -44,14 +53,15 @@ impl PeriodicKdTree {
                     continue;
                 }
 
-                let cart_coords = reduced_cell.lattice.cartesian_coords(&new_position);
+                let cart_coords = new_lattice.cartesian_coords(&new_position);
                 entries.push([cart_coords.x, cart_coords.y, cart_coords.z]);
                 indices.push(index);
             }
         }
+
         Self {
             num_sites: reduced_cell.num_atoms(),
-            lattice: reduced_cell.lattice.clone(),
+            lattice: new_lattice,
             kdtree: (&entries).into(),
             indices,
             symprec,
