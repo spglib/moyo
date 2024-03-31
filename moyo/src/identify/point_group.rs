@@ -224,6 +224,7 @@ fn match_with_point_group(
     Err(MoyoError::ArithmeticCrystalClassIdentificationError)
 }
 
+#[allow(dead_code)]
 pub fn integral_normalizer(
     prim_rotations: &Vec<Rotation>,
     prim_generators: &Vec<Rotation>,

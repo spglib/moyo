@@ -5,8 +5,8 @@ use nalgebra::{Dyn, Matrix3, OMatrix, OVector, Vector3, U3};
 use super::point_group::PointGroup;
 use crate::base::{MoyoError, Operations, OriginShift, UnimodularLinear, UnimodularTransformation};
 use crate::data::{
-    arithmetic_crystal_class_entry, hall_symbol_entry, ArithmeticNumber, CrystalSystem, HallNumber,
-    HallSymbol, Number, PointGroupRepresentative, Setting,
+    arithmetic_crystal_class_entry, hall_symbol_entry, ArithmeticNumber, GeometricCrystalClass,
+    HallNumber, HallSymbol, Number, PointGroupRepresentative, Setting,
 };
 use crate::math::SNF;
 
@@ -39,8 +39,7 @@ impl SpaceGroup {
             let db_prim_generators = hall_symbol.primitive_generators();
 
             // Try several correction transformation matrices for monoclinic and orthorhombic
-            for trans_mat_corr in correction_transformation_matrices(point_group.arithmetic_number)
-            {
+            for trans_mat_corr in correction_transformation_matrices(entry.arithmetic_number) {
                 let trans_mat = point_group.prim_trans_mat * trans_mat_corr;
                 if let Some(origin_shift) =
                     match_origin_shift(prim_operations, &trans_mat, &db_prim_generators, epsilon)
@@ -63,65 +62,81 @@ fn correction_transformation_matrices(
 ) -> Vec<UnimodularLinear> {
     let geometric_crystal_class =
         arithmetic_crystal_class_entry(arithmetic_number).geometric_crystal_class;
-    let crystal_system = CrystalSystem::from_geometric_crystal_class(geometric_crystal_class);
 
-    // conventional -> conventional(cell choice 1 for monoclinic, abc for orthorhombic)
-    let convs = match crystal_system {
-        CrystalSystem::Monoclinic => vec![
-            UnimodularLinear::identity(),
-            // b2 to b1
-            UnimodularLinear::new(
-                0, 0, -1, //
-                0, 1, 0, //
-                1, 0, -1, //
-            ),
-            // b3 to b1
-            UnimodularLinear::new(
-                -1, 0, 1, //
-                0, 1, 0, //
-                -1, 0, 0, //
-            ),
-        ],
-        CrystalSystem::Orthorhombic => vec![
-            // abc
-            UnimodularLinear::identity(),
-            // ba-c
-            UnimodularLinear::new(
-                0, 1, 0, //
-                1, 0, 0, //
-                0, 0, -1, //
-            ),
-            // cab
-            UnimodularLinear::new(
-                0, 0, 1, //
-                1, 0, 0, //
-                0, 1, 0, //
-            ),
-            // -cba
-            UnimodularLinear::new(
-                0, 0, -1, //
-                0, 1, 0, //
-                1, 0, 0, //
-            ),
-            // bca
-            UnimodularLinear::new(
-                0, 1, 0, //
-                0, 0, 1, //
-                1, 0, 0, //
-            ),
-            // a-cb
-            UnimodularLinear::new(
-                1, 0, 0, //
-                0, 0, -1, //
-                0, 1, 0, //
-            ),
-        ],
+    // conventional -> conventional(standard)
+    let convs = match geometric_crystal_class {
+        // Monoclinic crystal system
+        GeometricCrystalClass::C2 | GeometricCrystalClass::C1h | GeometricCrystalClass::C2h => {
+            vec![
+                UnimodularLinear::identity(),
+                // b2 to b1
+                UnimodularLinear::new(
+                    0, 0, -1, //
+                    0, 1, 0, //
+                    1, 0, -1, //
+                ),
+                // b3 to b1
+                UnimodularLinear::new(
+                    -1, 0, 1, //
+                    0, 1, 0, //
+                    -1, 0, 0, //
+                ),
+            ]
+        }
+        // Orthorhombic crystal system
+        GeometricCrystalClass::D2 | GeometricCrystalClass::C2v | GeometricCrystalClass::D2h => {
+            vec![
+                // abc
+                UnimodularLinear::identity(),
+                // ba-c
+                UnimodularLinear::new(
+                    0, 1, 0, //
+                    1, 0, 0, //
+                    0, 0, -1, //
+                ),
+                // cab
+                UnimodularLinear::new(
+                    0, 0, 1, //
+                    1, 0, 0, //
+                    0, 1, 0, //
+                ),
+                // -cba
+                UnimodularLinear::new(
+                    0, 0, -1, //
+                    0, 1, 0, //
+                    1, 0, 0, //
+                ),
+                // bca
+                UnimodularLinear::new(
+                    0, 1, 0, //
+                    0, 0, 1, //
+                    1, 0, 0, //
+                ),
+                // a-cb
+                UnimodularLinear::new(
+                    1, 0, 0, //
+                    0, 0, -1, //
+                    0, 1, 0, //
+                ),
+            ]
+        }
+        // m-3
+        GeometricCrystalClass::Th => {
+            vec![
+                UnimodularLinear::identity(),
+                UnimodularLinear::new(
+                    0, 0, 1, //
+                    0, -1, 0, //
+                    1, 0, 0, //
+                ),
+            ]
+        }
         _ => vec![UnimodularLinear::identity()],
     };
 
-    // primitive -> conventional -> conventional(cell choice 1 for monoclinic, abc for orthorhombic) -> primitive
-    let centering =
-        PointGroupRepresentative::from_arithmetic_crystal_class(arithmetic_number).centering;
+    // primitive -> conventional -> conventional(standard) -> primitive
+    let point_group = PointGroupRepresentative::from_arithmetic_crystal_class(arithmetic_number);
+    let centering = point_group.centering;
     let corrections: Vec<UnimodularLinear> = convs
         .iter()
         .map(|trans_corr| {

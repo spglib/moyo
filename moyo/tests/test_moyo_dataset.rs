@@ -422,7 +422,6 @@ fn test_with_trigonal_Sc() {
 }
 
 #[test]
-#[ignore = "not yet addressed"]
 #[allow(non_snake_case)]
 fn test_with_clathrate_Si() {
     // https://next-gen.materialsproject.org/materials/mp-1201492/
