@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+use itertools::iproduct;
 use kiddo::{KdTree, SquaredEuclidean};
 use nalgebra::Vector3;
 
@@ -9,45 +10,62 @@ pub struct PeriodicKdTree {
     num_sites: usize,
     lattice: Lattice,
     kdtree: KdTree<f64, 3>,
+    indices: Vec<usize>,
+    symprec: f64,
 }
 
 #[derive(Debug)]
 pub struct PeriodicNeighbor {
     pub index: usize,
-    pub image: [i32; 3],
     pub distance: f64,
 }
 
 impl PeriodicKdTree {
     /// Construct a periodic kd-tree from the given **Minkowski-reduced** cell.
-    pub fn new(reduced_cell: &Cell) -> Self {
+    pub fn new(reduced_cell: &Cell, symprec: f64) -> Self {
+        let basis = reduced_cell.lattice.basis;
+        // Twice the padding for safety
+        let padding = 2.0 * symprec / (3.0 * (basis * basis.transpose()).trace()).sqrt();
+
         let mut entries = vec![];
-        // Append entries by (offset, position) order
-        for nz in -1..=1 {
-            for ny in -1..=1 {
-                for nx in -1..=1 {
-                    let offset = Vector3::new(nx as f64, ny as f64, nz as f64);
-                    for position in reduced_cell.positions.iter() {
-                        let cart_coords =
-                            reduced_cell.lattice.cartesian_coords(&(position + offset));
-                        entries.push([cart_coords.x, cart_coords.y, cart_coords.z]);
-                    }
+        let mut indices = vec![];
+        for offset in iproduct!(-1..=1, -1..=1, -1..=1) {
+            for (index, position) in reduced_cell.positions.iter().enumerate() {
+                let mut new_position = position.clone();
+                new_position -= position.map(|e| e.floor()); // [0, 1)
+                new_position += Vector3::new(offset.0 as f64, offset.1 as f64, offset.2 as f64);
+                if new_position[0] < -padding
+                    || new_position[0] > 1.0 + padding
+                    || new_position[1] < -padding
+                    || new_position[1] > 1.0 + padding
+                    || new_position[2] < -padding
+                    || new_position[2] > 1.0 + padding
+                {
+                    continue;
                 }
+
+                let cart_coords = reduced_cell.lattice.cartesian_coords(&new_position);
+                entries.push([cart_coords.x, cart_coords.y, cart_coords.z]);
+                indices.push(index);
             }
         }
         Self {
             num_sites: reduced_cell.num_atoms(),
             lattice: reduced_cell.lattice.clone(),
             kdtree: (&entries).into(),
+            indices,
+            symprec,
         }
     }
 
-    /// Return the nearest neighbor within the given radius if exists.
-    pub fn nearest(&self, position: &Position, radius: f64) -> Option<PeriodicNeighbor> {
-        let cart_coords = self.lattice.cartesian_coords(position);
+    /// Return the nearest neighbor within symprec if exists.
+    pub fn nearest(&self, position: &Position) -> Option<PeriodicNeighbor> {
+        let mut wrapped_position = position.clone();
+        wrapped_position -= wrapped_position.map(|e| e.floor()); // [0, 1)
+        let cart_coords = self.lattice.cartesian_coords(&wrapped_position);
         let within = self.kdtree.nearest_n_within::<SquaredEuclidean>(
             &[cart_coords.x, cart_coords.y, cart_coords.z],
-            radius.powi(2), // squared distance for KdTree
+            self.symprec.powi(2), // squared distance for KdTree
             1,
             false,
         );
@@ -55,20 +73,9 @@ impl PeriodicKdTree {
             return None;
         }
 
-        let mut item = within[0].item as usize;
-        let mut remainders = vec![];
-        for d in [self.num_sites, 3, 3, 3] {
-            remainders.push(item % d);
-            item /= d;
-        }
-
+        let item = within[0].item as usize;
         Some(PeriodicNeighbor {
-            index: remainders[0],
-            image: [
-                remainders[1] as i32 - 1,
-                remainders[2] as i32 - 1,
-                remainders[3] as i32 - 1,
-            ],
+            index: self.indices[item],
             distance: within[0].distance.sqrt(),
         })
     }
@@ -106,7 +113,7 @@ pub fn solve_correspondence(
     let mut visited = vec![false; num_atoms];
 
     for i in 0..num_atoms {
-        let neighbor = pkdtree.nearest(&new_positions[i], symprec)?;
+        let neighbor = pkdtree.nearest(&new_positions[i])?;
         let j = neighbor.index;
         if visited[j] || reduced_cell.numbers[i] != reduced_cell.numbers[j] {
             return None;
@@ -222,35 +229,33 @@ mod tests {
 
     #[test]
     fn test_periodic_kdtree() {
-        let pkdtree = PeriodicKdTree::new(&Cell::new(
-            Lattice::new(Matrix3::identity()),
-            vec![
-                Vector3::new(0.0, 0.0, 0.0),
-                Vector3::new(0.0, 0.5, 0.5),
-                Vector3::new(0.5, 0.0, 0.5),
-                Vector3::new(0.5, 0.5, 0.0),
-            ],
-            vec![0, 0, 0, 0],
-        ));
+        let pkdtree = PeriodicKdTree::new(
+            &Cell::new(
+                Lattice::new(Matrix3::identity()),
+                vec![
+                    Vector3::new(0.0, 0.0, 0.0),
+                    Vector3::new(0.0, 0.5, 0.5),
+                    Vector3::new(0.5, 0.0, 0.5),
+                    Vector3::new(0.5, 0.5, 0.0),
+                ],
+                vec![0, 0, 0, 0],
+            ),
+            1e-4,
+        );
 
         {
-            let neighbor = pkdtree.nearest(&Vector3::new(0.0, 0.0, 0.0), 1e-4).unwrap();
+            let neighbor = pkdtree.nearest(&Vector3::new(0.0, 0.0, 0.0)).unwrap();
             assert!(neighbor.index == 0);
-            assert!(neighbor.image == [0, 0, 0]);
         }
 
         {
-            let neighbor = pkdtree.nearest(&Vector3::new(1.0, 0.5, 0.5), 1e-4).unwrap();
+            let neighbor = pkdtree.nearest(&Vector3::new(1.0, 0.5, 0.5)).unwrap();
             assert!(neighbor.index == 1);
-            assert!(neighbor.image == [1, 0, 0]);
         }
 
         {
-            let neighbor = pkdtree
-                .nearest(&Vector3::new(1.5, -0.0, -0.5), 1e-4)
-                .unwrap();
+            let neighbor = pkdtree.nearest(&Vector3::new(1.5, -0.0, -0.5)).unwrap();
             assert!(neighbor.index == 2);
-            assert!(neighbor.image == [1, 0, -1]);
         }
     }
 
@@ -276,7 +281,7 @@ mod tests {
             vec![0, 0, 0, 0],
         );
         let symprec = 1e-4;
-        let pkdtree = PeriodicKdTree::new(&reduced_cell);
+        let pkdtree = PeriodicKdTree::new(&reduced_cell, symprec);
 
         {
             // Translation::new(0.0, 0.5, 0.5);
