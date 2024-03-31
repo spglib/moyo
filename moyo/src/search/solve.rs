@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use itertools::iproduct;
 use kiddo::{KdTree, SquaredEuclidean};
-use nalgebra::{matrix, Vector3};
+use nalgebra::{Rotation3, Vector3};
 
 use crate::base::{AtomicSpecie, Cell, Lattice, Permutation, Position, Rotation, Translation};
 
@@ -23,18 +23,13 @@ pub struct PeriodicNeighbor {
 impl PeriodicKdTree {
     /// Construct a periodic kd-tree from the given **Minkowski-reduced** cell.
     pub fn new(reduced_cell: &Cell, symprec: f64) -> Self {
+        // Randomly rotate lattice to avoid align along x,y,z axes
+        let random_rotation_matrix = Rotation3::new(Vector3::new(0.01, 0.02, 0.03));
+        let new_lattice = reduced_cell.lattice.rotate(&random_rotation_matrix.into());
+
         // Twice the padding for safety
         let padding = 2.0 * symprec
-            / (3.0 * (reduced_cell.lattice.basis * reduced_cell.lattice.basis.transpose()).trace())
-                .sqrt();
-
-        // Randomly rotate lattice to avoid align along x,y,z axes
-        let random_rotation_matrix = matrix![
-            1.54407599, 1.85427383, 1.28175466;
-            1.79032253, 1.59655   , 0.67848383;
-            1.39057248, 1.77092511, 0.13151589;
-        ];
-        let new_lattice = reduced_cell.lattice.rotate(&random_rotation_matrix);
+            / (3.0 * (new_lattice.basis * new_lattice.basis.transpose()).trace()).sqrt();
 
         let mut entries = vec![];
         let mut indices = vec![];
@@ -84,9 +79,14 @@ impl PeriodicKdTree {
         }
 
         let item = within[0].item as usize;
+        let distance = within[0].distance.sqrt();
+        if distance > self.symprec {
+            return None;
+        }
+
         Some(PeriodicNeighbor {
             index: self.indices[item],
-            distance: within[0].distance.sqrt(),
+            distance,
         })
     }
 }
@@ -116,7 +116,6 @@ pub fn solve_correspondence(
     pkdtree: &PeriodicKdTree,
     reduced_cell: &Cell,
     new_positions: &[Position],
-    symprec: f64,
 ) -> Option<Permutation> {
     let num_atoms = pkdtree.num_sites;
     let mut mapping = vec![0; num_atoms];
@@ -126,9 +125,6 @@ pub fn solve_correspondence(
         let neighbor = pkdtree.nearest(&new_positions[i])?;
         let j = neighbor.index;
         if visited[j] || reduced_cell.numbers[i] != reduced_cell.numbers[j] {
-            return None;
-        }
-        if neighbor.distance > symprec {
             return None;
         }
 
@@ -308,7 +304,7 @@ mod tests {
             assert_eq!(actual_naive, expect);
 
             let actual_kdtree =
-                solve_correspondence(&pkdtree, &reduced_cell, &new_positions, symprec).unwrap();
+                solve_correspondence(&pkdtree, &reduced_cell, &new_positions).unwrap();
             assert_eq!(actual_kdtree, expect);
         }
         {
@@ -323,8 +319,7 @@ mod tests {
             let actual_naive = solve_correspondence_naive(&reduced_cell, &new_positions, symprec);
             assert_eq!(actual_naive, None);
 
-            let actual_kdtree =
-                solve_correspondence(&pkdtree, &reduced_cell, &new_positions, symprec);
+            let actual_kdtree = solve_correspondence(&pkdtree, &reduced_cell, &new_positions);
             assert_eq!(actual_kdtree, None);
         }
     }

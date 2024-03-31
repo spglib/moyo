@@ -4,7 +4,8 @@ use std::collections::HashSet;
 use nalgebra::{Matrix3, Vector3};
 
 use super::solve::{
-    pivot_site_indices, solve_correspondence_naive, symmetrize_translation_from_permutation,
+    pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
+    PeriodicKdTree,
 };
 use crate::base::{
     AngleTolerance, Cell, Lattice, MoyoError, Operations, Permutation, Position, Rotation, EPS,
@@ -35,6 +36,7 @@ impl PrimitiveSymmetrySearch {
         }
 
         // Search symmetry operations
+        let pkdtree = PeriodicKdTree::new(primitive_cell, rough_symprec);
         let bravais_group =
             search_bravais_group(&primitive_cell.lattice, symprec, angle_tolerance)?;
         let pivot_site_indices = pivot_site_indices(&primitive_cell.numbers);
@@ -52,7 +54,7 @@ impl PrimitiveSymmetrySearch {
                     .collect();
 
                 if let Some(permutation) =
-                    solve_correspondence_naive(primitive_cell, &new_positions, rough_symprec)
+                    solve_correspondence(&pkdtree, primitive_cell, &new_positions)
                 {
                     symmetries_tmp.push((*rotation, translation, permutation));
                     // If a translation part is found, it should be unique (up to lattice translations)

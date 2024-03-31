@@ -3,7 +3,8 @@ use std::collections::BTreeMap;
 use nalgebra::{Dyn, Matrix3, OMatrix, Vector3, U3};
 
 use super::solve::{
-    pivot_site_indices, solve_correspondence_naive, symmetrize_translation_from_permutation,
+    pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
+    PeriodicKdTree,
 };
 use crate::base::{
     orbits_from_permutations, Cell, Linear, MoyoError, Permutation, Position, Rotation,
@@ -47,6 +48,7 @@ impl PrimitiveCell {
         }
 
         // Try possible translations: overlap the `src`the site to the `dst`th site
+        let pkdtree = PeriodicKdTree::new(&reduced_cell, rough_symprec);
         let pivot_site_indices = pivot_site_indices(&reduced_cell.numbers);
         let mut permutations_translations_tmp = vec![];
         let src = pivot_site_indices[0];
@@ -60,8 +62,7 @@ impl PrimitiveCell {
 
             // Because the translation may not be optimal to minimize distance between input and acted positions,
             // use a larger symprec (diameter of a Ball) for finding correspondence
-            if let Some(permutation) =
-                solve_correspondence_naive(&reduced_cell, &new_positions, rough_symprec)
+            if let Some(permutation) = solve_correspondence(&pkdtree, &reduced_cell, &new_positions)
             {
                 permutations_translations_tmp.push((permutation, translation));
             }
