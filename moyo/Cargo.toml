@@ -29,4 +29,10 @@ criterion = { version = "0.4", features = ["html_reports"] }
 
 [[bench]]
 name = "translation_search"
+path = "benches/translation_search.rs"
+harness = false
+
+[[bench]]
+name = "dataset"
+path = "benches/dataset.rs"
 harness = false
