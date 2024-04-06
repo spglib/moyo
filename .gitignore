@@ -357,4 +357,6 @@ flamegraph.svg
 output/
 target/
 *.so
+
 *.json
+!**/assets/*.json
