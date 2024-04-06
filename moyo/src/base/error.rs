@@ -16,6 +16,8 @@ pub enum MoyoError {
     BravaisGroupSearchError,
     #[error("Primitive symmetry search failed")]
     PrimitiveSymmetrySearchError,
+    #[error("Geometric crystal class identification failed")]
+    GeometricCrystalClassIdentificationError,
     #[error("Arithmetic crystal class identification failed")]
     ArithmeticCrystalClassIdentificationError,
     #[error("Space group type identification failed")]

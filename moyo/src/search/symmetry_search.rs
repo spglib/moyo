@@ -1,4 +1,5 @@
 use itertools::iproduct;
+use std::collections::{HashMap, HashSet, VecDeque};
 
 use log::{debug, warn};
 use nalgebra::{Matrix3, Vector3};
@@ -9,7 +10,7 @@ use super::solve::{
 };
 use crate::base::{
     traverse, AngleTolerance, Cell, Lattice, MoyoError, Operations, Permutation, Position,
-    Rotation, EPS,
+    Rotation, Translation, EPS,
 };
 
 #[derive(Debug)]
@@ -66,9 +67,7 @@ impl PrimitiveSymmetrySearch {
         assert!(!symmetries_tmp.is_empty());
 
         // Purify symmetry operations by permutations
-        let mut rotations = vec![];
-        let mut translations = vec![];
-        let mut permutations = vec![];
+        let mut translations_and_permutations = HashMap::new();
         for (rotation, rough_translation, permutation) in symmetries_tmp.iter() {
             let (translation, distance) = symmetrize_translation_from_permutation(
                 primitive_cell,
@@ -77,15 +76,51 @@ impl PrimitiveSymmetrySearch {
                 rough_translation,
             );
             if distance < symprec {
-                rotations.push(*rotation);
-                translations.push(translation);
-                permutations.push(permutation.clone());
+                translations_and_permutations.insert(*rotation, (translation, permutation.clone()));
             }
         }
-        if rotations.is_empty() {
+        if translations_and_permutations.is_empty() {
             return Err(MoyoError::PrimitiveSymmetrySearchError);
         }
 
+        // Recover operations by group multiplication
+        let mut queue = VecDeque::new();
+        let mut visited = HashSet::new();
+        let mut rotations = vec![];
+        let mut translations = vec![];
+        let mut permutations = vec![];
+        queue.push_back((
+            Rotation::identity(),
+            Translation::zeros(),
+            Permutation::identity(primitive_cell.num_atoms()),
+        ));
+
+        while !queue.is_empty() {
+            let (rotation_lhs, translation_lhs, permutation_lhs) = queue.pop_front().unwrap();
+            if visited.contains(&rotation_lhs) {
+                continue;
+            }
+            visited.insert(rotation_lhs);
+            rotations.push(rotation_lhs);
+            translations.push(translation_lhs);
+            permutations.push(permutation_lhs.clone());
+
+            for (&rotation_rhs, (translation_rhs, permutation_rhs)) in
+                translations_and_permutations.iter()
+            {
+                let new_rotation = rotation_lhs * rotation_rhs;
+                let new_translation = (rotation_lhs.map(|e| e as f64) * translation_rhs
+                    + translation_lhs)
+                    .map(|e| e - e.floor());
+                let new_permutation = permutation_lhs.clone() * permutation_rhs.clone();
+                queue.push_back((new_rotation, new_translation, new_permutation));
+            }
+        }
+        if rotations.len() != translations_and_permutations.len() {
+            warn!("Found operations do not form a group. symprec and angle_tolerance may be too large.");
+        }
+
+        debug!("Order of point group: {}", rotations.len());
         Ok(Self {
             operations: Operations::new(rotations, translations),
             permutations,
@@ -191,7 +226,7 @@ fn search_bravais_group(
         return Err(MoyoError::BravaisGroupSearchError);
     }
 
-    // Complement rotations by group multiplication
+    // Recover rotations by group multiplication
     let complemented_rotations = traverse(&rotations);
     if complemented_rotations.len() != rotations.len() {
         warn!("Found automorphisms for the lattice do not form a group. symprec and angle_tolerance may be too large.");

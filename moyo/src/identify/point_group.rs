@@ -1,6 +1,7 @@
 use std::cmp::Ordering;
 
 use itertools::Itertools;
+use log::debug;
 use nalgebra::{Dyn, Matrix3, OMatrix, OVector, U9};
 
 use crate::base::{MoyoError, Rotation, UnimodularLinear};
@@ -23,7 +24,7 @@ impl PointGroup {
     /// Assume the rotations are given in the (reduced) primitive basis
     pub fn new(prim_rotations: &Vec<Rotation>) -> Result<Self, MoyoError> {
         let rotation_types = prim_rotations.iter().map(identify_rotation_type).collect();
-        let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types);
+        let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types)?;
 
         let crystal_system = CrystalSystem::from_geometric_crystal_class(geometric_crystal_class);
         match crystal_system {
@@ -346,7 +347,9 @@ fn identify_rotation_type(rotation: &Rotation) -> RotationType {
 }
 
 /// Use look up table in Table 6 of https://arxiv.org/pdf/1808.01590.pdf
-fn identify_geometric_crystal_class(rotation_types: &Vec<RotationType>) -> GeometricCrystalClass {
+fn identify_geometric_crystal_class(
+    rotation_types: &Vec<RotationType>,
+) -> Result<GeometricCrystalClass, MoyoError> {
     // count RotationTypes in point_group
     let mut rotation_types_count = [0; 10];
     for rotation_type in rotation_types {
@@ -365,46 +368,52 @@ fn identify_geometric_crystal_class(rotation_types: &Vec<RotationType>) -> Geome
     }
     match rotation_types_count {
         // Triclinic
-        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0] => GeometricCrystalClass::C1,
-        [0, 0, 0, 0, 1, 1, 0, 0, 0, 0] => GeometricCrystalClass::Ci,
+        [0, 0, 0, 0, 0, 1, 0, 0, 0, 0] => Ok(GeometricCrystalClass::C1),
+        [0, 0, 0, 0, 1, 1, 0, 0, 0, 0] => Ok(GeometricCrystalClass::Ci),
         // Monoclinic
-        [0, 0, 0, 0, 0, 1, 1, 0, 0, 0] => GeometricCrystalClass::C2,
-        [0, 0, 0, 1, 0, 1, 0, 0, 0, 0] => GeometricCrystalClass::C1h,
-        [0, 0, 0, 1, 1, 1, 1, 0, 0, 0] => GeometricCrystalClass::C2h,
+        [0, 0, 0, 0, 0, 1, 1, 0, 0, 0] => Ok(GeometricCrystalClass::C2),
+        [0, 0, 0, 1, 0, 1, 0, 0, 0, 0] => Ok(GeometricCrystalClass::C1h),
+        [0, 0, 0, 1, 1, 1, 1, 0, 0, 0] => Ok(GeometricCrystalClass::C2h),
         // Orthorhombic
-        [0, 0, 0, 0, 0, 1, 3, 0, 0, 0] => GeometricCrystalClass::D2,
-        [0, 0, 0, 2, 0, 1, 1, 0, 0, 0] => GeometricCrystalClass::C2v,
-        [0, 0, 0, 3, 1, 1, 3, 0, 0, 0] => GeometricCrystalClass::D2h,
+        [0, 0, 0, 0, 0, 1, 3, 0, 0, 0] => Ok(GeometricCrystalClass::D2),
+        [0, 0, 0, 2, 0, 1, 1, 0, 0, 0] => Ok(GeometricCrystalClass::C2v),
+        [0, 0, 0, 3, 1, 1, 3, 0, 0, 0] => Ok(GeometricCrystalClass::D2h),
         // Tetragonal
-        [0, 0, 0, 0, 0, 1, 1, 0, 2, 0] => GeometricCrystalClass::C4,
-        [0, 2, 0, 0, 0, 1, 1, 0, 0, 0] => GeometricCrystalClass::S4,
-        [0, 2, 0, 1, 1, 1, 1, 0, 2, 0] => GeometricCrystalClass::C4h,
-        [0, 0, 0, 0, 0, 1, 5, 0, 2, 0] => GeometricCrystalClass::D4,
-        [0, 0, 0, 4, 0, 1, 1, 0, 2, 0] => GeometricCrystalClass::C4v,
-        [0, 2, 0, 2, 0, 1, 3, 0, 0, 0] => GeometricCrystalClass::D2d,
-        [0, 2, 0, 5, 1, 1, 5, 0, 2, 0] => GeometricCrystalClass::D4h,
+        [0, 0, 0, 0, 0, 1, 1, 0, 2, 0] => Ok(GeometricCrystalClass::C4),
+        [0, 2, 0, 0, 0, 1, 1, 0, 0, 0] => Ok(GeometricCrystalClass::S4),
+        [0, 2, 0, 1, 1, 1, 1, 0, 2, 0] => Ok(GeometricCrystalClass::C4h),
+        [0, 0, 0, 0, 0, 1, 5, 0, 2, 0] => Ok(GeometricCrystalClass::D4),
+        [0, 0, 0, 4, 0, 1, 1, 0, 2, 0] => Ok(GeometricCrystalClass::C4v),
+        [0, 2, 0, 2, 0, 1, 3, 0, 0, 0] => Ok(GeometricCrystalClass::D2d),
+        [0, 2, 0, 5, 1, 1, 5, 0, 2, 0] => Ok(GeometricCrystalClass::D4h),
         // Trigonal
-        [0, 0, 0, 0, 0, 1, 0, 2, 0, 0] => GeometricCrystalClass::C3,
-        [0, 0, 2, 0, 1, 1, 0, 2, 0, 0] => GeometricCrystalClass::C3i,
-        [0, 0, 0, 0, 0, 1, 3, 2, 0, 0] => GeometricCrystalClass::D3,
-        [0, 0, 0, 3, 0, 1, 0, 2, 0, 0] => GeometricCrystalClass::C3v,
-        [0, 0, 2, 3, 1, 1, 3, 2, 0, 0] => GeometricCrystalClass::D3d,
+        [0, 0, 0, 0, 0, 1, 0, 2, 0, 0] => Ok(GeometricCrystalClass::C3),
+        [0, 0, 2, 0, 1, 1, 0, 2, 0, 0] => Ok(GeometricCrystalClass::C3i),
+        [0, 0, 0, 0, 0, 1, 3, 2, 0, 0] => Ok(GeometricCrystalClass::D3),
+        [0, 0, 0, 3, 0, 1, 0, 2, 0, 0] => Ok(GeometricCrystalClass::C3v),
+        [0, 0, 2, 3, 1, 1, 3, 2, 0, 0] => Ok(GeometricCrystalClass::D3d),
         // Hexagonal
-        [0, 0, 0, 0, 0, 1, 1, 2, 0, 2] => GeometricCrystalClass::C6,
-        [2, 0, 0, 1, 0, 1, 0, 2, 0, 0] => GeometricCrystalClass::C3h,
-        [2, 0, 2, 1, 1, 1, 1, 2, 0, 2] => GeometricCrystalClass::C6h,
-        [0, 0, 0, 0, 0, 1, 7, 2, 0, 2] => GeometricCrystalClass::D6,
-        [0, 0, 0, 6, 0, 1, 1, 2, 0, 2] => GeometricCrystalClass::C6v,
-        [2, 0, 0, 4, 0, 1, 3, 2, 0, 0] => GeometricCrystalClass::D3h,
-        [2, 0, 2, 7, 1, 1, 7, 2, 0, 2] => GeometricCrystalClass::D6h,
+        [0, 0, 0, 0, 0, 1, 1, 2, 0, 2] => Ok(GeometricCrystalClass::C6),
+        [2, 0, 0, 1, 0, 1, 0, 2, 0, 0] => Ok(GeometricCrystalClass::C3h),
+        [2, 0, 2, 1, 1, 1, 1, 2, 0, 2] => Ok(GeometricCrystalClass::C6h),
+        [0, 0, 0, 0, 0, 1, 7, 2, 0, 2] => Ok(GeometricCrystalClass::D6),
+        [0, 0, 0, 6, 0, 1, 1, 2, 0, 2] => Ok(GeometricCrystalClass::C6v),
+        [2, 0, 0, 4, 0, 1, 3, 2, 0, 0] => Ok(GeometricCrystalClass::D3h),
+        [2, 0, 2, 7, 1, 1, 7, 2, 0, 2] => Ok(GeometricCrystalClass::D6h),
         // Cubic
-        [0, 0, 0, 0, 0, 1, 3, 8, 0, 0] => GeometricCrystalClass::T,
-        [0, 0, 8, 3, 1, 1, 3, 8, 0, 0] => GeometricCrystalClass::Th,
-        [0, 0, 0, 0, 0, 1, 9, 8, 6, 0] => GeometricCrystalClass::O,
-        [0, 6, 0, 6, 0, 1, 3, 8, 0, 0] => GeometricCrystalClass::Td,
-        [0, 6, 8, 9, 1, 1, 9, 8, 6, 0] => GeometricCrystalClass::Oh,
+        [0, 0, 0, 0, 0, 1, 3, 8, 0, 0] => Ok(GeometricCrystalClass::T),
+        [0, 0, 8, 3, 1, 1, 3, 8, 0, 0] => Ok(GeometricCrystalClass::Th),
+        [0, 0, 0, 0, 0, 1, 9, 8, 6, 0] => Ok(GeometricCrystalClass::O),
+        [0, 6, 0, 6, 0, 1, 3, 8, 0, 0] => Ok(GeometricCrystalClass::Td),
+        [0, 6, 8, 9, 1, 1, 9, 8, 6, 0] => Ok(GeometricCrystalClass::Oh),
         // Unknown
-        _ => unreachable!("Unknown point group"),
+        _ => {
+            debug!(
+                "Unknown geometric crystal class: {:?}",
+                rotation_types_count
+            );
+            Err(MoyoError::GeometricCrystalClassIdentificationError)
+        }
     }
 }
 
