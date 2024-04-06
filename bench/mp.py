@@ -51,7 +51,7 @@ def main():
 
                 with open(f"{material_id}.json", "w") as f:
                     f.write(moyopy_cell.serialize_json())
-                break
+                # break
 
 
 if __name__ == "__main__":

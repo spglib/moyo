@@ -278,5 +278,16 @@ mod tests {
                 search_bravais_group(&lattice, symprec, AngleTolerance::Default).unwrap();
             assert_eq!(rotations.len(), 48);
         }
+
+        {
+            let lattice = Lattice::new(matrix![
+                0.0, 14.30286652, 7.15143326;
+                0.0, 0.0, 12.38674029;
+                13.9744737, 0.0, 0.0;
+            ]);
+            let rotations =
+                search_bravais_group(&lattice, symprec, AngleTolerance::Default).unwrap();
+            assert_eq!(rotations.len(), 24);
+        }
     }
 }

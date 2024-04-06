@@ -441,3 +441,22 @@ fn test_with_clathrate_Si() {
     assert_eq!(dataset.hall_number, 501);
     assert_eq!(dataset.num_operations(), 24);
 }
+
+#[test]
+fn test_with_mp_1197586() {
+    // https://next-gen.materialsproject.org/materials/mp-1197586
+    let path = Path::new("tests/assets/mp-1197586.json");
+    let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+
+    let symprec = 1e-4;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+
+    assert_eq!(dataset.number, 194); // P6_3/mmc
+    assert_eq!(dataset.hall_number, 488);
+    assert_eq!(dataset.num_operations(), 24);
+}
