@@ -1,5 +1,5 @@
 use itertools::iproduct;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashSet, VecDeque};
 
 use log::{debug, warn};
 use nalgebra::{Matrix3, Vector3};
@@ -67,7 +67,7 @@ impl PrimitiveSymmetrySearch {
         assert!(!symmetries_tmp.is_empty());
 
         // Purify symmetry operations by permutations
-        let mut translations_and_permutations = HashMap::new();
+        let mut operations_and_permutations = vec![];
         for (rotation, rough_translation, permutation) in symmetries_tmp.iter() {
             let (translation, distance) = symmetrize_translation_from_permutation(
                 primitive_cell,
@@ -76,10 +76,10 @@ impl PrimitiveSymmetrySearch {
                 rough_translation,
             );
             if distance < symprec {
-                translations_and_permutations.insert(*rotation, (translation, permutation.clone()));
+                operations_and_permutations.push((rotation, translation, permutation.clone()));
             }
         }
-        if translations_and_permutations.is_empty() {
+        if operations_and_permutations.is_empty() {
             return Err(MoyoError::PrimitiveSymmetrySearchError);
         }
 
@@ -105,8 +105,8 @@ impl PrimitiveSymmetrySearch {
             translations.push(translation_lhs);
             permutations.push(permutation_lhs.clone());
 
-            for (&rotation_rhs, (translation_rhs, permutation_rhs)) in
-                translations_and_permutations.iter()
+            for (&rotation_rhs, translation_rhs, permutation_rhs) in
+                operations_and_permutations.iter()
             {
                 let new_rotation = rotation_lhs * rotation_rhs;
                 let new_translation = (rotation_lhs.map(|e| e as f64) * translation_rhs
@@ -116,7 +116,7 @@ impl PrimitiveSymmetrySearch {
                 queue.push_back((new_rotation, new_translation, new_permutation));
             }
         }
-        if rotations.len() != translations_and_permutations.len() {
+        if rotations.len() != operations_and_permutations.len() {
             warn!("Found operations do not form a group. symprec and angle_tolerance may be too large.");
         }
 
