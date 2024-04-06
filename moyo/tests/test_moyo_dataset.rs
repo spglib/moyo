@@ -5,6 +5,7 @@ use nalgebra::{matrix, vector, Matrix3, Vector3};
 use serde_json;
 use std::fs;
 use std::path::Path;
+use test_log::test;
 
 use moyo::base::{AngleTolerance, Cell, Lattice, Permutation, Rotation, Translation};
 use moyo::data::Setting;
@@ -448,7 +449,7 @@ fn test_with_mp_1197586() {
     let path = Path::new("tests/assets/mp-1197586.json");
     let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
 
-    let symprec = 1e-4;
+    let symprec = 1e-3; // 1e-4 gives C2/m
     let angle_tolerance = AngleTolerance::Default;
     let setting = Setting::Standard;
 

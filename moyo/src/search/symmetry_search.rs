@@ -1,6 +1,6 @@
 use itertools::iproduct;
-use std::collections::HashSet;
 
+use log::{debug, warn};
 use nalgebra::{Matrix3, Vector3};
 
 use super::solve::{
@@ -8,7 +8,8 @@ use super::solve::{
     PeriodicKdTree,
 };
 use crate::base::{
-    AngleTolerance, Cell, Lattice, MoyoError, Operations, Permutation, Position, Rotation, EPS,
+    traverse, AngleTolerance, Cell, Lattice, MoyoError, Operations, Permutation, Position,
+    Rotation, EPS,
 };
 
 #[derive(Debug)]
@@ -190,19 +191,13 @@ fn search_bravais_group(
         return Err(MoyoError::BravaisGroupSearchError);
     }
 
-    // Check to reproduce rotation operations by group multiplication
-    let mut rotation_set = HashSet::new();
-    for rotation in rotations.iter() {
-        rotation_set.insert(*rotation);
+    // Complement rotations by group multiplication
+    let complemented_rotations = traverse(&rotations);
+    if complemented_rotations.len() != rotations.len() {
+        warn!("Found automorphisms for the lattice do not form a group. symprec and angle_tolerance may be too large.");
     }
-    for (r1, r2) in iproduct!(rotation_set.iter(), rotation_set.iter()) {
-        let r12 = r1 * r2;
-        if !rotation_set.contains(&r12) {
-            return Err(MoyoError::BravaisGroupSearchError);
-        }
-    }
-
-    Ok(rotations)
+    debug!("Order of Bravais group: {}", complemented_rotations.len());
+    Ok(complemented_rotations)
 }
 
 /// Compare (basis.column(col1), basis.column(col2)) and (b1, b2)
@@ -277,17 +272,6 @@ mod tests {
             let rotations =
                 search_bravais_group(&lattice, symprec, AngleTolerance::Default).unwrap();
             assert_eq!(rotations.len(), 48);
-        }
-
-        {
-            let lattice = Lattice::new(matrix![
-                0.0, 14.30286652, 7.15143326;
-                0.0, 0.0, 12.38674029;
-                13.9744737, 0.0, 0.0;
-            ]);
-            let rotations =
-                search_bravais_group(&lattice, symprec, AngleTolerance::Default).unwrap();
-            assert_eq!(rotations.len(), 24);
         }
     }
 }

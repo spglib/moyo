@@ -21,11 +21,15 @@ union-find = "0.4.2"
 strum = "0.25"
 strum_macros = "0.25"
 kiddo = "4.2.0"
+# Disable trace and debug level logs in release build
+log = { version = "0.4", features = ["release_max_level_info"] }
 
 [dev-dependencies]
 rand = "0.8.5"
 rstest = "0.18.2"
 criterion = { version = "0.4", features = ["html_reports"] }
+env_logger = "0.11.3"
+test-log = "0.2.15"
 
 [[bench]]
 name = "translation_search"
