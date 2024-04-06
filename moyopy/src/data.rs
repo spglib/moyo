@@ -5,7 +5,7 @@ use moyo::data::Setting;
 
 #[derive(Debug, Clone)]
 #[pyclass(name = "Setting")]
-#[pyo3(module = "moyo")]
+#[pyo3(module = "moyopy")]
 pub struct PySetting(Setting);
 
 #[pymethods]

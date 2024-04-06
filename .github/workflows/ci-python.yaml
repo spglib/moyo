@@ -46,7 +46,7 @@ jobs:
         run: |
           set -e
           pip install moyopy[dev] --find-links dist --force-reinstall
-          cd moyopy && pytest -v
+          pytest -v
       - name: pytest
         if: ${{ !startsWith(matrix.target, 'x86') && matrix.target != 'ppc64' }}
         uses: uraimo/run-on-arch-action@v2.5.0
@@ -61,7 +61,7 @@ jobs:
           run: |
             set -e
             pip3 install moyopy --find-links dist --force-reinstall
-            cd moyopy && pytest -v
+            pytest -v
 
   windows:
     runs-on: windows-latest

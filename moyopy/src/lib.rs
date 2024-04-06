@@ -14,7 +14,7 @@ use crate::data::PySetting;
 
 #[derive(Debug)]
 #[pyclass(name = "MoyoDataset")]
-#[pyo3(module = "moyo")]
+#[pyo3(module = "moyopy")]
 pub struct PyMoyoDataset(MoyoDataset);
 
 #[pymethods]
@@ -115,10 +115,10 @@ impl PyMoyoDataset {
 }
 
 // https://github.com/pydantic/pydantic-core/blob/main/src/lib.rs
-pub fn moyo_version() -> &'static str {
-    static MOYO_VERSION: OnceLock<String> = OnceLock::new();
+pub fn moyopy_version() -> &'static str {
+    static MOYOPY_VERSION: OnceLock<String> = OnceLock::new();
 
-    MOYO_VERSION.get_or_init(|| {
+    MOYOPY_VERSION.get_or_init(|| {
         let version = env!("CARGO_PKG_VERSION");
         // cargo uses "1.0-alpha1" etc. while python uses "1.0.0a1", this is not full compatibility,
         // but it's good enough for now
@@ -131,8 +131,9 @@ pub fn moyo_version() -> &'static str {
 
 /// A Python module implemented in Rust.
 #[pymodule]
-fn _moyopy(_py: Python, m: &PyModule) -> PyResult<()> {
-    m.add("__version__", moyo_version())?;
+#[pyo3(name = "_moyopy")]
+fn moyopy(_py: Python, m: &PyModule) -> PyResult<()> {
+    m.add("__version__", moyopy_version())?;
 
     // lib
     m.add_class::<PyMoyoDataset>()?;
