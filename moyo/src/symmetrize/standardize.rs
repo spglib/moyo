@@ -1,4 +1,5 @@
 use itertools::{iproduct, izip};
+use log::warn;
 use nalgebra::linalg::{Cholesky, QR};
 use nalgebra::{vector, Matrix3, Vector3};
 use std::collections::HashMap;
@@ -210,6 +211,15 @@ impl StandardizedCell {
                 representative_wyckoffs[orbit] = Some(wyckoff);
             }
         }
+
+        for (i, wyckoff) in representative_wyckoffs.iter().enumerate() {
+            if wyckoff.is_none() {
+                warn!(
+                    "Failed to assign Wyckoff positions with multiplicity {}: {:?}",
+                    multiplicities[i], std_cell.positions[i]
+                );
+            }
+        }
         let representative_wyckoffs = representative_wyckoffs
             .into_iter()
             .map(|wyckoff| wyckoff.ok_or(MoyoError::WyckoffPositionAssignmentError))
@@ -294,6 +304,7 @@ fn symmetrize_positions(
         .iter()
         .map(|permutation| permutation.inverse())
         .collect::<Vec<_>>();
+
     (0..cell.num_atoms())
         .map(|i| {
             let mut acc = Vector3::zeros();

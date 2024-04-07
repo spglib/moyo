@@ -112,6 +112,20 @@ impl PyMoyoDataset {
     pub fn mapping_std_prim(&self) -> Vec<usize> {
         self.0.mapping_std_prim.clone()
     }
+
+    #[getter]
+    pub fn symprec(&self) -> f64 {
+        self.0.symprec
+    }
+
+    #[getter]
+    pub fn angle_tolerance(&self) -> Option<f64> {
+        if let AngleTolerance::Radian(angle_tolerance) = self.0.angle_tolerance {
+            return Some(angle_tolerance);
+        } else {
+            return None;
+        }
+    }
 }
 
 // https://github.com/pydantic/pydantic-core/blob/main/src/lib.rs

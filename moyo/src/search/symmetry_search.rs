@@ -1,7 +1,7 @@
 use itertools::iproduct;
-use std::collections::{HashSet, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 
-use log::{debug, warn};
+use log::{debug, error, warn};
 use nalgebra::{Matrix3, Vector3};
 
 use super::solve::{
@@ -24,6 +24,8 @@ pub struct PrimitiveSymmetrySearch {
 impl PrimitiveSymmetrySearch {
     /// Return coset representatives of the space group w.r.t. its translation subgroup.
     /// Assume `primitive_cell` is a primitive cell and its basis vectors are Minkowski reduced.
+    /// Returned operations are guaranteed to form a group.
+    /// If the group closure and tolerance (symprec and angle_tolerance) are incompatible, the former is prioritized.
     /// Possible replacements for spglib/src/spacegroup.h::spa_search_spacegroup
     pub fn new(
         primitive_cell: &Cell,
@@ -34,7 +36,10 @@ impl PrimitiveSymmetrySearch {
         let minimum_basis_norm = primitive_cell.lattice.basis.column(0).norm();
         let rough_symprec = 2.0 * symprec;
         if rough_symprec > minimum_basis_norm / 2.0 {
-            return Err(MoyoError::TooSmallSymprecError);
+            error!(
+                "symprec is too large compared to the basis vectors. Consider reducing symprec."
+            );
+            return Err(MoyoError::TooLargeToleranceError);
         }
 
         // Search symmetry operations
@@ -80,7 +85,10 @@ impl PrimitiveSymmetrySearch {
             }
         }
         if operations_and_permutations.is_empty() {
-            return Err(MoyoError::PrimitiveSymmetrySearchError);
+            error!(
+                "No symmetry operations are found. Consider increasing symprec and angle_tolerance."
+            );
+            return Err(MoyoError::TooSmallToleranceError);
         }
 
         // Recover operations by group multiplication
@@ -94,7 +102,6 @@ impl PrimitiveSymmetrySearch {
             Translation::zeros(),
             Permutation::identity(primitive_cell.num_atoms()),
         ));
-
         while !queue.is_empty() {
             let (rotation_lhs, translation_lhs, permutation_lhs) = queue.pop_front().unwrap();
             if visited.contains(&rotation_lhs) {
@@ -111,13 +118,39 @@ impl PrimitiveSymmetrySearch {
                 let new_rotation = rotation_lhs * rotation_rhs;
                 let new_translation = (rotation_lhs.map(|e| e as f64) * translation_rhs
                     + translation_lhs)
-                    .map(|e| e - e.floor());
+                    .map(|e| e - e.round());
                 let new_permutation = permutation_lhs.clone() * permutation_rhs.clone();
                 queue.push_back((new_rotation, new_translation, new_permutation));
             }
         }
         if rotations.len() != operations_and_permutations.len() {
-            warn!("Found operations do not form a group. symprec and angle_tolerance may be too large.");
+            warn!("Found operations do not form a group. Consider reducing symprec and angle_tolerance.");
+        }
+
+        // Check closure
+        let mut translations_map = HashMap::new();
+        for (rotation, translation) in rotations.iter().zip(translations.iter()) {
+            translations_map.insert(rotation.clone(), translation.clone());
+        }
+        let mut closed = true;
+        for (r1, t1) in rotations.iter().zip(translations.iter()) {
+            if !closed {
+                break;
+            }
+            for (r2, t2) in rotations.iter().zip(translations.iter()) {
+                // (r1, t1) * (r2, t2) = (r1 * r2, r1 * t2 + t1)
+                let r = r1 * r2;
+                let t = r1.map(|e| e as f64) * t2 + t1;
+                let diff = (translations_map[&r] - t).map(|e| e - e.round());
+                if primitive_cell.lattice.cartesian_coords(&diff).norm() > rough_symprec {
+                    closed = false;
+                    break;
+                }
+            }
+        }
+        if !closed {
+            error!("Some centering translations are missing. Consider increasing symprec and angle_tolerance.");
+            return Err(MoyoError::TooSmallToleranceError);
         }
 
         debug!("Order of point group: {}", rotations.len());
@@ -229,7 +262,7 @@ fn search_bravais_group(
     // Recover rotations by group multiplication
     let complemented_rotations = traverse(&rotations);
     if complemented_rotations.len() != rotations.len() {
-        warn!("Found automorphisms for the lattice do not form a group. symprec and angle_tolerance may be too large.");
+        warn!("Found automorphisms for the lattice do not form a group. Consider reducing symprec and angle_tolerance.");
     }
     debug!("Order of Bravais group: {}", complemented_rotations.len());
     Ok(complemented_rotations)

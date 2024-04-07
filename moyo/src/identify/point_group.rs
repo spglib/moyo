@@ -25,6 +25,7 @@ impl PointGroup {
     pub fn new(prim_rotations: &Vec<Rotation>) -> Result<Self, MoyoError> {
         let rotation_types = prim_rotations.iter().map(identify_rotation_type).collect();
         let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types)?;
+        debug!("Geometric crystal class: {:?}", geometric_crystal_class);
 
         let crystal_system = CrystalSystem::from_geometric_crystal_class(geometric_crystal_class);
         match crystal_system {

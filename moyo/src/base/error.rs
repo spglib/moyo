@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, PartialEq, Eq, Clone, Copy)]
 pub enum MoyoError {
     #[error("Minkowski reduction failed")]
     MinkowskiReductionError,
@@ -8,14 +8,16 @@ pub enum MoyoError {
     NiggliReductionError,
     #[error("Delaunay reduction failed")]
     DelaunayReductionError,
-    #[error("Too small symprec")]
-    TooSmallSymprecError,
+    #[error("Too small tolerance")]
+    TooSmallToleranceError,
+    #[error("Too large tolerance")]
+    TooLargeToleranceError,
     #[error("Primitive cell search failed")]
     PrimitiveCellError,
-    #[error("Bravais group search failed")]
-    BravaisGroupSearchError,
     #[error("Primitive symmetry search failed")]
     PrimitiveSymmetrySearchError,
+    #[error("Bravais group search failed")]
+    BravaisGroupSearchError,
     #[error("Geometric crystal class identification failed")]
     GeometricCrystalClassIdentificationError,
     #[error("Arithmetic crystal class identification failed")]

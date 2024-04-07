@@ -482,3 +482,22 @@ fn test_with_mp_1185639() {
     assert_eq!(dataset.hall_number, 481);
     assert_eq!(dataset.num_operations(), 12);
 }
+
+#[test]
+fn test_with_mp_1221598() {
+    // https://next-gen.materialsproject.org/materials/mp-1221598
+    let path = Path::new("tests/assets/mp-1221598.json");
+    let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+
+    let symprec = 1e-4;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+
+    // assert_eq!(dataset.number, 187); // P-6m2
+    // assert_eq!(dataset.hall_number, 481);
+    // assert_eq!(dataset.num_operations(), 12);
+}

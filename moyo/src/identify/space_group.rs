@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use log::debug;
 use nalgebra::{Dyn, Matrix3, OMatrix, OVector, Vector3, U3};
 
 use super::point_group::PointGroup;
@@ -28,6 +29,10 @@ impl SpaceGroup {
     ) -> Result<Self, MoyoError> {
         // point_group.trans_mat: self -> primitive
         let point_group = PointGroup::new(&prim_operations.rotations)?;
+        debug!(
+            "Arithmetic crystal class: No. {}",
+            point_group.arithmetic_number
+        );
 
         for hall_number in setting.hall_numbers() {
             let entry = hall_symbol_entry(hall_number);
@@ -44,6 +49,10 @@ impl SpaceGroup {
                 if let Some(origin_shift) =
                     match_origin_shift(prim_operations, &trans_mat, &db_prim_generators, epsilon)
                 {
+                    debug!(
+                        "Matched with Hall number {} (No. {})",
+                        hall_number, entry.number
+                    );
                     return Ok(Self {
                         number: entry.number,
                         hall_number,
@@ -198,6 +207,7 @@ fn match_origin_shift(
     match solve_mod1(&a, &b, epsilon) {
         Some(s) => {
             let origin_shift = (trans_mat.map(|e| e as f64) * s).map(|e| e % 1.);
+
             Some(origin_shift)
         }
         None => None,
