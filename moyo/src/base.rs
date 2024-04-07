@@ -15,5 +15,5 @@ pub use transformation::{Linear, OriginShift};
 pub use cell::orbits_from_permutations;
 #[allow(unused_imports)]
 pub use operation::traverse;
-pub use tolerance::EPS;
+pub use tolerance::{ToleranceHandler, EPS};
 pub use transformation::{Transformation, UnimodularLinear, UnimodularTransformation};

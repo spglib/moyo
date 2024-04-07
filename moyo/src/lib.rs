@@ -9,10 +9,11 @@ pub mod math;
 pub mod search;
 pub mod symmetrize;
 
-use log::warn;
 use nalgebra::Matrix3;
 
-use crate::base::{AngleTolerance, Cell, MoyoError, Operations, OriginShift, Transformation};
+use crate::base::{
+    AngleTolerance, Cell, MoyoError, Operations, OriginShift, ToleranceHandler, Transformation,
+};
 use crate::data::{HallNumber, Number, Setting};
 use crate::identify::SpaceGroup;
 use crate::search::{PrimitiveCell, PrimitiveSymmetrySearch};
@@ -154,111 +155,40 @@ impl MoyoDataset {
 }
 
 const MAX_SYMMETRY_SEARCH_TRIALS: usize = 16;
-const INITIAL_SYMMETRY_SEARCH_STRIDE: f64 = 2.0;
 
 fn iterative_symmetry_search(
     cell: &Cell,
     symprec: f64,
     angle_tolerance: AngleTolerance,
 ) -> Result<(PrimitiveCell, PrimitiveSymmetrySearch, f64, AngleTolerance), MoyoError> {
-    let mut symprec = symprec;
-    let mut angle_tolerance = angle_tolerance;
-    let mut stride: f64 = INITIAL_SYMMETRY_SEARCH_STRIDE;
-    let mut prev_error: Option<MoyoError> = None;
-
-    fn _increase_tolerance(
-        symprec: f64,
-        angle_tolerance: AngleTolerance,
-        stride: f64,
-    ) -> (f64, AngleTolerance) {
-        let symprec = symprec * stride;
-        let angle_tolerance = if let AngleTolerance::Radian(angle) = angle_tolerance {
-            AngleTolerance::Radian(angle * stride)
-        } else {
-            AngleTolerance::Default
-        };
-        warn!(
-            "Increase tolerance to symprec={}, angle_tolerance={:?}",
-            symprec, angle_tolerance
-        );
-        (symprec, angle_tolerance)
-    }
-
-    fn _reduce_tolerance(
-        symprec: f64,
-        angle_tolerance: AngleTolerance,
-        stride: f64,
-    ) -> (f64, AngleTolerance) {
-        let symprec = symprec / stride;
-        let angle_tolerance = if let AngleTolerance::Radian(angle) = angle_tolerance {
-            AngleTolerance::Radian(angle / stride)
-        } else {
-            AngleTolerance::Default
-        };
-        warn!(
-            "Reduce tolerance to symprec={}, angle_tolerance={:?}",
-            symprec, angle_tolerance
-        );
-        (symprec, angle_tolerance)
-    }
-
-    fn _update_stride(
-        err: MoyoError,
-        prev_error: Option<MoyoError>,
-        stride: f64,
-    ) -> (Option<MoyoError>, f64) {
-        let stride = if !prev_error.is_none() && prev_error != Some(err) {
-            stride.sqrt()
-        } else {
-            stride
-        };
-        (Some(err), stride)
-    }
-
-    fn handle_tolerance_error(
-        err: MoyoError,
-        prev_error: Option<MoyoError>,
-        stride: f64,
-        symprec: f64,
-        angle_tolerance: AngleTolerance,
-    ) -> (Option<MoyoError>, f64, f64, AngleTolerance) {
-        let (new_error, new_stride) = _update_stride(err, prev_error, stride);
-        let (new_symprec, new_angle_tolerance) = match err {
-            MoyoError::TooSmallToleranceError => {
-                _increase_tolerance(symprec, angle_tolerance, new_stride)
-            }
-            MoyoError::TooLargeToleranceError => {
-                _reduce_tolerance(symprec, angle_tolerance, new_stride)
-            }
-            _ => (symprec, angle_tolerance),
-        };
-        (new_error, new_stride, new_symprec, new_angle_tolerance)
-    }
+    let mut tolerance_handler = ToleranceHandler::new(symprec, angle_tolerance);
 
     for _ in 0..MAX_SYMMETRY_SEARCH_TRIALS {
-        match PrimitiveCell::new(cell, symprec) {
+        match PrimitiveCell::new(cell, tolerance_handler.symprec) {
             Ok(prim_cell) => {
-                match PrimitiveSymmetrySearch::new(&prim_cell.cell, symprec, angle_tolerance) {
+                match PrimitiveSymmetrySearch::new(
+                    &prim_cell.cell,
+                    tolerance_handler.symprec,
+                    tolerance_handler.angle_tolerance,
+                ) {
                     Ok(symmetry_search) => {
-                        return Ok((prim_cell, symmetry_search, symprec, angle_tolerance));
+                        return Ok((
+                            prim_cell,
+                            symmetry_search,
+                            tolerance_handler.symprec,
+                            tolerance_handler.angle_tolerance,
+                        ));
                     }
                     Err(err @ MoyoError::TooSmallToleranceError)
                     | Err(err @ MoyoError::TooLargeToleranceError) => {
-                        (prev_error, stride, symprec, angle_tolerance) = handle_tolerance_error(
-                            err,
-                            prev_error,
-                            stride,
-                            symprec,
-                            angle_tolerance,
-                        );
+                        tolerance_handler.update(err);
                     }
                     Err(err) => return Err(err),
                 }
             }
             Err(err @ MoyoError::TooSmallToleranceError)
             | Err(err @ MoyoError::TooLargeToleranceError) => {
-                (prev_error, stride, symprec, angle_tolerance) =
-                    handle_tolerance_error(err, prev_error, stride, symprec, angle_tolerance);
+                tolerance_handler.update(err);
             }
             Err(err) => return Err(err),
         }
