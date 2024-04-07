@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use log::error;
+use log::warn;
 use nalgebra::{Dyn, Matrix3, OMatrix, Vector3, U3};
 
 use super::solve::{
@@ -45,9 +45,7 @@ impl PrimitiveCell {
             .fold(f64::INFINITY, f64::min);
         let rough_symprec = 2.0 * symprec;
         if rough_symprec > minimum_basis_norm / 2.0 {
-            error!(
-                "symprec is too large compared to the basis vectors. Consider reducing symprec."
-            );
+            warn!("symprec is too large compared to the basis vectors. Consider reducing symprec.");
             return Err(MoyoError::TooLargeToleranceError);
         }
 
@@ -71,7 +69,6 @@ impl PrimitiveCell {
                 permutations_translations_tmp.push((permutation, translation));
             }
         }
-        assert!(!permutations_translations_tmp.is_empty());
 
         // Purify translations by permutations
         let mut translations = vec![];
@@ -90,9 +87,9 @@ impl PrimitiveCell {
         }
 
         let size = translations.len() as i32;
-        assert!(size > 0);
-        if reduced_cell.num_atoms() % (size as usize) != 0 {
-            return Err(MoyoError::PrimitiveCellError);
+        if (size == 0) || (reduced_cell.num_atoms() % (size as usize) != 0) {
+            warn!("Failed to properly find translations. Consider increasing symprec.");
+            return Err(MoyoError::TooSmallToleranceError);
         }
 
         // Recover a transformation matrix from primitive to input cell
@@ -118,7 +115,8 @@ impl PrimitiveCell {
             size as f64,
             epsilon = EPS
         ) {
-            return Err(MoyoError::PrimitiveCellError);
+            warn!("Failed to properly find translations. Consider increasing symprec.");
+            return Err(MoyoError::TooSmallToleranceError);
         }
 
         // Primitive cell
@@ -127,8 +125,7 @@ impl PrimitiveCell {
             &trans_mat,
             &translations,
             &permutations,
-        )
-        .ok_or(MoyoError::PrimitiveCellError)?;
+        );
         let (_, prim_trans_mat) = primitive_cell.lattice.minkowski_reduce()?;
         let reduced_prim_cell =
             UnimodularTransformation::from_linear(prim_trans_mat).transform_cell(&primitive_cell);
@@ -142,10 +139,7 @@ impl PrimitiveCell {
             .try_inverse()
             .unwrap()
             .map(|e| e.round() as i32);
-        let inv_reduced_trans_mat = reduced_trans_mat
-            .map(|e| e as f64)
-            .try_inverse()
-            .ok_or(MoyoError::PrimitiveCellError)?;
+        let inv_reduced_trans_mat = reduced_trans_mat.map(|e| e as f64).try_inverse().unwrap();
         Ok(Self {
             cell: reduced_prim_cell,
             linear: ((inv_prim_trans_mat * trans_mat).map(|e| e as f64) * inv_reduced_trans_mat)
@@ -166,7 +160,7 @@ fn primitive_cell_from_transformation(
     trans_mat: &Linear,
     translations: &Vec<Translation>,
     permutations: &[Permutation],
-) -> Option<(Cell, Vec<usize>)> {
+) -> (Cell, Vec<usize>) {
     let new_lattice =
         Transformation::from_linear(*trans_mat).inverse_transform_lattice(&cell.lattice);
 
@@ -198,7 +192,7 @@ fn primitive_cell_from_transformation(
 
     let primitive_cell = Cell::new(new_lattice, new_positions, new_numbers);
     let site_mapping = site_mapping_from_orbits(&orbits);
-    Some((primitive_cell, site_mapping))
+    (primitive_cell, site_mapping)
 }
 
 fn site_mapping_from_orbits(orbits: &[usize]) -> Vec<usize> {

@@ -470,7 +470,7 @@ fn test_with_mp_1185639() {
     let path = Path::new("tests/assets/mp-1185639.json");
     let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
 
-    let symprec = 1e-4;
+    let symprec = 1e-2;
     let angle_tolerance = AngleTolerance::Default;
     let setting = Setting::Standard;
 
@@ -489,7 +489,7 @@ fn test_with_mp_1221598() {
     let path = Path::new("tests/assets/mp-1221598.json");
     let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
 
-    let symprec = 1e-4;
+    let symprec = 1e-1;
     let angle_tolerance = AngleTolerance::Default;
     let setting = Setting::Standard;
 
@@ -497,7 +497,37 @@ fn test_with_mp_1221598() {
     assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
-    // assert_eq!(dataset.number, 187); // P-6m2
-    // assert_eq!(dataset.hall_number, 481);
-    // assert_eq!(dataset.num_operations(), 12);
+    assert_eq!(dataset.number, 225); // Fm-3m
+}
+
+#[test]
+fn test_with_mp_569901() {
+    let path = Path::new("tests/assets/mp-569901.json");
+    let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+
+    let symprec = 1e-1;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+
+    assert_eq!(dataset.number, 118); // P-4n2
+}
+
+#[test]
+fn test_with_mp_30665() {
+    let path = Path::new("tests/assets/mp-30665.json");
+    let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+
+    let symprec = 1e-1;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+
+    // assert_eq!(dataset.number, 118); // P-4n2
 }

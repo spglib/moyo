@@ -179,18 +179,10 @@ fn iterative_symmetry_search(
                             tolerance_handler.angle_tolerance,
                         ));
                     }
-                    Err(err @ MoyoError::TooSmallToleranceError)
-                    | Err(err @ MoyoError::TooLargeToleranceError) => {
-                        tolerance_handler.update(err);
-                    }
-                    Err(err) => return Err(err),
+                    Err(err) => tolerance_handler.update(err),
                 }
             }
-            Err(err @ MoyoError::TooSmallToleranceError)
-            | Err(err @ MoyoError::TooLargeToleranceError) => {
-                tolerance_handler.update(err);
-            }
-            Err(err) => return Err(err),
+            Err(err) => tolerance_handler.update(err),
         }
     }
     Err(MoyoError::PrimitiveSymmetrySearchError)

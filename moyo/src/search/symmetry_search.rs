@@ -1,7 +1,7 @@
 use itertools::iproduct;
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use log::{debug, error, warn};
+use log::{debug, warn};
 use nalgebra::{Matrix3, Vector3};
 
 use super::solve::{
@@ -36,9 +36,7 @@ impl PrimitiveSymmetrySearch {
         let minimum_basis_norm = primitive_cell.lattice.basis.column(0).norm();
         let rough_symprec = 2.0 * symprec;
         if rough_symprec > minimum_basis_norm / 2.0 {
-            error!(
-                "symprec is too large compared to the basis vectors. Consider reducing symprec."
-            );
+            warn!("symprec is too large compared to the basis vectors. Consider reducing symprec.");
             return Err(MoyoError::TooLargeToleranceError);
         }
 
@@ -69,7 +67,6 @@ impl PrimitiveSymmetrySearch {
                 }
             }
         }
-        assert!(!symmetries_tmp.is_empty());
 
         // Purify symmetry operations by permutations
         let mut operations_and_permutations = vec![];
@@ -85,7 +82,7 @@ impl PrimitiveSymmetrySearch {
             }
         }
         if operations_and_permutations.is_empty() {
-            error!(
+            warn!(
                 "No symmetry operations are found. Consider increasing symprec and angle_tolerance."
             );
             return Err(MoyoError::TooSmallToleranceError);
@@ -125,6 +122,7 @@ impl PrimitiveSymmetrySearch {
         }
         if rotations.len() != operations_and_permutations.len() {
             warn!("Found operations do not form a group. Consider reducing symprec and angle_tolerance.");
+            return Err(MoyoError::TooLargeToleranceError);
         }
 
         // Check closure
@@ -149,8 +147,8 @@ impl PrimitiveSymmetrySearch {
             }
         }
         if !closed {
-            error!("Some centering translations are missing. Consider increasing symprec and angle_tolerance.");
-            return Err(MoyoError::TooSmallToleranceError);
+            warn!("Some centering translations are missing. Consider reducing symprec and angle_tolerance.");
+            return Err(MoyoError::TooLargeToleranceError);
         }
 
         debug!("Order of point group: {}", rotations.len());
@@ -255,14 +253,11 @@ fn search_bravais_group(
         }
     }
 
-    if rotations.is_empty() {
-        return Err(MoyoError::BravaisGroupSearchError);
-    }
-
     // Recover rotations by group multiplication
     let complemented_rotations = traverse(&rotations);
     if complemented_rotations.len() != rotations.len() {
         warn!("Found automorphisms for the lattice do not form a group. Consider reducing symprec and angle_tolerance.");
+        return Err(MoyoError::TooLargeToleranceError);
     }
     debug!("Order of Bravais group: {}", complemented_rotations.len());
     Ok(complemented_rotations)

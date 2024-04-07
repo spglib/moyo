@@ -40,7 +40,7 @@ impl ToleranceHandler {
         (self.symprec, self.angle_tolerance) = match err {
             MoyoError::TooSmallToleranceError => self.increase_tolerance(),
             MoyoError::TooLargeToleranceError => self.reduce_tolerance(),
-            _ => (self.symprec, self.angle_tolerance),
+            _ => self.reduce_tolerance(),
         }
     }
 
