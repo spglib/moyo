@@ -528,6 +528,21 @@ fn test_with_mp_30665() {
     let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
     assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+}
 
-    // assert_eq!(dataset.number, 118); // P-4n2
+#[test]
+fn test_monotonic_symmetry_recovery() {
+    let path = Path::new("tests/assets/mp-1277787.json");
+    let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let symprec = 5e-2;
+    let dataset1 = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
+
+    let symprec = 1e-1;
+    let dataset2 = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
+
+    assert!(dataset1.number <= dataset2.number);
 }

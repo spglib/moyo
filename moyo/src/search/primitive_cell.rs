@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use log::warn;
+use log::{debug, warn};
 use nalgebra::{Dyn, Matrix3, OMatrix, Vector3, U3};
 
 use super::solve::{
@@ -91,6 +91,7 @@ impl PrimitiveCell {
             warn!("Failed to properly find translations. Consider increasing symprec.");
             return Err(MoyoError::TooSmallToleranceError);
         }
+        debug!("Found {} pure translations", size);
 
         // Recover a transformation matrix from primitive to input cell
         let mut columns: Vec<Vector3<i32>> = vec![

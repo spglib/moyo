@@ -62,11 +62,14 @@ impl PrimitiveSymmetrySearch {
                     solve_correspondence(&pkdtree, primitive_cell, &new_positions)
                 {
                     symmetries_tmp.push((*rotation, translation, permutation));
-                    // If a translation part is found, it should be unique (up to lattice translations)
-                    break;
+                    // Do not break here because there may be multiple translations with the rough tolerance
                 }
             }
         }
+        debug!(
+            "Number of symmetry operation candidates: {}",
+            symmetries_tmp.len()
+        );
 
         // Purify symmetry operations by permutations
         let mut operations_and_permutations = vec![];
