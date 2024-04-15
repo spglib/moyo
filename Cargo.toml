@@ -11,7 +11,7 @@ resolver = "2"
 authors = ["Kohei Shinohara <kshinohara0508@gmail.com>"]
 description = "Library for Crystal Symmetry in Rust"
 edition = "2021"
-version = "0.1.1"
+version = "0.1.2"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/spglib/moyo"
 
@@ -20,3 +20,9 @@ nalgebra = { version = "0.32.3", features = ["serde-serialize"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 approx = "0.5.1"
+
+[workspace.metadata.release]
+allow-branch = ["main"]
+shared-version = true
+tag-prefix = ""
+tag = false

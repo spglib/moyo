@@ -357,3 +357,5 @@ target/
 *.json
 !**/assets/*.json
 .env
+
+docs/note/

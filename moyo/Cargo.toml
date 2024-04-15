@@ -7,6 +7,9 @@ license.workspace = true
 repository.workspace = true
 version.workspace = true
 
+[package.metadata.release]
+tag = true
+
 [lib]
 name = "moyo"
 
