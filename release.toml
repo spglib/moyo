@@ -1,0 +1,4 @@
+allow-branch = ["main"]
+pre-release-replacements = [
+    {file="Cargo.toml", search="version = .*", replace="{{crate_name}} = \"{{version}}\""}
+]

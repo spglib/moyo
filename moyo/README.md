@@ -1,5 +1,7 @@
 # moyo
 
+Document: https://docs.rs/moyo/latest/moyo/
+
 ## Module dependency
 
 ```

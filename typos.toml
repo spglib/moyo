@@ -1,0 +1,6 @@
+[default.extend-words]
+# ba-c
+ba = "ba"
+
+[files]
+extend-exclude = ['.gitignore']

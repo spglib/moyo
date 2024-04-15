@@ -27,7 +27,7 @@ latex.out/
 acs-*.bib
 
 # amsthm
-*.thm
+*.them
 
 # beamer
 *.nav
@@ -226,7 +226,7 @@ TSWLatexianTemp*
 ## Editors:
 # WinEdt
 *.bak
-*.sav
+*.save
 
 # Texpad
 .texpadtmp
