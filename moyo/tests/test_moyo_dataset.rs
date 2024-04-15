@@ -546,3 +546,17 @@ fn test_monotonic_symmetry_recovery() {
 
     assert!(dataset1.number <= dataset2.number);
 }
+
+#[test]
+fn test_with_mp_550745() {
+    let path = Path::new("tests/assets/mp-550745.json");
+    let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+
+    let symprec = 1e-2;
+    let angle_tolerance = AngleTolerance::Radian(0.1);
+    let setting = Setting::Standard;
+
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+}

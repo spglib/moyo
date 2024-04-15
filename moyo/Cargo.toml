@@ -21,8 +21,8 @@ union-find = "0.4.2"
 strum = "0.25"
 strum_macros = "0.25"
 kiddo = "4.2.0"
-# Disable trace and debug level logs in release build
-log = { version = "0.4", features = ["release_max_level_info"] }
+# Disable trace level logs in release build
+log = { version = "0.4", features = ["release_max_level_debug"] }
 
 [dev-dependencies]
 rand = "0.8.5"

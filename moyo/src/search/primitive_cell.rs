@@ -88,7 +88,7 @@ impl PrimitiveCell {
 
         let size = translations.len() as i32;
         if (size == 0) || (reduced_cell.num_atoms() % (size as usize) != 0) {
-            warn!("Failed to properly find translations. Consider increasing symprec.");
+            warn!("Failed to properly find translations: {} translations in {} atoms. Consider increasing symprec.", size, reduced_cell.num_atoms());
             return Err(MoyoError::TooSmallToleranceError);
         }
         debug!("Found {} pure translations", size);
@@ -116,7 +116,7 @@ impl PrimitiveCell {
             size as f64,
             epsilon = EPS
         ) {
-            warn!("Failed to properly find translations. Consider increasing symprec.");
+            warn!("Failed to find a transformation matrix to a primitive cell. Consider increasing symprec.");
             return Err(MoyoError::TooSmallToleranceError);
         }
 

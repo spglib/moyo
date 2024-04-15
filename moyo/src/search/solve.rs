@@ -2,7 +2,6 @@ use std::collections::BTreeMap;
 
 use itertools::iproduct;
 use kiddo::{KdTree, SquaredEuclidean};
-use log::warn;
 use nalgebra::{Rotation3, Vector3};
 
 use crate::base::{AtomicSpecie, Cell, Lattice, Permutation, Position, Rotation, Translation};

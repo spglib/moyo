@@ -26,7 +26,7 @@ def main():
             moyopy_cell = moyopy.Cell(basis.tolist(), positions.tolist(), numbers)
             spglib_cell = (basis, positions, numbers)
 
-            for symprec in [1e-4, 1e-3, 1e-2, 1e-1]:
+            for symprec in [1e-4, 3e-4, 1e-3, 3e-3, 1e-2, 3e-2, 1e-1]:
                 try:
                     start = perf_counter()
                     moyopy_dataset = moyopy.MoyoDataset(moyopy_cell, symprec=symprec)
