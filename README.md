@@ -1,6 +1,6 @@
 # moyo
 
-🚧 This project is under construction 🚧
+[![moyo at crates.io](https://img.shields.io/crates/v/moyo.svg)](https://img.shields.io/crates/v/moyo)
 
 ## Interfaces
 
@@ -18,6 +18,14 @@
 
 - Crystallographic groups in other than three dimensions
 - Matching two similar crystal structures
+
+## Dev
+
+### How to release
+
+1. Increment the version number in `Cargo.toml`
+1. `cargo release --execute`
+1. `git push origin <tag-version>`
 
 ## Acknowledgments
 

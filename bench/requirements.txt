@@ -2,3 +2,4 @@ matbench-discovery==1.1.1
 ipython
 nbformat
 mp_api
+seaborn

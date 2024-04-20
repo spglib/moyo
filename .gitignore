@@ -348,14 +348,15 @@ docs/_build/
 # Others
 ###############################################################################
 .vscode/
-*.ipynb
 flamegraph.svg
 output/
 target/
 *.so
+.ipynb_checkpoints/
 
 *.json
 !**/assets/*.json
 .env
+*.png
 
 docs/note/
