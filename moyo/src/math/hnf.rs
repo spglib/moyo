@@ -56,7 +56,7 @@ where
                     if j == s {
                         continue;
                     }
-                    let k = h[(s, j)] / h[(s, s)];
+                    let k = h[(s, j)].div_euclid(h[(s, s)]);
 
                     if k != 0 {
                         update = true;
@@ -90,6 +90,20 @@ mod tests {
 
     #[test]
     fn test_hnf_small() {
+        {
+            let m = matrix![
+                -1, 0, 0;
+                1, 2, 2;
+                0, -1, -2;
+            ];
+            let hnf = HNF::new(&m);
+            let expect = matrix![
+                1, 0, 0;
+                1, 2, 0;
+                0, 0, 1;
+            ];
+            assert_eq!(hnf.h, expect);
+        }
         {
             let m = matrix![
                 20, -6;
