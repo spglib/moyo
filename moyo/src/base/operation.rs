@@ -39,7 +39,7 @@ impl Operations {
     }
 }
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct Permutation {
     pub mapping: Vec<usize>,
 }
