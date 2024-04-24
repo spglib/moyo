@@ -25,7 +25,6 @@
 
 1. Increment the version number in `Cargo.toml`
 1. `cargo release --execute`
-1. `git push origin <tag-version>`
 
 ## Acknowledgments
 
