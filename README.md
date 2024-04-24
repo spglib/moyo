@@ -23,7 +23,7 @@
 
 ### How to release
 
-1. Increment the version number in `Cargo.toml`
+1. `cargo set-version --bump patch` for patch version increment
 1. `cargo release --execute`
 
 ## Acknowledgments
