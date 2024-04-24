@@ -2,8 +2,8 @@ use base::PyOperations;
 use pyo3::prelude::*;
 use std::sync::OnceLock;
 
-mod base;
-mod data;
+pub mod base;
+pub mod data;
 
 use moyo::base::AngleTolerance;
 use moyo::data::Setting;
@@ -129,7 +129,7 @@ impl PyMoyoDataset {
 }
 
 // https://github.com/pydantic/pydantic-core/blob/main/src/lib.rs
-pub fn moyopy_version() -> &'static str {
+fn moyopy_version() -> &'static str {
     static MOYOPY_VERSION: OnceLock<String> = OnceLock::new();
 
     MOYOPY_VERSION.get_or_init(|| {
