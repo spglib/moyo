@@ -72,6 +72,19 @@ impl PyStructure {
     pub fn deserialize_json(_cls: &Bound<'_, PyType>, s: &str) -> PyResult<Self> {
         serde_json::from_str(s).map_err(|e| PyValueError::new_err(e.to_string()))
     }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "Cell(basis={:?}, positions={:?}, numbers={:?})",
+            self.basis(),
+            self.positions(),
+            self.numbers()
+        )
+    }
+
+    fn __str__(&self) -> String {
+        self.__repr__()
+    }
 }
 
 impl From<PyStructure> for Cell {
