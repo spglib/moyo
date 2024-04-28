@@ -147,6 +147,8 @@ fn moyopy_version() -> &'static str {
 #[pymodule]
 #[pyo3(name = "_moyopy")]
 fn moyopy(_py: Python, m: &PyModule) -> PyResult<()> {
+    pyo3_log::init();
+
     m.add("__version__", moyopy_version())?;
 
     // lib

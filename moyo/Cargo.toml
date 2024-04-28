@@ -18,14 +18,13 @@ nalgebra.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 approx.workspace = true
+log.workspace = true
 itertools = "0.11.0"
 thiserror = "1.0"
 union-find = "0.4.2"
 strum = "0.25"
 strum_macros = "0.25"
 kiddo = "4.2.0"
-# Disable trace level logs in release build
-log = { version = "0.4", features = ["release_max_level_debug"] }
 
 [dev-dependencies]
 rand = "0.8.5"
