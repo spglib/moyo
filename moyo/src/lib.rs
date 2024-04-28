@@ -9,12 +9,14 @@ pub mod math;
 pub mod search;
 pub mod symmetrize;
 
+pub use base::{
+    AngleTolerance, Cell, Lattice, MoyoError, Operations, OriginShift, Rotation, Translation,
+};
+pub use data::{HallNumber, Number, Setting};
+
 use nalgebra::Matrix3;
 
-use crate::base::{
-    AngleTolerance, Cell, MoyoError, Operations, OriginShift, ToleranceHandler, Transformation,
-};
-use crate::data::{HallNumber, Number, Setting};
+use crate::base::{ToleranceHandler, Transformation};
 use crate::identify::SpaceGroup;
 use crate::search::{PrimitiveCell, PrimitiveSymmetrySearch};
 use crate::symmetrize::{orbits_in_cell, StandardizedCell};
@@ -24,11 +26,14 @@ pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     // Space-group type
     // ------------------------------------------------------------------------
+    /// Space group number.
     pub number: Number,
+    /// Hall symbol number.
     pub hall_number: HallNumber,
     // ------------------------------------------------------------------------
     // Symmetry operations in the input cell
     // ------------------------------------------------------------------------
+    /// Symmetry operations in the input cell.
     pub operations: Operations,
     // ------------------------------------------------------------------------
     // Site symmetry
@@ -45,6 +50,7 @@ pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     // Standardized cell
     // ------------------------------------------------------------------------
+    /// Standardized cell
     pub std_cell: Cell,
     /// Linear part of transformation from the input cell to the standardized cell.
     pub std_linear: Matrix3<f64>,
@@ -55,6 +61,7 @@ pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     // Primitive standardized cell
     // ------------------------------------------------------------------------
+    /// Primitive standardized cell
     pub prim_std_cell: Cell,
     /// Linear part of transformation from the input cell to the primitive standardized cell.
     pub prim_std_linear: Matrix3<f64>,
@@ -66,11 +73,41 @@ pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     // Final parameters
     // ------------------------------------------------------------------------
+    /// Actually used `symprec` in iterative symmetry search.
     pub symprec: f64,
+    /// Actually used `angle_tolerance` in iterative symmetry search.
     pub angle_tolerance: AngleTolerance,
 }
 
 impl MoyoDataset {
+    /// Create a new `MoyoDataset` from the input cell.
+    ///
+    /// # Examples
+    /// ```
+    /// use nalgebra::{matrix, vector, Matrix3, Vector3};
+    /// use moyo::{MoyoDataset, Cell, AngleTolerance, Setting, Lattice};
+    /// let lattice = Lattice::new(matrix![
+    ///     4.603, 0.0, 0.0;
+    ///     0.0, 4.603, 0.0;
+    ///     0.0, 0.0, 2.969;
+    /// ]);
+    /// let x_4f = 0.3046;
+    /// let positions = vec![
+    ///     Vector3::new(0.0, 0.0, 0.0),                // Ti(2a)
+    ///     Vector3::new(0.5, 0.5, 0.5),                // Ti(2a)
+    ///     Vector3::new(x_4f, x_4f, 0.0),              // O(4f)
+    ///     Vector3::new(-x_4f, -x_4f, 0.0),            // O(4f)
+    ///     Vector3::new(-x_4f + 0.5, x_4f + 0.5, 0.5), // O(4f)
+    ///     Vector3::new(x_4f + 0.5, -x_4f + 0.5, 0.5), // O(4f)
+    /// ];
+    /// let numbers = vec![0, 0, 1, 1, 1, 1];
+    /// let cell = Cell::new(lattice, positions, numbers);
+    /// let symprec = 1e-5;
+    /// let angle_tolerance = AngleTolerance::Default;
+    /// let setting = Setting::Standard;
+    /// let dataset = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
+    /// assert_eq!(dataset.number, 136);  // P4_2/mnm
+    /// ```
     pub fn new(
         cell: &Cell,
         symprec: f64,

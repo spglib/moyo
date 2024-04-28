@@ -1,6 +1,7 @@
 use super::hall_symbol_database::HallNumber;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
+/// Preference for the setting of the space group.
 pub enum Setting {
     HallNumber(HallNumber),
     /// The setting of the smallest Hall number

@@ -7,8 +7,11 @@ pub const EPS: f64 = 1e-8;
 const INITIAL_SYMMETRY_SEARCH_STRIDE: f64 = 2.0;
 
 #[derive(Debug, Copy, Clone)]
+/// Tolerance for angle in comparing basis vectors in symmetry search.
 pub enum AngleTolerance {
+    /// Tolerance in radian.
     Radian(f64),
+    /// Default tolerance same as Spglib.
     Default,
 }
 

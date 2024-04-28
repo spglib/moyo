@@ -18,6 +18,9 @@ pub struct Cell {
 }
 
 impl Cell {
+    /// * `lattice`: Lattice of the cell.
+    /// * `positions`: `positions[i]` is a fractional coordinates of the i-th site.
+    /// * `numbers`: `numbers[i]` is a number of the i-th site.
     pub fn new(lattice: Lattice, positions: Vec<Position>, numbers: Vec<AtomicSpecie>) -> Self {
         if positions.len() != numbers.len() {
             panic!("positions and numbers should be the same length");

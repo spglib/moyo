@@ -5,9 +5,7 @@ use std::sync::OnceLock;
 pub mod base;
 pub mod data;
 
-use moyo::base::AngleTolerance;
-use moyo::data::Setting;
-use moyo::MoyoDataset;
+use moyo::{AngleTolerance, MoyoDataset, Setting};
 
 use crate::base::{PyMoyoError, PyStructure};
 use crate::data::PySetting;
