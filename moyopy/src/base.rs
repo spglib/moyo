@@ -69,7 +69,7 @@ impl PyStructure {
     }
 
     #[classmethod]
-    pub fn deserialize_json(_cls: &PyType, s: &str) -> PyResult<Self> {
+    pub fn deserialize_json(_cls: &Bound<'_, PyType>, s: &str) -> PyResult<Self> {
         serde_json::from_str(s).map_err(|e| PyValueError::new_err(e.to_string()))
     }
 }

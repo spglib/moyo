@@ -146,7 +146,7 @@ fn moyopy_version() -> &'static str {
 /// A Python module implemented in Rust.
 #[pymodule]
 #[pyo3(name = "_moyopy")]
-fn moyopy(_py: Python, m: &PyModule) -> PyResult<()> {
+fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     pyo3_log::init();
 
     m.add("__version__", moyopy_version())?;

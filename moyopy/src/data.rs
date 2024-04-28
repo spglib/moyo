@@ -11,17 +11,17 @@ pub struct PySetting(Setting);
 #[pymethods]
 impl PySetting {
     #[classmethod]
-    pub fn spglib(_cls: &PyType) -> PyResult<Self> {
+    pub fn spglib(_cls: &Bound<'_, PyType>) -> PyResult<Self> {
         Ok(Self(Setting::Spglib))
     }
 
     #[classmethod]
-    pub fn standard(_cls: &PyType) -> PyResult<Self> {
+    pub fn standard(_cls: &Bound<'_, PyType>) -> PyResult<Self> {
         Ok(Self(Setting::Standard))
     }
 
     #[classmethod]
-    pub fn hall_number(_cls: &PyType, hall_number: i32) -> PyResult<Self> {
+    pub fn hall_number(_cls: &Bound<'_, PyType>, hall_number: i32) -> PyResult<Self> {
         Ok(Self(Setting::HallNumber(hall_number)))
     }
 }

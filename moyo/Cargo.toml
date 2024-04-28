@@ -19,19 +19,19 @@ serde.workspace = true
 serde_json.workspace = true
 approx.workspace = true
 log.workspace = true
-itertools = "0.11.0"
+itertools = "0.11"
 thiserror = "1.0"
-union-find = "0.4.2"
+union-find = "0.4"
 strum = "0.25"
 strum_macros = "0.25"
-kiddo = "4.2.0"
+kiddo = "4.2"
 
 [dev-dependencies]
-rand = "0.8.5"
-rstest = "0.18.2"
+rand = "0.8"
+rstest = "0.18"
 criterion = { version = "0.4", features = ["html_reports"] }
-env_logger = "0.11.3"
-test-log = "0.2.15"
+env_logger = "0.11"
+test-log = "0.2"
 
 [[bench]]
 name = "translation_search"
