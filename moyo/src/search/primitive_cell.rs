@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use log::{debug, warn};
+use log::debug;
 use nalgebra::{Dyn, Matrix3, OMatrix, Vector3, U3};
 
 use super::solve::{
@@ -45,7 +45,9 @@ impl PrimitiveCell {
             .fold(f64::INFINITY, f64::min);
         let rough_symprec = 2.0 * symprec;
         if rough_symprec > minimum_basis_norm / 2.0 {
-            warn!("symprec is too large compared to the basis vectors. Consider reducing symprec.");
+            debug!(
+                "symprec is too large compared to the basis vectors. Consider reducing symprec."
+            );
             return Err(MoyoError::TooLargeToleranceError);
         }
 
@@ -88,7 +90,7 @@ impl PrimitiveCell {
 
         let size = translations.len() as i32;
         if (size == 0) || (reduced_cell.num_atoms() % (size as usize) != 0) {
-            warn!("Failed to properly find translations: {} translations in {} atoms. Consider increasing symprec.", size, reduced_cell.num_atoms());
+            debug!("Failed to properly find translations: {} translations in {} atoms. Consider increasing symprec.", size, reduced_cell.num_atoms());
             return Err(MoyoError::TooSmallToleranceError);
         }
         debug!("Found {} pure translations", size);
@@ -116,7 +118,7 @@ impl PrimitiveCell {
             size as f64,
             epsilon = EPS
         ) {
-            warn!("Failed to find a transformation matrix to a primitive cell. Consider increasing symprec.");
+            debug!("Failed to find a transformation matrix to a primitive cell. Consider increasing symprec.");
             return Err(MoyoError::TooSmallToleranceError);
         }
 

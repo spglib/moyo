@@ -1,5 +1,5 @@
 use itertools::{iproduct, izip};
-use log::warn;
+use log::debug;
 use nalgebra::linalg::{Cholesky, QR};
 use nalgebra::{vector, Matrix3, Vector3};
 use std::collections::HashMap;
@@ -214,7 +214,7 @@ impl StandardizedCell {
 
         for (i, wyckoff) in representative_wyckoffs.iter().enumerate() {
             if wyckoff.is_none() {
-                warn!(
+                debug!(
                     "Failed to assign Wyckoff positions with multiplicity {}: {:?}",
                     multiplicities[i], std_cell.positions[i]
                 );

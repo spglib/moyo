@@ -1,4 +1,4 @@
-use log::warn;
+use log::debug;
 
 use super::error::MoyoError;
 
@@ -54,7 +54,7 @@ impl ToleranceHandler {
         } else {
             AngleTolerance::Default
         };
-        warn!(
+        debug!(
             "Increase tolerance to symprec={}, angle_tolerance={:?}",
             symprec, angle_tolerance
         );
@@ -68,7 +68,7 @@ impl ToleranceHandler {
         } else {
             AngleTolerance::Default
         };
-        warn!(
+        debug!(
             "Reduce tolerance to symprec={}, angle_tolerance={:?}",
             symprec, angle_tolerance
         );

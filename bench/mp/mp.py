@@ -4,6 +4,7 @@ from time import perf_counter
 
 import matbench_discovery.data
 import pandas as pd
+import spglib
 from pymatgen.entries.computed_entries import ComputedStructureEntry
 from spglib import get_symmetry_dataset
 from tqdm.auto import tqdm
@@ -45,6 +46,8 @@ def main():
                             "material_id": material_id,
                             "number_moyopy": moyopy_dataset.number,
                             "number_spglib": spglib_dataset["number"],
+                            "moyopy": moyopy.__version__,
+                            "spglib": spglib.__version__,
                         }
                     )
                 except:  # noqa: E722
