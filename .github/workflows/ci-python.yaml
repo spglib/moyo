@@ -19,6 +19,29 @@ permissions:
   packages: write  # for uraimo/run-on-arch-action to cache docker images
 
 jobs:
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          args: --release --out dist --manifest-path moyopy/Cargo.toml
+          sccache: 'true'
+          manylinux: auto
+      - name: examples
+        shell: bash
+        run: |
+          set -e
+          pip install moyopy[dev] --find-links dist --force-reinstall
+          pip install -r moyopy/examples/requirements.txt
+          python moyopy/examples/basic.py
+          python moyopy/examples/pymatgen_structure.py
+
   linux:
     runs-on: ubuntu-latest
     strategy:

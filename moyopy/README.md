@@ -5,3 +5,7 @@
 [![image](https://img.shields.io/pypi/pyversions/moyopy.svg)](https://pypi.python.org/pypi/moyopy)
 
 Python interface of Moyo
+
+## Examples
+
+See [example directory](examples)
