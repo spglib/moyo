@@ -33,6 +33,12 @@ jobs:
           args: --release --out dist --manifest-path moyopy/Cargo.toml
           sccache: 'true'
           manylinux: auto
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('moyopy/examples/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - name: examples
         shell: bash
         run: |
