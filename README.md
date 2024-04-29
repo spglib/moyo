@@ -32,6 +32,7 @@ A fast and robust crystal symmetry finder, written in Rust.
 ### How to release
 
 1. `cargo set-version --bump patch` for patch version increment
+1. Write change log and git-commit
 1. `cargo release --execute`
 
 ### Debugging
