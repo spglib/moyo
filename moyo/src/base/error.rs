@@ -28,4 +28,6 @@ pub enum MoyoError {
     StandardizationError,
     #[error("Wyckoff position assignment failed")]
     WyckoffPositionAssignmentError,
+    #[error("Hall symbol parsing failed")]
+    HallSymbolParsingError,
 }

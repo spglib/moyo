@@ -96,6 +96,61 @@ impl Centering {
     pub fn inverse(&self) -> Matrix3<f64> {
         self.linear().map(|e| e as f64).try_inverse().unwrap()
     }
+
+    pub fn lattice_points(&self) -> Vec<Vector3<f64>> {
+        match self {
+            Centering::P => {
+                vec![Translation::new(0.0, 0.0, 0.0)]
+            }
+            Centering::A => {
+                vec![
+                    Translation::new(0.0, 0.0, 0.0),
+                    Translation::new(0.0, 0.5, 0.5),
+                ]
+            }
+            Centering::B => {
+                vec![
+                    Translation::new(0.0, 0.0, 0.0),
+                    Translation::new(0.5, 0.0, 0.5),
+                ]
+            }
+            Centering::C => {
+                vec![
+                    Translation::new(0.0, 0.0, 0.0),
+                    Translation::new(0.5, 0.5, 0.0),
+                ]
+            }
+            Centering::I => {
+                vec![
+                    Translation::new(0.0, 0.0, 0.0),
+                    Translation::new(0.5, 0.5, 0.5),
+                ]
+            }
+            Centering::R => {
+                // obverse setting
+                vec![
+                    Translation::new(0.0, 0.0, 0.0),
+                    Translation::new(2.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0),
+                    Translation::new(1.0 / 3.0, 2.0 / 3.0, 2.0 / 3.0),
+                ]
+            }
+            // Centering::H => {
+            //     vec![
+            //         Translation::new(0.0, 0.0, 0.0),
+            //         Translation::new(2.0 / 3.0, 1.0 / 3.0, 0.0),
+            //         Translation::new(1.0 / 3.0, 2.0 / 3.0, 0.0),
+            //     ]
+            // }
+            Centering::F => {
+                vec![
+                    Translation::new(0.0, 0.0, 0.0),
+                    Translation::new(0.0, 0.5, 0.5),
+                    Translation::new(0.5, 0.0, 0.5),
+                    Translation::new(0.5, 0.5, 0.0),
+                ]
+            }
+        }
+    }
 }
 
 impl HallSymbol {
@@ -129,7 +184,8 @@ impl HallSymbol {
         }
 
         // From translation subgroup
-        let centering_translations = Self::lattice_points(lattice_symbol)
+        let centering_translations = lattice_symbol
+            .lattice_points()
             .iter()
             .filter(|&&translation| relative_ne!(translation, Translation::zeros(), epsilon = EPS))
             .cloned()
@@ -382,61 +438,6 @@ impl HallSymbol {
 
         assert_eq!(pos, token.len());
         Some((rotation, translation, nfold, axis.to_string()))
-    }
-
-    fn lattice_points(lattice_symbol: Centering) -> Vec<Vector3<f64>> {
-        match lattice_symbol {
-            Centering::P => {
-                vec![Translation::new(0.0, 0.0, 0.0)]
-            }
-            Centering::A => {
-                vec![
-                    Translation::new(0.0, 0.0, 0.0),
-                    Translation::new(0.0, 0.5, 0.5),
-                ]
-            }
-            Centering::B => {
-                vec![
-                    Translation::new(0.0, 0.0, 0.0),
-                    Translation::new(0.5, 0.0, 0.5),
-                ]
-            }
-            Centering::C => {
-                vec![
-                    Translation::new(0.0, 0.0, 0.0),
-                    Translation::new(0.5, 0.5, 0.0),
-                ]
-            }
-            Centering::I => {
-                vec![
-                    Translation::new(0.0, 0.0, 0.0),
-                    Translation::new(0.5, 0.5, 0.5),
-                ]
-            }
-            Centering::R => {
-                // obverse setting
-                vec![
-                    Translation::new(0.0, 0.0, 0.0),
-                    Translation::new(2.0 / 3.0, 1.0 / 3.0, 1.0 / 3.0),
-                    Translation::new(1.0 / 3.0, 2.0 / 3.0, 2.0 / 3.0),
-                ]
-            }
-            // Centering::H => {
-            //     vec![
-            //         Translation::new(0.0, 0.0, 0.0),
-            //         Translation::new(2.0 / 3.0, 1.0 / 3.0, 0.0),
-            //         Translation::new(1.0 / 3.0, 2.0 / 3.0, 0.0),
-            //     ]
-            // }
-            Centering::F => {
-                vec![
-                    Translation::new(0.0, 0.0, 0.0),
-                    Translation::new(0.0, 0.5, 0.5),
-                    Translation::new(0.5, 0.0, 0.5),
-                    Translation::new(0.5, 0.5, 0.0),
-                ]
-            }
-        }
     }
 
     fn rotation_matrix(axis: &str) -> Option<Rotation> {

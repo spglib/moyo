@@ -1,4 +1,3 @@
-use base::PyOperations;
 use pyo3::prelude::*;
 use std::sync::OnceLock;
 
@@ -7,8 +6,8 @@ pub mod data;
 
 use moyo::{AngleTolerance, MoyoDataset, Setting};
 
-use crate::base::{PyMoyoError, PyStructure};
-use crate::data::PySetting;
+use crate::base::{PyMoyoError, PyOperations, PyStructure};
+use crate::data::{operations_from_number, PySetting};
 
 #[derive(Debug)]
 #[pyclass(name = "MoyoDataset")]
@@ -159,6 +158,7 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // data
     m.add_class::<data::PySetting>()?;
+    m.add_wrapped(wrap_pyfunction!(operations_from_number))?;
 
     Ok(())
 }
