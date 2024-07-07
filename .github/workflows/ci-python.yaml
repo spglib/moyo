@@ -43,7 +43,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          pip install moyopy[dev] --find-links dist --force-reinstall
+          pip install ./moyopy[dev] --find-links dist --force-reinstall
           pip install -r moyopy/examples/requirements.txt
           python moyopy/examples/basic.py
           python moyopy/examples/pymatgen_structure.py
@@ -76,7 +76,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          pip install moyopy[dev] --find-links dist --force-reinstall
+          pip install ./moyopy[dev] --find-links dist --force-reinstall
           pytest -v
       - name: pytest
         if: ${{ !startsWith(matrix.target, 'x86') && matrix.target != 'ppc64' }}
@@ -91,7 +91,7 @@ jobs:
             pip3 install -U pip pytest
           run: |
             set -e
-            pip3 install moyopy --find-links dist --force-reinstall
+            pip3 install ./moyopy --find-links dist --force-reinstall
             pytest -v
 
   windows:
@@ -122,7 +122,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          pip install moyopy[dev] --find-links dist --force-reinstall
+          pip install ./moyopy[dev] --find-links dist --force-reinstall
           cd moyopy && pytest -v
 
   macos:
