@@ -171,11 +171,22 @@ jobs:
           name: pypi-sdist
           path: dist
 
+  pass:
+    name: ✅ Pass ci-python
+    needs: [linux, windows, macos, sdist]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check all CI jobs
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
+    if: always()
+
   release:
     name: Release
     runs-on: ubuntu-latest
     if: "startsWith(github.ref, 'refs/tags/')"
-    needs: [linux, windows, macos, sdist]
+    needs: [pass]
     environment: release
     permissions:
       id-token: write

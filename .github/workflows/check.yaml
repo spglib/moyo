@@ -22,3 +22,13 @@ jobs:
     - uses: actions/checkout@v4
     - uses: Swatinem/rust-cache@v2
     - uses: EmbarkStudios/cargo-deny-action@v1
+  pass:
+    name: ✅ Pass checks
+    needs: [pre-commit, cargo-deny]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check all CI jobs
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
+    if: always()
