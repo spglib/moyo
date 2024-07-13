@@ -144,7 +144,12 @@ pub struct PyOperations(Operations);
 impl PyOperations {
     #[getter]
     pub fn rotations(&self) -> Vec<[[i32; 3]; 3]> {
-        self.0.rotations.iter().map(|x| *x.as_ref()).collect()
+        // Since nalgebra stores matrices in column-major order, we need to transpose them
+        self.0
+            .rotations
+            .iter()
+            .map(|x| *x.transpose().as_ref())
+            .collect()
     }
 
     #[getter]
