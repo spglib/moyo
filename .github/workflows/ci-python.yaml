@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        target: [x86_64, x86, aarch64, armv7, s390x, ppc64le]
+        target: [x86_64, x86, aarch64]
     steps:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
@@ -80,7 +80,7 @@ jobs:
           pip install moyopy[dev]
           pytest -v
       - name: pytest
-        if: ${{ !startsWith(matrix.target, 'x86') && matrix.target != 'ppc64' }}
+        if: ${{ !startsWith(matrix.target, 'x86') }}
         uses: uraimo/run-on-arch-action@v2
         with:
           arch: ${{ matrix.target }}
