@@ -89,10 +89,10 @@ jobs:
           install: |
             apt-get update -q -y
             apt-get install -y --no-install-recommends python3 python3-pip
-            pip3 install -U pip pytest
           run: |
             set -e
             pip3 install moyopy --no-index --find-links dist
+            pip3 install moyopy[dev]
             pytest -v
 
   windows:
@@ -174,7 +174,7 @@ jobs:
 
   pass:
     name: ✅ Pass ci-python
-    needs: [linux, windows, macos, sdist]
+    needs: [linux, windows, macos, sdist, examples]
     runs-on: ubuntu-latest
     steps:
       - name: Check all CI jobs
