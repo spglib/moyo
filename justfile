@@ -26,4 +26,4 @@ pre-commit-all:
     pre-commit run --all-files --hook-stage manual
 
 clean:
-    rm moyopy/python/moyo/*.so
+    rm moyopy/python/moyopy/*.so

@@ -33,6 +33,7 @@ classifiers = [
 dev = [
     "pytest",
     "pre-commit",
+    "numpy",
 ]
 
 [tool.maturin]
