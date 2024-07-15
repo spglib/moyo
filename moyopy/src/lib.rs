@@ -77,7 +77,8 @@ impl PyMoyoDataset {
 
     #[getter]
     pub fn std_linear(&self) -> [[f64; 3]; 3] {
-        self.0.std_linear.into()
+        // Since nalgebra stores matrices in column-major order, we need to transpose them
+        self.0.std_linear.transpose().into()
     }
 
     #[getter]
@@ -87,7 +88,8 @@ impl PyMoyoDataset {
 
     #[getter]
     pub fn std_rotation_matrix(&self) -> [[f64; 3]; 3] {
-        self.0.std_rotation_matrix.into()
+        // Since nalgebra stores matrices in column-major order, we need to transpose them
+        self.0.std_rotation_matrix.transpose().into()
     }
 
     #[getter]
@@ -97,7 +99,8 @@ impl PyMoyoDataset {
 
     #[getter]
     pub fn prim_std_linear(&self) -> [[f64; 3]; 3] {
-        self.0.prim_std_linear.into()
+        // Since nalgebra stores matrices in column-major order, we need to transpose them
+        self.0.prim_std_linear.transpose().into()
     }
 
     #[getter]
