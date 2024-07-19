@@ -1,28 +1,10 @@
 from __future__ import annotations
 
 import numpy as np
-from pymatgen.core import Element, Structure
+from pymatgen.core import Structure
 
 import moyopy
-
-
-class MoyoAdapter:
-    @staticmethod
-    def get_structure(cell: moyopy.Cell) -> Structure:
-        species = [Element.from_Z(number) for number in cell.numbers]
-        return Structure(lattice=cell.basis, species=species, coords=cell.positions)
-
-    @staticmethod
-    def get_moyo_cell(structure: Structure) -> moyopy.Cell:
-        basis = structure.lattice.matrix
-        positions = structure.frac_coords
-        numbers = [site.specie.Z for site in structure]
-
-        return moyopy.Cell(
-            basis=basis.tolist(),
-            positions=positions.tolist(),
-            numbers=numbers,
-        )
+from moyopy.interface import MoyoAdapter
 
 
 class MoyoSpacegroupAnalyzer:
@@ -33,7 +15,7 @@ class MoyoSpacegroupAnalyzer:
         angle_tolerance: float | None = None,
         setting: moyopy.Setting | None = None,
     ):
-        self._cell = MoyoAdapter.get_moyo_cell(structure)
+        self._cell = MoyoAdapter.from_structure(structure)
         self._dataset = moyopy.MoyoDataset(
             cell=self._cell,
             symprec=symprec,

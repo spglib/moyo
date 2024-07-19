@@ -30,10 +30,19 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-dev = [
+interface = [
+    "numpy<2",  # pymatgen seems to be still imcompatible with numpy>=2
+    "pymatgen",
+    "ase>=3.23",
+]
+testing = [
+    "moyopy[interface]",
     "pytest",
     "pre-commit",
     "numpy",
+]
+dev = [
+    "moyopy[testing]",
 ]
 
 [tool.maturin]
