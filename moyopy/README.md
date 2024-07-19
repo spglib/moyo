@@ -6,6 +6,14 @@
 
 Python interface of Moyo
 
+## Installation
+
+```shell
+pip install moyopy
+# If you want to convert structures into Pymatgen or ASE objects
+pip install moyopy[interface]
+```
+
 ## Examples
 
 See [example directory](examples)

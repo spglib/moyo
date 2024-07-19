@@ -25,7 +25,7 @@ def wurtzite() -> moyopy.Cell:
         [1 / 3, 2 / 3, z2_2b],
         [2 / 3, 1 / 3, z2_2b + 0.5],
     ]
-    numbers = [0, 0, 1, 1]
+    numbers = [1, 1, 2, 2]
 
     cell = moyopy.Cell(basis, positions, numbers)
     return cell
