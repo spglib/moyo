@@ -8,6 +8,7 @@ use crate::math::SNF;
 
 pub type UnimodularLinear = Matrix3<i32>;
 pub type Linear = Matrix3<i32>;
+/// Origin shift in a crystallographic basis
 pub type OriginShift = Vector3<f64>;
 
 /// Represent change of origin and basis for an affine space

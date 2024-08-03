@@ -5,13 +5,17 @@ use nalgebra::base::{Matrix3, Vector3};
 
 use super::lattice::Lattice;
 
+/// Rotation matrix in a crystallographic basis
 pub type Rotation = Matrix3<i32>;
+/// Translation vector in a crystallographic basis
 pub type Translation = Vector3<f64>;
 
 #[derive(Debug, Clone)]
 /// Symmetry operation without basis information
 pub struct Operations {
+    /// `rotations[i]` is a rotation part of the `i`th operation
     pub rotations: Vec<Rotation>,
+    /// `translations[i]` is a translation part of the `i`th operation
     pub translations: Vec<Translation>,
 }
 
@@ -26,10 +30,12 @@ impl Operations {
         }
     }
 
+    /// Return the number of symmetry operations
     pub fn num_operations(&self) -> usize {
         self.rotations.len()
     }
 
+    /// Return rotation matrices in cartesian coordinates with respect to the given lattice
     pub fn cartesian_rotations(&self, lattice: &Lattice) -> Vec<Matrix3<f64>> {
         let inv_basis = lattice.basis.try_inverse().unwrap();
         self.rotations

@@ -19,6 +19,9 @@ test-python:
 profile:
     cargo flamegraph --test test_moyo_dataset --root
 
+doc:
+    cargo doc --open
+
 pre-commit:
     pre-commit run --all-files
 

@@ -109,8 +109,8 @@ pub fn pivot_site_indices(numbers: &[AtomicSpecie]) -> Vec<usize> {
 }
 
 /// Return correspondence between the input and acted positions.
-/// Search permutation such that new_positions[i] = reduced_cell.positions[permutation[i]].
-/// Then, a corresponding symmetry operation moves the i-th site into the permutation[i]-th site.
+/// Search permutation such that new_positions\[i\] = reduced_cell.positions\[permutation\[i\]\].
+/// Then, a corresponding symmetry operation moves the i-th site into the permutation\[i\]-th site.
 /// This function takes O(num_atoms * log(num_atoms)) time.
 pub fn solve_correspondence(
     pkdtree: &PeriodicKdTree,
@@ -141,8 +141,8 @@ pub fn solve_correspondence(
 
 /// Return correspondence between the input and acted positions.
 /// Assume that reduced_cell is Minkowski reduced and symprec is sufficiently small for Babai's algorithm.
-/// Search permutation such that new_positions[i] = reduced_cell.positions[permutation[i]].
-/// Then, a corresponding symmetry operation moves the i-th site into the permutation[i]-th site.
+/// Search permutation such that new_positions\[i\] = reduced_cell.positions\[permutation\[i\]\].
+/// Then, a corresponding symmetry operation moves the i-th site into the permutation\[i\]-th site.
 /// This function takes O(num_atoms^2) time.
 #[allow(clippy::needless_range_loop)]
 pub fn solve_correspondence_naive(

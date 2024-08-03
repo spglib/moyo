@@ -7,20 +7,23 @@ use union_find::{QuickFindUf, UnionByRank, UnionFind};
 use super::lattice::Lattice;
 use super::operation::Permutation;
 
+/// Fractional coordinates
 pub type Position = Vector3<f64>;
+/// Atomic number
 pub type AtomicSpecie = i32;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Representing a crystal structure
 pub struct Cell {
+    /// Lattice of the cell.
     pub lattice: Lattice,
+    /// `positions[i]` is a fractional coordinates of the i-th site.
     pub positions: Vec<Position>,
+    /// `numbers[i]` is an atomic number of the i-th site.
     pub numbers: Vec<AtomicSpecie>,
 }
 
 impl Cell {
-    /// * `lattice`: Lattice of the cell.
-    /// * `positions`: `positions[i]` is a fractional coordinates of the i-th site.
-    /// * `numbers`: `numbers[i]` is a number of the i-th site.
     pub fn new(lattice: Lattice, positions: Vec<Position>, numbers: Vec<AtomicSpecie>) -> Self {
         if positions.len() != numbers.len() {
             panic!("positions and numbers should be the same length");
@@ -32,10 +35,12 @@ impl Cell {
         }
     }
 
+    /// Return the number of atoms in the cell.
     pub fn num_atoms(&self) -> usize {
         self.positions.len()
     }
 
+    /// Rotate the cell by the given rotation matrix.
     pub fn rotate(&self, rotation_matrix: &Matrix3<f64>) -> Self {
         Self::new(
             self.lattice.rotate(rotation_matrix),

@@ -8,15 +8,14 @@ pub struct WyckoffPositionSpace {
 }
 
 impl WyckoffPositionSpace {
-    /// Parse short-hand notation
-    /// EBNF for Wyckoff coordinates is as follows (we always ignore space):
-    ///     <shorthand>   ::= <term>, <term>, <term>
-    ///     <term>        ::= "-"?<factor> ([+-]<factor>)* ([+-]<translation>)?
-    ///     <factor>      ::= <integer>? <variable>
-    ///     <variable>    ::= "x" || "y" || "z"
-    ///     <translation> ::= <integer> ("/" <integer>)?
-    ///     <integer>     ::= ("0" || "1" || "2" || "3" || "4" || "5" || "6" || "7" || "8" || "9")+
-
+    // Parse short-hand notation
+    // EBNF for Wyckoff coordinates is as follows (we always ignore space):
+    //     <shorthand>   ::= <term>, <term>, <term>
+    //     <term>        ::= "-"?<factor> ([+-]<factor>)* ([+-]<translation>)?
+    //     <factor>      ::= <integer>? <variable>
+    //     <variable>    ::= "x" || "y" || "z"
+    //     <translation> ::= <integer> ("/" <integer>)?
+    //     <integer>     ::= ("0" || "1" || "2" || "3" || "4" || "5" || "6" || "7" || "8" || "9")+
     pub fn new(coordinates: &str) -> Self {
         let coordinates = coordinates.replace(' ', "");
         let terms = coordinates.split(',').collect::<Vec<_>>();

@@ -3,6 +3,7 @@ use super::hall_symbol_database::HallNumber;
 #[derive(Debug, Copy, Clone, PartialEq)]
 /// Preference for the setting of the space group.
 pub enum Setting {
+    /// Specific Hall number from 1 to 530
     HallNumber(HallNumber),
     /// The setting of the smallest Hall number
     Spglib,
