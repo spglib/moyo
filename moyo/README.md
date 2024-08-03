@@ -1,11 +1,12 @@
-# Moyo (Rust)
+# moyo (Rust)
 
-[![Moyo at crates.io](https://img.shields.io/crates/v/moyo.svg)](https://img.shields.io/crates/v/moyo)
+[![CI](https://github.com/spglib/moyo/actions/workflows/ci-rust.yaml/badge.svg)](https://github.com/spglib/moyo/actions/workflows/ci-rust.yaml)
+[![moyo at crates.io](https://img.shields.io/crates/v/moyo.svg)](https://img.shields.io/crates/v/moyo)
 
-The core implementation of Moyo in Rust
+The core implementation of moyo in Rust
 
-Crates.io: https://docs.rs/moyo/latest/moyo/
-Document: https://docs.rs/moyo/latest/moyo/
+- Crates.io: https://docs.rs/moyo/latest/moyo/
+- Document: https://docs.rs/moyo/latest/moyo/
 
 ## Module dependency
 

@@ -1,6 +1,7 @@
 use thiserror::Error;
 
 #[derive(Error, Debug, PartialEq, Eq, Clone, Copy)]
+/// Error types for the **moyo** library
 pub enum MoyoError {
     #[error("Minkowski reduction failed")]
     MinkowskiReductionError,

@@ -1,3 +1,62 @@
+/*!
+# moyo
+
+**moyo** is a fast and robust crystal symmetry finder.
+
+## Using **moyo**
+
+Simply add the following to your `Cargo.toml` file:
+
+```ignore
+[dependencies]
+// TODO: replace the * with the latest version
+moyo = "*"
+```
+
+## Examples
+
+The basic usage of **moyo** is to create a [`moyo::Cell`](Cell) representing a crystal structure, and then create a [`moyo::MoyoDataset`](MoyoDataset) from the [`moyo::Cell`](Cell).
+The [`moyo::MoyoDataset`](MoyoDataset) contains symmetry information of the input crystal structure: for example, the space group number, symmetry operations, and standardized cell.
+
+```
+use nalgebra::{matrix, vector, Matrix3, Vector3};
+use moyo::{MoyoDataset, Cell, AngleTolerance, Setting, Lattice};
+
+let lattice = Lattice::new(matrix![
+    4.603, 0.0, 0.0;
+    0.0, 4.603, 0.0;
+    0.0, 0.0, 2.969;
+]);
+let x_4f = 0.3046;
+let positions = vec![
+    Vector3::new(0.0, 0.0, 0.0),                // Ti(2a)
+    Vector3::new(0.5, 0.5, 0.5),                // Ti(2a)
+    Vector3::new(x_4f, x_4f, 0.0),              // O(4f)
+    Vector3::new(-x_4f, -x_4f, 0.0),            // O(4f)
+    Vector3::new(-x_4f + 0.5, x_4f + 0.5, 0.5), // O(4f)
+    Vector3::new(x_4f + 0.5, -x_4f + 0.5, 0.5), // O(4f)
+];
+let numbers = vec![0, 0, 1, 1, 1, 1];
+let cell = Cell::new(lattice, positions, numbers);
+
+let symprec = 1e-5;
+let angle_tolerance = AngleTolerance::Default;
+let setting = Setting::Standard;
+
+let dataset = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
+
+assert_eq!(dataset.number, 136);  // P4_2/mnm
+```
+
+## Features
+- Support most of the symmetry search functionality in Spglib
+- Primitive cell search
+- Symmetry operation search
+- Space-group type identification
+- Wyckoff position assignment
+- Crystal structure symmetrization
+
+*/
 #[allow(unused_imports)]
 #[macro_use]
 extern crate approx;
@@ -22,6 +81,7 @@ use crate::search::{PrimitiveCell, PrimitiveSymmetrySearch};
 use crate::symmetrize::{orbits_in_cell, StandardizedCell};
 
 #[derive(Debug)]
+/// A dataset containing symmetry information of the input crystal structure.
 pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     // Space-group type
@@ -80,34 +140,10 @@ pub struct MoyoDataset {
 }
 
 impl MoyoDataset {
-    /// Create a new `MoyoDataset` from the input cell.
-    ///
-    /// # Examples
-    /// ```
-    /// use nalgebra::{matrix, vector, Matrix3, Vector3};
-    /// use moyo::{MoyoDataset, Cell, AngleTolerance, Setting, Lattice};
-    /// let lattice = Lattice::new(matrix![
-    ///     4.603, 0.0, 0.0;
-    ///     0.0, 4.603, 0.0;
-    ///     0.0, 0.0, 2.969;
-    /// ]);
-    /// let x_4f = 0.3046;
-    /// let positions = vec![
-    ///     Vector3::new(0.0, 0.0, 0.0),                // Ti(2a)
-    ///     Vector3::new(0.5, 0.5, 0.5),                // Ti(2a)
-    ///     Vector3::new(x_4f, x_4f, 0.0),              // O(4f)
-    ///     Vector3::new(-x_4f, -x_4f, 0.0),            // O(4f)
-    ///     Vector3::new(-x_4f + 0.5, x_4f + 0.5, 0.5), // O(4f)
-    ///     Vector3::new(x_4f + 0.5, -x_4f + 0.5, 0.5), // O(4f)
-    /// ];
-    /// let numbers = vec![0, 0, 1, 1, 1, 1];
-    /// let cell = Cell::new(lattice, positions, numbers);
-    /// let symprec = 1e-5;
-    /// let angle_tolerance = AngleTolerance::Default;
-    /// let setting = Setting::Standard;
-    /// let dataset = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
-    /// assert_eq!(dataset.number, 136);  // P4_2/mnm
-    /// ```
+    /// Create a new [`MoyoDataset`] from the input cell, `cell`.
+    /// `symprec` and `angle_tolerance` control the tolerances for searching symmetry operations.
+    /// `setting` determines the preference for the "standardized" setting of a detected space-group type.
+    /// If the search fails, [`MoyoError`] is returned.
     pub fn new(
         cell: &Cell,
         symprec: f64,
@@ -186,6 +222,7 @@ impl MoyoDataset {
         })
     }
 
+    /// Return the number of symmetry operations in the input cell.
     pub fn num_operations(&self) -> usize {
         self.operations.num_operations()
     }

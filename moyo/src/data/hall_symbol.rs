@@ -9,18 +9,18 @@ use crate::base::{Linear, Operations, Rotation, Transformation, Translation, EPS
 
 const MAX_DENOMINATOR: i32 = 12;
 
-/// Hall symbol. See A1.4.2.3 in ITB (2010).
-///
-/// Extended Backus-Naur form (EBNF) for Hall symbols
-/// ----------------------------------------------------------
-/// <Hall symbol>    := <L> <N>+ <V>?
-/// <L>              := "-"? <lattice symbol>
-/// <lattice symbol> := [PABCIRHF]  # Table A1.4.2.2
-/// <N>              := <nfold> <A>? <T>?
-/// <nfold>          := "-"? ("1" | "2" | "3" | "4" | "6")
-/// <A>              := [xyz] | "'" | '"' | "=" | "*"  # Table A.1.4.2.4, Table A.1.4.2.5, Table A.1.4.2.6
-/// <T>              := [abcnuvwd] | [1-6]  # Table A.1.4.2.3
-/// <V>              := "(" [0-11] [0-11] [0-11] ")"
+// Hall symbol. See A1.4.2.3 in ITB (2010).
+//
+// Extended Backus-Naur form (EBNF) for Hall symbols
+// ----------------------------------------------------------
+// <Hall symbol>    := <L> <N>+ <V>?
+// <L>              := "-"? <lattice symbol>
+// <lattice symbol> := [PABCIRHF]  # Table A1.4.2.2
+// <N>              := <nfold> <A>? <T>?
+// <nfold>          := "-"? ("1" | "2" | "3" | "4" | "6")
+// <A>              := [xyz] | "'" | '"' | "=" | "*"  # Table A.1.4.2.4, Table A.1.4.2.5, Table A.1.4.2.6
+// <T>              := [abcnuvwd] | [1-6]  # Table A.1.4.2.3
+// <V>              := "(" [0-11] [0-11] [0-11] ")"
 #[derive(Debug)]
 pub struct HallSymbol {
     pub hall_symbol: String,
@@ -54,8 +54,8 @@ impl Centering {
         }
     }
 
-    /// Inverse matrices of https://github.com/spglib/spglib/blob/39a95560dd831c2d16f162126921ac1e519efa31/src/spacegroup.c#L373-L384
     /// Transformation matrix from primitive to conventional cell.
+    // Inverse matrices of https://github.com/spglib/spglib/blob/39a95560dd831c2d16f162126921ac1e519efa31/src/spacegroup.c#L373-L384
     pub fn linear(&self) -> Linear {
         match self {
             Centering::P => Linear::identity(),

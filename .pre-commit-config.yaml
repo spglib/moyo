@@ -5,6 +5,9 @@ default_language_version:
 
 fail_fast: false
 
+ci:
+  skip: [cargo-fmt, cargo-deny, cargo-check, cargo-clippy]
+
 repos:
   # Misc
   - repo: https://github.com/pre-commit/pre-commit-hooks

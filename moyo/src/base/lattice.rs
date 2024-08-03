@@ -8,6 +8,7 @@ use crate::math::{
 use super::error::MoyoError;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+/// Representing basis vectors of a lattice
 pub struct Lattice {
     /// basis.column(i) is the i-th basis vector
     pub basis: Matrix3<f64>,
@@ -21,6 +22,7 @@ impl Lattice {
         }
     }
 
+    /// Return Minkowski reduced lattice and transformation matrix to it
     pub fn minkowski_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
         let (reduced_basis, trans_mat) = minkowski_reduce(&self.basis);
         let reduced_lattice = Self {
@@ -39,6 +41,7 @@ impl Lattice {
         is_minkowski_reduced(&self.basis)
     }
 
+    /// Return Niggli reduced lattice and transformation matrix to it
     pub fn niggli_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
         let (reduced_basis, trans_mat) = niggli_reduce(&self.basis);
         let reduced_lattice = Self {
@@ -57,6 +60,7 @@ impl Lattice {
         is_niggli_reduced(&self.basis)
     }
 
+    /// Return Delaunay reduced lattice and transformation matrix to it
     pub fn delaunay_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
         let (reduced_basis, trans_mat) = delaunay_reduce(&self.basis);
         let reduced_lattice = Self {
@@ -66,18 +70,22 @@ impl Lattice {
         Ok((reduced_lattice, trans_mat))
     }
 
+    /// Return metric tensor of the basis vectors
     pub fn metric_tensor(&self) -> Matrix3<f64> {
         self.basis.transpose() * self.basis
     }
 
+    /// Return cartesian coordinates from the given fractional coordinates
     pub fn cartesian_coords(&self, fractional_coords: &Vector3<f64>) -> Vector3<f64> {
         self.basis * fractional_coords
     }
 
+    /// Return volume of the cell
     pub fn volume(&self) -> f64 {
         self.basis.determinant().abs()
     }
 
+    /// Rotate the lattice by the given rotation matrix
     pub fn rotate(&self, rotation_matrix: &Matrix3<f64>) -> Self {
         Self {
             basis: rotation_matrix * self.basis,
