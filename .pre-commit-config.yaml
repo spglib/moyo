@@ -11,7 +11,7 @@ ci:
 repos:
   # Misc
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -28,11 +28,11 @@ repos:
         additional_dependencies:
           - mdformat-gfm
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.27.3
+    rev: 0.29.1
     hooks:
       - id: check-github-workflows
   - repo: https://github.com/crate-ci/typos
-    rev: v1.20.8
+    rev: v1.23.6
     hooks:
       - id: typos
   # Rust
@@ -66,7 +66,7 @@ repos:
         stages: [manual]  # because it's slow
   # Python
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.13
+    rev: v0.5.6
     hooks:
       - id: ruff-format
         args: ["--config", "moyopy/pyproject.toml"]
