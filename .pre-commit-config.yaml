@@ -22,13 +22,13 @@ repos:
       - id: check-merge-conflict
       - id: detect-private-key
   - repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.17
+    rev: 0.7.18
     hooks:
       - id: mdformat
         additional_dependencies:
           - mdformat-gfm
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.29.3
+    rev: 0.29.4
     hooks:
       - id: check-github-workflows
   - repo: https://github.com/crate-ci/typos
