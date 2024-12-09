@@ -61,7 +61,7 @@ impl PointGroupRepresentative {
             GeometricCrystalClass::Td => 511,
             GeometricCrystalClass::Oh => 517,
         };
-        let hall_symbol = HallSymbol::from_hall_number(hall_number);
+        let hall_symbol = HallSymbol::from_hall_number(hall_number).unwrap();
         Self::new(hall_symbol.generators.rotations, hall_symbol.centering)
     }
 
@@ -150,7 +150,7 @@ impl PointGroupRepresentative {
             73 => 529,
             _ => panic!("Invalid arithmetic number"),
         };
-        let hall_symbol = HallSymbol::from_hall_number(hall_number);
+        let hall_symbol = HallSymbol::from_hall_number(hall_number).unwrap();
         Self::new(hall_symbol.generators.rotations, hall_symbol.centering)
     }
 

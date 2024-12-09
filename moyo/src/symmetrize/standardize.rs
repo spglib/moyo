@@ -89,7 +89,8 @@ impl StandardizedCell {
         ),
         MoyoError,
     > {
-        let entry = hall_symbol_entry(space_group.hall_number);
+        let entry =
+            hall_symbol_entry(space_group.hall_number).ok_or(MoyoError::StandardizationError)?;
         let arithmetic_number = entry.arithmetic_number;
         let bravais_class = arithmetic_crystal_class_entry(arithmetic_number).bravais_class;
         let lattice_system = LatticeSystem::from_bravais_class(bravais_class);
@@ -106,7 +107,8 @@ impl StandardizedCell {
 
         // Symmetrize positions of prim_std_cell by refined symmetry operations
         // - Prepare operations in primitive standard
-        let hs = HallSymbol::from_hall_number(space_group.hall_number);
+        let hs = HallSymbol::from_hall_number(space_group.hall_number)
+            .ok_or(MoyoError::StandardizationError)?;
         let conv_std_operations = hs.traverse();
         let prim_std_operations = Transformation::from_linear(entry.centering.linear())
             .inverse_transform_operations(&conv_std_operations);

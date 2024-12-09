@@ -35,12 +35,13 @@ impl SpaceGroup {
         );
 
         for hall_number in setting.hall_numbers() {
-            let entry = hall_symbol_entry(hall_number);
+            let entry = hall_symbol_entry(hall_number).unwrap();
             if entry.arithmetic_number != point_group.arithmetic_number {
                 continue;
             }
 
-            let hall_symbol = HallSymbol::from_hall_number(hall_number);
+            let hall_symbol = HallSymbol::from_hall_number(hall_number)
+                .ok_or(MoyoError::SpaceGroupTypeIdentificationError)?;
             let db_prim_generators = hall_symbol.primitive_generators();
 
             // Try several correction transformation matrices for monoclinic and orthorhombic
@@ -276,7 +277,7 @@ mod tests {
     #[test]
     fn test_correction_transformation_matrices() {
         let hall_number = 21; // P 1 c 1
-        let hall_symbol = HallSymbol::from_hall_number(hall_number);
+        let hall_symbol = HallSymbol::from_hall_number(hall_number).unwrap();
         let operations = hall_symbol.traverse();
 
         // conventional -> primitive
@@ -284,7 +285,7 @@ mod tests {
             .inverse_transform_operations(&operations);
 
         // The correction transformation matrices should change the group into P1c1, P1a1, and P1n1
-        let entry = hall_symbol_entry(hall_number);
+        let entry = hall_symbol_entry(hall_number).unwrap();
         let corrections = correction_transformation_matrices(entry.arithmetic_number);
         let expects = vec![
             vector![0.0, 0.0, 0.5],
@@ -317,7 +318,7 @@ mod tests {
     #[case(Setting::Standard)]
     fn test_identify_space_group(#[case] setting: Setting) {
         for hall_number in 1..=530 {
-            let hall_symbol = HallSymbol::from_hall_number(hall_number);
+            let hall_symbol = HallSymbol::from_hall_number(hall_number).unwrap();
             let operations = hall_symbol.traverse();
 
             // conventional -> primitive
@@ -327,7 +328,7 @@ mod tests {
             let space_group = SpaceGroup::new(&prim_operations, setting, 1e-8).unwrap();
 
             // Check space group type
-            let entry = hall_symbol_entry(hall_number);
+            let entry = hall_symbol_entry(hall_number).unwrap();
             assert_eq!(space_group.number, entry.number);
 
             // Check transformation matrix
@@ -340,7 +341,8 @@ mod tests {
                 1
             );
 
-            let matched_hall_symbol = HallSymbol::from_hall_number(space_group.hall_number);
+            let matched_hall_symbol =
+                HallSymbol::from_hall_number(space_group.hall_number).unwrap();
             let matched_operations = matched_hall_symbol.traverse();
             let matched_prim_operations =
                 Transformation::from_linear(matched_hall_symbol.centering.linear())

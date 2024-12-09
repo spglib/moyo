@@ -31,4 +31,8 @@ pub enum MoyoError {
     WyckoffPositionAssignmentError,
     #[error("Hall symbol parsing failed")]
     HallSymbolParsingError,
+    #[error("Unknown hall_number")]
+    UnknownHallNumberError,
+    #[error("Unknown number")]
+    UnknownNumberError,
 }

@@ -52,9 +52,10 @@ impl HallSymbolEntry {
     }
 }
 
-pub fn hall_symbol_entry(hall_number: HallNumber) -> HallSymbolEntry {
-    // TODO: bound check
-    HALL_SYMBOL_DATABASE[(hall_number - 1) as usize].clone()
+pub fn hall_symbol_entry(hall_number: HallNumber) -> Option<HallSymbolEntry> {
+    HALL_SYMBOL_DATABASE
+        .get((hall_number - 1) as usize)
+        .cloned()
 }
 
 pub fn iter_hall_symbol_entry() -> impl Iterator<Item = &'static HallSymbolEntry> {

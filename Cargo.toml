@@ -27,3 +27,6 @@ allow-branch = ["main"]
 shared-version = true
 tag-prefix = ""
 tag = false
+
+[profile.test]
+opt-level = 1

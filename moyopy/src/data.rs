@@ -22,9 +22,13 @@ pub fn operations_from_number(
     };
     let hall_number = match setting.0 {
         Setting::HallNumber(hall_number) => hall_number,
-        Setting::Spglib | Setting::Standard => setting.0.hall_numbers()[(number - 1) as usize],
+        Setting::Spglib | Setting::Standard => *setting
+            .0
+            .hall_numbers()
+            .get((number - 1) as usize)
+            .ok_or(MoyoError::UnknownNumberError)?,
     };
-    let entry = hall_symbol_entry(hall_number);
+    let entry = hall_symbol_entry(hall_number).unwrap();
     let hs = HallSymbol::new(entry.hall_symbol).ok_or(MoyoError::HallSymbolParsingError)?;
 
     let mut rotations = vec![];

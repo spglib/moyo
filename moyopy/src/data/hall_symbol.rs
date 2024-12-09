@@ -1,5 +1,7 @@
 use pyo3::prelude::*;
 
+use crate::base::PyMoyoError;
+use moyo::base::MoyoError;
 use moyo::data::{
     hall_symbol_entry, ArithmeticNumber, Centering, HallNumber, HallSymbolEntry, Number,
 };
@@ -12,8 +14,9 @@ pub struct PyHallSymbolEntry(pub HallSymbolEntry);
 #[pymethods]
 impl PyHallSymbolEntry {
     #[new]
-    pub fn new(hall_number: HallNumber) -> Self {
-        Self(hall_symbol_entry(hall_number))
+    pub fn new(hall_number: HallNumber) -> Result<Self, PyMoyoError> {
+        let entry = hall_symbol_entry(hall_number).ok_or(MoyoError::UnknownHallNumberError)?;
+        Ok(Self(entry))
     }
 
     #[getter]
