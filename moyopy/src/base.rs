@@ -161,6 +161,10 @@ impl PyOperations {
     pub fn num_operations(&self) -> usize {
         self.0.num_operations()
     }
+
+    fn __len__(&self) -> usize {
+        self.0.num_operations()
+    }
 }
 
 impl From<PyOperations> for Operations {
