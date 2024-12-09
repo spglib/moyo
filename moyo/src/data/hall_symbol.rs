@@ -261,9 +261,12 @@ impl HallSymbol {
         Operations::new(rotations, translations)
     }
 
-    pub fn from_hall_number(hall_number: HallNumber) -> Self {
-        let entry = hall_symbol_entry(hall_number);
-        Self::new(entry.hall_symbol).unwrap()
+    pub fn from_hall_number(hall_number: HallNumber) -> Option<Self> {
+        if let Some(entry) = hall_symbol_entry(hall_number) {
+            Self::new(entry.hall_symbol)
+        } else {
+            None
+        }
     }
 
     pub fn primitive_generators(&self) -> Operations {

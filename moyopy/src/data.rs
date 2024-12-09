@@ -1,44 +1,14 @@
+mod hall_symbol;
+mod setting;
+
+pub use hall_symbol::PyHallSymbolEntry;
+pub use setting::PySetting;
+
 use pyo3::prelude::*;
-use pyo3::types::PyType;
 
 use super::base::{PyMoyoError, PyOperations};
 use moyo::data::{hall_symbol_entry, HallSymbol};
 use moyo::{MoyoError, Operations, Setting};
-
-#[derive(Debug, Clone)]
-#[pyclass(name = "Setting")]
-#[pyo3(module = "moyopy")]
-pub struct PySetting(Setting);
-
-#[pymethods]
-impl PySetting {
-    #[classmethod]
-    pub fn spglib(_cls: &Bound<'_, PyType>) -> PyResult<Self> {
-        Ok(Self(Setting::Spglib))
-    }
-
-    #[classmethod]
-    pub fn standard(_cls: &Bound<'_, PyType>) -> PyResult<Self> {
-        Ok(Self(Setting::Standard))
-    }
-
-    #[classmethod]
-    pub fn hall_number(_cls: &Bound<'_, PyType>, hall_number: i32) -> PyResult<Self> {
-        Ok(Self(Setting::HallNumber(hall_number)))
-    }
-}
-
-impl From<PySetting> for Setting {
-    fn from(setting: PySetting) -> Self {
-        setting.0
-    }
-}
-
-impl From<Setting> for PySetting {
-    fn from(setting: Setting) -> Self {
-        Self(setting)
-    }
-}
 
 #[pyfunction]
 pub fn operations_from_number(
@@ -52,9 +22,13 @@ pub fn operations_from_number(
     };
     let hall_number = match setting.0 {
         Setting::HallNumber(hall_number) => hall_number,
-        Setting::Spglib | Setting::Standard => setting.0.hall_numbers()[(number - 1) as usize],
+        Setting::Spglib | Setting::Standard => *setting
+            .0
+            .hall_numbers()
+            .get((number - 1) as usize)
+            .ok_or(MoyoError::UnknownNumberError)?,
     };
-    let entry = hall_symbol_entry(hall_number);
+    let entry = hall_symbol_entry(hall_number).unwrap();
     let hs = HallSymbol::new(entry.hall_symbol).ok_or(MoyoError::HallSymbolParsingError)?;
 
     let mut rotations = vec![];
