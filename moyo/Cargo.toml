@@ -19,7 +19,7 @@ serde.workspace = true
 serde_json.workspace = true
 approx.workspace = true
 log.workspace = true
-itertools = "0.11"
+itertools = "0.13"
 thiserror = "1.0"
 union-find = "0.4"
 strum = "0.25"
@@ -29,7 +29,7 @@ kiddo = "4.2"
 [dev-dependencies]
 rand = "0.8"
 rstest = "0.18"
-criterion = { version = "0.4", features = ["html_reports"] }
+criterion = { version = "0.5", features = ["html_reports"] }
 env_logger = "0.11"
 test-log = "0.2"
 
