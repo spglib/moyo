@@ -24,6 +24,10 @@ A fast and robust crystal symmetry finder, written in Rust.
 
 ## Dev
 
+```shell
+cargo install cargo-release cargo-edit cargo-deny
+```
+
 ### How to release
 
 1. `cargo install cargo-release cargo-edit`

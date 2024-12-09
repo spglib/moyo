@@ -7,14 +7,23 @@ pub type Number = i32;
 pub type HallNumber = i32;
 
 #[derive(Debug, Clone)]
+/// An entry containing space-group information for a specified hall_number.
 pub struct HallSymbolEntry {
+    /// Number for Hall symbols (1 - 530)
     pub hall_number: HallNumber,
+    /// ITA number for space group types (1 - 230)
     pub number: Number,
+    /// Number for arithmetic crystal classes (1 - 73)
     pub arithmetic_number: ArithmeticNumber,
-    pub setting: &'static str,     // setting
-    pub hall_symbol: &'static str, // Hall symbol
-    pub hm_short: &'static str,    // HM symbol HallSymbolEntry::new(short)
-    pub hm_full: &'static str,     // HM symbol HallSymbolEntry::new(full)
+    /// Setting
+    pub setting: &'static str,
+    /// Hall symbol
+    pub hall_symbol: &'static str,
+    /// Hermann-Mauguin symbol in short notation
+    pub hm_short: &'static str,
+    /// Hermann-Mauguin symbol in full notation
+    pub hm_full: &'static str,
+    /// Centering
     pub centering: Centering,
 }
 
@@ -44,6 +53,7 @@ impl HallSymbolEntry {
 }
 
 pub fn hall_symbol_entry(hall_number: HallNumber) -> HallSymbolEntry {
+    // TODO: bound check
     HALL_SYMBOL_DATABASE[(hall_number - 1) as usize].clone()
 }
 

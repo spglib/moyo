@@ -7,7 +7,7 @@ pub mod data;
 use moyo::{AngleTolerance, MoyoDataset, Setting};
 
 use crate::base::{PyMoyoError, PyOperations, PyStructure};
-use crate::data::{operations_from_number, PySetting};
+use crate::data::{operations_from_number, PyHallSymbolEntry, PySetting};
 
 #[derive(Debug)]
 #[pyclass(name = "MoyoDataset")]
@@ -155,12 +155,13 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyMoyoDataset>()?;
 
     // base
-    m.add_class::<base::PyStructure>()?;
-    m.add_class::<base::PyMoyoError>()?;
-    m.add_class::<base::PyOperations>()?;
+    m.add_class::<PyStructure>()?;
+    m.add_class::<PyMoyoError>()?;
+    m.add_class::<PyOperations>()?;
 
     // data
-    m.add_class::<data::PySetting>()?;
+    m.add_class::<PyHallSymbolEntry>()?;
+    m.add_class::<PySetting>()?;
     m.add_wrapped(wrap_pyfunction!(operations_from_number))?;
 
     Ok(())

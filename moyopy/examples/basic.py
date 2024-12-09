@@ -29,3 +29,6 @@ if __name__ == "__main__":
     dataset = moyopy.MoyoDataset(cell, symprec=1e-5, angle_tolerance=None, setting=None)
     assert dataset.number == 186
     assert dataset.hall_number == 480
+
+    hall_symbol_entry = moyopy.HallSymbolEntry(hall_number=dataset.hall_number)
+    assert hall_symbol_entry.hm_short == "P 6_3 m c"
