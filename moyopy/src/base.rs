@@ -11,7 +11,7 @@ use moyo::{Cell, Lattice, MoyoError};
 
 // Unfortunately, "PyCell" is already reversed by pyo3...
 #[derive(Debug, Clone)]
-#[pyclass(name = "Cell")]
+#[pyclass(name = "Cell", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyStructure(Cell);
 
@@ -119,7 +119,7 @@ impl<'de> Deserialize<'de> for PyStructure {
 }
 
 #[derive(Debug)]
-#[pyclass(name = "MoyoError")]
+#[pyclass(name = "MoyoError", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyMoyoError(MoyoError);
 
@@ -136,7 +136,7 @@ impl From<MoyoError> for PyMoyoError {
 }
 
 #[derive(Debug)]
-#[pyclass(name = "Operations")]
+#[pyclass(name = "Operations", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyOperations(Operations);
 

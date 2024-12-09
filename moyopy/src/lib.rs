@@ -10,7 +10,7 @@ use crate::base::{PyMoyoError, PyOperations, PyStructure};
 use crate::data::{operations_from_number, PyHallSymbolEntry, PySetting};
 
 #[derive(Debug)]
-#[pyclass(name = "MoyoDataset")]
+#[pyclass(name = "MoyoDataset", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyMoyoDataset(MoyoDataset);
 

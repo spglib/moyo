@@ -4,7 +4,7 @@ use pyo3::types::PyType;
 use moyo::Setting;
 
 #[derive(Debug, Clone)]
-#[pyclass(name = "Setting")]
+#[pyclass(name = "Setting", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PySetting(pub Setting);
 

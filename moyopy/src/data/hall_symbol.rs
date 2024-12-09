@@ -5,7 +5,7 @@ use moyo::data::{
 };
 
 #[derive(Debug, Clone)]
-#[pyclass(name = "HallSymbolEntry")]
+#[pyclass(name = "HallSymbolEntry", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyHallSymbolEntry(pub HallSymbolEntry);
 
@@ -70,7 +70,7 @@ impl From<HallSymbolEntry> for PyHallSymbolEntry {
 }
 
 #[derive(Debug, Clone)]
-#[pyclass(name = "Centering")]
+#[pyclass(name = "Centering", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyCentering(pub Centering);
 
