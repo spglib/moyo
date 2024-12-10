@@ -209,8 +209,13 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+          attestations: false
+          verbose: true
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          attestations: false
+          verbose: true
 
   docs:
     runs-on: ubuntu-latest

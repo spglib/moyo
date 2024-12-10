@@ -617,7 +617,7 @@ dependencies = [
 
 [[package]]
 name = "moyo"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "approx",
  "criterion",
@@ -639,7 +639,7 @@ dependencies = [
 
 [[package]]
 name = "moyopy"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "approx",
  "log",
