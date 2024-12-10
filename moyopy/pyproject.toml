@@ -20,7 +20,6 @@ classifiers = [
     "License :: OSI Approved :: Apache Software License",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -41,8 +40,18 @@ testing = [
     "pre-commit",
     "numpy",
 ]
+docs = [
+    "Sphinx >= 7.0",
+    "sphinx-autobuild",
+    "sphinxcontrib-bibtex >= 2.5",
+    "sphinx-book-theme",
+    "sphinx-autodoc2",
+    "myst-parser >= 2.0",
+    "linkify-it-py",
+]
 dev = [
     "moyopy[testing]",
+    "moyopy[docs]",
 ]
 
 [tool.maturin]
@@ -53,6 +62,7 @@ features = ["pyo3/extension-module"]
 
 [tool.ruff]
 line-length = 99
+[tool.ruff.lint]
 extend-select = [
     "F",           # pyflakes
     "E",           # pycodestyle-errors

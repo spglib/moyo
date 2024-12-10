@@ -16,6 +16,9 @@ install-python:
 test-python:
     pytest -v moyopy/python/tests
 
+build-python-docs:
+    sphinx-autobuild moyopy/docs moyopy/docs/_build
+
 profile:
     cargo flamegraph --test test_moyo_dataset --root
 
