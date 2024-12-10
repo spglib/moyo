@@ -211,3 +211,40 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: Swatinem/rust-cache@v2
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: x86_64
+          args: --release --out dist --manifest-path moyopy/Cargo.toml
+          sccache: 'true'
+          manylinux: auto
+      - name: Install
+        run: |
+          set -e
+          uv pip install --system --no-index --find-links dist moyopy
+          uv pip install --system moyopy[testing,docs]
+      - name: Build
+        run: |
+          sphinx-build moyopy/docs docs_build
+      - name: Deploy
+        if: ${{ github.event_name == 'push' }}
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs_build
+          destination_dir: python
