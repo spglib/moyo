@@ -360,3 +360,7 @@ target/
 *.png
 
 docs/note/
+
+# python-interface docs
+_build/
+apidocs/
