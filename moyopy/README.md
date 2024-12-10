@@ -7,6 +7,9 @@
 
 Python interface of [moyo](https://github.com/spglib/moyo)
 
+- Document: <https://spglib.github.io/moyo/python/>
+- PyPI: <https://pypi.org/project/moyopy/>
+
 ## Installation
 
 ```shell
