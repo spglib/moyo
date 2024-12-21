@@ -559,3 +559,22 @@ fn test_with_mp_550745() {
     assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 }
+
+#[test]
+fn test_niggli_reduction_corner_cases() {
+    // https://github.com/spglib/moyo/issues/35
+    let symprec = 1e-5;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    for path in vec![
+        Path::new("tests/assets/wbm-1-42389.json"),
+        Path::new("tests/assets/wbm-1-42433.json"),
+    ] {
+        let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+
+        let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+        assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+        assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+    }
+}
