@@ -43,16 +43,22 @@ impl Lattice {
 
     /// Return Niggli reduced lattice and transformation matrix to it
     pub fn niggli_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
-        let (reduced_basis, trans_mat) = niggli_reduce(&self.basis);
-        let reduced_lattice = Self {
-            basis: reduced_basis,
-        };
+        let (reduced_lattice, trans_mat) = self.unchecked_niggli_reduce();
 
         if !reduced_lattice.is_niggli_reduced() {
             return Err(MoyoError::NiggliReductionError);
         }
 
         Ok((reduced_lattice, trans_mat))
+    }
+
+    /// Return Niggli reduced lattice and transformation matrix to it without checking reduction condition
+    pub fn unchecked_niggli_reduce(&self) -> (Self, Matrix3<i32>) {
+        let (reduced_basis, trans_mat) = niggli_reduce(&self.basis);
+        let reduced_lattice = Self {
+            basis: reduced_basis,
+        };
+        (reduced_lattice, trans_mat)
     }
 
     /// Return true if basis vectors are Niggli reduced

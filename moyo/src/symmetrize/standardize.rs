@@ -98,7 +98,9 @@ impl StandardizedCell {
         // To standardized primitive cell
         let prim_transformation = match lattice_system {
             LatticeSystem::Triclinic => {
-                let (_, linear) = prim_cell.cell.lattice.niggli_reduce()?;
+                // Niggli reduction for distorted triclinic lattice systems is numerically so challenging.
+                // Thus, we skip checking reduction condition.
+                let (_, linear) = prim_cell.cell.lattice.unchecked_niggli_reduce();
                 UnimodularTransformation::from_linear(linear)
             }
             _ => space_group.transformation.clone(),
