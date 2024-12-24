@@ -364,3 +364,5 @@ docs/note/
 # python-interface docs
 _build/
 apidocs/
+
+debug.py
