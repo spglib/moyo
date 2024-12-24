@@ -219,6 +219,7 @@ jobs:
 
   docs:
     runs-on: ubuntu-latest
+    if: "!startsWith(github.ref, 'refs/tags/')"
     permissions:
       contents: write
     steps:
