@@ -578,3 +578,18 @@ fn test_niggli_reduction_corner_cases() {
         assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
     }
 }
+
+#[test]
+fn test_primitive_symmetry_search_corner_case() {
+    // https://github.com/spglib/moyo/issues/38
+    let path = Path::new("tests/assets/wbm-1-29497.json");
+    let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+
+    let symprec = 1e-2;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+}
