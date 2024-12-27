@@ -59,11 +59,7 @@ impl UnimodularTransformation {
     pub fn transform_operations(&self, operations: &Operations) -> Operations {
         let mut new_rotations = vec![];
         let mut new_translations = vec![];
-        for (rotation, translation) in operations
-            .rotations
-            .iter()
-            .zip(operations.translations.iter())
-        {
+        for (rotation, translation) in operations.iter() {
             let new_rotation = self.linear_inv * rotation * self.linear;
             let new_translation = self.linear_inv.map(|e| e as f64)
                 * (rotation.map(|e| e as f64) * self.origin_shift + translation
@@ -141,11 +137,7 @@ impl Transformation {
     pub fn transform_operations(&self, operations: &Operations) -> Operations {
         let mut new_rotations = vec![];
         let mut new_translations = vec![];
-        for (rotation, translation) in operations
-            .rotations
-            .iter()
-            .zip(operations.translations.iter())
-        {
+        for (rotation, translation) in operations.iter() {
             if let Some((new_rotation, new_translation)) = transform_operation_as_f64(
                 rotation,
                 translation,
@@ -165,11 +157,7 @@ impl Transformation {
     pub fn inverse_transform_operations(&self, operations: &Operations) -> Operations {
         let mut new_rotations = vec![];
         let mut new_translations = vec![];
-        for (rotation, translation) in operations
-            .rotations
-            .iter()
-            .zip(operations.translations.iter())
-        {
+        for (rotation, translation) in operations.iter() {
             if let Some((new_rotation, new_translation)) = transform_operation_as_f64(
                 rotation,
                 translation,

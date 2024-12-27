@@ -284,11 +284,7 @@ fn operations_in_cell(prim_cell: &PrimitiveCell, prim_operations: &Operations) -
     let input_operations =
         Transformation::from_linear(prim_cell.linear).transform_operations(prim_operations);
     for t1 in prim_cell.translations.iter() {
-        for (rotation, t2) in input_operations
-            .rotations
-            .iter()
-            .zip(input_operations.translations.iter())
-        {
+        for (rotation, t2) in input_operations.iter() {
             // (E, t1) (rotation, t2) = (rotation, t1 + t2)
             rotations.push(*rotation);
             let t12 = (t1 + t2).map(|e| e % 1.);
