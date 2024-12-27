@@ -1,7 +1,7 @@
 use super::arithmetic_crystal_class::ArithmeticNumber;
 use super::classification::GeometricCrystalClass;
 use super::hall_symbol::{Centering, HallSymbol};
-use crate::base::Rotation;
+use crate::base::{project_rotations, Rotation};
 
 #[derive(Debug)]
 /// Specific crystallographic point group in database
@@ -62,12 +62,10 @@ impl PointGroupRepresentative {
             GeometricCrystalClass::Oh => 517,
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number).unwrap();
-        let generators = hall_symbol
-            .generators
-            .iter()
-            .map(|operation| operation.rotation)
-            .collect();
-        Self::new(generators, hall_symbol.centering)
+        Self::new(
+            project_rotations(&hall_symbol.generators),
+            hall_symbol.centering,
+        )
     }
 
     pub fn from_arithmetic_crystal_class(arithmetic_number: ArithmeticNumber) -> Self {
@@ -156,12 +154,10 @@ impl PointGroupRepresentative {
             _ => panic!("Invalid arithmetic number"),
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number).unwrap();
-        let generators = hall_symbol
-            .generators
-            .iter()
-            .map(|operation| operation.rotation)
-            .collect();
-        Self::new(generators, hall_symbol.centering)
+        Self::new(
+            project_rotations(&hall_symbol.generators),
+            hall_symbol.centering,
+        )
     }
 
     pub fn primitive_generators(&self) -> Vec<Rotation> {

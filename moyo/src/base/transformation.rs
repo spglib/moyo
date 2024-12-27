@@ -3,7 +3,7 @@ use nalgebra::base::{Matrix3, Vector3};
 
 use super::cell::Cell;
 use super::lattice::Lattice;
-use super::operation::{Operation, Operations, Rotation, Translation};
+use super::operation::Operation;
 use crate::math::SNF;
 
 pub type UnimodularLinear = Matrix3<i32>;
@@ -56,17 +56,18 @@ impl UnimodularTransformation {
         Lattice::new((lattice.basis * self.linear_as_f64()).transpose())
     }
 
-    pub fn transform_operations(&self, operations: &Operations) -> Operations {
+    pub fn transform_operation(&self, operation: &Operation) -> Operation {
+        let new_rotation = self.linear_inv * operation.rotation * self.linear;
+        let new_translation = self.linear_inv.map(|e| e as f64)
+            * (operation.rotation.map(|e| e as f64) * self.origin_shift + operation.translation
+                - self.origin_shift);
+        Operation::new(new_rotation, new_translation)
+    }
+
+    pub fn transform_operations(&self, operations: &[Operation]) -> Vec<Operation> {
         operations
             .iter()
-            .map(|operation| {
-                let new_rotation = self.linear_inv * operation.rotation * self.linear;
-                let new_translation = self.linear_inv.map(|e| e as f64)
-                    * (operation.rotation.map(|e| e as f64) * self.origin_shift
-                        + operation.translation
-                        - self.origin_shift);
-                Operation::new(new_rotation, new_translation)
-            })
+            .map(|ops| self.transform_operation(ops))
             .collect()
     }
 
@@ -133,44 +134,40 @@ impl Transformation {
     }
 
     /// (P, p)^-1 (W, w) (P, p)
+    pub fn transform_operation(&self, operation: &Operation) -> Option<Operation> {
+        transform_operation_as_f64(
+            &operation,
+            &self.linear.map(|e| e as f64),
+            &self.linear_inv,
+            &self.origin_shift,
+        )
+    }
+
+    /// (P, p)^-1 (W, w) (P, p)
     /// This function may decrease the number of operations if the transformation is not compatible with an operation.
-    pub fn transform_operations(&self, operations: &Vec<Operation>) -> Vec<Operation> {
+    pub fn transform_operations(&self, operations: &[Operation]) -> Vec<Operation> {
         operations
             .iter()
-            .filter_map(|operation| {
-                if let Some((new_rotation, new_translation)) = transform_operation_as_f64(
-                    &operation.rotation,
-                    &operation.translation,
-                    &self.linear.map(|e| e as f64),
-                    &self.linear_inv,
-                    &self.origin_shift,
-                ) {
-                    Some(Operation::new(new_rotation, new_translation))
-                } else {
-                    None
-                }
-            })
+            .filter_map(|ops| self.transform_operation(ops))
             .collect()
     }
 
     /// (P, p) (W, w) (P, p)^-1
+    pub fn inverse_transform_operation(&self, operation: &Operation) -> Option<Operation> {
+        transform_operation_as_f64(
+            &operation,
+            &self.linear_inv,
+            &self.linear.map(|e| e as f64),
+            &(-self.linear_as_f64() * self.origin_shift),
+        )
+    }
+
+    /// (P, p) (W, w) (P, p)^-1
     /// This function may decrease the number of operations if the transformation is not compatible with an operation.
-    pub fn inverse_transform_operations(&self, operations: &Operations) -> Operations {
+    pub fn inverse_transform_operations(&self, operations: &[Operation]) -> Vec<Operation> {
         operations
             .iter()
-            .filter_map(|operation| {
-                if let Some((new_rotation, new_translation)) = transform_operation_as_f64(
-                    &operation.rotation,
-                    &operation.translation,
-                    &self.linear_inv,
-                    &self.linear.map(|e| e as f64),
-                    &(-self.linear_as_f64() * self.origin_shift),
-                ) {
-                    Some(Operation::new(new_rotation, new_translation))
-                } else {
-                    None
-                }
-            })
+            .filter_map(|ops| self.inverse_transform_operation(ops))
             .collect()
     }
 
@@ -222,30 +219,29 @@ impl Transformation {
 
 /// Transform operation (rotation, translation) by transformation (linear, origin_shift).
 fn transform_operation_as_f64(
-    rotation: &Rotation,
-    translation: &Translation,
+    operation: &Operation,
     linear: &Matrix3<f64>,
     linear_inv: &Matrix3<f64>,
     origin_shift: &OriginShift,
-) -> Option<(Rotation, Translation)> {
-    let new_rotation = (linear_inv * rotation.map(|e| e as f64) * linear).map(|e| e.round() as i32);
+) -> Option<Operation> {
+    let new_rotation =
+        (linear_inv * operation.rotation.map(|e| e as f64) * linear).map(|e| e.round() as i32);
 
     // Check if `new_rotation` is an integer matrix
     let recovered =
         (linear * new_rotation.map(|e| e as f64) * linear_inv).map(|e| e.round() as i32);
-    if recovered != *rotation {
+    if recovered != operation.rotation {
         return None;
     }
 
-    let new_translation =
-        linear_inv * (rotation.map(|e| e as f64) * origin_shift + translation - origin_shift);
-    Some((new_rotation, new_translation))
+    let new_translation = linear_inv
+        * (operation.rotation.map(|e| e as f64) * origin_shift + operation.translation
+            - origin_shift);
+    Some(Operation::new(new_rotation, new_translation))
 }
 
 #[cfg(test)]
 mod tests {
-    use std::vec;
-
     use nalgebra::matrix;
 
     use super::Transformation;
@@ -259,7 +255,7 @@ mod tests {
             0, 0, 2;
         ]);
         // threefold rotation
-        let operations = Operation::new(
+        let operation = Operation::new(
             matrix![
                 0, 0, 1;
                 1, 0, 0;
@@ -267,9 +263,6 @@ mod tests {
             ],
             Translation::zeros(),
         );
-        assert_eq!(
-            transformation.transform_operations(&vec![operations]).len(),
-            0
-        );
+        assert!(transformation.transform_operation(&operation).is_none());
     }
 }

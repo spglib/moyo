@@ -31,8 +31,23 @@ impl Operation {
     }
 }
 
-// TODO: remove
+impl Mul for Operation {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        // (r1, t1) * (r2, t2) = (r1 * r2, r1 * t2 + t1)
+        let new_rotation = self.rotation * rhs.rotation;
+        let new_translation = self.rotation.map(|e| e as f64) * rhs.translation + self.translation;
+        Self::new(new_rotation, new_translation)
+    }
+}
+
+pub type Rotations = Vec<Rotation>;
 pub type Operations = Vec<Operation>;
+
+pub fn project_rotations(operations: &Operations) -> Rotations {
+    operations.iter().map(|ops| ops.rotation).collect()
+}
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct Permutation {

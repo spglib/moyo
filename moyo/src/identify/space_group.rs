@@ -4,7 +4,10 @@ use log::debug;
 use nalgebra::{Dyn, Matrix3, OMatrix, OVector, Vector3, U3};
 
 use super::point_group::PointGroup;
-use crate::base::{MoyoError, Operations, OriginShift, UnimodularLinear, UnimodularTransformation};
+use crate::base::{
+    project_rotations, MoyoError, Operations, OriginShift, UnimodularLinear,
+    UnimodularTransformation,
+};
 use crate::data::{
     arithmetic_crystal_class_entry, hall_symbol_entry, ArithmeticNumber, GeometricCrystalClass,
     HallNumber, HallSymbol, Number, PointGroupRepresentative, Setting,
@@ -28,10 +31,7 @@ impl SpaceGroup {
         epsilon: f64,
     ) -> Result<Self, MoyoError> {
         // point_group.trans_mat: self -> primitive
-        let prim_rotations = prim_operations
-            .iter()
-            .map(|operation| operation.rotation)
-            .collect();
+        let prim_rotations = project_rotations(&prim_operations);
         let point_group = PointGroup::new(&prim_rotations)?;
         debug!(
             "Arithmetic crystal class: No. {}",
@@ -170,7 +170,7 @@ fn match_origin_shift(
     epsilon: f64,
 ) -> Option<OriginShift> {
     let new_prim_operations =
-        UnimodularTransformation::from_linear(*trans_mat).transform_operations(prim_operations);
+        UnimodularTransformation::from_linear(*trans_mat).transform_operations(&prim_operations);
     let mut hm_translations = HashMap::new();
     for operation in new_prim_operations.iter() {
         hm_translations.insert(operation.rotation, operation.translation);

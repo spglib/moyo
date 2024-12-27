@@ -5,8 +5,8 @@ use nalgebra::{vector, Matrix3, Vector3};
 use std::collections::HashMap;
 
 use crate::base::{
-    orbits_from_permutations, Cell, Lattice, MoyoError, Operations, Permutation, Position,
-    Rotation, Transformation, UnimodularTransformation, EPS,
+    orbits_from_permutations, project_rotations, Cell, Lattice, MoyoError, Operations, Permutation,
+    Position, Rotation, Transformation, UnimodularTransformation, EPS,
 };
 use crate::data::{
     arithmetic_crystal_class_entry, hall_symbol_entry, iter_wyckoff_positions, HallNumber,
@@ -118,21 +118,16 @@ impl StandardizedCell {
         // - Reorder permutations
         let mut permutation_mapping = HashMap::new();
         let prim_operations = prim_transformation.transform_operations(&symmetry_search.operations);
-        for (prim_rotation, permutation) in prim_operations
+        let prim_rotations = project_rotations(&prim_operations);
+        for (prim_rotation, permutation) in prim_rotations
             .iter()
-            .map(|operation| operation.rotation)
             .zip(symmetry_search.permutations.iter())
         {
             permutation_mapping.insert(*prim_rotation, permutation.clone());
         }
         let prim_std_permutations = prim_std_operations
             .iter()
-            .map(|operation| {
-                permutation_mapping
-                    .get(&operation.rotation)
-                    .unwrap()
-                    .clone()
-            })
+            .map(|ops| permutation_mapping.get(&ops.rotation).unwrap().clone())
             .collect();
         let new_prim_std_positions = symmetrize_positions(
             &prim_std_cell_tmp,
@@ -152,13 +147,8 @@ impl StandardizedCell {
         let (std_cell, site_mapping) = conv_trans.transform_cell(&prim_std_cell);
 
         // Symmetrize lattice
-        let (_, rotation_matrix) = symmetrize_lattice(
-            &std_cell.lattice,
-            &conv_std_operations
-                .iter()
-                .map(|operation| operation.rotation)
-                .collect(),
-        );
+        let (_, rotation_matrix) =
+            symmetrize_lattice(&std_cell.lattice, &project_rotations(&conv_std_operations));
 
         Ok((
             prim_std_cell.rotate(&rotation_matrix),
