@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use union_find::{QuickFindUf, UnionByRank, UnionFind};
 
 use super::lattice::Lattice;
-use super::operation::Permutation;
+use super::permutation::Permutation;
 
 /// Fractional coordinates
 pub type Position = Vector3<f64>;
@@ -77,7 +77,7 @@ mod tests {
 
     use super::{orbits_from_permutations, Cell};
     use crate::base::lattice::Lattice;
-    use crate::base::operation::Permutation;
+    use crate::base::permutation::Permutation;
 
     #[test]
     fn test_orbits_from_permutations() {

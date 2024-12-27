@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use crate::base::{
     orbits_from_permutations, project_rotations, Cell, Lattice, MoyoError, Operations, Permutation,
-    Position, Rotation, Transformation, UnimodularTransformation, EPS,
+    Position, Rotations, Transformation, UnimodularTransformation, EPS,
 };
 use crate::data::{
     arithmetic_crystal_class_entry, hall_symbol_entry, iter_wyckoff_positions, HallNumber,
@@ -325,7 +325,7 @@ fn symmetrize_positions(
         .collect::<Vec<_>>()
 }
 
-fn symmetrize_lattice(lattice: &Lattice, rotations: &Vec<Rotation>) -> (Lattice, Matrix3<f64>) {
+fn symmetrize_lattice(lattice: &Lattice, rotations: &Rotations) -> (Lattice, Matrix3<f64>) {
     let metric_tensor = lattice.metric_tensor();
     let mut symmetrized_metric_tensor: Matrix3<f64> = rotations
         .iter()

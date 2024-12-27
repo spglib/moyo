@@ -10,7 +10,7 @@ use super::solve::{
 };
 use crate::base::{
     traverse, AngleTolerance, Cell, Lattice, MoyoError, Operation, Operations, Permutation,
-    Position, Rotation, Translation, EPS,
+    Position, Rotation, Rotations, Translation, EPS,
 };
 
 #[derive(Debug)]
@@ -18,7 +18,7 @@ pub struct PrimitiveSymmetrySearch {
     /// Operations in the given primitive cell
     pub operations: Operations,
     pub permutations: Vec<Permutation>,
-    pub bravais_group: Vec<Rotation>,
+    pub bravais_group: Rotations,
 }
 
 impl PrimitiveSymmetrySearch {
@@ -169,7 +169,7 @@ fn search_bravais_group(
     minkowski_lattice: &Lattice,
     symprec: f64,
     angle_tolerance: AngleTolerance,
-) -> Result<Vec<Rotation>, MoyoError> {
+) -> Result<Rotations, MoyoError> {
     // Candidate column vectors for rotation matrix
     let lengths = minkowski_lattice
         .basis

@@ -4,7 +4,7 @@ use itertools::Itertools;
 use log::debug;
 use nalgebra::{Dyn, Matrix3, OMatrix, OVector, U9};
 
-use crate::base::{MoyoError, Rotation, UnimodularLinear};
+use crate::base::{MoyoError, Rotation, Rotations, UnimodularLinear};
 use crate::data::{
     iter_arithmetic_crystal_entry, ArithmeticNumber, Centering, CrystalSystem,
     GeometricCrystalClass, PointGroupRepresentative,
@@ -22,7 +22,7 @@ pub struct PointGroup {
 impl PointGroup {
     /// Identify the arithmetic crystal class from the given rotations and transformation matrix into the representative
     /// Assume the rotations are given in the (reduced) primitive basis
-    pub fn new(prim_rotations: &Vec<Rotation>) -> Result<Self, MoyoError> {
+    pub fn new(prim_rotations: &Rotations) -> Result<Self, MoyoError> {
         let rotation_types = prim_rotations.iter().map(identify_rotation_type).collect();
         let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types)?;
         debug!("Geometric crystal class: {:?}", geometric_crystal_class);
@@ -67,7 +67,7 @@ enum RotationType {
 
 /// Faster matching algorithm for cubic point groups
 fn match_with_cubic_point_group(
-    prim_rotations: &Vec<Rotation>,
+    prim_rotations: &Rotations,
     rotation_types: &[RotationType],
     geometric_crystal_class: GeometricCrystalClass,
 ) -> Result<PointGroup, MoyoError> {
@@ -158,7 +158,7 @@ fn match_with_cubic_point_group(
 }
 
 fn match_with_point_group(
-    prim_rotations: &Vec<Rotation>,
+    prim_rotations: &Rotations,
     rotation_types: &[RotationType],
     geometric_crystal_class: GeometricCrystalClass,
 ) -> Result<PointGroup, MoyoError> {
@@ -228,8 +228,8 @@ fn match_with_point_group(
 
 #[allow(dead_code)]
 pub fn integral_normalizer(
-    prim_rotations: &Vec<Rotation>,
-    prim_generators: &Vec<Rotation>,
+    prim_rotations: &Rotations,
+    prim_generators: &Rotations,
 ) -> Vec<UnimodularLinear> {
     let rotation_types = prim_rotations
         .iter()
