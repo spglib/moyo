@@ -9,8 +9,8 @@ use super::solve::{
     PeriodicKdTree,
 };
 use crate::base::{
-    traverse, AngleTolerance, Cell, Lattice, MoyoError, Operations, Permutation, Position,
-    Rotation, Translation, EPS,
+    traverse, AngleTolerance, Cell, Lattice, MoyoError, Operation, Operations, Permutation,
+    Position, Rotation, Translation, EPS,
 };
 
 #[derive(Debug)]
@@ -96,8 +96,7 @@ impl PrimitiveSymmetrySearch {
         // Recover operations by group multiplication
         let mut queue = VecDeque::new();
         let mut visited = HashSet::new();
-        let mut rotations = vec![];
-        let mut translations = vec![];
+        let mut operations = vec![];
         let mut permutations = vec![];
         queue.push_back((
             Rotation::identity(),
@@ -110,8 +109,7 @@ impl PrimitiveSymmetrySearch {
                 continue;
             }
             visited.insert(rotation_lhs);
-            rotations.push(rotation_lhs);
-            translations.push(translation_lhs);
+            operations.push(Operation::new(rotation_lhs, translation_lhs));
             permutations.push(permutation_lhs.clone());
 
             for (&rotation_rhs, translation_rhs, permutation_rhs) in
@@ -125,25 +123,26 @@ impl PrimitiveSymmetrySearch {
                 queue.push_back((new_rotation, new_translation, new_permutation));
             }
         }
-        if rotations.len() != operations_and_permutations.len() {
+        if operations.len() != operations_and_permutations.len() {
             debug!("Found operations do not form a group. Consider reducing symprec and angle_tolerance.");
             return Err(MoyoError::TooLargeToleranceError);
         }
 
         // Check closure
         let mut translations_map = HashMap::new();
-        for (rotation, translation) in rotations.iter().zip(translations.iter()) {
-            translations_map.insert(rotation.clone(), translation.clone());
+        for operation in operations.iter() {
+            translations_map.insert(operation.rotation.clone(), operation.translation.clone());
         }
         let mut closed = true;
-        for (r1, t1) in rotations.iter().zip(translations.iter()) {
+        for operation1 in operations.iter() {
             if !closed {
                 break;
             }
-            for (r2, t2) in rotations.iter().zip(translations.iter()) {
+            for operation2 in operations.iter() {
                 // (r1, t1) * (r2, t2) = (r1 * r2, r1 * t2 + t1)
-                let r = r1 * r2;
-                let t = r1.map(|e| e as f64) * t2 + t1;
+                let r = operation1.rotation * operation2.rotation;
+                let t = operation1.rotation.map(|e| e as f64) * operation2.translation
+                    + operation1.translation;
                 let diff = (translations_map[&r] - t).map(|e| e - e.round());
                 if primitive_cell.lattice.cartesian_coords(&diff).norm() > rough_symprec {
                     closed = false;
@@ -156,9 +155,9 @@ impl PrimitiveSymmetrySearch {
             return Err(MoyoError::TooLargeToleranceError);
         }
 
-        debug!("Order of point group: {}", rotations.len());
+        debug!("Order of point group: {}", operations.len());
         Ok(Self {
-            operations: Operations::new(rotations, translations),
+            operations,
             permutations,
             bravais_group,
         })

@@ -8,7 +8,7 @@ mod transformation;
 pub use cell::{AtomicSpecie, Cell, Position};
 pub use error::MoyoError;
 pub use lattice::Lattice;
-pub use operation::{Operations, Permutation, Rotation, Translation};
+pub use operation::{Operation, Operations, Permutation, Rotation, Translation};
 pub use tolerance::AngleTolerance;
 pub use transformation::{Linear, OriginShift};
 

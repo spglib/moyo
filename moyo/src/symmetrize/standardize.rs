@@ -1,4 +1,4 @@
-use itertools::{iproduct, izip};
+use itertools::iproduct;
 use log::debug;
 use nalgebra::linalg::{Cholesky, QR};
 use nalgebra::{vector, Matrix3, Vector3};
@@ -118,16 +118,21 @@ impl StandardizedCell {
         // - Reorder permutations
         let mut permutation_mapping = HashMap::new();
         let prim_operations = prim_transformation.transform_operations(&symmetry_search.operations);
-        for (prim_rotation, permutation) in izip!(
-            prim_operations.rotations.iter(),
-            symmetry_search.permutations.iter()
-        ) {
+        for (prim_rotation, permutation) in prim_operations
+            .iter()
+            .map(|operation| operation.rotation)
+            .zip(symmetry_search.permutations.iter())
+        {
             permutation_mapping.insert(*prim_rotation, permutation.clone());
         }
         let prim_std_permutations = prim_std_operations
-            .rotations
             .iter()
-            .map(|rotation| permutation_mapping.get(rotation).unwrap().clone())
+            .map(|operation| {
+                permutation_mapping
+                    .get(&operation.rotation)
+                    .unwrap()
+                    .clone()
+            })
             .collect();
         let new_prim_std_positions = symmetrize_positions(
             &prim_std_cell_tmp,
@@ -147,8 +152,13 @@ impl StandardizedCell {
         let (std_cell, site_mapping) = conv_trans.transform_cell(&prim_std_cell);
 
         // Symmetrize lattice
-        let (_, rotation_matrix) =
-            symmetrize_lattice(&std_cell.lattice, &conv_std_operations.rotations);
+        let (_, rotation_matrix) = symmetrize_lattice(
+            &std_cell.lattice,
+            &conv_std_operations
+                .iter()
+                .map(|operation| operation.rotation)
+                .collect(),
+        );
 
         Ok((
             prim_std_cell.rotate(&rotation_matrix),
@@ -312,12 +322,11 @@ fn symmetrize_positions(
     (0..cell.num_atoms())
         .map(|i| {
             let mut acc = Vector3::zeros();
-            for (inv_perm, (rotation, translation)) in
-                inverse_permutations.iter().zip(operations.iter())
-            {
-                let mut frac_displacements =
-                    rotation.map(|e| e as f64) * cell.positions[inv_perm.apply(i)] + translation
-                        - cell.positions[i];
+            for (inv_perm, operation) in inverse_permutations.iter().zip(operations.iter()) {
+                let mut frac_displacements = operation.rotation.map(|e| e as f64)
+                    * cell.positions[inv_perm.apply(i)]
+                    + operation.translation
+                    - cell.positions[i];
                 frac_displacements -= frac_displacements.map(|e| e.round()); // in [-0.5, 0.5]
                 acc += frac_displacements;
             }

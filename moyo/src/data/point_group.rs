@@ -62,7 +62,12 @@ impl PointGroupRepresentative {
             GeometricCrystalClass::Oh => 517,
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number).unwrap();
-        Self::new(hall_symbol.generators.rotations, hall_symbol.centering)
+        let generators = hall_symbol
+            .generators
+            .iter()
+            .map(|operation| operation.rotation)
+            .collect();
+        Self::new(generators, hall_symbol.centering)
     }
 
     pub fn from_arithmetic_crystal_class(arithmetic_number: ArithmeticNumber) -> Self {
@@ -151,7 +156,12 @@ impl PointGroupRepresentative {
             _ => panic!("Invalid arithmetic number"),
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number).unwrap();
-        Self::new(hall_symbol.generators.rotations, hall_symbol.centering)
+        let generators = hall_symbol
+            .generators
+            .iter()
+            .map(|operation| operation.rotation)
+            .collect();
+        Self::new(generators, hall_symbol.centering)
     }
 
     pub fn primitive_generators(&self) -> Vec<Rotation> {

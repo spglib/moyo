@@ -5,7 +5,7 @@ use nalgebra::{matrix, Matrix3, Vector3};
 use strum_macros::EnumIter;
 
 use super::hall_symbol_database::{hall_symbol_entry, HallNumber};
-use crate::base::{Linear, Operations, Rotation, Transformation, Translation, EPS};
+use crate::base::{Linear, Operation, Operations, Rotation, Transformation, Translation, EPS};
 
 const MAX_DENOMINATOR: i32 = 12;
 
@@ -193,27 +193,24 @@ impl HallSymbol {
 
         // change basis by (I, v)
         // (R, tau) -> (R, tau + v - Rv)
-        let mut rotations = vec![];
-        let mut translations = vec![];
+        let mut generators = vec![];
 
         if inversion_at_origin {
-            rotations.push(-Rotation::identity());
-            translations.push(2.0 * origin_shift);
+            generators.push(Operation::new(-Rotation::identity(), 2.0 * origin_shift));
         }
 
         for (rotation, translation) in ns {
-            rotations.push(rotation);
             let translation_mod1 = (translation + origin_shift
                 - rotation.map(|e| e as f64) * origin_shift)
                 .map(|e| e.rem_euclid(1.0));
-            translations.push(translation_mod1);
+            generators.push(Operation::new(rotation, translation_mod1));
         }
 
         Some(Self {
             hall_symbol: hall_symbol.to_string(),
             centering: lattice_symbol,
             centering_translations,
-            generators: Operations::new(rotations, translations),
+            generators: generators,
         })
     }
 
@@ -222,8 +219,7 @@ impl HallSymbol {
     pub fn traverse(&self) -> Operations {
         let mut queue = VecDeque::new();
         let mut hm_translations = HashMap::new();
-        let mut rotations = vec![];
-        let mut translations = vec![];
+        let mut operations = vec![];
 
         queue.push_back((Rotation::identity(), Translation::zeros()));
 
@@ -234,13 +230,12 @@ impl HallSymbol {
                 continue;
             }
             entry.or_insert(translation_lhs);
-            rotations.push(rotation_lhs);
-            translations.push(translation_lhs);
+            operations.push(Operation::new(rotation_lhs, translation_lhs));
 
-            for (rotation_rhs, translation_rhs) in self.generators.iter() {
-                let new_rotation = rotation_lhs * rotation_rhs;
+            for rhs in self.generators.iter() {
+                let new_rotation = rotation_lhs * rhs.rotation;
                 let new_translation =
-                    rotation_lhs.map(|e| e as f64) * translation_rhs + translation_lhs;
+                    rotation_lhs.map(|e| e as f64) * rhs.translation + translation_lhs;
                 let new_translation_mod1 = new_translation.map(|e| {
                     let mut eint = (e * (MAX_DENOMINATOR as f64)).round() as i32;
                     eint = eint.rem_euclid(MAX_DENOMINATOR);
@@ -253,7 +248,7 @@ impl HallSymbol {
             }
         }
 
-        Operations::new(rotations, translations)
+        operations
     }
 
     pub fn from_hall_number(hall_number: HallNumber) -> Option<Self> {
@@ -586,9 +581,9 @@ mod tests {
         let hs = HallSymbol::new(hall_symbol).unwrap();
         assert_eq!(hs.centering, lattice_symbol);
         assert_eq!(hs.centering_translations.len(), num_centering_translations);
-        assert_eq!(hs.generators.num_operations(), num_generators);
+        assert_eq!(hs.generators.len(), num_generators);
         let operations = hs.traverse();
-        assert_eq!(operations.num_operations(), num_operations);
+        assert_eq!(operations.len(), num_operations);
     }
 
     #[test]
@@ -596,32 +591,32 @@ mod tests {
         // No. 178
         let hs = HallSymbol::new("P 61 2 (0 0 5)").unwrap();
         let generators = hs.generators;
-        assert_eq!(generators.num_operations(), 2);
+        assert_eq!(generators.len(), 2);
         assert_eq!(
-            generators.rotations[0],
+            generators[0].rotation,
             matrix![
                 1, -1, 0;
                 1, 0, 0;
                 0, 0, 1;
             ]
         );
-        assert_relative_eq!(generators.translations[0], vector![0.0, 0.0, 1.0 / 6.0]);
+        assert_relative_eq!(generators[0].translation, vector![0.0, 0.0, 1.0 / 6.0]);
         assert_eq!(
-            generators.rotations[1],
+            generators[1].rotation,
             matrix![
                 0, -1, 0;
                 -1, 0, 0;
                 0, 0, -1;
             ]
         );
-        assert_relative_eq!(generators.translations[1], vector![0.0, 0.0, 5.0 / 6.0]);
+        assert_relative_eq!(generators[1].translation, vector![0.0, 0.0, 5.0 / 6.0]);
     }
 
     #[test]
     fn test_hall_symbol_whole() {
         for entry in iter_hall_symbol_entry() {
             let hs = HallSymbol::new(entry.hall_symbol).unwrap();
-            assert_eq!(48 % hs.traverse().num_operations(), 0);
+            assert_eq!(48 % hs.traverse().len(), 0);
         }
     }
 

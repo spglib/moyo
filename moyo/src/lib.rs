@@ -69,7 +69,8 @@ pub mod search;
 pub mod symmetrize;
 
 pub use base::{
-    AngleTolerance, Cell, Lattice, MoyoError, Operations, OriginShift, Rotation, Translation,
+    AngleTolerance, Cell, Lattice, MoyoError, Operation, Operations, OriginShift, Rotation,
+    Translation,
 };
 pub use data::{HallNumber, Number, Setting};
 
@@ -225,7 +226,7 @@ impl MoyoDataset {
 
     /// Return the number of symmetry operations in the input cell.
     pub fn num_operations(&self) -> usize {
-        self.operations.num_operations()
+        self.operations.len()
     }
 }
 
@@ -279,18 +280,15 @@ fn iterative_symmetry_search(
 }
 
 fn operations_in_cell(prim_cell: &PrimitiveCell, prim_operations: &Operations) -> Operations {
-    let mut rotations = vec![];
-    let mut translations = vec![];
     let input_operations =
         Transformation::from_linear(prim_cell.linear).transform_operations(prim_operations);
+    let mut operations = vec![];
     for t1 in prim_cell.translations.iter() {
-        for (rotation, t2) in input_operations.iter() {
+        for operation2 in input_operations.iter() {
             // (E, t1) (rotation, t2) = (rotation, t1 + t2)
-            rotations.push(*rotation);
-            let t12 = (t1 + t2).map(|e| e % 1.);
-            translations.push(t12);
+            let t12 = (t1 + operation2.translation).map(|e| e % 1.);
+            operations.push(Operation::new(operation2.rotation, t12));
         }
     }
-
-    Operations::new(rotations, translations)
+    operations
 }

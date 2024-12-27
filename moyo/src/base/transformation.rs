@@ -3,7 +3,7 @@ use nalgebra::base::{Matrix3, Vector3};
 
 use super::cell::Cell;
 use super::lattice::Lattice;
-use super::operation::{Operations, Rotation, Translation};
+use super::operation::{Operation, Operations, Rotation, Translation};
 use crate::math::SNF;
 
 pub type UnimodularLinear = Matrix3<i32>;
@@ -57,17 +57,17 @@ impl UnimodularTransformation {
     }
 
     pub fn transform_operations(&self, operations: &Operations) -> Operations {
-        let mut new_rotations = vec![];
-        let mut new_translations = vec![];
-        for (rotation, translation) in operations.iter() {
-            let new_rotation = self.linear_inv * rotation * self.linear;
-            let new_translation = self.linear_inv.map(|e| e as f64)
-                * (rotation.map(|e| e as f64) * self.origin_shift + translation
-                    - self.origin_shift);
-            new_rotations.push(new_rotation);
-            new_translations.push(new_translation);
-        }
-        Operations::new(new_rotations, new_translations)
+        operations
+            .iter()
+            .map(|operation| {
+                let new_rotation = self.linear_inv * operation.rotation * self.linear;
+                let new_translation = self.linear_inv.map(|e| e as f64)
+                    * (operation.rotation.map(|e| e as f64) * self.origin_shift
+                        + operation.translation
+                        - self.origin_shift);
+                Operation::new(new_rotation, new_translation)
+            })
+            .collect()
     }
 
     pub fn transform_cell(&self, cell: &Cell) -> Cell {
@@ -134,42 +134,44 @@ impl Transformation {
 
     /// (P, p)^-1 (W, w) (P, p)
     /// This function may decrease the number of operations if the transformation is not compatible with an operation.
-    pub fn transform_operations(&self, operations: &Operations) -> Operations {
-        let mut new_rotations = vec![];
-        let mut new_translations = vec![];
-        for (rotation, translation) in operations.iter() {
-            if let Some((new_rotation, new_translation)) = transform_operation_as_f64(
-                rotation,
-                translation,
-                &self.linear.map(|e| e as f64),
-                &self.linear_inv,
-                &self.origin_shift,
-            ) {
-                new_rotations.push(new_rotation);
-                new_translations.push(new_translation);
-            }
-        }
-        Operations::new(new_rotations, new_translations)
+    pub fn transform_operations(&self, operations: &Vec<Operation>) -> Vec<Operation> {
+        operations
+            .iter()
+            .filter_map(|operation| {
+                if let Some((new_rotation, new_translation)) = transform_operation_as_f64(
+                    &operation.rotation,
+                    &operation.translation,
+                    &self.linear.map(|e| e as f64),
+                    &self.linear_inv,
+                    &self.origin_shift,
+                ) {
+                    Some(Operation::new(new_rotation, new_translation))
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 
     /// (P, p) (W, w) (P, p)^-1
     /// This function may decrease the number of operations if the transformation is not compatible with an operation.
     pub fn inverse_transform_operations(&self, operations: &Operations) -> Operations {
-        let mut new_rotations = vec![];
-        let mut new_translations = vec![];
-        for (rotation, translation) in operations.iter() {
-            if let Some((new_rotation, new_translation)) = transform_operation_as_f64(
-                rotation,
-                translation,
-                &self.linear_inv,
-                &self.linear.map(|e| e as f64),
-                &(-self.linear_as_f64() * self.origin_shift),
-            ) {
-                new_rotations.push(new_rotation);
-                new_translations.push(new_translation);
-            }
-        }
-        Operations::new(new_rotations, new_translations)
+        operations
+            .iter()
+            .filter_map(|operation| {
+                if let Some((new_rotation, new_translation)) = transform_operation_as_f64(
+                    &operation.rotation,
+                    &operation.translation,
+                    &self.linear_inv,
+                    &self.linear.map(|e| e as f64),
+                    &(-self.linear_as_f64() * self.origin_shift),
+                ) {
+                    Some(Operation::new(new_rotation, new_translation))
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 
     // The transformation may increase the number of atoms in the cell.
@@ -247,7 +249,7 @@ mod tests {
     use nalgebra::matrix;
 
     use super::Transformation;
-    use crate::base::operation::{Operations, Translation};
+    use crate::base::operation::{Operation, Translation};
 
     #[test]
     fn test_incompatible_transformation() {
@@ -257,18 +259,16 @@ mod tests {
             0, 0, 2;
         ]);
         // threefold rotation
-        let operations = Operations::new(
-            vec![matrix![
+        let operations = Operation::new(
+            matrix![
                 0, 0, 1;
                 1, 0, 0;
                 0, 1, 0;
-            ]],
-            vec![Translation::zeros()],
+            ],
+            Translation::zeros(),
         );
         assert_eq!(
-            transformation
-                .transform_operations(&operations)
-                .num_operations(),
+            transformation.transform_operations(&vec![operations]).len(),
             0
         );
     }

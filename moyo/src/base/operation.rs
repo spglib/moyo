@@ -1,7 +1,5 @@
 use std::collections::{HashSet, VecDeque};
-use std::iter::Zip;
 use std::ops::Mul;
-use std::slice::Iter;
 
 use nalgebra::base::{Matrix3, Vector3};
 
@@ -13,43 +11,28 @@ pub type Rotation = Matrix3<i32>;
 pub type Translation = Vector3<f64>;
 
 #[derive(Debug, Clone)]
-/// Symmetry operation without basis information
-pub struct Operations {
-    /// `rotations[i]` is a rotation part of the `i`th operation
-    pub rotations: Vec<Rotation>,
-    /// `translations[i]` is a translation part of the `i`th operation
-    pub translations: Vec<Translation>,
+pub struct Operation {
+    pub rotation: Rotation,
+    pub translation: Translation,
 }
 
-impl Operations {
-    pub fn new(rotations: Vec<Rotation>, translations: Vec<Translation>) -> Self {
-        if translations.len() != rotations.len() {
-            panic!("rotations and translations should be the same length");
-        }
+impl Operation {
+    pub fn new(rotation: Rotation, translation: Translation) -> Self {
         Self {
-            rotations,
-            translations,
+            rotation,
+            translation,
         }
     }
 
-    /// Return the number of symmetry operations
-    pub fn num_operations(&self) -> usize {
-        self.rotations.len()
-    }
-
-    /// Return rotation matrices in cartesian coordinates with respect to the given lattice
-    pub fn cartesian_rotations(&self, lattice: &Lattice) -> Vec<Matrix3<f64>> {
+    /// Return rotation matrix in cartesian coordinates with respect to the given lattice
+    pub fn cartesian_rotation(&self, lattice: &Lattice) -> Matrix3<f64> {
         let inv_basis = lattice.basis.try_inverse().unwrap();
-        self.rotations
-            .iter()
-            .map(|r| lattice.basis * r.map(|e| e as f64) * inv_basis)
-            .collect()
-    }
-
-    pub fn iter(&self) -> Zip<Iter<Rotation>, Iter<Translation>> {
-        self.rotations.iter().zip(self.translations.iter())
+        lattice.basis * self.rotation.map(|e| e as f64) * inv_basis
     }
 }
+
+// TODO: remove
+pub type Operations = Vec<Operation>;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct Permutation {
@@ -124,7 +107,7 @@ mod tests {
     use nalgebra::matrix;
 
     use super::{Permutation, Translation};
-    use crate::base::{lattice::Lattice, Operations};
+    use crate::base::{lattice::Lattice, Operation};
 
     #[test]
     fn test_cartesian_rotations() {
@@ -133,23 +116,22 @@ mod tests {
             -0.5, f64::sqrt(3.0) / 2.0, 0.0;
             0.0, 0.0, 1.0;
         ]);
-        let rotations = vec![matrix![
-            0, -1, 0;
-            1, -1, 0;
-            0, 0, 1;
-        ]];
-        let translations = vec![Translation::zeros()];
+        let operation = Operation::new(
+            matrix![
+                0, -1, 0;
+                1, -1, 0;
+                0, 0, 1;
+            ],
+            Translation::zeros(),
+        );
 
-        let operations = Operations::new(rotations, translations);
-
-        let actual = operations.cartesian_rotations(&lattice)[0];
+        let actual = operation.cartesian_rotation(&lattice);
         let expect = matrix![
             -0.5, -f64::sqrt(3.0) / 2.0, 0.0;
             f64::sqrt(3.0) / 2.0, -0.5, 0.0;
             0.0, 0.0, 1.0;
         ];
         assert_relative_eq!(actual, expect);
-        assert_eq!(operations.num_operations(), 1)
     }
 
     #[test]

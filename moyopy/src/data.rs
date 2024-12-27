@@ -8,7 +8,7 @@ use pyo3::prelude::*;
 
 use super::base::{PyMoyoError, PyOperations};
 use moyo::data::{hall_symbol_entry, HallSymbol};
-use moyo::{MoyoError, Operations, Setting};
+use moyo::{MoyoError, Operation, Setting};
 
 #[pyfunction]
 pub fn operations_from_number(
@@ -31,21 +31,19 @@ pub fn operations_from_number(
     let entry = hall_symbol_entry(hall_number).unwrap();
     let hs = HallSymbol::new(entry.hall_symbol).ok_or(MoyoError::HallSymbolParsingError)?;
 
-    let mut rotations = vec![];
-    let mut translations = vec![];
+    let mut operations = vec![];
 
     let coset = hs.traverse();
 
     let lattice_points = hs.centering.lattice_points();
     for t1 in lattice_points.iter() {
-        for (r2, t2) in coset.iter() {
+        for operation2 in coset.iter() {
             // (E, t1) (r2, t2) = (r2, t1 + t2)
-            rotations.push(*r2);
-            let t12 = (t1 + t2).map(|e| e % 1.);
-            translations.push(t12);
+            let t12 = (t1 + operation2.translation).map(|e| e % 1.);
+            operations.push(Operation::new(operation2.rotation, t12));
         }
     }
-    Ok(PyOperations::from(Operations::new(rotations, translations)))
+    Ok(PyOperations::from(operations))
 }
 
 #[cfg(test)]
@@ -58,8 +56,8 @@ mod tests {
 
     fn unique_sites(position: &Position, operations: &Operations) -> Vec<Position> {
         let mut sites: Vec<Position> = vec![];
-        for (rotation, translation) in operations.iter() {
-            let new_site = rotation.map(|e| e as f64) * position + translation;
+        for operation in operations.iter() {
+            let new_site = operation.rotation.map(|e| e as f64) * position + operation.translation;
             let mut overlap = false;
             for site in sites.iter() {
                 let mut diff = site - new_site;
@@ -99,7 +97,7 @@ mod tests {
             let x = 0.1234;
             let y = 0.5678;
             let z = 0.9012;
-            assert!(operations.num_operations() == 48);
+            assert!(operations.len() == 48);
             assert!(unique_sites(&vector![0.0, 0.0, 0.0], &operations).len() == 1);
             assert!(unique_sites(&vector![0.5, 0.5, 0.5], &operations).len() == 1);
             assert!(unique_sites(&vector![0.0, 0.5, 0.5], &operations).len() == 3);
