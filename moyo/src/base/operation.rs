@@ -1,5 +1,7 @@
 use std::collections::{HashSet, VecDeque};
+use std::iter::Zip;
 use std::ops::Mul;
+use std::slice::Iter;
 
 use nalgebra::base::{Matrix3, Vector3};
 
@@ -42,6 +44,10 @@ impl Operations {
             .iter()
             .map(|r| lattice.basis * r.map(|e| e as f64) * inv_basis)
             .collect()
+    }
+
+    pub fn iter(&self) -> Zip<Iter<Rotation>, Iter<Translation>> {
+        self.rotations.iter().zip(self.translations.iter())
     }
 }
 

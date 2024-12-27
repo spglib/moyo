@@ -38,7 +38,7 @@ pub fn operations_from_number(
 
     let lattice_points = hs.centering.lattice_points();
     for t1 in lattice_points.iter() {
-        for (r2, t2) in coset.rotations.iter().zip(coset.translations.iter()) {
+        for (r2, t2) in coset.iter() {
             // (E, t1) (r2, t2) = (r2, t1 + t2)
             rotations.push(*r2);
             let t12 = (t1 + t2).map(|e| e % 1.);
@@ -58,11 +58,7 @@ mod tests {
 
     fn unique_sites(position: &Position, operations: &Operations) -> Vec<Position> {
         let mut sites: Vec<Position> = vec![];
-        for (rotation, translation) in operations
-            .rotations
-            .iter()
-            .zip(operations.translations.iter())
-        {
+        for (rotation, translation) in operations.iter() {
             let new_site = rotation.map(|e| e as f64) * position + translation;
             let mut overlap = false;
             for site in sites.iter() {

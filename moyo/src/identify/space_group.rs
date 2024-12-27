@@ -168,11 +168,7 @@ fn match_origin_shift(
     let new_prim_operations =
         UnimodularTransformation::from_linear(*trans_mat).transform_operations(prim_operations);
     let mut hm_translations = HashMap::new();
-    for (rotation, translation) in new_prim_operations
-        .rotations
-        .iter()
-        .zip(new_prim_operations.translations.iter())
-    {
+    for (rotation, translation) in new_prim_operations.iter() {
         hm_translations.insert(*rotation, *translation);
     }
 
@@ -186,12 +182,7 @@ fn match_origin_shift(
     //     <-> (R - E) * s = t_db - t_target (mod 1)
     let mut a = OMatrix::<i32, Dyn, U3>::zeros(3 * db_prim_generators.rotations.len());
     let mut b = OVector::<f64, Dyn>::zeros(3 * db_prim_generators.rotations.len());
-    for (k, (rotation, other_translation)) in db_prim_generators
-        .rotations
-        .iter()
-        .zip(db_prim_generators.translations.iter())
-        .enumerate()
-    {
+    for (k, (rotation, other_translation)) in db_prim_generators.iter().enumerate() {
         // Correction transformation matrix may not be normalizer of the point group. For example, mm2 -> 2mm
         let target_translation = hm_translations.get(rotation)?;
 
@@ -297,11 +288,7 @@ mod tests {
                 UnimodularTransformation::from_linear(*corr).transform_operations(&prim_operations);
 
             let mut hm_translations = HashMap::new();
-            for (rotation, translation) in corr_prim_operations
-                .rotations
-                .iter()
-                .zip(corr_prim_operations.translations.iter())
-            {
+            for (rotation, translation) in corr_prim_operations.iter() {
                 hm_translations.insert(rotation.clone(), translation.clone());
             }
             let r = matrix![
@@ -349,11 +336,7 @@ mod tests {
                     .inverse_transform_operations(&matched_operations);
 
             let mut hm_translations = HashMap::new();
-            for (rotation, translation) in matched_prim_operations
-                .rotations
-                .iter()
-                .zip(matched_prim_operations.translations.iter())
-            {
+            for (rotation, translation) in matched_prim_operations.iter() {
                 hm_translations.insert(rotation, translation);
             }
 
@@ -365,11 +348,7 @@ mod tests {
                 matched_prim_operations.rotations.len(),
                 transformed_prim_operations.rotations.len()
             );
-            for (rotation, translation) in transformed_prim_operations
-                .rotations
-                .iter()
-                .zip(transformed_prim_operations.translations.iter())
-            {
+            for (rotation, translation) in transformed_prim_operations.iter() {
                 assert!(hm_translations.contains_key(rotation));
                 let mut diff = *hm_translations.get(rotation).unwrap() - translation;
                 diff -= diff.map(|e| e.round()); // in [-0.5, 0.5]

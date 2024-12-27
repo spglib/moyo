@@ -312,11 +312,9 @@ fn symmetrize_positions(
     (0..cell.num_atoms())
         .map(|i| {
             let mut acc = Vector3::zeros();
-            for (inv_perm, rotation, translation) in izip!(
-                inverse_permutations.iter(),
-                operations.rotations.iter(),
-                operations.translations.iter(),
-            ) {
+            for (inv_perm, (rotation, translation)) in
+                inverse_permutations.iter().zip(operations.iter())
+            {
                 let mut frac_displacements =
                     rotation.map(|e| e as f64) * cell.positions[inv_perm.apply(i)] + translation
                         - cell.positions[i];

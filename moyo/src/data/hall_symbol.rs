@@ -237,12 +237,7 @@ impl HallSymbol {
             rotations.push(rotation_lhs);
             translations.push(translation_lhs);
 
-            for (rotation_rhs, translation_rhs) in self
-                .generators
-                .rotations
-                .iter()
-                .zip(self.generators.translations.iter())
-            {
+            for (rotation_rhs, translation_rhs) in self.generators.iter() {
                 let new_rotation = rotation_lhs * rotation_rhs;
                 let new_translation =
                     rotation_lhs.map(|e| e as f64) * translation_rhs + translation_lhs;

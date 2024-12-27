@@ -32,12 +32,7 @@ fn assert_dataset(
         }
     }
 
-    for (rotation, translation) in dataset
-        .operations
-        .rotations
-        .iter()
-        .zip(dataset.operations.translations.iter())
-    {
+    for (rotation, translation) in dataset.operations.iter() {
         // Check if operation induces permutation
         let permutation = permutation_from_operation(cell, rotation, translation).unwrap();
 
