@@ -9,6 +9,8 @@ use super::lattice::Lattice;
 pub type Rotation = Matrix3<i32>;
 /// Translation vector in a crystallographic basis
 pub type Translation = Vector3<f64>;
+/// Time reversal operation
+pub type TimeReversal = bool;
 
 #[derive(Debug, Clone)]
 pub struct Operation {
@@ -42,11 +44,25 @@ impl Mul for Operation {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct MagneticOperation {
+    pub operation: Operation,
+    pub time_reversal: TimeReversal,
+}
+
 pub type Rotations = Vec<Rotation>;
 pub type Operations = Vec<Operation>;
+pub type MagneticOperations = Vec<MagneticOperation>;
 
 pub fn project_rotations(operations: &Operations) -> Rotations {
     operations.iter().map(|ops| ops.rotation).collect()
+}
+
+pub fn project_operations(magnetic_operations: &MagneticOperations) -> Operations {
+    magnetic_operations
+        .iter()
+        .map(|mops| mops.operation.clone())
+        .collect()
 }
 
 #[allow(dead_code)]
