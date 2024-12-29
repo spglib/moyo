@@ -4,7 +4,7 @@ mod solve;
 mod symmetry_search;
 
 pub use primitive_cell::PrimitiveCell;
-pub use primitive_symmetry_search::PrimitiveSymmetrySearch;
+pub use primitive_symmetry_search::{operations_in_cell, PrimitiveSymmetrySearch};
 pub use solve::{
     solve_correspondence, solve_correspondence_naive, PeriodicKdTree, PeriodicNeighbor,
 };
