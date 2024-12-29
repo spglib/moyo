@@ -353,6 +353,7 @@ output/
 target/
 *.so
 .ipynb_checkpoints/
+lcov.info
 
 *.json
 !**/assets/*.json
