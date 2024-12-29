@@ -36,6 +36,11 @@ repos:
     hooks:
       - id: typos
   # Rust
+  - repo: https://github.com/est31/cargo-udeps
+    rev: v0.1.47
+    hooks:
+    - id: udeps
+      args: ["--all-targets"]
   - repo: local
     hooks:
       - id: cargo-fmt
