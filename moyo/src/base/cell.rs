@@ -13,12 +13,6 @@ pub type Position = Vector3<f64>;
 pub type AtomicSpecie = i32;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum Magmom {
-    Collinear(f64),
-    NonCollinear(Vector3<f64>),
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
 /// Representing a crystal structure
 pub struct Cell {
     /// Lattice of the cell.
@@ -54,12 +48,6 @@ impl Cell {
             self.numbers.clone(),
         )
     }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct MagneticCell {
-    pub cell: Cell,
-    pub magmoms: Vec<Magmom>,
 }
 
 /// If and only if the `i`th and `j`th atoms are equivalent, `orbits[i] == orbits[j]`.
