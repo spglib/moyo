@@ -19,6 +19,7 @@ impl PointGroupRepresentative {
     }
 
     /// Construct representative point group from geometric crystal class
+    #[allow(dead_code)]
     pub fn from_geometric_crystal_class(geometric_crystal_class: GeometricCrystalClass) -> Self {
         let hall_number = match geometric_crystal_class {
             // Triclinic

@@ -1,7 +1,7 @@
 use pyo3::prelude::*;
 use pyo3::types::PyType;
 
-use moyo::Setting;
+use moyo::data::Setting;
 
 #[derive(Debug, Clone)]
 #[pyclass(name = "Setting", frozen)]

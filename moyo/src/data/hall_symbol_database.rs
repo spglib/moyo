@@ -58,10 +58,6 @@ pub fn hall_symbol_entry(hall_number: HallNumber) -> Option<HallSymbolEntry> {
         .cloned()
 }
 
-pub fn iter_hall_symbol_entry() -> impl Iterator<Item = &'static HallSymbolEntry> {
-    HALL_SYMBOL_DATABASE.iter()
-}
-
 const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
     HallSymbolEntry::new(1, 1, 1, "", "P 1", "P 1", "P 1", Centering::P),
     HallSymbolEntry::new(2, 2, 2, "", "-P 1", "P -1", "P -1", Centering::P),
@@ -4347,3 +4343,21 @@ const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         Centering::I,
     ),
 ];
+
+#[cfg(test)]
+mod tests {
+    use super::{HallSymbolEntry, HALL_SYMBOL_DATABASE};
+    use crate::data::hall_symbol::HallSymbol;
+
+    fn iter_hall_symbol_entry() -> impl Iterator<Item = &'static HallSymbolEntry> {
+        HALL_SYMBOL_DATABASE.iter()
+    }
+
+    #[test]
+    fn test_hall_symbol_whole() {
+        for entry in iter_hall_symbol_entry() {
+            let hs = HallSymbol::new(entry.hall_symbol).unwrap();
+            assert_eq!(48 % hs.traverse().len(), 0);
+        }
+    }
+}

@@ -6,6 +6,7 @@ use nalgebra::{Rotation3, Vector3};
 
 use crate::base::{AtomicSpecie, Cell, Lattice, Permutation, Position, Rotation, Translation};
 
+#[doc(hidden)]
 pub struct PeriodicKdTree {
     num_sites: usize,
     lattice: Lattice,
@@ -14,6 +15,7 @@ pub struct PeriodicKdTree {
     symprec: f64,
 }
 
+#[doc(hidden)]
 #[derive(Debug)]
 pub struct PeriodicNeighbor {
     pub index: usize,
@@ -112,6 +114,7 @@ pub fn pivot_site_indices(numbers: &[AtomicSpecie]) -> Vec<usize> {
 /// Search permutation such that new_positions\[i\] = reduced_cell.positions\[permutation\[i\]\].
 /// Then, a corresponding symmetry operation moves the i-th site into the permutation\[i\]-th site.
 /// This function takes O(num_atoms * log(num_atoms)) time.
+#[doc(hidden)]
 pub fn solve_correspondence(
     pkdtree: &PeriodicKdTree,
     reduced_cell: &Cell,
@@ -144,6 +147,7 @@ pub fn solve_correspondence(
 /// Search permutation such that new_positions\[i\] = reduced_cell.positions\[permutation\[i\]\].
 /// Then, a corresponding symmetry operation moves the i-th site into the permutation\[i\]-th site.
 /// This function takes O(num_atoms^2) time.
+#[doc(hidden)]
 #[allow(clippy::needless_range_loop)]
 pub fn solve_correspondence_naive(
     reduced_cell: &Cell,
