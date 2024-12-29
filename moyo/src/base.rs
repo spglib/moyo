@@ -14,15 +14,15 @@ pub use error::MoyoError;
 pub use lattice::Lattice;
 pub use magnetic_cell::{Collinear, MagneticCell, MagneticMoment, NonCollinear};
 pub use operation::{
-    project_rotations, MagneticOperation, MagneticOperations, Operation, Operations, Rotation,
-    Rotations, Translation,
+    MagneticOperation, MagneticOperations, Operation, Operations, Rotation, Rotations, Translation,
 };
 pub use permutation::Permutation;
-pub use tolerance::{AngleTolerance, MagneticSymmetryTolerances, SymmetryTolerances};
+pub use tolerance::AngleTolerance;
 pub use transformation::{Linear, OriginShift};
 
-pub use cell::orbits_from_permutations;
+pub(super) use cell::orbits_from_permutations;
+pub(super) use operation::project_rotations;
 #[allow(unused_imports)]
-pub use operation::traverse;
-pub use tolerance::{ToleranceHandler, EPS};
-pub use transformation::{Transformation, UnimodularLinear, UnimodularTransformation};
+pub(super) use operation::traverse;
+pub(super) use tolerance::{MagneticSymmetryTolerances, SymmetryTolerances, ToleranceHandler, EPS};
+pub(super) use transformation::{Transformation, UnimodularLinear, UnimodularTransformation};

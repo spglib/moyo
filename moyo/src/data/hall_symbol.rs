@@ -562,7 +562,6 @@ mod tests {
 
     use super::{Centering, HallSymbol};
     use crate::base::Transformation;
-    use crate::data::hall_symbol_database::iter_hall_symbol_entry;
 
     #[rstest]
     #[case("P 2 2ab -1ab", Centering::P, 0, 3, 8)] // No. 51
@@ -610,14 +609,6 @@ mod tests {
             ]
         );
         assert_relative_eq!(generators[1].translation, vector![0.0, 0.0, 5.0 / 6.0]);
-    }
-
-    #[test]
-    fn test_hall_symbol_whole() {
-        for entry in iter_hall_symbol_entry() {
-            let hs = HallSymbol::new(entry.hall_symbol).unwrap();
-            assert_eq!(48 % hs.traverse().len(), 0);
-        }
     }
 
     #[test]

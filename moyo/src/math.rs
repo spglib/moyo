@@ -7,9 +7,10 @@ mod minkowski;
 mod niggli;
 mod snf;
 
-pub use delaunay::delaunay_reduce;
 pub use hnf::HNF;
-pub use integer_system::IntegerLinearSystem;
-pub use minkowski::{is_minkowski_reduced, minkowski_reduce};
-pub use niggli::{is_niggli_reduced, niggli_reduce};
 pub use snf::SNF;
+
+pub(super) use delaunay::delaunay_reduce;
+pub(super) use integer_system::IntegerLinearSystem;
+pub(super) use minkowski::{is_minkowski_reduced, minkowski_reduce};
+pub(super) use niggli::{is_niggli_reduced, niggli_reduce};

@@ -63,6 +63,7 @@ pub enum LaueClass {
 }
 
 impl LaueClass {
+    #[allow(dead_code)]
     pub fn from_geometric_crystal_class(geometric_crystal_class: GeometricCrystalClass) -> Self {
         match geometric_crystal_class {
             GeometricCrystalClass::C1 | GeometricCrystalClass::Ci => LaueClass::Ci,
@@ -220,6 +221,7 @@ pub enum CrystalFamily {
 }
 
 impl CrystalFamily {
+    #[allow(dead_code)]
     pub fn from_crystal_system(crystal_system: CrystalSystem) -> Self {
         match crystal_system {
             CrystalSystem::Triclinic => CrystalFamily::Triclinic,
@@ -231,6 +233,7 @@ impl CrystalFamily {
         }
     }
 
+    #[allow(dead_code)]
     pub fn from_lattice_system(lattice_system: LatticeSystem) -> Self {
         match lattice_system {
             LatticeSystem::Triclinic => CrystalFamily::Triclinic,

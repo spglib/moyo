@@ -9,8 +9,10 @@ where
     DefaultAllocator: Allocator<i32, N>,
 {
     /// rank of the integer linear system
+    #[allow(dead_code)]
     pub rank: usize,
     /// Special solution for a * x = b
+    #[allow(dead_code)]
     pub x: OVector<i32, N>,
     /// Nullspace of a * x = 0
     pub nullspace: OMatrix<i32, Dyn, N>,

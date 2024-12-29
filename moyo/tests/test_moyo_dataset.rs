@@ -7,8 +7,9 @@ use std::fs;
 use std::path::Path;
 use test_log::test;
 
-use moyo::base::Permutation;
-use moyo::{AngleTolerance, Cell, Lattice, MoyoDataset, Rotation, Setting, Translation};
+use moyo::base::{AngleTolerance, Cell, Lattice, Permutation, Rotation, Translation};
+use moyo::data::Setting;
+use moyo::MoyoDataset;
 
 /// Sanity-check MoyoDataset
 fn assert_dataset(

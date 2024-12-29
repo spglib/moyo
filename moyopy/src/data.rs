@@ -7,8 +7,8 @@ pub use setting::PySetting;
 use pyo3::prelude::*;
 
 use super::base::{PyMoyoError, PyOperations};
-use moyo::data::{hall_symbol_entry, HallSymbol};
-use moyo::{MoyoError, Operation, Setting};
+use moyo::base::{MoyoError, Operation};
+use moyo::data::{hall_symbol_entry, HallSymbol, Setting};
 
 #[pyfunction]
 pub fn operations_from_number(
@@ -51,8 +51,7 @@ mod tests {
     use nalgebra::vector;
 
     use super::operations_from_number;
-    use moyo::base::Position;
-    use moyo::Operations;
+    use moyo::base::{Operations, Position};
 
     fn unique_sites(position: &Position, operations: &Operations) -> Vec<Position> {
         let mut sites: Vec<Position> = vec![];

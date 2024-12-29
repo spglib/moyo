@@ -5,6 +5,7 @@ pub type ArithmeticNumber = i32;
 #[derive(Debug, Clone)]
 pub struct ArithmeticCrystalClassEntry {
     pub arithmetic_number: ArithmeticNumber,
+    #[allow(dead_code)]
     pub symbol: &'static str,
     pub geometric_crystal_class: GeometricCrystalClass,
     pub bravais_class: BravaisClass,
