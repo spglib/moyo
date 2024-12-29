@@ -7,6 +7,7 @@ use super::lattice::Lattice;
 
 /// Rotation matrix in a crystallographic basis
 pub type Rotation = Matrix3<i32>;
+pub type CartesianRotation = Matrix3<f64>;
 /// Translation vector in a crystallographic basis
 pub type Translation = Vector3<f64>;
 /// Time reversal operation
@@ -27,7 +28,7 @@ impl Operation {
     }
 
     /// Return rotation matrix in cartesian coordinates with respect to the given lattice
-    pub fn cartesian_rotation(&self, lattice: &Lattice) -> Matrix3<f64> {
+    pub fn cartesian_rotation(&self, lattice: &Lattice) -> CartesianRotation {
         let inv_basis = lattice.basis.try_inverse().unwrap();
         lattice.basis * self.rotation.map(|e| e as f64) * inv_basis
     }

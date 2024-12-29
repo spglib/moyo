@@ -3,6 +3,7 @@ use nalgebra::base::{Matrix3, Vector3};
 
 use super::cell::Cell;
 use super::lattice::Lattice;
+use super::magnetic_cell::{MagneticCell, MagneticMoment};
 use super::operation::Operation;
 use crate::math::SNF;
 
@@ -80,6 +81,19 @@ impl UnimodularTransformation {
             .map(|pos| self.linear_inv.map(|e| e as f64) * (pos - self.origin_shift))
             .collect();
         Cell::new(new_lattice, new_positions, cell.numbers.clone())
+    }
+
+    pub fn transform_magnetic_cell<M: MagneticMoment + Clone>(
+        &self,
+        magnetic_cell: &MagneticCell<M>,
+    ) -> MagneticCell<M> {
+        let new_cell = self.transform_cell(&magnetic_cell.cell);
+        MagneticCell::new(
+            new_cell.lattice,
+            new_cell.positions,
+            new_cell.numbers,
+            magnetic_cell.magnetic_moments.clone(), // Magnetic moments are not transformed
+        )
     }
 }
 
@@ -212,6 +226,26 @@ impl Transformation {
 
         (
             Cell::new(new_lattice, new_positions, new_numbers),
+            site_mapping,
+        )
+    }
+
+    pub fn transform_magnetic_cell<M: MagneticMoment + Clone>(
+        &self,
+        magnetic_cell: &MagneticCell<M>,
+    ) -> (MagneticCell<M>, Vec<usize>) {
+        let (new_cell, site_mapping) = self.transform_cell(&magnetic_cell.cell);
+        let new_magnetic_moments = site_mapping
+            .iter()
+            .map(|&i| magnetic_cell.magnetic_moments[i].clone()) // magnetic moments are not transformed
+            .collect();
+        (
+            MagneticCell::new(
+                new_cell.lattice,
+                new_cell.positions,
+                new_cell.numbers,
+                new_magnetic_moments,
+            ),
             site_mapping,
         )
     }
