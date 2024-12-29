@@ -8,11 +8,15 @@ mod permutation;
 mod tolerance;
 mod transformation;
 
+pub use action::RotationMagneticMomentAction;
 pub use cell::{AtomicSpecie, Cell, Position};
 pub use error::MoyoError;
 pub use lattice::Lattice;
 pub use magnetic_cell::{Collinear, MagneticCell, MagneticMoment, NonCollinear};
-pub use operation::{project_rotations, Operation, Operations, Rotation, Rotations, Translation};
+pub use operation::{
+    project_rotations, MagneticOperation, MagneticOperations, Operation, Operations, Rotation,
+    Rotations, Translation,
+};
 pub use permutation::Permutation;
 pub use tolerance::AngleTolerance;
 pub use transformation::{Linear, OriginShift};

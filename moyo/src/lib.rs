@@ -76,9 +76,8 @@ pub use data::{HallNumber, Number, Setting};
 
 use nalgebra::Matrix3;
 
-use crate::base::Transformation;
 use crate::identify::SpaceGroup;
-use crate::search::{iterative_symmetry_search, PrimitiveCell};
+use crate::search::{iterative_symmetry_search, operations_in_cell};
 use crate::symmetrize::{orbits_in_cell, StandardizedCell};
 
 #[derive(Debug)]
@@ -227,18 +226,4 @@ impl MoyoDataset {
     pub fn num_operations(&self) -> usize {
         self.operations.len()
     }
-}
-
-fn operations_in_cell(prim_cell: &PrimitiveCell, prim_operations: &Operations) -> Operations {
-    let input_operations =
-        Transformation::from_linear(prim_cell.linear).transform_operations(prim_operations);
-    let mut operations = vec![];
-    for t1 in prim_cell.translations.iter() {
-        for operation2 in input_operations.iter() {
-            // (E, t1) (rotation, t2) = (rotation, t1 + t2)
-            let t12 = (t1 + operation2.translation).map(|e| e % 1.);
-            operations.push(Operation::new(operation2.rotation, t12));
-        }
-    }
-    operations
 }

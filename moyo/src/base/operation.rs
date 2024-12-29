@@ -32,6 +32,10 @@ impl Operation {
         let inv_basis = lattice.basis.try_inverse().unwrap();
         lattice.basis * self.rotation.map(|e| e as f64) * inv_basis
     }
+
+    pub fn identity() -> Self {
+        Self::new(Rotation::identity(), Translation::zeros())
+    }
 }
 
 impl Mul for Operation {
@@ -49,6 +53,24 @@ impl Mul for Operation {
 pub struct MagneticOperation {
     pub operation: Operation,
     pub time_reversal: TimeReversal,
+}
+
+impl MagneticOperation {
+    pub fn new(rotation: Rotation, translation: Translation, time_reversal: TimeReversal) -> Self {
+        let operation = Operation::new(rotation, translation);
+        Self::from_operation(operation, time_reversal)
+    }
+
+    pub fn from_operation(operation: Operation, time_reversal: TimeReversal) -> Self {
+        Self {
+            operation,
+            time_reversal,
+        }
+    }
+
+    pub fn identity() -> Self {
+        Self::from_operation(Operation::identity(), false)
+    }
 }
 
 pub type Rotations = Vec<Rotation>;

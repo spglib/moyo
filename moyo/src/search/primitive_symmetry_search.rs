@@ -4,13 +4,17 @@ use std::collections::{HashMap, HashSet, VecDeque};
 use log::debug;
 use nalgebra::{Matrix3, Vector3};
 
-use super::solve::{
-    pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
-    PeriodicKdTree,
+use super::{
+    solve::{
+        pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
+        PeriodicKdTree,
+    },
+    PrimitiveCell,
 };
 use crate::base::{
-    traverse, AngleTolerance, Cell, Lattice, MoyoError, Operation, Operations, Permutation,
-    Position, Rotation, Rotations, Translation, EPS,
+    traverse, AngleTolerance, Cell, Lattice, MagneticCell, MagneticMoment, MagneticOperation,
+    MagneticOperations, MoyoError, Operation, Operations, Permutation, Position, Rotation,
+    RotationMagneticMomentAction, Rotations, Transformation, EPS,
 };
 
 #[derive(Debug)]
@@ -18,7 +22,6 @@ pub struct PrimitiveSymmetrySearch {
     /// Operations in the given primitive cell
     pub operations: Operations,
     pub permutations: Vec<Permutation>,
-    pub bravais_group: Rotations,
 }
 
 impl PrimitiveSymmetrySearch {
@@ -83,7 +86,10 @@ impl PrimitiveSymmetrySearch {
                 rough_translation,
             );
             if distance < symprec {
-                operations_and_permutations.push((rotation, translation, permutation.clone()));
+                operations_and_permutations.push((
+                    Operation::new(rotation.clone(), translation),
+                    permutation.clone(),
+                ));
             }
         }
         if operations_and_permutations.is_empty() {
@@ -99,28 +105,23 @@ impl PrimitiveSymmetrySearch {
         let mut operations = vec![];
         let mut permutations = vec![];
         queue.push_back((
-            Rotation::identity(),
-            Translation::zeros(),
+            Operation::identity(),
             Permutation::identity(primitive_cell.num_atoms()),
         ));
         while !queue.is_empty() {
-            let (rotation_lhs, translation_lhs, permutation_lhs) = queue.pop_front().unwrap();
-            if visited.contains(&rotation_lhs) {
+            let (ops_lhs, permutation_lhs) = queue.pop_front().unwrap();
+            if visited.contains(&ops_lhs.rotation) {
                 continue;
             }
-            visited.insert(rotation_lhs);
-            operations.push(Operation::new(rotation_lhs, translation_lhs));
+            visited.insert(ops_lhs.rotation);
+            operations.push(ops_lhs.clone());
             permutations.push(permutation_lhs.clone());
 
-            for (&rotation_rhs, translation_rhs, permutation_rhs) in
-                operations_and_permutations.iter()
-            {
-                let new_rotation = rotation_lhs * rotation_rhs;
-                let new_translation = (rotation_lhs.map(|e| e as f64) * translation_rhs
-                    + translation_lhs)
-                    .map(|e| e - e.round());
+            for (ops_rhs, permutation_rhs) in operations_and_permutations.iter() {
+                let mut new_ops = ops_lhs.clone() * ops_rhs.clone();
+                new_ops.translation -= new_ops.translation.map(|e| e.round()); // Consider up to the translation subgroup
                 let new_permutation = permutation_lhs.clone() * permutation_rhs.clone();
-                queue.push_back((new_rotation, new_translation, new_permutation));
+                queue.push_back((new_ops, new_permutation));
             }
         }
         if operations.len() != operations_and_permutations.len() {
@@ -134,16 +135,14 @@ impl PrimitiveSymmetrySearch {
             translations_map.insert(operation.rotation.clone(), operation.translation.clone());
         }
         let mut closed = true;
-        for operation1 in operations.iter() {
+        for ops1 in operations.iter() {
             if !closed {
                 break;
             }
-            for operation2 in operations.iter() {
-                // (r1, t1) * (r2, t2) = (r1 * r2, r1 * t2 + t1)
-                let r = operation1.rotation * operation2.rotation;
-                let t = operation1.rotation.map(|e| e as f64) * operation2.translation
-                    + operation1.translation;
-                let diff = (translations_map[&r] - t).map(|e| e - e.round());
+            for ops2 in operations.iter() {
+                let ops12 = ops1.clone() * ops2.clone();
+                let diff =
+                    (translations_map[&ops12.rotation] - ops12.translation).map(|e| e - e.round());
                 if primitive_cell.lattice.cartesian_coords(&diff).norm() > rough_symprec {
                     closed = false;
                     break;
@@ -159,9 +158,103 @@ impl PrimitiveSymmetrySearch {
         Ok(Self {
             operations,
             permutations,
-            bravais_group,
         })
     }
+}
+
+#[derive(Debug)]
+pub struct PrimitiveMagneticSymmetrySearch {
+    /// Magnetic operations in the given primitive magnetic cell
+    pub magnetic_operations: MagneticOperations,
+    pub permutations: Vec<Permutation>,
+}
+
+impl PrimitiveMagneticSymmetrySearch {
+    /// Return coset representatives of the magnetic space group w.r.t. its translation subgroup.
+    /// Assume `primitive_magnetic_cell` is a primitive magnetic cell and its basis vectors are Minkowski reduced.
+    /// Returned magnetic operations are guaranteed to form a group.
+    /// If the group closure and tolerance (symprec, angle_tolerance, and mag_symprec) are incompatible, the former is prioritized.
+    pub fn new<M: MagneticMoment + Clone>(
+        primitive_magnetic_cell: &MagneticCell<M>,
+        symprec: f64,
+        angle_tolerance: AngleTolerance,
+        mag_symprec: f64,
+        action: RotationMagneticMomentAction,
+    ) -> Result<Self, MoyoError> {
+        // Prepare candidate operations from primitive **nonmagnetic** cell
+        let prim_nonmag_cell = PrimitiveCell::new(&primitive_magnetic_cell.cell, symprec)?;
+        let prim_nonmag_symmetry =
+            PrimitiveSymmetrySearch::new(&prim_nonmag_cell.cell, symprec, angle_tolerance)?;
+        // Candidate operations in the primitive **magnetic** cell
+        let candidate_operations =
+            operations_in_cell(&prim_nonmag_cell, &prim_nonmag_symmetry.operations);
+
+        // Find time reversal parts that keep magnetic moments
+        let pkdtree = PeriodicKdTree::new(&primitive_magnetic_cell.cell, symprec);
+        let mut magnetic_operations = vec![];
+        let mut permutations = vec![];
+        for operation in candidate_operations.iter() {
+            let new_positions = primitive_magnetic_cell
+                .cell
+                .positions
+                .iter()
+                .map(|pos| operation.rotation.map(|e| e as f64) * pos + operation.translation)
+                .collect::<Vec<_>>();
+            if let Some(permutation) =
+                solve_correspondence(&pkdtree, &primitive_magnetic_cell.cell, &new_positions)
+            {
+                let cartesian_rotation =
+                    operation.cartesian_rotation(&primitive_magnetic_cell.cell.lattice);
+                let rotated_magnetic_moments = primitive_magnetic_cell
+                    .magnetic_moments
+                    .iter()
+                    .map(|m| m.act_rotation(&cartesian_rotation, action))
+                    .collect::<Vec<_>>();
+
+                let new_magnetic_moments = (0..primitive_magnetic_cell.num_atoms())
+                    .map(|i| primitive_magnetic_cell.magnetic_moments[permutation.apply(i)].clone())
+                    .collect::<Vec<_>>();
+
+                // Find time_reversal s.t. time_reversal * rotated_magnetic_moments[:] = new_magnetic_moments[:]
+                for time_reversal in [true, false] {
+                    let acted_magnetic_moments = rotated_magnetic_moments
+                        .iter()
+                        .map(|m| m.act_time_reversal(time_reversal))
+                        .collect::<Vec<_>>();
+                    let take = acted_magnetic_moments
+                        .iter()
+                        .zip(new_magnetic_moments.iter())
+                        .all(|(m1, m2)| m1.is_close(m2, mag_symprec));
+                    if take {
+                        magnetic_operations.push(MagneticOperation::from_operation(
+                            operation.clone(),
+                            time_reversal,
+                        ));
+                        permutations.push(permutation.clone());
+                    }
+                }
+            }
+        }
+
+        Ok(Self {
+            magnetic_operations,
+            permutations,
+        })
+    }
+}
+
+pub fn operations_in_cell(prim_cell: &PrimitiveCell, prim_operations: &Operations) -> Operations {
+    let input_operations =
+        Transformation::from_linear(prim_cell.linear).transform_operations(prim_operations);
+    let mut operations = vec![];
+    for t1 in prim_cell.translations.iter() {
+        for operation2 in input_operations.iter() {
+            // (E, t1) (rotation, t2) = (rotation, t1 + t2)
+            let t12 = (t1 + operation2.translation).map(|e| e % 1.);
+            operations.push(Operation::new(operation2.rotation, t12));
+        }
+    }
+    operations
 }
 
 /// Relevant to spglib.c/symmetry.c::get_lattice_symmetry
@@ -297,10 +390,16 @@ fn compare_nondiagonal_matrix_tensor_element(
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::matrix;
+    use std::vec;
 
-    use super::search_bravais_group;
-    use crate::base::{AngleTolerance, Lattice};
+    use nalgebra::{matrix, Matrix3, Vector3};
+    use test_log::test;
+
+    use super::{search_bravais_group, PrimitiveMagneticSymmetrySearch};
+    use crate::base::{
+        AngleTolerance, Collinear, Lattice, MagneticCell, NonCollinear,
+        RotationMagneticMomentAction,
+    };
 
     #[test]
     fn test_search_bravais_group() {
@@ -339,6 +438,72 @@ mod tests {
             let rotations =
                 search_bravais_group(&lattice, symprec, AngleTolerance::Default).unwrap();
             assert_eq!(rotations.len(), 48);
+        }
+    }
+
+    #[test]
+    fn test_primitive_magnetic_symmetry_search() {
+        let symprec = 1e-4;
+        let angle_tolerance = AngleTolerance::Default;
+        let mag_symprec = 1e-4;
+
+        {
+            // AFM bcc (type 4)
+            let prim_mag_cell = MagneticCell::new(
+                Lattice::new(Matrix3::identity()),
+                vec![Vector3::new(0.0, 0.0, 0.0), Vector3::new(0.5, 0.5, 0.5)],
+                vec![0, 0],
+                vec![Collinear(1.0), Collinear(-1.0)],
+            );
+            let result = PrimitiveMagneticSymmetrySearch::new(
+                &prim_mag_cell,
+                symprec,
+                angle_tolerance,
+                mag_symprec,
+                RotationMagneticMomentAction::Axial,
+            )
+            .unwrap();
+            assert_eq!(result.magnetic_operations.len(), 96);
+            assert_eq!(result.permutations.len(), result.magnetic_operations.len());
+            assert_eq!(
+                result
+                    .magnetic_operations
+                    .iter()
+                    .filter(|mops| mops.time_reversal)
+                    .count(),
+                48
+            );
+        }
+        {
+            // Primitive fcc (type 2)
+            let prim_mag_cell = MagneticCell::new(
+                Lattice::new(matrix![
+                    0.0, 0.5, 0.5;
+                    0.5, 0.0, 0.5;
+                    0.5, 0.5, 0.0;
+                ]),
+                vec![Vector3::new(0.0, 0.0, 0.0)],
+                vec![0],
+                vec![NonCollinear(Vector3::new(0.0, 0.0, 0.0))],
+            );
+            let result = PrimitiveMagneticSymmetrySearch::new(
+                &prim_mag_cell,
+                symprec,
+                angle_tolerance,
+                mag_symprec,
+                RotationMagneticMomentAction::Axial,
+            )
+            .unwrap();
+            assert_eq!(result.magnetic_operations.len(), 96);
+            assert_eq!(result.permutations.len(), result.magnetic_operations.len());
+            assert_eq!(
+                result
+                    .magnetic_operations
+                    .iter()
+                    .filter(|mops| mops.time_reversal)
+                    .count(),
+                48
+            );
         }
     }
 }

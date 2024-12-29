@@ -16,6 +16,19 @@ pub trait MagneticMoment {
     fn act_time_reversal(&self, time_reversal: TimeReversal) -> Self;
 
     fn is_close(&self, other: &Self, mag_symprec: f64) -> bool;
+
+    fn act_magnetic_operation(
+        &self,
+        cartesian_rotation: &CartesianRotation,
+        time_reversal: TimeReversal,
+        action: RotationMagneticMomentAction,
+    ) -> Self
+    where
+        Self: Sized,
+    {
+        let rotated = self.act_rotation(cartesian_rotation, action);
+        rotated.act_time_reversal(time_reversal)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -107,5 +120,9 @@ impl<M: MagneticMoment> MagneticCell<M> {
             cell,
             magnetic_moments,
         }
+    }
+
+    pub fn num_atoms(&self) -> usize {
+        self.cell.num_atoms()
     }
 }
