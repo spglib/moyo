@@ -73,6 +73,16 @@ impl MagneticOperation {
     }
 }
 
+impl Mul for MagneticOperation {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        let new_operation = self.operation * rhs.operation;
+        let new_time_reversal = self.time_reversal ^ rhs.time_reversal;
+        Self::from_operation(new_operation, new_time_reversal)
+    }
+}
+
 pub type Rotations = Vec<Rotation>;
 pub type Operations = Vec<Operation>;
 pub type MagneticOperations = Vec<MagneticOperation>;

@@ -129,27 +129,7 @@ impl PrimitiveSymmetrySearch {
             return Err(MoyoError::TooLargeToleranceError);
         }
 
-        // Check closure
-        let mut translations_map = HashMap::new();
-        for operation in operations.iter() {
-            translations_map.insert(operation.rotation.clone(), operation.translation.clone());
-        }
-        let mut closed = true;
-        for ops1 in operations.iter() {
-            if !closed {
-                break;
-            }
-            for ops2 in operations.iter() {
-                let ops12 = ops1.clone() * ops2.clone();
-                let diff =
-                    (translations_map[&ops12.rotation] - ops12.translation).map(|e| e - e.round());
-                if primitive_cell.lattice.cartesian_coords(&diff).norm() > rough_symprec {
-                    closed = false;
-                    break;
-                }
-            }
-        }
-        if !closed {
+        if !Self::check_closure(&operations, &primitive_cell.lattice, rough_symprec) {
             debug!("Some centering translations are missing. Consider reducing symprec and angle_tolerance.");
             return Err(MoyoError::TooLargeToleranceError);
         }
@@ -159,6 +139,24 @@ impl PrimitiveSymmetrySearch {
             operations,
             permutations,
         })
+    }
+
+    fn check_closure(operations: &Operations, lattice: &Lattice, symprec: f64) -> bool {
+        let mut translations_map = HashMap::new();
+        for operation in operations.iter() {
+            translations_map.insert(operation.rotation.clone(), operation.translation.clone());
+        }
+        for ops1 in operations.iter() {
+            for ops2 in operations.iter() {
+                let ops12 = ops1.clone() * ops2.clone();
+                let diff =
+                    (translations_map[&ops12.rotation] - ops12.translation).map(|e| e - e.round());
+                if lattice.cartesian_coords(&diff).norm() > symprec {
+                    return false;
+                }
+            }
+        }
+        true
     }
 }
 
@@ -236,10 +234,46 @@ impl PrimitiveMagneticSymmetrySearch {
             }
         }
 
+        // Check closure
+        if !Self::check_closure(
+            &magnetic_operations,
+            &primitive_magnetic_cell.cell.lattice,
+            symprec,
+        ) {
+            debug!("Some centering translations are missing. Consider reducing symprec and angle_tolerance.");
+            return Err(MoyoError::TooLargeToleranceError);
+        }
+
         Ok(Self {
             magnetic_operations,
             permutations,
         })
+    }
+
+    fn check_closure(
+        magnetic_operations: &MagneticOperations,
+        lattice: &Lattice,
+        symprec: f64,
+    ) -> bool {
+        let mut translations_map = HashMap::new();
+        for mops in magnetic_operations.iter() {
+            translations_map.insert(
+                (mops.operation.rotation.clone(), mops.time_reversal),
+                mops.operation.translation.clone(),
+            );
+        }
+        for mops1 in magnetic_operations.iter() {
+            for mops2 in magnetic_operations.iter() {
+                let mops12 = mops1.clone() * mops2.clone();
+                let diff = (translations_map[&(mops12.operation.rotation, mops12.time_reversal)]
+                    - mops12.operation.translation)
+                    .map(|e| e - e.round());
+                if lattice.cartesian_coords(&diff).norm() > symprec {
+                    return false;
+                }
+            }
+        }
+        true
     }
 }
 
