@@ -128,7 +128,7 @@ impl StandardizedCell {
         let prim_std_permutations = prim_std_operations
             .iter()
             .map(|ops| permutation_mapping.get(&ops.rotation).unwrap().clone())
-            .collect();
+            .collect::<Vec<_>>();
         let new_prim_std_positions = symmetrize_positions(
             &prim_std_cell_tmp,
             &prim_std_operations,
@@ -169,7 +169,7 @@ impl StandardizedCell {
         prim_std_cell: &Cell,
         prim_std_permutations: &[Permutation],
         std_cell: &Cell,
-        site_mapping: &Vec<usize>,
+        site_mapping: &[usize],
         hall_number: HallNumber,
         symprec: f64,
     ) -> Result<Vec<WyckoffPosition>, MoyoError> {
@@ -242,7 +242,7 @@ impl StandardizedCell {
 pub fn orbits_in_cell(
     prim_num_atoms: usize,
     prim_permutations: &[Permutation],
-    site_mapping: &Vec<usize>,
+    site_mapping: &[usize],
 ) -> Vec<usize> {
     // prim_orbits: [prim_num_atoms] -> [prim_num_atoms]
     let prim_orbits = orbits_from_permutations(prim_num_atoms, prim_permutations);
@@ -302,7 +302,7 @@ fn assign_wyckoff_position(
 fn symmetrize_positions(
     cell: &Cell,
     operations: &Operations,
-    permutations: &Vec<Permutation>,
+    permutations: &[Permutation],
 ) -> Vec<Position> {
     let inverse_permutations = permutations
         .iter()

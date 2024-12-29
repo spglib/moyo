@@ -264,7 +264,7 @@ pub fn integral_normalizer(
                 .iter()
                 .map(|&i| prim_rotations[*i])
                 .collect::<Vec<_>>(),
-            &prim_generators,
+            prim_generators,
         ) {
             // Search integer linear combination such that the transformation matrix is unimodular
             // Consider coefficients in [-2, 2], which will be sufficient for Delaunay reduced basis
@@ -292,7 +292,7 @@ pub fn integral_normalizer(
 
 /// Solve P^-1 * A[i] * P = B[i] (for all i)
 /// vec(A * P - P * B) = (I_3 \otimes A - B^T \otimes I_3) * vec(P)
-fn sylvester(a: &Vec<Matrix3<i32>>, b: &Vec<Matrix3<i32>>) -> Option<Vec<Matrix3<i32>>> {
+fn sylvester(a: &[Matrix3<i32>], b: &[Matrix3<i32>]) -> Option<Vec<Matrix3<i32>>> {
     let size = a.len();
     assert_eq!(size, b.len());
 

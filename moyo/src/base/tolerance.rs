@@ -111,7 +111,7 @@ impl<T: Tolerances + Debug> ToleranceHandler<T> {
 
     pub fn update(&mut self, err: MoyoError) {
         // Update stride
-        if !self.prev_error.is_none() && self.prev_error != Some(err) {
+        if self.prev_error.is_some() && self.prev_error != Some(err) {
             self.stride = self.stride.sqrt()
         }
         self.prev_error = Some(err);

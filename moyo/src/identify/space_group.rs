@@ -31,7 +31,7 @@ impl SpaceGroup {
         epsilon: f64,
     ) -> Result<Self, MoyoError> {
         // point_group.trans_mat: self -> primitive
-        let prim_rotations = project_rotations(&prim_operations);
+        let prim_rotations = project_rotations(prim_operations);
         let point_group = PointGroup::new(&prim_rotations)?;
         debug!(
             "Arithmetic crystal class: No. {}",
@@ -170,7 +170,7 @@ fn match_origin_shift(
     epsilon: f64,
 ) -> Option<OriginShift> {
     let new_prim_operations =
-        UnimodularTransformation::from_linear(*trans_mat).transform_operations(&prim_operations);
+        UnimodularTransformation::from_linear(*trans_mat).transform_operations(prim_operations);
     let mut hm_translations = HashMap::new();
     for operation in new_prim_operations.iter() {
         hm_translations.insert(operation.rotation, operation.translation);

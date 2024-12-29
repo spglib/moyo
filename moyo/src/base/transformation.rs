@@ -45,6 +45,7 @@ impl UnimodularTransformation {
         Self::new(linear, OriginShift::zeros())
     }
 
+    #[allow(dead_code)]
     pub fn from_origin_shift(origin_shift: OriginShift) -> Self {
         Self::new(UnimodularLinear::identity(), origin_shift)
     }
@@ -102,6 +103,7 @@ impl UnimodularTransformation {
 pub struct Transformation {
     pub linear: Linear,
     pub origin_shift: OriginShift,
+    #[allow(dead_code)]
     pub size: usize,
     pub linear_inv: Matrix3<f64>,
 }
@@ -127,6 +129,7 @@ impl Transformation {
         Self::new(linear, OriginShift::zeros())
     }
 
+    #[allow(dead_code)]
     pub fn from_origin_shift(origin_shift: OriginShift) -> Self {
         Self::new(Linear::identity(), origin_shift)
     }
@@ -150,7 +153,7 @@ impl Transformation {
     /// (P, p)^-1 (W, w) (P, p)
     pub fn transform_operation(&self, operation: &Operation) -> Option<Operation> {
         transform_operation_as_f64(
-            &operation,
+            operation,
             &self.linear.map(|e| e as f64),
             &self.linear_inv,
             &self.origin_shift,
@@ -169,7 +172,7 @@ impl Transformation {
     /// (P, p) (W, w) (P, p)^-1
     pub fn inverse_transform_operation(&self, operation: &Operation) -> Option<Operation> {
         transform_operation_as_f64(
-            &operation,
+            operation,
             &self.linear_inv,
             &self.linear.map(|e| e as f64),
             &(-self.linear_as_f64() * self.origin_shift),

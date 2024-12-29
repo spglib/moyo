@@ -37,7 +37,7 @@ impl PeriodicKdTree {
         let mut indices = vec![];
         for offset in iproduct!(-1..=1, -1..=1, -1..=1) {
             for (index, position) in reduced_cell.positions.iter().enumerate() {
-                let mut new_position = position.clone();
+                let mut new_position = *position;
                 new_position -= position.map(|e| e.floor()); // [0, 1)
                 new_position += Vector3::new(offset.0 as f64, offset.1 as f64, offset.2 as f64);
                 if new_position[0] < -padding
@@ -67,7 +67,7 @@ impl PeriodicKdTree {
 
     /// Return the nearest neighbor within symprec if exists.
     pub fn nearest(&self, position: &Position) -> Option<PeriodicNeighbor> {
-        let mut wrapped_position = position.clone();
+        let mut wrapped_position = *position;
         wrapped_position -= wrapped_position.map(|e| e.floor()); // [0, 1)
         let cart_coords = self.lattice.cartesian_coords(&wrapped_position);
         let within = self.kdtree.nearest_n_within::<SquaredEuclidean>(
@@ -76,7 +76,7 @@ impl PeriodicKdTree {
             1,
             false,
         );
-        if within.len() == 0 {
+        if within.is_empty() {
             return None;
         }
 
