@@ -18,7 +18,7 @@ pub use operation::{
     Rotations, Translation,
 };
 pub use permutation::Permutation;
-pub use tolerance::AngleTolerance;
+pub use tolerance::{AngleTolerance, MagneticSymmetryTolerances, SymmetryTolerances};
 pub use transformation::{Linear, OriginShift};
 
 pub use cell::orbits_from_permutations;

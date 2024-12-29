@@ -1,4 +1,5 @@
 use log::debug;
+use std::fmt::Debug;
 
 use super::error::MoyoError;
 
@@ -15,18 +16,94 @@ pub enum AngleTolerance {
     Default,
 }
 
-pub struct ToleranceHandler {
+pub trait Tolerances {
+    fn increase_tolerances(&self, stride: f64) -> Self;
+    fn reduce_tolerances(&self, stride: f64) -> Self;
+}
+
+#[derive(Debug, Clone)]
+pub struct SymmetryTolerances {
     pub symprec: f64,
     pub angle_tolerance: AngleTolerance,
+}
+
+impl Tolerances for SymmetryTolerances {
+    fn increase_tolerances(&self, stride: f64) -> Self {
+        let symprec = self.symprec * stride;
+        let angle_tolerance = if let AngleTolerance::Radian(angle) = self.angle_tolerance {
+            AngleTolerance::Radian(angle * stride)
+        } else {
+            AngleTolerance::Default
+        };
+        Self {
+            symprec,
+            angle_tolerance,
+        }
+    }
+
+    fn reduce_tolerances(&self, stride: f64) -> Self {
+        let symprec = self.symprec / stride;
+        let angle_tolerance = if let AngleTolerance::Radian(angle) = self.angle_tolerance {
+            AngleTolerance::Radian(angle / stride)
+        } else {
+            AngleTolerance::Default
+        };
+        Self {
+            symprec,
+            angle_tolerance,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct MagneticSymmetryTolerances {
+    pub symprec: f64,
+    pub angle_tolerance: AngleTolerance,
+    pub mag_symprec: f64,
+}
+
+impl Tolerances for MagneticSymmetryTolerances {
+    fn increase_tolerances(&self, stride: f64) -> Self {
+        let symprec = self.symprec * stride;
+        let angle_tolerance = if let AngleTolerance::Radian(angle) = self.angle_tolerance {
+            AngleTolerance::Radian(angle * stride)
+        } else {
+            AngleTolerance::Default
+        };
+        let mag_symprec = self.mag_symprec * stride;
+        Self {
+            symprec,
+            angle_tolerance,
+            mag_symprec,
+        }
+    }
+
+    fn reduce_tolerances(&self, stride: f64) -> Self {
+        let symprec = self.symprec / stride;
+        let angle_tolerance = if let AngleTolerance::Radian(angle) = self.angle_tolerance {
+            AngleTolerance::Radian(angle / stride)
+        } else {
+            AngleTolerance::Default
+        };
+        let mag_symprec = self.mag_symprec / stride;
+        Self {
+            symprec,
+            angle_tolerance,
+            mag_symprec,
+        }
+    }
+}
+
+pub struct ToleranceHandler<T: Tolerances> {
+    pub tolerances: T,
     stride: f64,
     prev_error: Option<MoyoError>,
 }
 
-impl ToleranceHandler {
-    pub fn new(symprec: f64, angle_tolerance: AngleTolerance) -> Self {
+impl<T: Tolerances + Debug> ToleranceHandler<T> {
+    pub fn new(tolerances: T) -> Self {
         Self {
-            symprec,
-            angle_tolerance,
+            tolerances,
             stride: INITIAL_SYMMETRY_SEARCH_STRIDE,
             prev_error: None,
         }
@@ -40,38 +117,17 @@ impl ToleranceHandler {
         self.prev_error = Some(err);
 
         // Update tolerances
-        (self.symprec, self.angle_tolerance) = match err {
-            MoyoError::TooSmallToleranceError => self.increase_tolerance(),
-            MoyoError::TooLargeToleranceError => self.reduce_tolerance(),
-            _ => self.reduce_tolerance(),
+        self.tolerances = match err {
+            MoyoError::TooSmallToleranceError => {
+                let new_tolerances = self.tolerances.increase_tolerances(self.stride);
+                debug!("Increase tolerances: {:?}", new_tolerances);
+                new_tolerances
+            }
+            _ => {
+                let new_tolerances = self.tolerances.reduce_tolerances(self.stride);
+                debug!("Reduce tolerances: {:?}", new_tolerances);
+                new_tolerances
+            }
         }
-    }
-
-    fn increase_tolerance(&self) -> (f64, AngleTolerance) {
-        let symprec = self.symprec * self.stride;
-        let angle_tolerance = if let AngleTolerance::Radian(angle) = self.angle_tolerance {
-            AngleTolerance::Radian(angle * self.stride)
-        } else {
-            AngleTolerance::Default
-        };
-        debug!(
-            "Increase tolerance to symprec={}, angle_tolerance={:?}",
-            symprec, angle_tolerance
-        );
-        (symprec, angle_tolerance)
-    }
-
-    fn reduce_tolerance(&self) -> (f64, AngleTolerance) {
-        let symprec = self.symprec / self.stride;
-        let angle_tolerance = if let AngleTolerance::Radian(angle) = self.angle_tolerance {
-            AngleTolerance::Radian(angle / self.stride)
-        } else {
-            AngleTolerance::Default
-        };
-        debug!(
-            "Reduce tolerance to symprec={}, angle_tolerance={:?}",
-            symprec, angle_tolerance
-        );
-        (symprec, angle_tolerance)
     }
 }
