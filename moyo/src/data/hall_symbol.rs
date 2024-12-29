@@ -210,7 +210,7 @@ impl HallSymbol {
             hall_symbol: hall_symbol.to_string(),
             centering: lattice_symbol,
             centering_translations,
-            generators: generators,
+            generators,
         })
     }
 

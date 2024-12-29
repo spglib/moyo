@@ -123,9 +123,9 @@ impl PyMoyoDataset {
     #[getter]
     pub fn angle_tolerance(&self) -> Option<f64> {
         if let AngleTolerance::Radian(angle_tolerance) = self.0.angle_tolerance {
-            return Some(angle_tolerance);
+            Some(angle_tolerance)
         } else {
-            return None;
+            None
         }
     }
 }

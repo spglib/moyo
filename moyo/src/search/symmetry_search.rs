@@ -81,7 +81,7 @@ pub fn iterative_magnetic_symmetry_search<M: MagneticMoment + Clone>(
 
         for _ in 0..MAX_SYMMETRY_SEARCH_TRIALS {
             match PrimitiveMagneticCell::new(
-                &magnetic_cell,
+                magnetic_cell,
                 tolerance_handler.tolerances.symprec,
                 tolerance_handler.tolerances.mag_symprec,
             ) {

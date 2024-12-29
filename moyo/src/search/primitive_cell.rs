@@ -182,7 +182,7 @@ impl<M: MagneticMoment + Clone> PrimitiveMagneticCell<M> {
                 .zip(new_magnetic_moments.iter())
                 .all(|(m1, m2)| m1.is_close(m2, mag_symprec));
             if take {
-                translations.push(translation.clone());
+                translations.push(*translation);
                 permutations.push(permutation.clone());
             }
         }
@@ -234,7 +234,7 @@ impl<M: MagneticMoment + Clone> PrimitiveMagneticCell<M> {
     }
 }
 
-fn transformation_matrix_from_translations(translations: &Vec<Translation>) -> Option<Linear> {
+fn transformation_matrix_from_translations(translations: &[Translation]) -> Option<Linear> {
     let size = translations.len() as i32;
     let mut columns: Vec<Vector3<i32>> = vec![
         Vector3::new(size, 0, 0),
@@ -268,7 +268,7 @@ fn transformation_matrix_from_translations(translations: &Vec<Translation>) -> O
 fn primitive_cell_from_transformation(
     cell: &Cell,
     trans_mat: &Linear,
-    translations: &Vec<Translation>,
+    translations: &[Translation],
     permutations: &[Permutation],
 ) -> (Cell, Vec<usize>, Vec<usize>) {
     let new_lattice =
@@ -308,7 +308,7 @@ fn primitive_cell_from_transformation(
 fn primitive_magnetic_cell_from_transformation<M: MagneticMoment + Clone>(
     magnetic_cell: &MagneticCell<M>,
     trans_mat: &Linear,
-    translations: &Vec<Translation>,
+    translations: &[Translation],
     permutations: &[Permutation],
 ) -> (MagneticCell<M>, Vec<usize>) {
     let (primitive_cell, site_mapping, representatives) = primitive_cell_from_transformation(

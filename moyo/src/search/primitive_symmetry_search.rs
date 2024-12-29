@@ -86,10 +86,8 @@ impl PrimitiveSymmetrySearch {
                 rough_translation,
             );
             if distance < symprec {
-                operations_and_permutations.push((
-                    Operation::new(rotation.clone(), translation),
-                    permutation.clone(),
-                ));
+                operations_and_permutations
+                    .push((Operation::new(*rotation, translation), permutation.clone()));
             }
         }
         if operations_and_permutations.is_empty() {
@@ -144,7 +142,7 @@ impl PrimitiveSymmetrySearch {
     fn check_closure(operations: &Operations, lattice: &Lattice, symprec: f64) -> bool {
         let mut translations_map = HashMap::new();
         for operation in operations.iter() {
-            translations_map.insert(operation.rotation.clone(), operation.translation.clone());
+            translations_map.insert(operation.rotation, operation.translation);
         }
         for ops1 in operations.iter() {
             for ops2 in operations.iter() {
@@ -258,8 +256,8 @@ impl PrimitiveMagneticSymmetrySearch {
         let mut translations_map = HashMap::new();
         for mops in magnetic_operations.iter() {
             translations_map.insert(
-                (mops.operation.rotation.clone(), mops.time_reversal),
-                mops.operation.translation.clone(),
+                (mops.operation.rotation, mops.time_reversal),
+                mops.operation.translation,
             );
         }
         for mops1 in magnetic_operations.iter() {
