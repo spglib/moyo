@@ -30,7 +30,8 @@ cargo install cargo-release cargo-edit cargo-deny
 
 ### How to release
 
-1. `cargo install cargo-release cargo-edit`
+1. `cargo install cargo-release cargo-edit cargo-semver-checks`
+1. `cargo semver-checks` to lint a new release
 1. `cargo set-version --bump patch` for patch version increment
 1. Write change log and git-commit
 1. `cargo release --execute` (If you already release the package in crates.io, run `cargo release --execute --no-publish`)
