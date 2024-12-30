@@ -14,7 +14,8 @@ pub use error::MoyoError;
 pub use lattice::Lattice;
 pub use magnetic_cell::{Collinear, MagneticCell, MagneticMoment, NonCollinear};
 pub use operation::{
-    MagneticOperation, MagneticOperations, Operation, Operations, Rotation, Rotations, Translation,
+    MagneticOperation, MagneticOperations, Operation, Operations, Rotation, Rotations,
+    TimeReversal, Translation,
 };
 pub use permutation::Permutation;
 pub use tolerance::AngleTolerance;

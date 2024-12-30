@@ -125,3 +125,21 @@ impl Centering {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use strum::IntoEnumIterator;
+
+    use super::*;
+    use crate::base::Transformation;
+
+    #[test]
+    fn test_conventional_transformation_matrix() {
+        for centering in Centering::iter() {
+            assert_eq!(
+                Transformation::from_linear(centering.linear()).size,
+                centering.order()
+            );
+        }
+    }
+}
