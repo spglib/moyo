@@ -6,7 +6,7 @@ default_language_version:
 fail_fast: false
 
 ci:
-  skip: [cargo-fmt, cargo-deny, cargo-check, cargo-clippy]
+  skip: [cargo-fmt, cargo-deny, cargo-check, cargo-clippy, udeps]
 
 repos:
   # Misc
