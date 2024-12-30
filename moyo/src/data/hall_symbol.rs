@@ -91,11 +91,7 @@ impl HallSymbol {
 
             for rhs in self.generators.iter() {
                 let new_ops = ops_lhs.clone() * rhs.clone();
-                let new_translation_mod1 = new_ops.translation.map(|e| {
-                    let mut eint = (e * (MAX_DENOMINATOR as f64)).round() as i32;
-                    eint = eint.rem_euclid(MAX_DENOMINATOR);
-                    (eint as f64) / (MAX_DENOMINATOR as f64)
-                });
+                let new_translation_mod1 = purify_translation_mod1(&new_ops.translation);
 
                 if !hm_translations.contains_key(&new_ops.rotation) {
                     queue.push_back(Operation::new(new_ops.rotation, new_translation_mod1));
@@ -194,11 +190,7 @@ impl MagneticHallSymbol {
 
             for rhs in self.generators.iter() {
                 let new_ops = ops_lhs.clone() * rhs.clone();
-                let new_translation_mod1 = new_ops.operation.translation.map(|e| {
-                    let mut eint = (e * (MAX_DENOMINATOR as f64)).round() as i32;
-                    eint = eint.rem_euclid(MAX_DENOMINATOR);
-                    (eint as f64) / (MAX_DENOMINATOR as f64)
-                });
+                let new_translation_mod1 = purify_translation_mod1(&new_ops.operation.translation);
 
                 if !hm_translations
                     .contains_key(&(new_ops.operation.rotation, new_ops.time_reversal))
@@ -556,6 +548,14 @@ fn get_centering_translations(lattice_symbol: &Centering) -> Vec<Translation> {
         .filter(|&&translation| relative_ne!(translation, Translation::zeros(), epsilon = EPS))
         .cloned()
         .collect::<Vec<_>>()
+}
+
+fn purify_translation_mod1(translation: &Translation) -> Translation {
+    translation.map(|e| {
+        let mut eint = (e * (MAX_DENOMINATOR as f64)).round() as i32;
+        eint = eint.rem_euclid(MAX_DENOMINATOR);
+        (eint as f64) / (MAX_DENOMINATOR as f64)
+    })
 }
 
 #[cfg(test)]
