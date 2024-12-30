@@ -3,6 +3,7 @@ mod centering;
 mod classification;
 mod hall_symbol;
 mod hall_symbol_database;
+mod magnetic_hall_symbol_database;
 mod magnetic_space_group;
 mod point_group;
 mod setting;

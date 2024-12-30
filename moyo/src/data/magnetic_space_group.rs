@@ -6139,17 +6139,3 @@ const MAGNETIC_SPACE_GROUP_TYPES: [MagneticSpaceGroupType; 1651] = [
         ConstructType::Type3,
     ),
 ];
-
-#[derive(Debug)]
-pub struct MagneticHallSymbolEntry {
-    pub magnetic_hall_symbol: &'static str,
-    pub uni_number: UNINumber,
-}
-
-// const MAGNETIC_HALL_SYMBOL_DATABASE: [MagneticHallSymbolEntry; 1651]
-
-// smallest and largest UNI numbers for each Hall number
-// let hall_number_to_uni_numbers: HashMap<HallNumber, (UNINumber, UNINumber)>;
-
-// smallest and largest Hall numbers for XSG of each UNI number
-// let uni_number_to_xsg_hall_numbers: HashMap<UNINumber, (HallNumber, HallNumber)>;
