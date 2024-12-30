@@ -1,6 +1,7 @@
 use super::arithmetic_crystal_class::ArithmeticNumber;
+use super::centering::Centering;
 use super::classification::GeometricCrystalClass;
-use super::hall_symbol::{Centering, HallSymbol};
+use super::hall_symbol::HallSymbol;
 use crate::base::{project_rotations, Rotations};
 
 #[derive(Debug)]

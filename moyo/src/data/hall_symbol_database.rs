@@ -1,5 +1,5 @@
 use super::arithmetic_crystal_class::ArithmeticNumber;
-use super::hall_symbol::Centering;
+use super::centering::Centering;
 
 /// ITA number for space group types (1 - 230)
 pub type Number = i32;
