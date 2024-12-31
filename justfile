@@ -19,8 +19,9 @@ test-python:
 build-python-docs:
     sphinx-autobuild moyopy/docs moyopy/docs/_build
 
+# at moyo/
 profile:
-    cargo flamegraph --test test_moyo_dataset --root
+    CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --test test_moyo_dataset --root
 
 doc:
     cargo doc --open

@@ -6,8 +6,7 @@ use serde::de::{Deserialize, Deserializer};
 use serde::ser::{Serialize, Serializer};
 use serde_json;
 
-use moyo::base::Operations;
-use moyo::{Cell, Lattice, MoyoError};
+use moyo::base::{Cell, Lattice, MoyoError, Operations};
 
 // Unfortunately, "PyCell" is already reversed by pyo3...
 #[derive(Debug, Clone)]
@@ -146,24 +145,23 @@ impl PyOperations {
     pub fn rotations(&self) -> Vec<[[i32; 3]; 3]> {
         // Since nalgebra stores matrices in column-major order, we need to transpose them
         self.0
-            .rotations
             .iter()
-            .map(|x| *x.transpose().as_ref())
+            .map(|x| *x.rotation.transpose().as_ref())
             .collect()
     }
 
     #[getter]
     pub fn translations(&self) -> Vec<[f64; 3]> {
-        self.0.translations.iter().map(|x| *x.as_ref()).collect()
+        self.0.iter().map(|x| *x.translation.as_ref()).collect()
     }
 
     #[getter]
     pub fn num_operations(&self) -> usize {
-        self.0.num_operations()
+        self.0.len()
     }
 
     fn __len__(&self) -> usize {
-        self.0.num_operations()
+        self.num_operations()
     }
 }
 

@@ -30,7 +30,8 @@ cargo install cargo-release cargo-edit cargo-deny
 
 ### How to release
 
-1. `cargo install cargo-release cargo-edit`
+1. `cargo install cargo-release cargo-edit cargo-semver-checks`
+1. `cargo semver-checks` to lint a new release
 1. `cargo set-version --bump patch` for patch version increment
 1. Write change log and git-commit
 1. `cargo release --execute` (If you already release the package in crates.io, run `cargo release --execute --no-publish`)
@@ -44,3 +45,4 @@ RUST_LOG=debug cargo test -- --nocapture
 ## Acknowledgments
 
 We thank Dr. Yusuke Seto for providing the crystallographic database.
+We thank Juan Rodríguez-Carvajal for providing the magnetic space-group database.

@@ -17,6 +17,8 @@ pub enum MoyoError {
     PrimitiveCellError,
     #[error("Primitive symmetry search failed")]
     PrimitiveSymmetrySearchError,
+    #[error("Primitive magnetic symmetry search failed")]
+    PrimitiveMagneticSymmetrySearchError,
     #[error("Bravais group search failed")]
     BravaisGroupSearchError,
     #[error("Geometric crystal class identification failed")]

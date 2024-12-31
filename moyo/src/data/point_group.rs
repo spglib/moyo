@@ -1,17 +1,18 @@
 use super::arithmetic_crystal_class::ArithmeticNumber;
+use super::centering::Centering;
 use super::classification::GeometricCrystalClass;
-use super::hall_symbol::{Centering, HallSymbol};
-use crate::base::Rotation;
+use super::hall_symbol::HallSymbol;
+use crate::base::{project_rotations, Rotations};
 
 #[derive(Debug)]
 /// Specific crystallographic point group in database
 pub struct PointGroupRepresentative {
-    pub generators: Vec<Rotation>,
+    pub generators: Rotations,
     pub centering: Centering,
 }
 
 impl PointGroupRepresentative {
-    fn new(generators: Vec<Rotation>, centering: Centering) -> Self {
+    fn new(generators: Rotations, centering: Centering) -> Self {
         Self {
             generators,
             centering,
@@ -19,6 +20,7 @@ impl PointGroupRepresentative {
     }
 
     /// Construct representative point group from geometric crystal class
+    #[allow(dead_code)]
     pub fn from_geometric_crystal_class(geometric_crystal_class: GeometricCrystalClass) -> Self {
         let hall_number = match geometric_crystal_class {
             // Triclinic
@@ -62,7 +64,10 @@ impl PointGroupRepresentative {
             GeometricCrystalClass::Oh => 517,
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number).unwrap();
-        Self::new(hall_symbol.generators.rotations, hall_symbol.centering)
+        Self::new(
+            project_rotations(&hall_symbol.generators),
+            hall_symbol.centering,
+        )
     }
 
     pub fn from_arithmetic_crystal_class(arithmetic_number: ArithmeticNumber) -> Self {
@@ -151,10 +156,13 @@ impl PointGroupRepresentative {
             _ => panic!("Invalid arithmetic number"),
         };
         let hall_symbol = HallSymbol::from_hall_number(hall_number).unwrap();
-        Self::new(hall_symbol.generators.rotations, hall_symbol.centering)
+        Self::new(
+            project_rotations(&hall_symbol.generators),
+            hall_symbol.centering,
+        )
     }
 
-    pub fn primitive_generators(&self) -> Vec<Rotation> {
+    pub fn primitive_generators(&self) -> Rotations {
         let prim_trans_mat_inv = self.centering.linear().map(|e| e as f64);
         let prim_trans_mat = self.centering.inverse();
         self.generators

@@ -1,19 +1,21 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, num::NonZero};
 
 use itertools::iproduct;
-use kiddo::{KdTree, SquaredEuclidean};
+use kiddo::{ImmutableKdTree, SquaredEuclidean};
 use nalgebra::{Rotation3, Vector3};
 
 use crate::base::{AtomicSpecie, Cell, Lattice, Permutation, Position, Rotation, Translation};
 
+#[doc(hidden)]
 pub struct PeriodicKdTree {
     num_sites: usize,
     lattice: Lattice,
-    kdtree: KdTree<f64, 3>,
+    kdtree: ImmutableKdTree<f64, 3>,
     indices: Vec<usize>,
     symprec: f64,
 }
 
+#[doc(hidden)]
 #[derive(Debug)]
 pub struct PeriodicNeighbor {
     pub index: usize,
@@ -35,7 +37,7 @@ impl PeriodicKdTree {
         let mut indices = vec![];
         for offset in iproduct!(-1..=1, -1..=1, -1..=1) {
             for (index, position) in reduced_cell.positions.iter().enumerate() {
-                let mut new_position = position.clone();
+                let mut new_position = *position;
                 new_position -= position.map(|e| e.floor()); // [0, 1)
                 new_position += Vector3::new(offset.0 as f64, offset.1 as f64, offset.2 as f64);
                 if new_position[0] < -padding
@@ -57,7 +59,7 @@ impl PeriodicKdTree {
         Self {
             num_sites: reduced_cell.num_atoms(),
             lattice: new_lattice,
-            kdtree: (&entries).into(),
+            kdtree: ImmutableKdTree::new_from_slice(&entries),
             indices,
             symprec,
         }
@@ -65,29 +67,28 @@ impl PeriodicKdTree {
 
     /// Return the nearest neighbor within symprec if exists.
     pub fn nearest(&self, position: &Position) -> Option<PeriodicNeighbor> {
-        let mut wrapped_position = position.clone();
+        let mut wrapped_position = *position;
         wrapped_position -= wrapped_position.map(|e| e.floor()); // [0, 1)
         let cart_coords = self.lattice.cartesian_coords(&wrapped_position);
-        let within = self.kdtree.nearest_n_within::<SquaredEuclidean>(
+        let mut within = self.kdtree.best_n_within::<SquaredEuclidean>(
             &[cart_coords.x, cart_coords.y, cart_coords.z],
             self.symprec.powi(2), // squared distance for KdTree
-            1,
-            false,
+            NonZero::new(1).unwrap(),
         );
-        if within.len() == 0 {
-            return None;
-        }
+        if let Some(entry) = within.next() {
+            let item = entry.item as usize;
+            let distance = entry.distance.sqrt();
+            if distance > self.symprec {
+                return None;
+            }
 
-        let item = within[0].item as usize;
-        let distance = within[0].distance.sqrt();
-        if distance > self.symprec {
-            return None;
+            Some(PeriodicNeighbor {
+                index: self.indices[item],
+                distance,
+            })
+        } else {
+            None
         }
-
-        Some(PeriodicNeighbor {
-            index: self.indices[item],
-            distance,
-        })
     }
 }
 
@@ -112,6 +113,7 @@ pub fn pivot_site_indices(numbers: &[AtomicSpecie]) -> Vec<usize> {
 /// Search permutation such that new_positions\[i\] = reduced_cell.positions\[permutation\[i\]\].
 /// Then, a corresponding symmetry operation moves the i-th site into the permutation\[i\]-th site.
 /// This function takes O(num_atoms * log(num_atoms)) time.
+#[doc(hidden)]
 pub fn solve_correspondence(
     pkdtree: &PeriodicKdTree,
     reduced_cell: &Cell,
@@ -144,6 +146,7 @@ pub fn solve_correspondence(
 /// Search permutation such that new_positions\[i\] = reduced_cell.positions\[permutation\[i\]\].
 /// Then, a corresponding symmetry operation moves the i-th site into the permutation\[i\]-th site.
 /// This function takes O(num_atoms^2) time.
+#[doc(hidden)]
 #[allow(clippy::needless_range_loop)]
 pub fn solve_correspondence_naive(
     reduced_cell: &Cell,
