@@ -1,7 +1,7 @@
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, num::NonZero};
 
 use itertools::iproduct;
-use kiddo::{KdTree, SquaredEuclidean};
+use kiddo::{ImmutableKdTree, SquaredEuclidean};
 use nalgebra::{Rotation3, Vector3};
 
 use crate::base::{AtomicSpecie, Cell, Lattice, Permutation, Position, Rotation, Translation};
@@ -10,7 +10,7 @@ use crate::base::{AtomicSpecie, Cell, Lattice, Permutation, Position, Rotation, 
 pub struct PeriodicKdTree {
     num_sites: usize,
     lattice: Lattice,
-    kdtree: KdTree<f64, 3>,
+    kdtree: ImmutableKdTree<f64, 3>,
     indices: Vec<usize>,
     symprec: f64,
 }
@@ -59,7 +59,7 @@ impl PeriodicKdTree {
         Self {
             num_sites: reduced_cell.num_atoms(),
             lattice: new_lattice,
-            kdtree: (&entries).into(),
+            kdtree: ImmutableKdTree::new_from_slice(&entries),
             indices,
             symprec,
         }
@@ -70,26 +70,25 @@ impl PeriodicKdTree {
         let mut wrapped_position = *position;
         wrapped_position -= wrapped_position.map(|e| e.floor()); // [0, 1)
         let cart_coords = self.lattice.cartesian_coords(&wrapped_position);
-        let within = self.kdtree.nearest_n_within::<SquaredEuclidean>(
+        let mut within = self.kdtree.best_n_within::<SquaredEuclidean>(
             &[cart_coords.x, cart_coords.y, cart_coords.z],
             self.symprec.powi(2), // squared distance for KdTree
-            1,
-            false,
+            NonZero::new(1).unwrap(),
         );
-        if within.is_empty() {
-            return None;
-        }
+        if let Some(entry) = within.next() {
+            let item = entry.item as usize;
+            let distance = entry.distance.sqrt();
+            if distance > self.symprec {
+                return None;
+            }
 
-        let item = within[0].item as usize;
-        let distance = within[0].distance.sqrt();
-        if distance > self.symprec {
-            return None;
+            Some(PeriodicNeighbor {
+                index: self.indices[item],
+                distance,
+            })
+        } else {
+            None
         }
-
-        Some(PeriodicNeighbor {
-            index: self.indices[item],
-            distance,
-        })
     }
 }
 
