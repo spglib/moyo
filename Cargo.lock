@@ -626,6 +626,7 @@ dependencies = [
  "kiddo",
  "log",
  "nalgebra",
+ "once_cell",
  "rand",
  "rstest",
  "serde",
