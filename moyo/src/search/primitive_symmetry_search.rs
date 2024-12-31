@@ -13,7 +13,7 @@ use super::{
 };
 use crate::base::{
     traverse, AngleTolerance, Cell, Lattice, MagneticCell, MagneticMoment, MagneticOperation,
-    MagneticOperations, MoyoError, Operation, Operations, Permutation, Position, Rotation,
+    MagneticOperations, MoyoError, Operation, Operations, Permutation, Rotation,
     RotationMagneticMomentAction, Rotations, Transformation, EPS,
 };
 
