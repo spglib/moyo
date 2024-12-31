@@ -2,14 +2,13 @@ use std::cmp::Ordering;
 
 use itertools::Itertools;
 use log::debug;
-use nalgebra::{Dyn, Matrix3, OMatrix, OVector, U9};
 
 use crate::base::{MoyoError, Rotation, Rotations, UnimodularLinear};
 use crate::data::{
     iter_arithmetic_crystal_entry, ArithmeticNumber, Centering, CrystalSystem,
     GeometricCrystalClass, PointGroupRepresentative,
 };
-use crate::math::IntegerLinearSystem;
+use crate::math::sylvester3;
 
 /// Crystallographic point group with group-type information
 #[derive(Debug)]
@@ -65,6 +64,72 @@ enum RotationType {
     RotoInversion6, // -6 = S3^-1
 }
 
+#[allow(dead_code)]
+/// Generate integral normalizer of the given point group up to its centralizer.
+/// Because the factor group of the integral normalizer by the centralizer is isomorphic to a finite permutation group, the output is guaranteed to be finite.
+fn integral_normalizer(
+    prim_rotations: &Rotations,
+    prim_generators: &Rotations,
+) -> Vec<UnimodularLinear> {
+    let rotation_types = prim_rotations
+        .iter()
+        .map(identify_rotation_type)
+        .collect::<Vec<_>>();
+    let prim_generator_rotation_types = prim_generators
+        .iter()
+        .map(identify_rotation_type)
+        .collect::<Vec<_>>();
+
+    // Try to map generators
+    let order = prim_rotations.len();
+    let candidates: Vec<Vec<usize>> = prim_generator_rotation_types
+        .iter()
+        .map(|&rotation_type| {
+            (0..order)
+                .filter(|&i| rotation_types[i] == rotation_type)
+                .collect()
+        })
+        .collect();
+
+    // TODO: unify with match_with_point_group
+    let mut conjugators = vec![];
+    for pivot in candidates
+        .iter()
+        .map(|v| v.iter())
+        .multi_cartesian_product()
+    {
+        // Solve P^-1 * prim_rotations[pivot[i]] * P = prim_generators[i] (for all i)
+        if let Some(trans_mat_basis) = sylvester3(
+            &pivot
+                .iter()
+                .map(|&i| prim_rotations[*i])
+                .collect::<Vec<_>>(),
+            prim_generators,
+        ) {
+            // Search integer linear combination such that the transformation matrix is unimodular
+            // Consider coefficients in [-2, 2], which will be sufficient for Delaunay reduced basis
+            for comb in (0..trans_mat_basis.len())
+                .map(|_| -2..=2)
+                .multi_cartesian_product()
+            {
+                let mut prim_trans_mat = UnimodularLinear::zeros();
+                for (i, matrix) in trans_mat_basis.iter().enumerate() {
+                    prim_trans_mat += comb[i] * matrix;
+                }
+                let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
+                if det < 0 {
+                    prim_trans_mat *= -1;
+                }
+                if det == 1 {
+                    conjugators.push(prim_trans_mat);
+                    break;
+                }
+            }
+        }
+    }
+    conjugators
+}
+
 /// Faster matching algorithm for cubic point groups
 fn match_with_cubic_point_group(
     prim_rotations: &Rotations,
@@ -109,7 +174,7 @@ fn match_with_cubic_point_group(
         .multi_cartesian_product()
     {
         // Solve P^-1 * self.rotations[self.rotations[pivot[i]]] * P = other.generators[i] (for all i)
-        if let Some(trans_mat_basis) = sylvester(
+        if let Some(trans_mat_basis) = sylvester3(
             &pivot
                 .iter()
                 .map(|&i| prim_rotations[*i])
@@ -193,7 +258,7 @@ fn match_with_point_group(
             .multi_cartesian_product()
         {
             // Solve P^-1 * self.rotations[self.rotations[pivot[i]]] * P = other.generators[i] (for all i)
-            if let Some(trans_mat_basis) = sylvester(
+            if let Some(trans_mat_basis) = sylvester3(
                 &pivot
                     .iter()
                     .map(|&i| prim_rotations[*i])
@@ -224,108 +289,6 @@ fn match_with_point_group(
     }
 
     Err(MoyoError::ArithmeticCrystalClassIdentificationError)
-}
-
-#[allow(dead_code)]
-pub fn integral_normalizer(
-    prim_rotations: &Rotations,
-    prim_generators: &Rotations,
-) -> Vec<UnimodularLinear> {
-    let rotation_types = prim_rotations
-        .iter()
-        .map(identify_rotation_type)
-        .collect::<Vec<_>>();
-    let prim_generator_rotation_types = prim_generators
-        .iter()
-        .map(identify_rotation_type)
-        .collect::<Vec<_>>();
-
-    // Try to map generators
-    let order = prim_rotations.len();
-    let candidates: Vec<Vec<usize>> = prim_generator_rotation_types
-        .iter()
-        .map(|&rotation_type| {
-            (0..order)
-                .filter(|&i| rotation_types[i] == rotation_type)
-                .collect()
-        })
-        .collect();
-
-    // TODO: unify with match_with_point_group
-    let mut conjugators = vec![];
-    for pivot in candidates
-        .iter()
-        .map(|v| v.iter())
-        .multi_cartesian_product()
-    {
-        // Solve P^-1 * prim_rotations[prim_rotations[pivot[i]]] * P = prim_generators[i] (for all i)
-        if let Some(trans_mat_basis) = sylvester(
-            &pivot
-                .iter()
-                .map(|&i| prim_rotations[*i])
-                .collect::<Vec<_>>(),
-            prim_generators,
-        ) {
-            // Search integer linear combination such that the transformation matrix is unimodular
-            // Consider coefficients in [-2, 2], which will be sufficient for Delaunay reduced basis
-            for comb in (0..trans_mat_basis.len())
-                .map(|_| -2..=2)
-                .multi_cartesian_product()
-            {
-                let mut prim_trans_mat = UnimodularLinear::zeros();
-                for (i, matrix) in trans_mat_basis.iter().enumerate() {
-                    prim_trans_mat += comb[i] * matrix;
-                }
-                let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
-                if det < 0 {
-                    prim_trans_mat *= -1;
-                }
-                if det == 1 {
-                    conjugators.push(prim_trans_mat);
-                    break;
-                }
-            }
-        }
-    }
-    conjugators
-}
-
-/// Solve P^-1 * A[i] * P = B[i] (for all i)
-/// vec(A * P - P * B) = (I_3 \otimes A - B^T \otimes I_3) * vec(P)
-fn sylvester(a: &[Matrix3<i32>], b: &[Matrix3<i32>]) -> Option<Vec<Matrix3<i32>>> {
-    let size = a.len();
-    assert_eq!(size, b.len());
-
-    let mut coeffs = OMatrix::<i32, Dyn, U9>::zeros(9 * size);
-    let identity = Rotation::identity();
-    for k in 0..size {
-        let adj = identity.kronecker(&a[k]) - b[k].transpose().kronecker(&identity);
-        for i in 0..9 {
-            for j in 0..9 {
-                coeffs[(9 * k + i, j)] = adj[(i, j)];
-            }
-        }
-    }
-    let solution = IntegerLinearSystem::new(&coeffs, &OVector::<i32, Dyn>::zeros(coeffs.nrows()));
-
-    if let Some(solution) = solution {
-        let basis: Vec<_> = solution
-            .nullspace
-            .row_iter()
-            .map(|e| {
-                // Vectorization operator is column-major
-                UnimodularLinear::new(
-                    e[0], e[1], e[2], //
-                    e[3], e[4], e[5], //
-                    e[6], e[7], e[8], //
-                )
-                .transpose()
-            })
-            .collect();
-        Some(basis)
-    } else {
-        None
-    }
 }
 
 fn identify_rotation_type(rotation: &Rotation) -> RotationType {
