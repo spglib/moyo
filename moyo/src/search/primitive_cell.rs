@@ -43,7 +43,8 @@ impl PrimitiveCell {
             .basis
             .column_iter()
             .map(|v| v.norm())
-            .fold(f64::INFINITY, f64::min);
+            .reduce(f64::min)
+            .unwrap();
         let rough_symprec = 2.0 * symprec;
         if rough_symprec > minimum_basis_norm / 2.0 {
             debug!(

@@ -53,15 +53,18 @@ impl PrimitiveSymmetrySearch {
         let mut symmetries_tmp = vec![];
         let src = pivot_site_indices[0];
         for rotation in bravais_group.iter() {
+            let rotated_positions = primitive_cell
+                .positions
+                .iter()
+                .map(|pos| rotation.map(|e| e as f64) * pos)
+                .collect::<Vec<_>>();
             for dst in pivot_site_indices.iter() {
                 // Try to overlap the `src`-th site to the `dst`-th site
-                let translation = primitive_cell.positions[*dst]
-                    - rotation.map(|e| e as f64) * primitive_cell.positions[src];
-                let new_positions: Vec<Position> = primitive_cell
-                    .positions
+                let translation = primitive_cell.positions[*dst] - rotated_positions[src];
+                let new_positions = rotated_positions
                     .iter()
-                    .map(|pos| rotation.map(|e| e as f64) * pos + translation)
-                    .collect();
+                    .map(|pos| pos + translation)
+                    .collect::<Vec<_>>();
 
                 if let Some(permutation) =
                     solve_correspondence(&pkdtree, primitive_cell, &new_positions)
