@@ -1,4 +1,4 @@
-use super::magnetic_space_group::UNINumber;
+use super::magnetic_space_group::{UNINumber, NUM_MAGNETIC_SPACE_GROUP_TYPES};
 
 #[derive(Debug, Clone)]
 pub struct MagneticHallSymbolEntry {
@@ -15,21 +15,13 @@ impl MagneticHallSymbolEntry {
     }
 }
 
-// TODO:
-// smallest and largest UNI numbers for each Hall number
-// let hall_number_to_uni_numbers: HashMap<HallNumber, (UNINumber, UNINumber)>;
-
-// TODO:
-// smallest and largest Hall numbers for XSG of each UNI number
-// let uni_number_to_xsg_hall_numbers: HashMap<UNINumber, (HallNumber, HallNumber)>;
-
 pub fn magnetic_hall_symbol_entry(uni_number: UNINumber) -> Option<MagneticHallSymbolEntry> {
     MAGNETIC_HALL_SYMBOL_DATABASE
         .get((uni_number - 1) as usize)
         .cloned()
 }
 
-const MAGNETIC_HALL_SYMBOL_DATABASE: [MagneticHallSymbolEntry; 1651] = [
+const MAGNETIC_HALL_SYMBOL_DATABASE: [MagneticHallSymbolEntry; NUM_MAGNETIC_SPACE_GROUP_TYPES] = [
     MagneticHallSymbolEntry::new("P 1", 1),
     MagneticHallSymbolEntry::new("P 1 1'", 2),
     MagneticHallSymbolEntry::new("P 1 1c'", 3),

@@ -4,7 +4,7 @@ use nalgebra::base::{Matrix3, Vector3};
 use super::cell::Cell;
 use super::lattice::Lattice;
 use super::magnetic_cell::{MagneticCell, MagneticMoment};
-use super::operation::Operation;
+use super::operation::{MagneticOperation, Operation};
 use crate::math::SNF;
 
 pub type UnimodularLinear = Matrix3<i32>;
@@ -70,6 +70,24 @@ impl UnimodularTransformation {
         operations
             .iter()
             .map(|ops| self.transform_operation(ops))
+            .collect()
+    }
+
+    pub fn transform_magnetic_operation(
+        &self,
+        magnetic_operation: &MagneticOperation,
+    ) -> MagneticOperation {
+        let new_operation = self.transform_operation(&magnetic_operation.operation);
+        MagneticOperation::from_operation(new_operation, magnetic_operation.time_reversal)
+    }
+
+    pub fn transform_magnetic_operations(
+        &self,
+        magnetic_operations: &[MagneticOperation],
+    ) -> Vec<MagneticOperation> {
+        magnetic_operations
+            .iter()
+            .map(|mops| self.transform_magnetic_operation(mops))
             .collect()
     }
 
@@ -185,6 +203,48 @@ impl Transformation {
         operations
             .iter()
             .filter_map(|ops| self.inverse_transform_operation(ops))
+            .collect()
+    }
+
+    pub fn transform_magnetic_operation(
+        &self,
+        magnetic_operation: &MagneticOperation,
+    ) -> Option<MagneticOperation> {
+        let new_operation = self.transform_operation(&magnetic_operation.operation)?;
+        Some(MagneticOperation::from_operation(
+            new_operation,
+            magnetic_operation.time_reversal,
+        ))
+    }
+
+    pub fn transform_magnetic_operations(
+        &self,
+        magnetic_operations: &[MagneticOperation],
+    ) -> Vec<MagneticOperation> {
+        magnetic_operations
+            .iter()
+            .filter_map(|mops| self.transform_magnetic_operation(mops))
+            .collect()
+    }
+
+    pub fn inverse_transform_magnetic_operation(
+        &self,
+        magnetic_operation: &MagneticOperation,
+    ) -> Option<MagneticOperation> {
+        let new_operation = self.inverse_transform_operation(&magnetic_operation.operation)?;
+        Some(MagneticOperation::from_operation(
+            new_operation,
+            magnetic_operation.time_reversal,
+        ))
+    }
+
+    pub fn inverse_transform_magnetic_operations(
+        &self,
+        magnetic_operations: &[MagneticOperation],
+    ) -> Vec<MagneticOperation> {
+        magnetic_operations
+            .iter()
+            .filter_map(|mops| self.inverse_transform_magnetic_operation(mops))
             .collect()
     }
 

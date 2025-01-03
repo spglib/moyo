@@ -6,6 +6,8 @@ use nalgebra::{matrix, Vector3};
 
 use super::centering::Centering;
 use super::hall_symbol_database::{hall_symbol_entry, HallNumber};
+use super::magnetic_hall_symbol_database::magnetic_hall_symbol_entry;
+use super::magnetic_space_group::UNINumber;
 use crate::base::{
     MagneticOperation, MagneticOperations, Operation, Operations, OriginShift, Rotation,
     TimeReversal, Transformation, Translation, EPS,
@@ -205,6 +207,19 @@ impl MagneticHallSymbol {
         }
 
         operations
+    }
+
+    pub fn from_uni_number(uni_number: UNINumber) -> Option<Self> {
+        if let Some(entry) = magnetic_hall_symbol_entry(uni_number) {
+            Self::new(entry.magnetic_hall_symbol)
+        } else {
+            None
+        }
+    }
+
+    pub fn primitive_generators(&self) -> MagneticOperations {
+        Transformation::from_linear(self.centering.linear())
+            .inverse_transform_magnetic_operations(&self.generators)
     }
 }
 

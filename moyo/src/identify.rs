@@ -1,3 +1,4 @@
+mod magnetic_space_group;
 mod normalizer;
 mod point_group;
 mod rotation_type;
