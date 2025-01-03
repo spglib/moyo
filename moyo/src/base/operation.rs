@@ -103,7 +103,7 @@ pub fn project_operations(magnetic_operations: &MagneticOperations) -> Operation
 pub fn traverse(generators: &Rotations) -> Rotations {
     let mut queue = VecDeque::new();
     let mut visited = HashSet::new();
-    let mut group = vec![];
+    let mut group = Vec::with_capacity(48);
 
     queue.push_back(Rotation::identity());
 

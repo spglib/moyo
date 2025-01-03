@@ -121,25 +121,24 @@ pub fn solve_correspondence(
     new_positions: &[Position],
 ) -> Option<Permutation> {
     let num_atoms = pkdtree.num_sites;
-    let mut mapping = vec![0; num_atoms];
-    let mut visited = vec![false; num_atoms];
+    let mut mapping = vec![None; num_atoms];
 
     for i in 0..num_atoms {
         let neighbor = pkdtree.nearest(&new_positions[i])?;
         let j = neighbor.index;
-        if visited[j] || reduced_cell.numbers[i] != reduced_cell.numbers[j] {
+        if reduced_cell.numbers[i] != reduced_cell.numbers[j] {
+            return None;
+        }
+        if let Some(_) = mapping[i] {
             return None;
         }
 
-        mapping[i] = j;
-        visited[j] = true;
+        mapping[i] = Some(j);
     }
 
-    if visited.iter().all(|&v| v) {
-        Some(Permutation::new(mapping))
-    } else {
-        None
-    }
+    let mapping = mapping.into_iter().map(|v| v.unwrap()).collect::<Vec<_>>();
+    assert_eq!(mapping.len(), num_atoms);
+    Some(Permutation::new(mapping))
 }
 
 /// Return correspondence between the input and acted positions.
