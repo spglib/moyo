@@ -71,13 +71,18 @@ pub mod search; // Public for benchmarking
 mod identify;
 mod symmetrize;
 
-use base::{AngleTolerance, Cell, MoyoError, Operations, OriginShift};
+use base::{
+    AngleTolerance, Cell, MagneticCell, MagneticMoment, MoyoError, Operations, OriginShift,
+    RotationMagneticMomentAction,
+};
 use data::{HallNumber, Number, Setting};
 
 use nalgebra::Matrix3;
 
-use crate::identify::SpaceGroup;
-use crate::search::{iterative_symmetry_search, operations_in_cell};
+use crate::identify::{MagneticSpaceGroup, SpaceGroup};
+use crate::search::{
+    iterative_magnetic_symmetry_search, iterative_symmetry_search, operations_in_cell,
+};
 use crate::symmetrize::{orbits_in_cell, StandardizedCell};
 
 #[derive(Debug)]
@@ -225,5 +230,57 @@ impl MoyoDataset {
     /// Return the number of symmetry operations in the input cell.
     pub fn num_operations(&self) -> usize {
         self.operations.len()
+    }
+}
+
+#[derive(Debug)]
+pub struct MoyoMagneticDataset {
+    // ------------------------------------------------------------------------
+    // Final parameters
+    // ------------------------------------------------------------------------
+    /// Actually used `symprec` in iterative symmetry search.
+    pub symprec: f64,
+    /// Actually used `angle_tolerance` in iterative symmetry search.
+    pub angle_tolerance: AngleTolerance,
+    /// Actually used `mag_symprec` in iterative symmetry search.
+    pub mag_symprec: f64,
+}
+
+impl MoyoMagneticDataset {
+    pub fn new<M>(
+        magnetic_cell: &MagneticCell<M>,
+        symprec: f64,
+        angle_tolerance: AngleTolerance,
+        mag_symprec: Option<f64>,
+        action: RotationMagneticMomentAction,
+    ) -> Result<Self, MoyoError>
+    where
+        M: MagneticMoment + Clone,
+    {
+        let (prim_mag_cell, magnetic_symmetry_search, symprec, angle_tolerance, mag_symprec) =
+            iterative_magnetic_symmetry_search(
+                magnetic_cell,
+                symprec,
+                angle_tolerance,
+                mag_symprec,
+                action,
+            )?;
+
+        // Magnetic space-group type identification
+        let epsilon = symprec
+            / prim_mag_cell
+                .magnetic_cell
+                .cell
+                .lattice
+                .volume()
+                .powf(1.0 / 3.0);
+        let space_group =
+            MagneticSpaceGroup::new(&magnetic_symmetry_search.magnetic_operations, epsilon)?;
+
+        Ok(Self {
+            symprec,
+            angle_tolerance,
+            mag_symprec,
+        })
     }
 }

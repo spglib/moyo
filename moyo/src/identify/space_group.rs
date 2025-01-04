@@ -163,7 +163,7 @@ fn correction_transformation_matrices(
 }
 
 /// Search for origin_shift such that (trans_mat, origin_shift) transforms <prim_operations> into <db_prim_generators>
-fn match_origin_shift(
+pub fn match_origin_shift(
     prim_operations: &Operations,
     trans_mat: &UnimodularLinear,
     db_prim_generators: &Operations,
