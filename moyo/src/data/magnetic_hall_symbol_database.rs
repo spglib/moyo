@@ -21,6 +21,7 @@ pub fn magnetic_hall_symbol_entry(uni_number: UNINumber) -> Option<MagneticHallS
         .cloned()
 }
 
+// For type-IV MSG, we assume their Magnetic Hall symbol explicitly contains the anti-translation operation.
 const MAGNETIC_HALL_SYMBOL_DATABASE: [MagneticHallSymbolEntry; NUM_MAGNETIC_SPACE_GROUP_TYPES] = [
     MagneticHallSymbolEntry::new("P 1", 1),
     MagneticHallSymbolEntry::new("P 1 1'", 2),

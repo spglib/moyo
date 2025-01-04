@@ -1,10 +1,18 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use log::debug;
+use nalgebra::{Dyn, OMatrix, OVector, U3};
 
-use super::space_group::SpaceGroup;
-use crate::base::{MagneticOperations, MoyoError, Operations, Rotation, UnimodularTransformation};
-use crate::data::{uni_number_range, ConstructType, Setting, UNINumber};
+use super::normalizer::integral_normalizer;
+use super::space_group::{solve_mod1, SpaceGroup};
+use crate::base::{
+    project_rotations, traverse, MagneticOperations, MoyoError, Operations, Rotation, Translation,
+    UnimodularLinear, UnimodularTransformation,
+};
+use crate::data::{
+    get_magnetic_space_group_type, uni_number_range, ConstructType, MagneticHallSymbol, Setting,
+    UNINumber,
+};
 
 #[derive(Debug)]
 pub struct MagneticSpaceGroup {
@@ -17,121 +25,298 @@ impl MagneticSpaceGroup {
     /// Identify the magnetic space group type from the primitive magnetic operations.
     /// epsilon: tolerance for comparing translation parts
     pub fn new(prim_mag_operations: &MagneticOperations, epsilon: f64) -> Result<Self, MoyoError> {
-        let prim_xsg = maximal_space_subgroup_from_magnetic_space_group(prim_mag_operations)
-            .ok_or(MoyoError::MagneticSpaceGroupTypeIdentificationError)?;
-        let prim_fsg = family_space_group_from_magnetic_space_group(prim_mag_operations)
-            .ok_or(MoyoError::MagneticSpaceGroupTypeIdentificationError)?;
-
-        let construct_type = match (
-            prim_mag_operations.len() % prim_xsg.len(),
-            prim_fsg.len() % prim_xsg.len(),
-        ) {
-            (1, 1) => ConstructType::Type1,
-            (2, 1) => ConstructType::Type2,
-            (2, 2) => {
-                // Find coset representatives of MSG/XSG
-                let identify = Rotation::identity();
-                if prim_mag_operations
-                    .iter()
-                    .any(|mops| mops.time_reversal && mops.operation.rotation == identify)
-                {
-                    // Anti-translation
-                    ConstructType::Type4
-                } else {
-                    ConstructType::Type3
-                }
-            }
-            _ => {
-                return Err(MoyoError::MagneticSpaceGroupTypeIdentificationError);
-            }
-        };
-
-        // BNS setting
+        let (ref_spg, construct_type) =
+            identify_reference_space_group(prim_mag_operations, epsilon)
+                .ok_or(MoyoError::ConstructTypeIdentificationError)?;
+        debug!("Construct type: {:?}", construct_type);
+        let setting = Setting::Standard;
         // std_ref_spg.transformation: primitive input -> primitive BNS setting
-        let ref_spg = if construct_type == ConstructType::Type4 {
-            prim_xsg
-        } else {
-            prim_fsg
-        };
-        let std_ref_spg = SpaceGroup::new(&ref_spg, Setting::Standard, epsilon)?;
-        let tmp_prim_mag_operations = std_ref_spg
-            .transformation
-            .transform_magnetic_operations(&prim_mag_operations);
+        let std_ref_spg = SpaceGroup::new(&ref_spg, setting, epsilon)?;
+        debug!("Reference space group: {:?}", std_ref_spg.number);
 
         let uni_number_range = uni_number_range(std_ref_spg.number)
             .ok_or(MoyoError::SpaceGroupTypeIdentificationError)?;
         for uni_number in uni_number_range {
-            todo!()
+            if get_magnetic_space_group_type(uni_number)
+                .unwrap()
+                .construct_type
+                != construct_type
+            {
+                continue;
+            }
+
+            let mhs = MagneticHallSymbol::from_uni_number(uni_number)
+                .ok_or(MoyoError::MagneticSpaceGroupTypeIdentificationError)?;
+            let db_prim_mag_generators = mhs.primitive_generators();
+            let db_ref_prim_generators =
+                Self::get_db_reference_space_group_primitive_generators(&mhs, &construct_type);
+
+            // The correction transformation matrices keep the point group of `tmp_prim_mag_operations`
+            // TODO: precompute the correction transformation matrices
+            let correction_transformation_matrices =
+                Self::correction_transformation_matrices(&db_ref_prim_generators, &construct_type)
+                    .ok_or(MoyoError::MagneticSpaceGroupTypeIdentificationError)?;
+            for corr_trans_mat in correction_transformation_matrices {
+                // (trans_mat, origin_shift): primitive input -> primitive DB
+                let trans_mat = std_ref_spg.transformation.linear * corr_trans_mat;
+                if let Some(origin_shift) = Self::match_origin_shift(
+                    prim_mag_operations,
+                    &trans_mat,
+                    &db_prim_mag_generators,
+                    epsilon,
+                ) {
+                    debug!("Matched with UNI number {}", uni_number);
+                    return Ok(Self {
+                        uni_number,
+                        transformation: UnimodularTransformation::new(trans_mat, origin_shift),
+                    });
+                }
+            }
+        }
+        Err(MoyoError::MagneticSpaceGroupTypeIdentificationError)
+    }
+
+    fn get_db_reference_space_group_primitive_generators(
+        mhs: &MagneticHallSymbol,
+        construct_type: &ConstructType,
+    ) -> Operations {
+        let db_prim_mag_operations = mhs.primitive_generators();
+        match construct_type {
+            ConstructType::Type1 | ConstructType::Type2 | ConstructType::Type3 => {
+                // Reference space group: FSG
+                // -> Remove time-reversal parts
+                db_prim_mag_operations
+                    .iter()
+                    .map(|mops| mops.operation.clone())
+                    .collect()
+            }
+            ConstructType::Type4 => {
+                // Reference space group: XSG
+                // -> Remove anti-translation operation
+                let identity = Rotation::identity();
+                db_prim_mag_operations
+                    .iter()
+                    .filter_map(|mops| {
+                        // Here we assume the magnetic Hall symbol composes of XSG generators and one anti-translation operation
+                        if mops.time_reversal {
+                            assert_eq!(mops.operation.rotation, identity);
+                            None
+                        } else {
+                            Some(mops.operation.clone())
+                        }
+                    })
+                    .collect()
+            }
+        }
+    }
+
+    fn correction_transformation_matrices(
+        db_ref_prim_generators: &Operations,
+        construct_type: &ConstructType,
+    ) -> Option<Vec<UnimodularLinear>> {
+        // Family space group (FSG): F(M)
+        // Maximal space subgroup (XSG): D(M)
+        match construct_type {
+            ConstructType::Type1 | ConstructType::Type2 => Some(vec![UnimodularLinear::identity()]),
+            ConstructType::Type3 | ConstructType::Type4 => {
+                // For type-III, try to map D(M) into D(M_std) while keeping F(M) = F(M_std)
+                // For type-IV, try to map F(M) into F(M_std) while keeping D(M) = D(M_std)
+                let db_ref_prim_rotation_generators = project_rotations(&db_ref_prim_generators);
+                let db_ref_prim_rotations = traverse(&db_ref_prim_rotation_generators);
+                Some(integral_normalizer(
+                    &db_ref_prim_rotations,
+                    &db_ref_prim_rotation_generators,
+                ))
+            }
+        }
+    }
+
+    /// Search for origin_shift such that (trans_mat, origin_shift) transforms `prim_mag_operations` into <db_prim_mag_generators>
+    /// TODO: unify with identify/space_group.rs::match_origin_shift
+    fn match_origin_shift(
+        prim_mag_operations: &MagneticOperations,
+        trans_mat: &UnimodularLinear,
+        db_prim_mag_generators: &MagneticOperations,
+        epsilon: f64,
+    ) -> Option<Translation> {
+        let new_prim_mag_operations = UnimodularTransformation::from_linear(*trans_mat)
+            .transform_magnetic_operations(prim_mag_operations);
+        let mut hm_translations = HashMap::new();
+        for mops in new_prim_mag_operations.iter() {
+            hm_translations.insert(
+                (mops.operation.rotation, mops.time_reversal),
+                mops.operation.translation,
+            );
         }
 
-        todo!()
+        let mut a = OMatrix::<i32, Dyn, U3>::zeros(3 * db_prim_mag_generators.len());
+        let mut b = OVector::<f64, Dyn>::zeros(3 * db_prim_mag_generators.len());
+        for (k, mops) in db_prim_mag_generators.iter().enumerate() {
+            let target_translation =
+                hm_translations.get(&(mops.operation.rotation, mops.time_reversal))?;
+
+            let ak = mops.operation.rotation - Rotation::identity();
+            let bk = mops.operation.translation - target_translation;
+            for i in 0..3 {
+                for j in 0..3 {
+                    a[(3 * k + i, j)] = ak[(i, j)];
+                }
+                b[3 * k + i] = bk[i];
+            }
+        }
+
+        match solve_mod1(&a, &b, epsilon) {
+            Some(s) => {
+                let origin_shift = (trans_mat.map(|e| e as f64) * s).map(|e| e % 1.);
+                Some(origin_shift)
+            }
+            None => None,
+        }
     }
 }
 
+fn identify_reference_space_group(
+    prim_mag_operations: &MagneticOperations,
+    epsilon: f64,
+) -> Option<(Operations, ConstructType)> {
+    let prim_xsg = maximal_space_subgroup_from_magnetic_space_group(prim_mag_operations);
+    let fsg = family_space_group_from_magnetic_space_group(prim_mag_operations);
+
+    if (prim_mag_operations.len() % prim_xsg.len() != 0)
+        || (prim_mag_operations.len() % fsg.len() != 0)
+    {
+        debug!("Input magnetic operations are incomplete.");
+        return None;
+    }
+
+    let identity = Rotation::identity();
+    let has_pure_time_reversal = prim_mag_operations.iter().any(|mops| {
+        mops.time_reversal
+            && mops.operation.rotation == identity
+            && mops
+                .operation
+                .translation
+                .iter()
+                .all(|e| (e - e.round()).abs() < epsilon)
+    });
+
+    let construct_type = match (
+        prim_mag_operations.len() / prim_xsg.len(),
+        has_pure_time_reversal,
+    ) {
+        (1, false) => ConstructType::Type1,
+        (2, true) => ConstructType::Type2,
+        (2, false) => {
+            // Find coset representatives of MSG/XSG
+            if prim_mag_operations
+                .iter()
+                .any(|mops| mops.time_reversal && mops.operation.rotation == identity)
+            {
+                // Anti-translation
+                ConstructType::Type4
+            } else {
+                ConstructType::Type3
+            }
+        }
+        _ => {
+            debug!(
+                "Unreachable combination: |MSG/XSG|={}, |FSG/XSG|={}",
+                prim_mag_operations.len() / prim_xsg.len(),
+                fsg.len() / prim_xsg.len(),
+            );
+            return None;
+        }
+    };
+
+    // BNS setting
+    let ref_spg = if construct_type == ConstructType::Type4 {
+        prim_xsg
+    } else {
+        // For type I, II, III, `fsg` is in primitive
+        fsg
+    };
+    Some((ref_spg, construct_type))
+}
+
+/// XSG: take only operations without time-reversal
 fn maximal_space_subgroup_from_magnetic_space_group(
     prim_mag_operations: &MagneticOperations,
-) -> Option<Operations> {
+) -> Operations {
     let mut xsg = vec![];
-    let mut visited = HashSet::new();
-
     for mops in prim_mag_operations {
         if mops.time_reversal {
             continue;
         }
-
-        if visited.contains(&mops.operation.rotation) {
-            debug!("Input magnetic operations are not in primitive.");
-            return None;
-        }
         xsg.push(mops.operation.clone());
-        visited.insert(mops.operation.rotation.clone());
     }
-
-    if (xsg.len() != prim_mag_operations.len()) && (xsg.len() * 2 != prim_mag_operations.len()) {
-        debug!("Input magnetic operations are incomplete.");
-        return None;
-    }
-    Some(xsg)
+    xsg
 }
 
+/// FSG: take all operations ignoring time-reversal parts
+/// Returned operations may contain duplicated rotation parts (for type-IV).
 fn family_space_group_from_magnetic_space_group(
     prim_mag_operations: &MagneticOperations,
-) -> Option<Operations> {
+) -> Operations {
     let mut fsg = vec![];
-    let mut visited = HashSet::new();
-
     for mops in prim_mag_operations {
-        if visited.contains(&mops.operation.rotation) {
-            continue;
-        }
         fsg.push(mops.operation.clone());
-        visited.insert(mops.operation.rotation.clone());
     }
-
-    if (fsg.len() != prim_mag_operations.len()) && (fsg.len() * 2 != prim_mag_operations.len()) {
-        debug!("Input magnetic operations are incomplete.");
-        return None;
-    }
-    Some(fsg)
+    fsg
 }
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+    use test_log::test as test_with_log;
+
     use super::*;
     use crate::base::Transformation;
-    use crate::data::MagneticHallSymbol;
+    use crate::data::{MagneticHallSymbol, NUM_MAGNETIC_SPACE_GROUP_TYPES};
 
-    #[test]
-    fn test_type4() {
-        // -P 4 2 3 1abc' (UNI No. 1599)
-        // P_I m-3m (BNS No. 221.97)
-        let mhs = MagneticHallSymbol::from_uni_number(1599).unwrap();
+    fn get_prim_mag_operations(uni_number: UNINumber) -> MagneticOperations {
+        let mhs = MagneticHallSymbol::from_uni_number(uni_number).unwrap();
         let magnetic_operations = mhs.traverse();
 
         // conventional -> primitive
         let prim_mag_operations = Transformation::from_linear(mhs.centering.linear())
             .inverse_transform_magnetic_operations(&magnetic_operations);
+        prim_mag_operations
+    }
 
-        let magnetic_space_group = MagneticSpaceGroup::new(&prim_mag_operations, 1e-8).unwrap();
+    #[rstest]
+    #[case(2, ConstructType::Type2, 2, 1, 2)]
+    #[case(1594, ConstructType::Type1, 48, 48, 48)]
+    #[case(1595, ConstructType::Type2, 96, 48, 96)]
+    #[case(1596, ConstructType::Type3, 48, 24, 48)]
+    #[case(1599, ConstructType::Type4, 96, 48, 96)] // -P 4 2 3 1abc' (UNI No. 1599)
+    fn test_xsg_and_fsg(
+        #[case] uni_number: UNINumber,
+        #[case] construct_type: ConstructType,
+        #[case] order_msg: usize,
+        #[case] order_xsg: usize,
+        #[case] order_fsg: usize,
+    ) {
+        let prim_mag_operations = get_prim_mag_operations(uni_number);
+        assert_eq!(prim_mag_operations.len(), order_msg);
+
+        let xsg = maximal_space_subgroup_from_magnetic_space_group(&prim_mag_operations);
+        assert_eq!(xsg.len(), order_xsg);
+
+        let fsg = family_space_group_from_magnetic_space_group(&prim_mag_operations);
+        assert_eq!(fsg.len(), order_fsg);
+
+        let (_, construct_type_actual) =
+            identify_reference_space_group(&prim_mag_operations, 1e-8).unwrap();
+        assert_eq!(construct_type_actual, construct_type);
+    }
+
+    #[test_with_log]
+    fn test_identify_magnetic_space_group() {
+        for uni_number in 1..=NUM_MAGNETIC_SPACE_GROUP_TYPES {
+            dbg!(uni_number);
+            let prim_mag_operations = get_prim_mag_operations(uni_number as UNINumber);
+            let magnetic_space_group = MagneticSpaceGroup::new(&prim_mag_operations, 1e-8).unwrap();
+            assert_eq!(magnetic_space_group.uni_number, uni_number as UNINumber);
+        }
     }
 }

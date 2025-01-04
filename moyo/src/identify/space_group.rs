@@ -203,7 +203,6 @@ fn match_origin_shift(
     match solve_mod1(&a, &b, epsilon) {
         Some(s) => {
             let origin_shift = (trans_mat.map(|e| e as f64) * s).map(|e| e % 1.);
-
             Some(origin_shift)
         }
         None => None,
@@ -211,7 +210,7 @@ fn match_origin_shift(
 }
 
 /// Solve a * x = b (mod 1)
-fn solve_mod1(
+pub fn solve_mod1(
     a: &OMatrix<i32, Dyn, U3>,
     b: &OVector<f64, Dyn>,
     epsilon: f64,

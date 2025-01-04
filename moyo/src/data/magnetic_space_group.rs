@@ -2,7 +2,7 @@ use std::ops::RangeInclusive;
 
 use once_cell::sync::Lazy;
 
-use super::{hall_symbol_database::Number, HallNumber};
+use super::hall_symbol_database::Number;
 
 pub const NUM_MAGNETIC_SPACE_GROUP_TYPES: usize = 1651;
 

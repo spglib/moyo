@@ -34,10 +34,9 @@ static POINT_GROUP_NORMALIZERS: Lazy<Vec<Vec<UnimodularLinear>>> = Lazy::new(|| 
         .collect()
 });
 
-#[allow(dead_code)]
 /// Generate integral normalizer of the given point group up to its centralizer.
 /// Because the factor group of the integral normalizer by the centralizer is isomorphic to a finite permutation group, the output is guaranteed to be finite.
-fn integral_normalizer(
+pub fn integral_normalizer(
     prim_rotations: &Rotations,
     prim_generators: &Rotations,
 ) -> Vec<UnimodularLinear> {
