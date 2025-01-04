@@ -2,6 +2,7 @@ use std::cmp::Ordering;
 
 use itertools::Itertools;
 use log::debug;
+use nalgebra::Matrix3;
 
 use super::rotation_type::{identify_rotation_type, RotationType};
 use crate::base::{MoyoError, Rotations, UnimodularLinear};
@@ -71,72 +72,45 @@ fn match_with_cubic_point_group(
         .iter()
         .find(|(_, point_group_db)| point_group_db.centering == Centering::P)
         .unwrap();
-
-    let order = prim_rotations.len();
     let other_prim_generators = primitive_arithmetic_crystal_class.1.primitive_generators();
 
-    // Try to map generators
-    let other_generator_rotation_types = other_prim_generators
-        .iter()
-        .map(identify_rotation_type)
-        .collect::<Vec<_>>();
-    let candidates: Vec<Vec<usize>> = other_generator_rotation_types
-        .iter()
-        .map(|&rotation_type| {
-            (0..order)
-                .filter(|&i| rotation_types[i] == rotation_type)
-                .collect()
-        })
-        .collect();
+    for trans_mat_basis in iter_trans_mat_basis(
+        prim_rotations.clone(),
+        rotation_types.to_vec(),
+        other_prim_generators,
+    ) {
+        // conv_trans_mat: self -> P-centering (primitive)
+        // The dimension of linear integer system should be one for cubic.
+        assert_eq!(trans_mat_basis.len(), 1);
+        let mut conv_trans_mat = trans_mat_basis[0].map(|e| e as f64);
 
-    for pivot in candidates
-        .iter()
-        .map(|v| v.iter())
-        .multi_cartesian_product()
-    {
-        // Solve P^-1 * self.rotations[self.rotations[pivot[i]]] * P = other.generators[i] (for all i)
-        if let Some(trans_mat_basis) = sylvester3(
-            &pivot
-                .iter()
-                .map(|&i| prim_rotations[*i])
-                .collect::<Vec<_>>(),
-            &other_prim_generators,
-        ) {
-            // conv_trans_mat: self -> P-centering (primitive)
-            // The dimension of linear integer system should be one for cubic.
-            assert_eq!(trans_mat_basis.len(), 1);
-            let mut conv_trans_mat = trans_mat_basis[0].map(|e| e as f64);
+        // Guarantee det > 0
+        let mut det = conv_trans_mat.determinant().round() as i32;
+        match det.cmp(&0) {
+            Ordering::Less => {
+                conv_trans_mat *= -1.0;
+                det *= -1;
+            }
+            Ordering::Equal => continue,
+            Ordering::Greater => {}
+        }
 
-            // Guarantee det > 0
-            let mut det = conv_trans_mat.determinant().round() as i32;
-            match det.cmp(&0) {
-                Ordering::Less => {
-                    conv_trans_mat *= -1.0;
-                    det *= -1;
-                }
-                Ordering::Equal => continue,
-                Ordering::Greater => {}
+        for (arithmetic_crystal_class, point_group_db) in arithmetic_crystal_class_candidates.iter()
+        {
+            let centering = point_group_db.centering;
+            if centering.order() as i32 != det {
+                continue;
+            }
+            // conv_trans_mat: self -> conventional
+            let prim_trans_mat = (conv_trans_mat * centering.inverse()).map(|e| e.round() as i32);
+            if prim_trans_mat.map(|e| e as f64).determinant().round() as i32 != 1 {
+                return Err(MoyoError::ArithmeticCrystalClassIdentificationError);
             }
 
-            for (arithmetic_crystal_class, point_group_db) in
-                arithmetic_crystal_class_candidates.iter()
-            {
-                let centering = point_group_db.centering;
-                if centering.order() as i32 != det {
-                    continue;
-                }
-                // conv_trans_mat: self -> conventional
-                let prim_trans_mat =
-                    (conv_trans_mat * centering.inverse()).map(|e| e.round() as i32);
-                if prim_trans_mat.map(|e| e as f64).determinant().round() as i32 != 1 {
-                    return Err(MoyoError::ArithmeticCrystalClassIdentificationError);
-                }
-
-                return Ok(PointGroup {
-                    arithmetic_number: *arithmetic_crystal_class,
-                    prim_trans_mat,
-                });
-            }
+            return Ok(PointGroup {
+                arithmetic_number: *arithmetic_crystal_class,
+                prim_trans_mat,
+            });
         }
     }
 
@@ -148,8 +122,6 @@ fn match_with_point_group(
     rotation_types: &[RotationType],
     geometric_crystal_class: GeometricCrystalClass,
 ) -> Result<PointGroup, MoyoError> {
-    let order = prim_rotations.len();
-
     for entry in iter_arithmetic_crystal_entry() {
         if entry.geometric_crystal_class != geometric_crystal_class {
             continue;
@@ -159,51 +131,28 @@ fn match_with_point_group(
             PointGroupRepresentative::from_arithmetic_crystal_class(entry.arithmetic_number);
         let other_prim_generators = point_group_db.primitive_generators();
 
-        // Try to map generators
-        let other_generator_rotation_types = other_prim_generators
-            .iter()
-            .map(identify_rotation_type)
-            .collect::<Vec<_>>();
-        let candidates: Vec<Vec<usize>> = other_generator_rotation_types
-            .iter()
-            .map(|&rotation_type| {
-                (0..order)
-                    .filter(|&i| rotation_types[i] == rotation_type)
-                    .collect()
-            })
-            .collect();
-
-        for pivot in candidates
-            .iter()
-            .map(|v| v.iter())
-            .multi_cartesian_product()
-        {
-            // Solve P^-1 * self.rotations[self.rotations[pivot[i]]] * P = other.generators[i] (for all i)
-            if let Some(trans_mat_basis) = sylvester3(
-                &pivot
-                    .iter()
-                    .map(|&i| prim_rotations[*i])
-                    .collect::<Vec<_>>(),
-                &other_prim_generators,
-            ) {
-                // Search integer linear combination such that the transformation matrix is unimodular
-                // Consider coefficients in [-2, 2], which will be sufficient for Delaunay reduced basis
-                for comb in (0..trans_mat_basis.len())
-                    .map(|_| -2..=2)
-                    .multi_cartesian_product()
-                {
-                    // prim_trans_mat: self -> DB(primitive)
-                    let mut prim_trans_mat = UnimodularLinear::zeros();
-                    for (i, matrix) in trans_mat_basis.iter().enumerate() {
-                        prim_trans_mat += comb[i] * matrix;
-                    }
-                    let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
-                    if det == 1 {
-                        return Ok(PointGroup {
-                            arithmetic_number: entry.arithmetic_number,
-                            prim_trans_mat,
-                        });
-                    }
+        for trans_mat_basis in iter_trans_mat_basis(
+            prim_rotations.clone(),
+            rotation_types.to_vec(),
+            other_prim_generators,
+        ) {
+            // Search integer linear combination such that the transformation matrix is unimodular
+            // Consider coefficients in [-2, 2], which will be sufficient for Delaunay reduced basis
+            for comb in (0..trans_mat_basis.len())
+                .map(|_| -2..=2)
+                .multi_cartesian_product()
+            {
+                // prim_trans_mat: self -> DB(primitive)
+                let mut prim_trans_mat = UnimodularLinear::zeros();
+                for (i, matrix) in trans_mat_basis.iter().enumerate() {
+                    prim_trans_mat += comb[i] * matrix;
+                }
+                let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
+                if det == 1 {
+                    return Ok(PointGroup {
+                        arithmetic_number: entry.arithmetic_number,
+                        prim_trans_mat,
+                    });
                 }
             }
         }
@@ -281,6 +230,40 @@ fn identify_geometric_crystal_class(
             Err(MoyoError::GeometricCrystalClassIdentificationError)
         }
     }
+}
+
+/// Return iterator of basis for transformation matrices that map the point group `prim_rotations` to a point group formed by `other_prim_rotation_generators`.
+pub fn iter_trans_mat_basis(
+    prim_rotations: Rotations,
+    rotation_types: Vec<RotationType>,
+    other_prim_rotation_generators: Rotations,
+) -> impl Iterator<Item = Vec<Matrix3<i32>>> {
+    let other_prim_generator_rotation_types = other_prim_rotation_generators
+        .iter()
+        .map(identify_rotation_type)
+        .collect::<Vec<_>>();
+
+    let order = prim_rotations.len();
+    let candidates: Vec<Vec<usize>> = other_prim_generator_rotation_types
+        .iter()
+        .map(|&rotation_type| {
+            (0..order)
+                .filter(|&i| rotation_types[i] == rotation_type)
+                .collect()
+        })
+        .collect();
+
+    candidates
+        .into_iter()
+        .map(|v| v.into_iter())
+        .multi_cartesian_product()
+        .filter_map(move |pivot| {
+            // Solve P^-1 * prim_rotations[pivot[i]] * P = prim_rotation_generators[i] (for all i)
+            sylvester3(
+                &pivot.iter().map(|&i| prim_rotations[i]).collect::<Vec<_>>(),
+                &other_prim_rotation_generators,
+            )
+        })
 }
 
 #[cfg(test)]
