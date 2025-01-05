@@ -1,4 +1,8 @@
-use super::magnetic_space_group::{UNINumber, NUM_MAGNETIC_SPACE_GROUP_TYPES};
+use super::hall_symbol_database::HallNumber;
+use super::magnetic_space_group::{
+    get_magnetic_space_group_type, ConstructType, UNINumber, NUM_MAGNETIC_SPACE_GROUP_TYPES,
+};
+use super::setting::Setting;
 
 #[derive(Debug, Clone)]
 pub struct MagneticHallSymbolEntry {
@@ -12,6 +16,19 @@ impl MagneticHallSymbolEntry {
             magnetic_hall_symbol,
             uni_number,
         }
+    }
+
+    pub fn construct_type(&self) -> ConstructType {
+        get_magnetic_space_group_type(self.uni_number)
+            .unwrap()
+            .construct_type
+    }
+
+    pub fn reference_hall_number(&self) -> HallNumber {
+        let number = get_magnetic_space_group_type(self.uni_number)
+            .unwrap()
+            .number;
+        Setting::Standard.hall_number(number).unwrap()
     }
 }
 
@@ -1679,7 +1696,7 @@ const MAGNETIC_HALL_SYMBOL_DATABASE: [MagneticHallSymbolEntry; NUM_MAGNETIC_SPAC
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::data::hall_symbol::MagneticHallSymbol;
+    use crate::data::MagneticHallSymbol;
 
     fn iter_magnetic_hall_symbol_entry() -> impl Iterator<Item = &'static MagneticHallSymbolEntry> {
         MAGNETIC_HALL_SYMBOL_DATABASE.iter()

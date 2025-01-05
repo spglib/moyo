@@ -13,6 +13,7 @@ pub use arithmetic_crystal_class::ArithmeticNumber;
 pub use centering::Centering;
 pub use hall_symbol::{HallSymbol, MagneticHallSymbol};
 pub use hall_symbol_database::{hall_symbol_entry, HallNumber, HallSymbolEntry, Number};
+pub use magnetic_hall_symbol_database::{magnetic_hall_symbol_entry, MagneticHallSymbolEntry};
 pub use magnetic_space_group::{
     get_magnetic_space_group_type, ConstructType, UNINumber, NUM_MAGNETIC_SPACE_GROUP_TYPES,
 };

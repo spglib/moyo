@@ -9,8 +9,8 @@ use crate::base::{
     UnimodularTransformation,
 };
 use crate::data::{
-    get_magnetic_space_group_type, uni_number_range, ConstructType, MagneticHallSymbol, Setting,
-    UNINumber,
+    get_magnetic_space_group_type, hall_symbol_entry, magnetic_hall_symbol_entry, uni_number_range,
+    ConstructType, HallSymbol, MagneticHallSymbol, MagneticHallSymbolEntry, Setting, UNINumber,
 };
 
 #[derive(Debug)]
@@ -54,11 +54,11 @@ impl MagneticSpaceGroup {
 
             // TODO:
 
-            let mhs = MagneticHallSymbol::from_uni_number(uni_number)
+            let entry = magnetic_hall_symbol_entry(uni_number).unwrap();
+            let mhs = MagneticHallSymbol::new(&entry.magnetic_hall_symbol)
                 .ok_or(MoyoError::MagneticSpaceGroupTypeIdentificationError)?;
             let db_prim_mag_generators = mhs.primitive_generators();
-            let db_ref_prim_generators =
-                Self::get_db_reference_space_group_primitive_generators(&mhs, &construct_type);
+            let db_ref_prim_generators = db_reference_space_group_primitive_generators(&entry);
 
             // The correction transformations keep the reference space group of `tmp_prim_mag_operations`
             // TODO: precompute the correction transformation matrices
@@ -81,40 +81,6 @@ impl MagneticSpaceGroup {
             // }
         }
         Err(MoyoError::MagneticSpaceGroupTypeIdentificationError)
-    }
-
-    fn get_db_reference_space_group_primitive_generators(
-        mhs: &MagneticHallSymbol,
-        construct_type: &ConstructType,
-    ) -> Operations {
-        let db_prim_mag_operations = mhs.primitive_generators();
-        match construct_type {
-            ConstructType::Type1 | ConstructType::Type2 | ConstructType::Type3 => {
-                // Reference space group: FSG
-                // -> Remove time-reversal parts
-                db_prim_mag_operations
-                    .iter()
-                    .map(|mops| mops.operation.clone())
-                    .collect()
-            }
-            ConstructType::Type4 => {
-                // Reference space group: XSG
-                // -> Remove anti-translation operation
-                let identity = Rotation::identity();
-                db_prim_mag_operations
-                    .iter()
-                    .filter_map(|mops| {
-                        // Here we assume the magnetic Hall symbol composes of XSG generators and one anti-translation operation
-                        if mops.time_reversal {
-                            assert_eq!(mops.operation.rotation, identity);
-                            None
-                        } else {
-                            Some(mops.operation.clone())
-                        }
-                    })
-                    .collect()
-            }
-        }
     }
 
     /// Search for origin_shift such that (trans_mat, origin_shift) transforms `prim_mag_operations` into <db_prim_mag_generators>
@@ -252,6 +218,20 @@ fn family_space_group_from_magnetic_space_group(
     (fsg, is_type2)
 }
 
+/// Return generators of the reference space group of magnetic space group `entry`.
+/// This function assumes the magnetic Hall symbol is extended from the Hall symbol in the standard setting.
+fn db_reference_space_group_primitive_generators(entry: &MagneticHallSymbolEntry) -> Operations {
+    let ref_hall_number = entry.reference_hall_number();
+    let ref_hall_entry = hall_symbol_entry(ref_hall_number).unwrap();
+    let identity = Rotation::identity();
+    HallSymbol::new(&ref_hall_entry.hall_symbol)
+        .unwrap()
+        .primitive_generators()
+        .into_iter()
+        .filter(|ops| ops.rotation != identity) // In primitive, if rotation part is identity, it is a pure translation
+        .collect()
+}
+
 #[cfg(test)]
 mod tests {
     use rstest::rstest;
@@ -259,7 +239,9 @@ mod tests {
 
     use super::*;
     use crate::base::Transformation;
-    use crate::data::{MagneticHallSymbol, NUM_MAGNETIC_SPACE_GROUP_TYPES};
+    use crate::data::{
+        magnetic_hall_symbol_entry, MagneticHallSymbol, NUM_MAGNETIC_SPACE_GROUP_TYPES,
+    };
 
     fn get_prim_mag_operations(uni_number: UNINumber) -> MagneticOperations {
         let mhs = MagneticHallSymbol::from_uni_number(uni_number).unwrap();
@@ -297,6 +279,61 @@ mod tests {
         let (_, construct_type_actual) =
             identify_reference_space_group(&prim_mag_operations, epsilon).unwrap();
         assert_eq!(construct_type_actual, construct_type);
+    }
+
+    // Check generators of reference space group by two methods:
+    // 1. From the magnetic Hall symbol
+    // 2. From the Hall symbol with the corresponding Hall number
+    #[test_with_log]
+    fn test_db_reference_space_group_primitive_generators() {
+        for uni_number in 1..=NUM_MAGNETIC_SPACE_GROUP_TYPES {
+            let entry = magnetic_hall_symbol_entry(uni_number as UNINumber).unwrap();
+            let actual = db_reference_space_group_primitive_generators(&entry);
+
+            let mhs = MagneticHallSymbol::new(&entry.magnetic_hall_symbol).unwrap();
+            let identity = Rotation::identity();
+            let expect: Operations = match entry.construct_type() {
+                ConstructType::Type1 | ConstructType::Type2 => mhs
+                    .primitive_generators()
+                    .iter()
+                    .filter_map(|mops| {
+                        if mops.time_reversal || mops.operation.rotation == identity {
+                            // Ignore 1' for Type2
+                            None
+                        } else {
+                            Some(mops.operation.clone())
+                        }
+                    })
+                    .collect(),
+                ConstructType::Type3 => mhs
+                    .primitive_generators()
+                    .iter()
+                    .map(|mops| mops.operation.clone()) // Ignore time-reversal parts
+                    .collect(),
+                ConstructType::Type4 => mhs
+                    .primitive_generators()
+                    .iter()
+                    .filter_map(|mops| {
+                        if mops.operation.rotation == identity {
+                            // Ignore anti-translation
+                            None
+                        } else {
+                            Some(mops.operation.clone())
+                        }
+                    })
+                    .collect(),
+            };
+            assert_eq!(actual.len(), expect.len());
+            let mut hm_translation = HashMap::new();
+            for ops1 in actual.iter() {
+                hm_translation.insert(ops1.rotation.clone(), ops1.translation);
+            }
+            for ops2 in expect.iter() {
+                let translation1 = hm_translation.get(&ops2.rotation).unwrap();
+                let diff = ops2.translation - translation1;
+                assert_relative_eq!(diff.map(|e| (e - e.round().abs())).max(), 0.0);
+            }
+        }
     }
 
     #[test_with_log]
