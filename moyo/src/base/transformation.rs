@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use itertools::iproduct;
 use nalgebra::base::{Matrix3, Vector3};
 
@@ -113,6 +115,17 @@ impl UnimodularTransformation {
             new_cell.numbers,
             magnetic_cell.magnetic_moments.clone(), // Magnetic moments are not transformed
         )
+    }
+}
+
+impl Mul for UnimodularTransformation {
+    type Output = Self;
+
+    // (P_lhs, p_lhs) * (P_rhs, p_rhs) = (P_lhs * P_rhs, P_lhs * p_rhs + p_lhs)
+    fn mul(self, rhs: Self) -> Self::Output {
+        let new_linear = self.linear * rhs.linear;
+        let new_origin_shift = self.linear.map(|e| e as f64) * rhs.origin_shift + self.origin_shift;
+        Self::new(new_linear, new_origin_shift)
     }
 }
 

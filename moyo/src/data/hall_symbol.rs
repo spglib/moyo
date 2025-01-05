@@ -104,6 +104,12 @@ impl HallSymbol {
         operations
     }
 
+    pub fn primitive_traverse(&self) -> Operations {
+        let operations = self.traverse();
+        Transformation::from_linear(self.centering.linear())
+            .inverse_transform_operations(&operations)
+    }
+
     pub fn from_hall_number(hall_number: HallNumber) -> Option<Self> {
         if let Some(entry) = hall_symbol_entry(hall_number) {
             Self::new(entry.hall_symbol)
@@ -207,6 +213,12 @@ impl MagneticHallSymbol {
         }
 
         operations
+    }
+
+    pub fn primitive_traverse(&self) -> MagneticOperations {
+        let operations = self.traverse();
+        Transformation::from_linear(self.centering.linear())
+            .inverse_transform_magnetic_operations(&operations)
     }
 
     pub fn from_uni_number(uni_number: UNINumber) -> Option<Self> {

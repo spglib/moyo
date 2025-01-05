@@ -1,12 +1,11 @@
 use std::collections::HashMap;
 
 use log::debug;
-use nalgebra::{Dyn, OMatrix, OVector, U3};
 
-use super::space_group::{solve_mod1, SpaceGroup};
+use super::normalizer::integral_normalizer;
+use super::space_group::SpaceGroup;
 use crate::base::{
-    MagneticOperations, MoyoError, Operations, Rotation, Translation, UnimodularLinear,
-    UnimodularTransformation,
+    MagneticOperations, MoyoError, Operations, Rotation, Translation, UnimodularTransformation,
 };
 use crate::data::{
     get_magnetic_space_group_type, hall_symbol_entry, magnetic_hall_symbol_entry, uni_number_range,
@@ -52,78 +51,30 @@ impl MagneticSpaceGroup {
                 });
             }
 
-            // TODO:
-
             let entry = magnetic_hall_symbol_entry(uni_number).unwrap();
             let mhs = MagneticHallSymbol::new(&entry.magnetic_hall_symbol)
                 .ok_or(MoyoError::MagneticSpaceGroupTypeIdentificationError)?;
-            let db_prim_mag_generators = mhs.primitive_generators();
-            let db_ref_prim_generators = db_reference_space_group_primitive_generators(&entry);
+            let db_prim_mag_operations = mhs.primitive_traverse();
+            let (db_ref_prim_operations, db_ref_prim_generators) =
+                db_reference_space_group_primitive(&entry);
+            let db_ref_prim_normalizer =
+                integral_normalizer(&db_ref_prim_operations, &db_ref_prim_generators, epsilon); // TODO: precompute the normalizer
 
-            // The correction transformations keep the reference space group of `tmp_prim_mag_operations`
-            // TODO: precompute the correction transformation matrices
-            let correction_transformations = todo!();
-            // for corr_trans_mat in correction_transformation_matrices {
-            //     // (trans_mat, origin_shift): primitive input -> primitive DB
-            //     let trans_mat = std_ref_spg.transformation.linear * corr_trans_mat;
-            //     if let Some(origin_shift) = Self::match_origin_shift(
-            //         prim_mag_operations,
-            //         &trans_mat,
-            //         &db_prim_mag_generators,
-            //         epsilon,
-            //     ) {
-            //         debug!("Matched with UNI number {}", uni_number);
-            //         return Ok(Self {
-            //             uni_number,
-            //             transformation: UnimodularTransformation::new(trans_mat, origin_shift),
-            //         });
-            //     }
-            // }
+            for corr_trans in db_ref_prim_normalizer {
+                // new_transformation * corr_trans: primitive input -> primitive DB
+                let new_transformation = std_ref_spg.transformation.clone() * corr_trans;
+                let new_prim_mag_operations =
+                    new_transformation.transform_magnetic_operations(prim_mag_operations);
+
+                // TODO:
+                // debug!("Matched with UNI number {}", uni_number);
+                // return Ok(Self {
+                //     uni_number,
+                //     transformation: new_transformation,
+                // });
+            }
         }
         Err(MoyoError::MagneticSpaceGroupTypeIdentificationError)
-    }
-
-    /// Search for origin_shift such that (trans_mat, origin_shift) transforms `prim_mag_operations` into <db_prim_mag_generators>
-    /// TODO: unify with identify/space_group.rs::match_origin_shift
-    fn match_origin_shift(
-        prim_mag_operations: &MagneticOperations,
-        trans_mat: &UnimodularLinear,
-        db_prim_mag_generators: &MagneticOperations,
-        epsilon: f64,
-    ) -> Option<Translation> {
-        let new_prim_mag_operations = UnimodularTransformation::from_linear(*trans_mat)
-            .transform_magnetic_operations(prim_mag_operations);
-        let mut hm_translations = HashMap::new();
-        for mops in new_prim_mag_operations.iter() {
-            hm_translations.insert(
-                (mops.operation.rotation, mops.time_reversal),
-                mops.operation.translation,
-            );
-        }
-
-        let mut a = OMatrix::<i32, Dyn, U3>::zeros(3 * db_prim_mag_generators.len());
-        let mut b = OVector::<f64, Dyn>::zeros(3 * db_prim_mag_generators.len());
-        for (k, mops) in db_prim_mag_generators.iter().enumerate() {
-            let target_translation =
-                hm_translations.get(&(mops.operation.rotation, mops.time_reversal))?;
-
-            let ak = mops.operation.rotation - Rotation::identity();
-            let bk = mops.operation.translation - target_translation;
-            for i in 0..3 {
-                for j in 0..3 {
-                    a[(3 * k + i, j)] = ak[(i, j)];
-                }
-                b[3 * k + i] = bk[i];
-            }
-        }
-
-        match solve_mod1(&a, &b, epsilon) {
-            Some(s) => {
-                let origin_shift = (trans_mat.map(|e| e as f64) * s).map(|e| e % 1.);
-                Some(origin_shift)
-            }
-            None => None,
-        }
     }
 }
 
@@ -218,18 +169,19 @@ fn family_space_group_from_magnetic_space_group(
     (fsg, is_type2)
 }
 
-/// Return generators of the reference space group of magnetic space group `entry`.
+/// Return operations and generators of the reference space group of magnetic space group `entry`.
 /// This function assumes the magnetic Hall symbol is extended from the Hall symbol in the standard setting.
-fn db_reference_space_group_primitive_generators(entry: &MagneticHallSymbolEntry) -> Operations {
-    let ref_hall_number = entry.reference_hall_number();
-    let ref_hall_entry = hall_symbol_entry(ref_hall_number).unwrap();
+fn db_reference_space_group_primitive(entry: &MagneticHallSymbolEntry) -> (Operations, Operations) {
+    let ref_hall_entry = hall_symbol_entry(entry.reference_hall_number()).unwrap();
+    let ref_hall_symbol = HallSymbol::new(&ref_hall_entry.hall_symbol).unwrap();
+    let ref_prim_operations = ref_hall_symbol.primitive_traverse();
     let identity = Rotation::identity();
-    HallSymbol::new(&ref_hall_entry.hall_symbol)
-        .unwrap()
+    let ref_prim_generators = ref_hall_symbol
         .primitive_generators()
         .into_iter()
         .filter(|ops| ops.rotation != identity) // In primitive, if rotation part is identity, it is a pure translation
-        .collect()
+        .collect();
+    (ref_prim_operations, ref_prim_generators)
 }
 
 #[cfg(test)]
@@ -238,19 +190,13 @@ mod tests {
     use test_log::test as test_with_log;
 
     use super::*;
-    use crate::base::Transformation;
     use crate::data::{
         magnetic_hall_symbol_entry, MagneticHallSymbol, NUM_MAGNETIC_SPACE_GROUP_TYPES,
     };
 
     fn get_prim_mag_operations(uni_number: UNINumber) -> MagneticOperations {
         let mhs = MagneticHallSymbol::from_uni_number(uni_number).unwrap();
-        let magnetic_operations = mhs.traverse();
-
-        // conventional -> primitive
-        let prim_mag_operations = Transformation::from_linear(mhs.centering.linear())
-            .inverse_transform_magnetic_operations(&magnetic_operations);
-        prim_mag_operations
+        mhs.primitive_traverse()
     }
 
     #[rstest]
@@ -288,7 +234,7 @@ mod tests {
     fn test_db_reference_space_group_primitive_generators() {
         for uni_number in 1..=NUM_MAGNETIC_SPACE_GROUP_TYPES {
             let entry = magnetic_hall_symbol_entry(uni_number as UNINumber).unwrap();
-            let actual = db_reference_space_group_primitive_generators(&entry);
+            let (_, actual) = db_reference_space_group_primitive(&entry);
 
             let mhs = MagneticHallSymbol::new(&entry.magnetic_hall_symbol).unwrap();
             let identity = Rotation::identity();
