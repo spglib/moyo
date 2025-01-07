@@ -30,7 +30,7 @@
   <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
   
   <!-- So that users can add custom icons -->
@@ -326,9 +326,9 @@
 First, we create a <a class="reference internal" href="../apidocs/moyopy/moyopy.html#moyopy.Cell" title="moyopy.Cell"><code class="xref py py-class docutils literal notranslate"><span class="pre">moyopy.Cell</span></code></a> representing a crystal structure, and then create a <a class="reference internal" href="../apidocs/moyopy/moyopy.html#moyopy.MoyoDataset" title="moyopy.MoyoDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">moyopy.MoyoDataset</span></code></a>.
 The <a class="reference internal" href="../apidocs/moyopy/moyopy.html#moyopy.MoyoDataset" title="moyopy.MoyoDataset"><code class="xref py py-class docutils literal notranslate"><span class="pre">moyopy.MoyoDataset</span></code></a> contains symmetry information of the input crystal structure: for example, the space group number, symmetry operations, and standardized cell.
 When we need a secondary symmetry information such as Hermann-Mauguin symbol for the space group type, we can use the <a class="reference internal" href="../apidocs/moyopy/moyopy.html#moyopy.HallSymbolEntry" title="moyopy.HallSymbolEntry"><code class="xref py py-class docutils literal notranslate"><span class="pre">moyopy.HallSymbolEntry</span></code></a> to access the symmetry database.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">sqrt</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">sqrt</span>
 
-<span class="kn">import</span> <span class="nn">moyopy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">moyopy</span>
 
 <span class="c1"># https://next-gen.materialsproject.org/materials/mp-560588</span>
 <span class="n">a</span> <span class="o">=</span> <span class="mf">3.81</span>
