@@ -3,4 +3,4 @@
 ba = "ba"
 
 [files]
-extend-exclude = ['.gitignore']
+extend-exclude = ['.gitignore', '*.ipynb']
