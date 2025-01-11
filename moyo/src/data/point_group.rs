@@ -1,17 +1,17 @@
 use super::arithmetic_crystal_class::ArithmeticNumber;
 use super::classification::GeometricCrystalClass;
 use super::hall_symbol::{Centering, HallSymbol};
-use crate::base::{project_rotations, Rotation};
+use crate::base::{project_rotations, Rotations};
 
 #[derive(Debug)]
 /// Specific crystallographic point group in database
 pub struct PointGroupRepresentative {
-    pub generators: Vec<Rotation>,
+    pub generators: Rotations,
     pub centering: Centering,
 }
 
 impl PointGroupRepresentative {
-    fn new(generators: Vec<Rotation>, centering: Centering) -> Self {
+    fn new(generators: Rotations, centering: Centering) -> Self {
         Self {
             generators,
             centering,
@@ -160,7 +160,7 @@ impl PointGroupRepresentative {
         )
     }
 
-    pub fn primitive_generators(&self) -> Vec<Rotation> {
+    pub fn primitive_generators(&self) -> Rotations {
         let prim_trans_mat_inv = self.centering.linear().map(|e| e as f64);
         let prim_trans_mat = self.centering.inverse();
         self.generators

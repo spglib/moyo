@@ -2,13 +2,15 @@ mod cell;
 mod error;
 mod lattice;
 mod operation;
+mod permutation;
 mod tolerance;
 mod transformation;
 
 pub use cell::{AtomicSpecie, Cell, Position};
 pub use error::MoyoError;
 pub use lattice::Lattice;
-pub use operation::{project_rotations, Operation, Operations, Permutation, Rotation, Translation};
+pub use operation::{project_rotations, Operation, Operations, Rotation, Rotations, Translation};
+pub use permutation::Permutation;
 pub use tolerance::AngleTolerance;
 pub use transformation::{Linear, OriginShift};
 
