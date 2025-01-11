@@ -4,7 +4,9 @@ use std::sync::OnceLock;
 pub mod base;
 pub mod data;
 
-use moyo::{AngleTolerance, MoyoDataset, Setting};
+use moyo::base::AngleTolerance;
+use moyo::data::Setting;
+use moyo::MoyoDataset;
 
 use crate::base::{PyMoyoError, PyOperations, PyStructure};
 use crate::data::{operations_from_number, PyHallSymbolEntry, PySetting};
@@ -121,9 +123,9 @@ impl PyMoyoDataset {
     #[getter]
     pub fn angle_tolerance(&self) -> Option<f64> {
         if let AngleTolerance::Radian(angle_tolerance) = self.0.angle_tolerance {
-            return Some(angle_tolerance);
+            Some(angle_tolerance)
         } else {
-            return None;
+            None
         }
     }
 }

@@ -15,12 +15,14 @@ moyo = "*"
 
 ## Examples
 
-The basic usage of **moyo** is to create a [`moyo::Cell`](Cell) representing a crystal structure, and then create a [`moyo::MoyoDataset`](MoyoDataset) from the [`moyo::Cell`](Cell).
+The basic usage of **moyo** is to create a [`moyo::base::Cell`](Cell) representing a crystal structure, and then create a [`moyo::MoyoDataset`](MoyoDataset) from the [`moyo::base::Cell`](Cell).
 The [`moyo::MoyoDataset`](MoyoDataset) contains symmetry information of the input crystal structure: for example, the space group number, symmetry operations, and standardized cell.
 
 ```
 use nalgebra::{matrix, vector, Matrix3, Vector3};
-use moyo::{MoyoDataset, Cell, AngleTolerance, Setting, Lattice};
+use moyo::MoyoDataset;
+use moyo::base::{Cell, AngleTolerance, Lattice};
+use moyo::data::Setting;
 
 let lattice = Lattice::new(matrix![
     4.603, 0.0, 0.0;
@@ -63,16 +65,14 @@ extern crate approx;
 
 pub mod base;
 pub mod data;
-pub mod identify;
 pub mod math;
-pub mod search;
-pub mod symmetrize;
+pub mod search; // Public for benchmarking
 
-pub use base::{
-    AngleTolerance, Cell, Lattice, MoyoError, Operation, Operations, OriginShift, Rotation,
-    Translation,
-};
-pub use data::{HallNumber, Number, Setting};
+mod identify;
+mod symmetrize;
+
+use base::{AngleTolerance, Cell, MoyoError, Operations, OriginShift};
+use data::{HallNumber, Number, Setting};
 
 use nalgebra::Matrix3;
 

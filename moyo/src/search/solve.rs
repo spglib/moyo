@@ -6,6 +6,7 @@ use nalgebra::{Rotation3, Vector3};
 
 use crate::base::{AtomicSpecie, Cell, Lattice, Permutation, Position, Rotation, Translation};
 
+#[doc(hidden)]
 pub struct PeriodicKdTree {
     num_sites: usize,
     lattice: Lattice,
@@ -14,6 +15,7 @@ pub struct PeriodicKdTree {
     symprec: f64,
 }
 
+#[doc(hidden)]
 #[derive(Debug)]
 pub struct PeriodicNeighbor {
     pub index: usize,
@@ -35,7 +37,7 @@ impl PeriodicKdTree {
         let mut indices = vec![];
         for offset in iproduct!(-1..=1, -1..=1, -1..=1) {
             for (index, position) in reduced_cell.positions.iter().enumerate() {
-                let mut new_position = position.clone();
+                let mut new_position = *position;
                 new_position -= position.map(|e| e.floor()); // [0, 1)
                 new_position += Vector3::new(offset.0 as f64, offset.1 as f64, offset.2 as f64);
                 if new_position[0] < -padding
@@ -65,7 +67,7 @@ impl PeriodicKdTree {
 
     /// Return the nearest neighbor within symprec if exists.
     pub fn nearest(&self, position: &Position) -> Option<PeriodicNeighbor> {
-        let mut wrapped_position = position.clone();
+        let mut wrapped_position = *position;
         wrapped_position -= wrapped_position.map(|e| e.floor()); // [0, 1)
         let cart_coords = self.lattice.cartesian_coords(&wrapped_position);
         let within = self.kdtree.nearest_n_within::<SquaredEuclidean>(
@@ -74,7 +76,7 @@ impl PeriodicKdTree {
             1,
             false,
         );
-        if within.len() == 0 {
+        if within.is_empty() {
             return None;
         }
 
@@ -112,31 +114,31 @@ pub fn pivot_site_indices(numbers: &[AtomicSpecie]) -> Vec<usize> {
 /// Search permutation such that new_positions\[i\] = reduced_cell.positions\[permutation\[i\]\].
 /// Then, a corresponding symmetry operation moves the i-th site into the permutation\[i\]-th site.
 /// This function takes O(num_atoms * log(num_atoms)) time.
+#[doc(hidden)]
 pub fn solve_correspondence(
     pkdtree: &PeriodicKdTree,
     reduced_cell: &Cell,
     new_positions: &[Position],
 ) -> Option<Permutation> {
     let num_atoms = pkdtree.num_sites;
-    let mut mapping = vec![0; num_atoms];
-    let mut visited = vec![false; num_atoms];
+    let mut mapping = vec![None; num_atoms];
 
     for i in 0..num_atoms {
         let neighbor = pkdtree.nearest(&new_positions[i])?;
         let j = neighbor.index;
-        if visited[j] || reduced_cell.numbers[i] != reduced_cell.numbers[j] {
+        if reduced_cell.numbers[i] != reduced_cell.numbers[j] {
+            return None;
+        }
+        if let Some(_) = mapping[i] {
             return None;
         }
 
-        mapping[i] = j;
-        visited[j] = true;
+        mapping[i] = Some(j);
     }
 
-    if visited.iter().all(|&v| v) {
-        Some(Permutation::new(mapping))
-    } else {
-        None
-    }
+    let mapping = mapping.into_iter().map(|v| v.unwrap()).collect::<Vec<_>>();
+    assert_eq!(mapping.len(), num_atoms);
+    Some(Permutation::new(mapping))
 }
 
 /// Return correspondence between the input and acted positions.
@@ -144,6 +146,7 @@ pub fn solve_correspondence(
 /// Search permutation such that new_positions\[i\] = reduced_cell.positions\[permutation\[i\]\].
 /// Then, a corresponding symmetry operation moves the i-th site into the permutation\[i\]-th site.
 /// This function takes O(num_atoms^2) time.
+#[doc(hidden)]
 #[allow(clippy::needless_range_loop)]
 pub fn solve_correspondence_naive(
     reduced_cell: &Cell,

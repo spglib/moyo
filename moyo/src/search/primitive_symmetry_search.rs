@@ -53,15 +53,18 @@ impl PrimitiveSymmetrySearch {
         let mut symmetries_tmp = vec![];
         let src = pivot_site_indices[0];
         for rotation in bravais_group.iter() {
+            let rotated_positions = primitive_cell
+                .positions
+                .iter()
+                .map(|pos| rotation.map(|e| e as f64) * pos)
+                .collect::<Vec<_>>();
             for dst in pivot_site_indices.iter() {
                 // Try to overlap the `src`-th site to the `dst`-th site
-                let translation = primitive_cell.positions[*dst]
-                    - rotation.map(|e| e as f64) * primitive_cell.positions[src];
-                let new_positions: Vec<Position> = primitive_cell
-                    .positions
+                let translation = primitive_cell.positions[*dst] - rotated_positions[src];
+                let new_positions = rotated_positions
                     .iter()
-                    .map(|pos| rotation.map(|e| e as f64) * pos + translation)
-                    .collect();
+                    .map(|pos| pos + translation)
+                    .collect::<Vec<_>>();
 
                 if let Some(permutation) =
                     solve_correspondence(&pkdtree, primitive_cell, &new_positions)
@@ -86,10 +89,8 @@ impl PrimitiveSymmetrySearch {
                 rough_translation,
             );
             if distance < symprec {
-                operations_and_permutations.push((
-                    Operation::new(rotation.clone(), translation),
-                    permutation.clone(),
-                ));
+                operations_and_permutations
+                    .push((Operation::new(*rotation, translation), permutation.clone()));
             }
         }
         if operations_and_permutations.is_empty() {
@@ -144,7 +145,7 @@ impl PrimitiveSymmetrySearch {
     fn check_closure(operations: &Operations, lattice: &Lattice, symprec: f64) -> bool {
         let mut translations_map = HashMap::new();
         for operation in operations.iter() {
-            translations_map.insert(operation.rotation.clone(), operation.translation.clone());
+            translations_map.insert(operation.rotation, operation.translation);
         }
         for ops1 in operations.iter() {
             for ops2 in operations.iter() {
@@ -258,8 +259,8 @@ impl PrimitiveMagneticSymmetrySearch {
         let mut translations_map = HashMap::new();
         for mops in magnetic_operations.iter() {
             translations_map.insert(
-                (mops.operation.rotation.clone(), mops.time_reversal),
-                mops.operation.translation.clone(),
+                (mops.operation.rotation, mops.time_reversal),
+                mops.operation.translation,
             );
         }
         for mops1 in magnetic_operations.iter() {

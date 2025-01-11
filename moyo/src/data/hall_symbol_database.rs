@@ -1,5 +1,5 @@
 use super::arithmetic_crystal_class::ArithmeticNumber;
-use super::hall_symbol::Centering;
+use super::centering::Centering;
 
 /// ITA number for space group types (1 - 230)
 pub type Number = i32;
@@ -56,10 +56,6 @@ pub fn hall_symbol_entry(hall_number: HallNumber) -> Option<HallSymbolEntry> {
     HALL_SYMBOL_DATABASE
         .get((hall_number - 1) as usize)
         .cloned()
-}
-
-pub fn iter_hall_symbol_entry() -> impl Iterator<Item = &'static HallSymbolEntry> {
-    HALL_SYMBOL_DATABASE.iter()
 }
 
 const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
@@ -4347,3 +4343,21 @@ const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
         Centering::I,
     ),
 ];
+
+#[cfg(test)]
+mod tests {
+    use super::{HallSymbolEntry, HALL_SYMBOL_DATABASE};
+    use crate::data::hall_symbol::HallSymbol;
+
+    fn iter_hall_symbol_entry() -> impl Iterator<Item = &'static HallSymbolEntry> {
+        HALL_SYMBOL_DATABASE.iter()
+    }
+
+    #[test]
+    fn test_hall_symbol_whole() {
+        for entry in iter_hall_symbol_entry() {
+            let hs = HallSymbol::new(entry.hall_symbol).unwrap();
+            assert_eq!(48 % hs.traverse().len(), 0);
+        }
+    }
+}

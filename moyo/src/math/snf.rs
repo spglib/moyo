@@ -28,21 +28,12 @@ where
 
         // Process the `s`th column and row
         for s in 0..m.min(n).value() {
-            loop {
-                if (s..m.value())
-                    .flat_map(|i| (s..n.value()).map(move |j| (i, j)))
-                    .all(|(i, j)| d[(i, j)] == 0)
-                {
-                    break;
-                }
-
-                // Choose pivot element with the smallest absolute value
-                let pivot = (s..m.value())
-                    .flat_map(|i| (s..n.value()).map(move |j| (i, j)))
-                    .filter(|&(i, j)| d[(i, j)] != 0)
-                    .min_by_key(|&(i, j)| d[(i, j)].abs())
-                    .unwrap();
-
+            // Choose pivot element with the nonzero smallest absolute value
+            while let Some(pivot) = (s..m.value())
+                .flat_map(|i| (s..n.value()).map(move |j| (i, j)))
+                .filter(|&(i, j)| d[(i, j)] != 0)
+                .min_by_key(|&(i, j)| d[(i, j)].abs())
+            {
                 // Move pivot element to (s, s)
                 d.swap_rows(s, pivot.0);
                 l.swap_rows(s, pivot.0);

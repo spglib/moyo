@@ -1,6 +1,7 @@
 use super::arithmetic_crystal_class::ArithmeticNumber;
+use super::centering::Centering;
 use super::classification::GeometricCrystalClass;
-use super::hall_symbol::{Centering, HallSymbol};
+use super::hall_symbol::HallSymbol;
 use crate::base::{project_rotations, Rotations};
 
 #[derive(Debug)]
@@ -19,6 +20,7 @@ impl PointGroupRepresentative {
     }
 
     /// Construct representative point group from geometric crystal class
+    #[allow(dead_code)]
     pub fn from_geometric_crystal_class(geometric_crystal_class: GeometricCrystalClass) -> Self {
         let hall_number = match geometric_crystal_class {
             // Triclinic
