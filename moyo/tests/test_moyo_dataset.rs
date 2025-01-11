@@ -20,24 +20,25 @@ fn assert_dataset(
     let dataset = MoyoDataset::new(cell, symprec, angle_tolerance, setting).unwrap();
 
     // Check if operations are unique
-    let num_operations = dataset.operations.num_operations();
+    let num_operations = dataset.operations.len();
     for i in 0..num_operations {
         for j in i + 1..num_operations {
-            if dataset.operations.rotations[i] != dataset.operations.rotations[j] {
+            if dataset.operations[i].rotation != dataset.operations[j].rotation {
                 continue;
             }
-            let mut diff = dataset.operations.translations[i] - dataset.operations.translations[j];
+            let mut diff = dataset.operations[i].translation - dataset.operations[j].translation;
             diff -= diff.map(|x| x.round());
             assert!(diff.iter().any(|x| x.abs() > 1e-4));
         }
     }
 
-    for (rotation, translation) in dataset.operations.iter() {
+    for operation in dataset.operations.iter() {
         // Check if operation induces permutation
-        let permutation = permutation_from_operation(cell, rotation, translation).unwrap();
+        let permutation =
+            permutation_from_operation(cell, &operation.rotation, &operation.translation).unwrap();
 
         // For pure translation, check if mapped to the same site
-        if rotation == &Rotation::identity() {
+        if operation.rotation == Rotation::identity() {
             for i in 0..cell.num_atoms() {
                 let j = permutation.apply(i);
                 assert_eq!(dataset.mapping_std_prim[i], dataset.mapping_std_prim[j]);

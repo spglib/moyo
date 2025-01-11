@@ -1,12 +1,12 @@
-use itertools::{iproduct, izip};
+use itertools::iproduct;
 use log::debug;
 use nalgebra::linalg::{Cholesky, QR};
 use nalgebra::{vector, Matrix3, Vector3};
 use std::collections::HashMap;
 
 use crate::base::{
-    orbits_from_permutations, Cell, Lattice, MoyoError, Operations, Permutation, Position,
-    Rotation, Transformation, UnimodularTransformation, EPS,
+    orbits_from_permutations, project_rotations, Cell, Lattice, MoyoError, Operations, Permutation,
+    Position, Rotations, Transformation, UnimodularTransformation, EPS,
 };
 use crate::data::{
     arithmetic_crystal_class_entry, hall_symbol_entry, iter_wyckoff_positions, HallNumber,
@@ -118,16 +118,16 @@ impl StandardizedCell {
         // - Reorder permutations
         let mut permutation_mapping = HashMap::new();
         let prim_operations = prim_transformation.transform_operations(&symmetry_search.operations);
-        for (prim_rotation, permutation) in izip!(
-            prim_operations.rotations.iter(),
-            symmetry_search.permutations.iter()
-        ) {
+        let prim_rotations = project_rotations(&prim_operations);
+        for (prim_rotation, permutation) in prim_rotations
+            .iter()
+            .zip(symmetry_search.permutations.iter())
+        {
             permutation_mapping.insert(*prim_rotation, permutation.clone());
         }
         let prim_std_permutations = prim_std_operations
-            .rotations
             .iter()
-            .map(|rotation| permutation_mapping.get(rotation).unwrap().clone())
+            .map(|ops| permutation_mapping.get(&ops.rotation).unwrap().clone())
             .collect();
         let new_prim_std_positions = symmetrize_positions(
             &prim_std_cell_tmp,
@@ -148,7 +148,7 @@ impl StandardizedCell {
 
         // Symmetrize lattice
         let (_, rotation_matrix) =
-            symmetrize_lattice(&std_cell.lattice, &conv_std_operations.rotations);
+            symmetrize_lattice(&std_cell.lattice, &project_rotations(&conv_std_operations));
 
         Ok((
             prim_std_cell.rotate(&rotation_matrix),
@@ -312,12 +312,11 @@ fn symmetrize_positions(
     (0..cell.num_atoms())
         .map(|i| {
             let mut acc = Vector3::zeros();
-            for (inv_perm, (rotation, translation)) in
-                inverse_permutations.iter().zip(operations.iter())
-            {
-                let mut frac_displacements =
-                    rotation.map(|e| e as f64) * cell.positions[inv_perm.apply(i)] + translation
-                        - cell.positions[i];
+            for (inv_perm, operation) in inverse_permutations.iter().zip(operations.iter()) {
+                let mut frac_displacements = operation.rotation.map(|e| e as f64)
+                    * cell.positions[inv_perm.apply(i)]
+                    + operation.translation
+                    - cell.positions[i];
                 frac_displacements -= frac_displacements.map(|e| e.round()); // in [-0.5, 0.5]
                 acc += frac_displacements;
             }
@@ -326,7 +325,7 @@ fn symmetrize_positions(
         .collect::<Vec<_>>()
 }
 
-fn symmetrize_lattice(lattice: &Lattice, rotations: &Vec<Rotation>) -> (Lattice, Matrix3<f64>) {
+fn symmetrize_lattice(lattice: &Lattice, rotations: &Rotations) -> (Lattice, Matrix3<f64>) {
     let metric_tensor = lattice.metric_tensor();
     let mut symmetrized_metric_tensor: Matrix3<f64> = rotations
         .iter()

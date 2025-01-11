@@ -69,16 +69,15 @@ pub mod search;
 pub mod symmetrize;
 
 pub use base::{
-    AngleTolerance, Cell, Lattice, MoyoError, Operations, OriginShift, Rotation, Translation,
+    AngleTolerance, Cell, Lattice, MoyoError, Operation, Operations, OriginShift, Rotation,
+    Translation,
 };
 pub use data::{HallNumber, Number, Setting};
 
-use log::debug;
 use nalgebra::Matrix3;
 
-use crate::base::{ToleranceHandler, Transformation};
 use crate::identify::SpaceGroup;
-use crate::search::{PrimitiveCell, PrimitiveSymmetrySearch};
+use crate::search::{iterative_symmetry_search, operations_in_cell};
 use crate::symmetrize::{orbits_in_cell, StandardizedCell};
 
 #[derive(Debug)]
@@ -225,72 +224,6 @@ impl MoyoDataset {
 
     /// Return the number of symmetry operations in the input cell.
     pub fn num_operations(&self) -> usize {
-        self.operations.num_operations()
+        self.operations.len()
     }
-}
-
-const MAX_SYMMETRY_SEARCH_TRIALS: usize = 16;
-const MAX_TOLERANCE_HANDLER_TRIALS: usize = 4;
-
-fn iterative_symmetry_search(
-    cell: &Cell,
-    symprec: f64,
-    angle_tolerance: AngleTolerance,
-) -> Result<(PrimitiveCell, PrimitiveSymmetrySearch, f64, AngleTolerance), MoyoError> {
-    let mut current_symprec = symprec;
-    let mut current_angle_tolerance = angle_tolerance;
-
-    for _ in 0..MAX_TOLERANCE_HANDLER_TRIALS {
-        let mut tolerance_handler = ToleranceHandler::new(current_symprec, current_angle_tolerance);
-
-        for _ in 0..MAX_SYMMETRY_SEARCH_TRIALS {
-            match PrimitiveCell::new(cell, tolerance_handler.symprec) {
-                Ok(prim_cell) => {
-                    match PrimitiveSymmetrySearch::new(
-                        &prim_cell.cell,
-                        tolerance_handler.symprec,
-                        tolerance_handler.angle_tolerance,
-                    ) {
-                        Ok(symmetry_search) => {
-                            return Ok((
-                                prim_cell,
-                                symmetry_search,
-                                tolerance_handler.symprec,
-                                tolerance_handler.angle_tolerance,
-                            ));
-                        }
-                        Err(err) => tolerance_handler.update(err),
-                    }
-                }
-                Err(err) => tolerance_handler.update(err),
-            }
-        }
-
-        // When the maximum number of symmetry search trials is reached, restart ToleranceHandler to try larger strides
-        current_symprec = tolerance_handler.symprec;
-        current_angle_tolerance = tolerance_handler.angle_tolerance;
-        debug!(
-            "Restart ToleranceHandler with symprec={}, angle_tolerance={:?}",
-            current_symprec, current_angle_tolerance
-        );
-    }
-    debug!("Reach the maximum number of symmetry search trials");
-    Err(MoyoError::PrimitiveSymmetrySearchError)
-}
-
-fn operations_in_cell(prim_cell: &PrimitiveCell, prim_operations: &Operations) -> Operations {
-    let mut rotations = vec![];
-    let mut translations = vec![];
-    let input_operations =
-        Transformation::from_linear(prim_cell.linear).transform_operations(prim_operations);
-    for t1 in prim_cell.translations.iter() {
-        for (rotation, t2) in input_operations.iter() {
-            // (E, t1) (rotation, t2) = (rotation, t1 + t2)
-            rotations.push(*rotation);
-            let t12 = (t1 + t2).map(|e| e % 1.);
-            translations.push(t12);
-        }
-    }
-
-    Operations::new(rotations, translations)
 }

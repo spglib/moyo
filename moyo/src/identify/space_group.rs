@@ -4,7 +4,10 @@ use log::debug;
 use nalgebra::{Dyn, Matrix3, OMatrix, OVector, Vector3, U3};
 
 use super::point_group::PointGroup;
-use crate::base::{MoyoError, Operations, OriginShift, UnimodularLinear, UnimodularTransformation};
+use crate::base::{
+    project_rotations, MoyoError, Operations, OriginShift, UnimodularLinear,
+    UnimodularTransformation,
+};
 use crate::data::{
     arithmetic_crystal_class_entry, hall_symbol_entry, ArithmeticNumber, GeometricCrystalClass,
     HallNumber, HallSymbol, Number, PointGroupRepresentative, Setting,
@@ -28,7 +31,8 @@ impl SpaceGroup {
         epsilon: f64,
     ) -> Result<Self, MoyoError> {
         // point_group.trans_mat: self -> primitive
-        let point_group = PointGroup::new(&prim_operations.rotations)?;
+        let prim_rotations = project_rotations(&prim_operations);
+        let point_group = PointGroup::new(&prim_rotations)?;
         debug!(
             "Arithmetic crystal class: No. {}",
             point_group.arithmetic_number
@@ -166,10 +170,10 @@ fn match_origin_shift(
     epsilon: f64,
 ) -> Option<OriginShift> {
     let new_prim_operations =
-        UnimodularTransformation::from_linear(*trans_mat).transform_operations(prim_operations);
+        UnimodularTransformation::from_linear(*trans_mat).transform_operations(&prim_operations);
     let mut hm_translations = HashMap::new();
-    for (rotation, translation) in new_prim_operations.iter() {
-        hm_translations.insert(*rotation, *translation);
+    for operation in new_prim_operations.iter() {
+        hm_translations.insert(operation.rotation, operation.translation);
     }
 
     // Find origin_shift `c`: (P, c)^-1 G (P, c) = G_db
@@ -180,14 +184,14 @@ fn match_origin_shift(
     // Solve (E, s)^-1 (R, t_target) (E, s) = (R, t_db) (mod 1) (for all (R, t_db) in db_prim_generators)
     //     (R, R * s - s + t_target) = (R, t_db) (mod 1)
     //     <-> (R - E) * s = t_db - t_target (mod 1)
-    let mut a = OMatrix::<i32, Dyn, U3>::zeros(3 * db_prim_generators.rotations.len());
-    let mut b = OVector::<f64, Dyn>::zeros(3 * db_prim_generators.rotations.len());
-    for (k, (rotation, other_translation)) in db_prim_generators.iter().enumerate() {
+    let mut a = OMatrix::<i32, Dyn, U3>::zeros(3 * db_prim_generators.len());
+    let mut b = OVector::<f64, Dyn>::zeros(3 * db_prim_generators.len());
+    for (k, operation) in db_prim_generators.iter().enumerate() {
         // Correction transformation matrix may not be normalizer of the point group. For example, mm2 -> 2mm
-        let target_translation = hm_translations.get(rotation)?;
+        let target_translation = hm_translations.get(&operation.rotation)?;
 
-        let ak = rotation - Matrix3::<i32>::identity();
-        let bk = other_translation - target_translation;
+        let ak = operation.rotation - Matrix3::<i32>::identity();
+        let bk = operation.translation - target_translation;
         for i in 0..3 {
             for j in 0..3 {
                 a[(3 * k + i, j)] = ak[(i, j)];
@@ -288,8 +292,8 @@ mod tests {
                 UnimodularTransformation::from_linear(*corr).transform_operations(&prim_operations);
 
             let mut hm_translations = HashMap::new();
-            for (rotation, translation) in corr_prim_operations.iter() {
-                hm_translations.insert(rotation.clone(), translation.clone());
+            for operation in corr_prim_operations.iter() {
+                hm_translations.insert(operation.rotation, operation.translation);
             }
             let r = matrix![
                 1, 0, 0;
@@ -336,8 +340,8 @@ mod tests {
                     .inverse_transform_operations(&matched_operations);
 
             let mut hm_translations = HashMap::new();
-            for (rotation, translation) in matched_prim_operations.iter() {
-                hm_translations.insert(rotation, translation);
+            for operation in matched_prim_operations.iter() {
+                hm_translations.insert(operation.rotation, operation.translation);
             }
 
             // Check transformation
@@ -345,12 +349,13 @@ mod tests {
                 .transformation
                 .transform_operations(&prim_operations);
             assert_eq!(
-                matched_prim_operations.rotations.len(),
-                transformed_prim_operations.rotations.len()
+                matched_prim_operations.len(),
+                transformed_prim_operations.len()
             );
-            for (rotation, translation) in transformed_prim_operations.iter() {
-                assert!(hm_translations.contains_key(rotation));
-                let mut diff = *hm_translations.get(rotation).unwrap() - translation;
+            for operation in transformed_prim_operations.iter() {
+                assert!(hm_translations.contains_key(&operation.rotation));
+                let mut diff =
+                    *hm_translations.get(&operation.rotation).unwrap() - operation.translation;
                 diff -= diff.map(|e| e.round()); // in [-0.5, 0.5]
                 assert_relative_eq!(diff, vector![0.0, 0.0, 0.0])
             }

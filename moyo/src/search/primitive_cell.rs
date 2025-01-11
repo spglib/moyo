@@ -8,8 +8,8 @@ use super::solve::{
     PeriodicKdTree,
 };
 use crate::base::{
-    orbits_from_permutations, Cell, Linear, MoyoError, Permutation, Position, Rotation,
-    Transformation, Translation, UnimodularTransformation, EPS,
+    orbits_from_permutations, Cell, Linear, MagneticCell, MagneticMoment, MoyoError, Permutation,
+    Position, Rotation, Transformation, Translation, UnimodularTransformation, EPS,
 };
 use crate::math::HNF;
 
@@ -24,7 +24,8 @@ pub struct PrimitiveCell {
     pub site_mapping: Vec<usize>,
     /// Translations in the **input** cell
     pub translations: Vec<Translation>,
-    /// Permutations induced by translations in the input cell
+    /// Permutations induced by translations in the input cell.
+    /// `translations[i]` moves the `k`th site to the `permutations[i].apply(k)`th site.
     pub permutations: Vec<Permutation>,
 }
 
@@ -88,6 +89,7 @@ impl PrimitiveCell {
             }
         }
 
+        // Check number of translations
         let size = translations.len() as i32;
         if (size == 0) || (reduced_cell.num_atoms() % (size as usize) != 0) {
             debug!("Failed to properly find translations: {} translations in {} atoms. Consider increasing symprec.", size, reduced_cell.num_atoms());
@@ -96,34 +98,17 @@ impl PrimitiveCell {
         debug!("Found {} pure translations", size);
 
         // Recover a transformation matrix from primitive to input cell
-        let mut columns: Vec<Vector3<i32>> = vec![
-            Vector3::new(size, 0, 0),
-            Vector3::new(0, size, 0),
-            Vector3::new(0, 0, size),
-        ];
-        for translation in translations.iter() {
-            columns.push((translation * (size as f64)).map(|e| e.round() as i32));
-        }
-        let hnf = HNF::new(&OMatrix::<i32, U3, Dyn>::from_columns(&columns));
-        let trans_mat_inv =
-            Matrix3::<i32>::from_columns(&[hnf.h.column(0), hnf.h.column(1), hnf.h.column(2)])
-                .map(|e| e as f64)
-                / (size as f64);
-        let trans_mat = trans_mat_inv
-            .try_inverse()
-            .ok_or(MoyoError::PrimitiveCellError)?
-            .map(|e| e.round() as i32);
-        if relative_ne!(
-            trans_mat.map(|e| e as f64).determinant(),
-            size as f64,
-            epsilon = EPS
-        ) {
-            debug!("Failed to find a transformation matrix to a primitive cell. Consider increasing symprec.");
+        let trans_mat = if let Some(trans_mat) =
+            transformation_matrix_from_translations(&translations)
+        {
+            trans_mat
+        } else {
+            debug!("Failed to find a transformation matrix for a primitive cell. Consider increasing symprec.");
             return Err(MoyoError::TooSmallToleranceError);
-        }
+        };
 
         // Primitive cell
-        let (primitive_cell, site_mapping) = primitive_cell_from_transformation(
+        let (primitive_cell, site_mapping, _) = primitive_cell_from_transformation(
             &reduced_cell,
             &trans_mat,
             &translations,
@@ -157,13 +142,135 @@ impl PrimitiveCell {
     }
 }
 
+#[derive(Debug)]
+pub struct PrimitiveMagneticCell<M: MagneticMoment> {
+    pub magnetic_cell: MagneticCell<M>,
+    /// Transformation matrix from the **primitive** magnetic cell to the input magnetic cell
+    pub linear: Linear,
+    /// Mapping from sites of the input magnetic cell to those of the primitive magnetic cell (many-to-one).
+    /// The `i`th atom in the input cell is equivalent to the `site_mapping[i]`th atom in the **primitive** magnetic cell.
+    pub site_mapping: Vec<usize>,
+    /// Translations in the **input** magnetic cell
+    pub translations: Vec<Translation>,
+    /// Permutations induced by translations in the input magnetic cell
+    pub permutations: Vec<Permutation>,
+}
+
+impl<M: MagneticMoment + Clone> PrimitiveMagneticCell<M> {
+    pub fn new(
+        magnetic_cell: &MagneticCell<M>,
+        symprec: f64,
+        mag_symprec: f64,
+    ) -> Result<Self, MoyoError> {
+        // Prepare candidate translations from nonmagnetic cell
+        let prim_nonmagnetic_cell = PrimitiveCell::new(&magnetic_cell.cell, symprec)?;
+
+        // Filter translations that keep magnetic moments
+        let mut translations = vec![];
+        let mut permutations = vec![];
+        for (translation, permutation) in prim_nonmagnetic_cell
+            .translations
+            .iter()
+            .zip(prim_nonmagnetic_cell.permutations.iter())
+        {
+            let new_magnetic_moments = (0..magnetic_cell.cell.num_atoms())
+                .map(|i| magnetic_cell.magnetic_moments[permutation.apply(i)].clone())
+                .collect::<Vec<_>>();
+            let take = magnetic_cell
+                .magnetic_moments
+                .iter()
+                .zip(new_magnetic_moments.iter())
+                .all(|(m1, m2)| m1.is_close(m2, mag_symprec));
+            if take {
+                translations.push(translation.clone());
+                permutations.push(permutation.clone());
+            }
+        }
+
+        // Check number of translations
+        let size = translations.len() as i32;
+        if (size == 0) || (magnetic_cell.cell.num_atoms() % (size as usize) != 0) {
+            debug!("Failed to properly find translations: {} translations in {} atoms. Consider increasing symprec.", size, magnetic_cell.cell.num_atoms());
+            return Err(MoyoError::TooSmallToleranceError);
+        }
+        debug!("Found {} pure translations", size);
+
+        // Recover a transformation matrix from primitive to input cell
+        // trans_mat: prim_mag_cell -> magnetic_cell (input)
+        let trans_mat = if let Some(trans_mat) =
+            transformation_matrix_from_translations(&translations)
+        {
+            trans_mat
+        } else {
+            debug!("Failed to find a transformation matrix for a primitive cell. Consider increasing symprec.");
+            return Err(MoyoError::TooSmallToleranceError);
+        };
+
+        // Primitive magnetic cell
+        let (prim_mag_cell, site_mapping) = primitive_magnetic_cell_from_transformation(
+            magnetic_cell,
+            &trans_mat,
+            &translations,
+            &permutations,
+        );
+        let (_, prim_trans_mat) = prim_mag_cell.cell.lattice.minkowski_reduce()?;
+        // prim_trans_mat: prim_mag_cell -> reduced_prim_mag_cell
+        let reduced_prim_mag_cell = UnimodularTransformation::from_linear(prim_trans_mat)
+            .transform_magnetic_cell(&prim_mag_cell);
+
+        let inv_prim_trans_mat = prim_trans_mat
+            .map(|e| e as f64)
+            .try_inverse()
+            .unwrap()
+            .map(|e| e.round() as i32);
+
+        Ok(Self {
+            magnetic_cell: reduced_prim_mag_cell,
+            linear: inv_prim_trans_mat * trans_mat,
+            site_mapping,
+            translations,
+            permutations,
+        })
+    }
+}
+
+fn transformation_matrix_from_translations(translations: &Vec<Translation>) -> Option<Linear> {
+    let size = translations.len() as i32;
+    let mut columns: Vec<Vector3<i32>> = vec![
+        Vector3::new(size, 0, 0),
+        Vector3::new(0, size, 0),
+        Vector3::new(0, 0, size),
+    ];
+    for translation in translations.iter() {
+        columns.push((translation * (size as f64)).map(|e| e.round() as i32));
+    }
+    let hnf = HNF::new(&OMatrix::<i32, U3, Dyn>::from_columns(&columns));
+    let trans_mat_inv =
+        Matrix3::<i32>::from_columns(&[hnf.h.column(0), hnf.h.column(1), hnf.h.column(2)])
+            .map(|e| e as f64)
+            / (size as f64);
+    let trans_mat = trans_mat_inv
+        .try_inverse()
+        .unwrap()
+        .map(|e| e.round() as i32);
+
+    if relative_ne!(
+        trans_mat.map(|e| e as f64).determinant(),
+        size as f64,
+        epsilon = EPS
+    ) {
+        return None;
+    }
+    Some(trans_mat)
+}
+
 /// Transform `cell` to a primitive cell by inverse of `trans_mat`
 fn primitive_cell_from_transformation(
     cell: &Cell,
     trans_mat: &Linear,
     translations: &Vec<Translation>,
     permutations: &[Permutation],
-) -> (Cell, Vec<usize>) {
+) -> (Cell, Vec<usize>, Vec<usize>) {
     let new_lattice =
         Transformation::from_linear(*trans_mat).inverse_transform_lattice(&cell.lattice);
 
@@ -195,7 +302,27 @@ fn primitive_cell_from_transformation(
 
     let primitive_cell = Cell::new(new_lattice, new_positions, new_numbers);
     let site_mapping = site_mapping_from_orbits(&orbits);
-    (primitive_cell, site_mapping)
+    (primitive_cell, site_mapping, representatives)
+}
+
+fn primitive_magnetic_cell_from_transformation<M: MagneticMoment + Clone>(
+    magnetic_cell: &MagneticCell<M>,
+    trans_mat: &Linear,
+    translations: &Vec<Translation>,
+    permutations: &[Permutation],
+) -> (MagneticCell<M>, Vec<usize>) {
+    let (primitive_cell, site_mapping, representatives) = primitive_cell_from_transformation(
+        &magnetic_cell.cell,
+        trans_mat,
+        translations,
+        permutations,
+    );
+    let new_magnetic_moments = representatives
+        .iter()
+        .map(|&i| magnetic_cell.magnetic_moments[i].clone())
+        .collect::<Vec<_>>();
+    let primitive_magnetic_cell = MagneticCell::from_cell(primitive_cell, new_magnetic_moments);
+    (primitive_magnetic_cell, site_mapping)
 }
 
 fn site_mapping_from_orbits(orbits: &[usize]) -> Vec<usize> {
@@ -216,9 +343,21 @@ fn site_mapping_from_orbits(orbits: &[usize]) -> Vec<usize> {
 mod tests {
     use nalgebra::{matrix, Matrix3, Vector3};
 
-    use crate::base::{Cell, Lattice, Translation};
+    use crate::base::{
+        Cell, Collinear, Lattice, MagneticCell, MagneticMoment, Transformation, Translation,
+    };
 
-    use super::{site_mapping_from_orbits, PrimitiveCell};
+    use super::{
+        site_mapping_from_orbits, transformation_matrix_from_translations, PrimitiveCell,
+        PrimitiveMagneticCell,
+    };
+
+    #[test]
+    fn test_transformation_matrix_from_translations() {
+        // bcc
+        let translations = vec![Vector3::new(0.0, 0.0, 0.0), Vector3::new(0.5, 0.5, 0.5)];
+        transformation_matrix_from_translations(&translations).unwrap();
+    }
 
     #[test]
     fn test_site_mapping_from_orbits() {
@@ -308,6 +447,50 @@ mod tests {
             prim_cell.cell.lattice.basis * prim_cell.linear.map(|e| e as f64),
             cell.lattice.basis,
             epsilon = 1e-8
+        );
+    }
+
+    #[test]
+    fn test_magnetic_primitive_cell() {
+        let symprec = 1e-4;
+        let mag_symprec = 1e-4;
+
+        let magnetic_cell = MagneticCell::new(
+            Lattice::new(Matrix3::identity()),
+            vec![
+                Vector3::new(0.0, 0.0, 0.0),
+                Vector3::new(0.0, 0.5, 0.5),
+                Vector3::new(0.5, 0.0, 0.5),
+                Vector3::new(0.5, 0.5, 0.0),
+            ],
+            vec![0, 0, 0, 0],
+            vec![
+                Collinear(1.0),
+                Collinear(1.0),
+                Collinear(-1.0),
+                Collinear(-1.0),
+            ],
+        );
+        let result = PrimitiveMagneticCell::new(&magnetic_cell, symprec, mag_symprec).unwrap();
+        let prim_mag_cell = &result.magnetic_cell;
+        assert_eq!(prim_mag_cell.cell.num_atoms(), 2);
+        assert!(prim_mag_cell.magnetic_moments[0].is_close(&Collinear(1.0), 1e-8));
+        assert!(prim_mag_cell.magnetic_moments[1].is_close(&Collinear(-1.0), 1e-8));
+
+        assert_eq!(result.site_mapping, vec![0, 0, 1, 1]);
+        assert_eq!(result.permutations.len(), 2);
+
+        assert_eq!(result.translations.len(), 2);
+        assert_eq!(result.translations[0], Vector3::new(0.0, 0.0, 0.0));
+        assert_eq!(result.translations[1], Vector3::new(0.0, 0.5, 0.5));
+
+        assert_eq!(result.linear.map(|e| e as f64).determinant() as i32, 2);
+        let (recovered_mag_cell, _) =
+            Transformation::from_linear(result.linear).transform_magnetic_cell(prim_mag_cell);
+        assert_eq!(recovered_mag_cell.cell.num_atoms(), 4);
+        assert_relative_eq!(
+            recovered_mag_cell.cell.lattice.basis,
+            magnetic_cell.cell.lattice.basis,
         );
     }
 }
