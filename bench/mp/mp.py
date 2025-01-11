@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from time import perf_counter
 
-import matbench_discovery.data
 import pandas as pd
 import spglib
+from matbench_discovery.data import DataFiles
 from pymatgen.entries.computed_entries import ComputedStructureEntry
+from pymatviz.enums import Key
 from spglib import get_symmetry_dataset
 from tqdm.auto import tqdm
 
@@ -13,7 +14,8 @@ import moyopy
 
 
 def main():
-    df = matbench_discovery.data.load("mp_computed_structure_entries", version="1.0.0")
+    data_path = DataFiles.mp_computed_structure_entries.path
+    df = pd.read_json(data_path).set_index(Key.mat_id)
 
     all_stats = []
 
