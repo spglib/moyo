@@ -47,8 +47,8 @@ pub fn integral_normalizer(
                     match_origin_shift(prim_operations, &prim_trans_mat, prim_generators, epsilon)
                 {
                     conjugators.push(UnimodularTransformation::new(prim_trans_mat, origin_shift));
+                    break;
                 }
-                break;
             }
         }
     }

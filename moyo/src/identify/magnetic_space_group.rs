@@ -1,11 +1,15 @@
 use std::collections::HashMap;
 
+use itertools::Itertools;
 use log::debug;
 
 use super::normalizer::integral_normalizer;
-use super::space_group::SpaceGroup;
+use super::point_group::iter_trans_mat_basis;
+use super::rotation_type::identify_rotation_type;
+use super::space_group::{match_origin_shift, SpaceGroup};
 use crate::base::{
-    MagneticOperations, MoyoError, Operations, Rotation, Translation, UnimodularTransformation,
+    project_rotations, MagneticOperations, MoyoError, Operation, Operations, Rotation, Translation,
+    UnimodularLinear, UnimodularTransformation,
 };
 use crate::data::{
     get_magnetic_space_group_type, hall_symbol_entry, magnetic_hall_symbol_entry, uni_number_range,
@@ -34,6 +38,7 @@ impl MagneticSpaceGroup {
 
         let uni_number_range = uni_number_range(std_ref_spg.number)
             .ok_or(MoyoError::SpaceGroupTypeIdentificationError)?;
+
         for uni_number in uni_number_range {
             if get_magnetic_space_group_type(uni_number)
                 .unwrap()
@@ -57,24 +62,118 @@ impl MagneticSpaceGroup {
             let db_prim_mag_operations = mhs.primitive_traverse();
             let (db_ref_prim_operations, db_ref_prim_generators) =
                 db_reference_space_group_primitive(&entry);
-            let db_ref_prim_normalizer =
-                integral_normalizer(&db_ref_prim_operations, &db_ref_prim_generators, epsilon); // TODO: precompute the normalizer
 
-            for corr_trans in db_ref_prim_normalizer {
-                // new_transformation * corr_trans: primitive input -> primitive DB
-                let new_transformation = std_ref_spg.transformation.clone() * corr_trans;
-                let new_prim_mag_operations =
-                    new_transformation.transform_magnetic_operations(prim_mag_operations);
+            match construct_type {
+                ConstructType::Type3 => {
+                    // Centralizer of FSG also keep XSG invariant. Thus, we only need to consider the normalizer of FSG up to the centralizer.
+                    // TODO: precompute the normalizer
+                    let db_fsg_prim_normalizer = integral_normalizer(
+                        &db_ref_prim_operations,
+                        &db_ref_prim_generators,
+                        epsilon,
+                    );
+                    for corr_trans in db_fsg_prim_normalizer {
+                        // new_transformation * corr_trans: primitive input -> primitive DB
+                        let new_transformation = std_ref_spg.transformation.clone() * corr_trans;
+                        let new_prim_mag_operations =
+                            new_transformation.transform_magnetic_operations(prim_mag_operations);
 
-                // TODO:
-                // debug!("Matched with UNI number {}", uni_number);
-                // return Ok(Self {
-                //     uni_number,
-                //     transformation: new_transformation,
-                // });
+                        if Self::match_prim_mag_operations(
+                            &new_prim_mag_operations,
+                            &db_prim_mag_operations,
+                            epsilon,
+                        ) {
+                            debug!("Matched with UNI number {}", uni_number);
+                            return Ok(Self {
+                                uni_number,
+                                transformation: new_transformation,
+                            });
+                        }
+                    }
+                }
+                ConstructType::Type4 => {
+                    // Find conjugator which transforms the anti-translation while keeping XSGs
+                    let identity = Rotation::identity();
+                    let original_anti_translation = prim_mag_operations
+                        .iter()
+                        .filter_map(|mops| {
+                            if (mops.operation.rotation == identity) && mops.time_reversal {
+                                Some(mops)
+                            } else {
+                                None
+                            }
+                        })
+                        .nth(0)
+                        .unwrap();
+                    let src_translation = std_ref_spg
+                        .transformation
+                        .transform_magnetic_operation(original_anti_translation)
+                        .operation
+                        .translation;
+                    // TODO: refactor filtering anti-translation
+                    let dst_translation = db_prim_mag_operations
+                        .iter()
+                        .filter_map(|mops| {
+                            if (mops.operation.rotation == identity) && mops.time_reversal {
+                                Some(mops)
+                            } else {
+                                None
+                            }
+                        })
+                        .nth(0)
+                        .unwrap()
+                        .operation
+                        .translation;
+                    if let Some(corr_trans) = find_conjugator_type4(
+                        &db_ref_prim_generators,
+                        &db_ref_prim_operations,
+                        &src_translation,
+                        &dst_translation,
+                        epsilon,
+                    ) {
+                        let new_transformation = std_ref_spg.transformation.clone() * corr_trans;
+                        return Ok(Self {
+                            uni_number,
+                            transformation: new_transformation,
+                        });
+                    }
+                }
+                _ => unreachable!(),
             }
         }
         Err(MoyoError::MagneticSpaceGroupTypeIdentificationError)
+    }
+
+    fn match_prim_mag_operations(
+        prim_mag_operations1: &MagneticOperations,
+        prim_mag_operations2: &MagneticOperations,
+        epsilon: f64,
+    ) -> bool {
+        if prim_mag_operations1.len() != prim_mag_operations2.len() {
+            return false;
+        }
+
+        let mut hm_translation = HashMap::new();
+        for mops1 in prim_mag_operations1 {
+            hm_translation.insert(
+                (mops1.operation.rotation.clone(), mops1.time_reversal),
+                mops1.operation.translation,
+            );
+        }
+
+        for mops2 in prim_mag_operations2 {
+            if let Some(translation1) =
+                hm_translation.get(&(mops2.operation.rotation.clone(), mops2.time_reversal))
+            {
+                let diff = mops2.operation.translation - translation1;
+                if !diff.iter().all(|e| (e - e.round()).abs() < epsilon) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        true
     }
 }
 
@@ -176,12 +275,72 @@ fn db_reference_space_group_primitive(entry: &MagneticHallSymbolEntry) -> (Opera
     let ref_hall_symbol = HallSymbol::new(&ref_hall_entry.hall_symbol).unwrap();
     let ref_prim_operations = ref_hall_symbol.primitive_traverse();
     let identity = Rotation::identity();
-    let ref_prim_generators = ref_hall_symbol
+
+    let mut ref_prim_generators = ref_hall_symbol
         .primitive_generators()
         .into_iter()
         .filter(|ops| ops.rotation != identity) // In primitive, if rotation part is identity, it is a pure translation
-        .collect();
+        .collect::<Vec<_>>();
+    if ref_prim_generators.is_empty() {
+        ref_prim_generators.push(Operation::identity());
+    }
+
     (ref_prim_operations, ref_prim_generators)
+}
+
+/// Find a unimodular transformation that transforms (E, src_translation) to (E, dst_translation) while keeping `stabilized_prim_operations`, which are generated by `stabilized_prim_generators`.
+fn find_conjugator_type4(
+    stabilized_prim_generators: &Operations,
+    stabilized_prim_operations: &Operations,
+    src_translation: &Translation,
+    dst_translation: &Translation,
+    epsilon: f64,
+) -> Option<UnimodularTransformation> {
+    let stabilized_prim_rotations = project_rotations(stabilized_prim_operations);
+    let stabilized_prim_rotation_generators = project_rotations(stabilized_prim_generators);
+
+    let rotation_types = stabilized_prim_rotations
+        .iter()
+        .map(identify_rotation_type)
+        .collect::<Vec<_>>();
+    for trans_mat_basis in iter_trans_mat_basis(
+        stabilized_prim_rotations,
+        rotation_types,
+        stabilized_prim_rotation_generators,
+    ) {
+        // Search integer linear combination such that the transformation matrix is unimodular
+        // Consider coefficients in [-2, 2], which will be sufficient for Delaunay reduced basis
+        for comb in (0..trans_mat_basis.len())
+            .map(|_| -2..=2)
+            .multi_cartesian_product()
+        {
+            let mut prim_trans_mat = UnimodularLinear::zeros();
+            for (i, matrix) in trans_mat_basis.iter().enumerate() {
+                prim_trans_mat += comb[i] * matrix;
+            }
+            let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
+            if det < 0 {
+                prim_trans_mat *= -1;
+            }
+            if det == 1 {
+                // (P, p)^-1 (E, c_src) (P, p) = (P^-1, -P^-1 p) (P, p + c_src) = (E, P^-1 c_src) == (E, c_dst)
+                let diff = prim_trans_mat.map(|e| e as f64) * dst_translation - src_translation;
+                if !diff.iter().all(|e| (e - e.round()).abs() < epsilon) {
+                    continue;
+                }
+
+                if let Some(origin_shift) = match_origin_shift(
+                    stabilized_prim_operations,
+                    &prim_trans_mat,
+                    stabilized_prim_generators,
+                    epsilon,
+                ) {
+                    return Some(UnimodularTransformation::new(prim_trans_mat, origin_shift));
+                }
+            }
+        }
+    }
+    None
 }
 
 #[cfg(test)]
@@ -285,10 +444,11 @@ mod tests {
     #[test_with_log]
     fn test_identify_magnetic_space_group() {
         // for uni_number in 1..=NUM_MAGNETIC_SPACE_GROUP_TYPES {
-        //     dbg!(uni_number);
-        //     let prim_mag_operations = get_prim_mag_operations(uni_number as UNINumber);
-        //     let magnetic_space_group = MagneticSpaceGroup::new(&prim_mag_operations, 1e-8).unwrap();
-        //     assert_eq!(magnetic_space_group.uni_number, uni_number as UNINumber);
-        // }
+        for uni_number in 282..=NUM_MAGNETIC_SPACE_GROUP_TYPES {
+            dbg!(uni_number);
+            let prim_mag_operations = get_prim_mag_operations(uni_number as UNINumber);
+            let magnetic_space_group = MagneticSpaceGroup::new(&prim_mag_operations, 1e-8).unwrap();
+            assert_eq!(magnetic_space_group.uni_number, uni_number as UNINumber);
+        }
     }
 }
