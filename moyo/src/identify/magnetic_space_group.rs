@@ -4,7 +4,7 @@ use itertools::Itertools;
 use log::debug;
 
 use super::normalizer::integral_normalizer;
-use super::point_group::iter_trans_mat_basis;
+use super::point_group::{iter_trans_mat_basis, iter_unimodular_trans_mat};
 use super::rotation_type::identify_rotation_type;
 use super::space_group::{match_origin_shift, SpaceGroup};
 use crate::base::{
@@ -60,6 +60,9 @@ impl MagneticSpaceGroup {
             let mhs = MagneticHallSymbol::new(&entry.magnetic_hall_symbol)
                 .ok_or(MoyoError::MagneticSpaceGroupTypeIdentificationError)?;
             let db_prim_mag_operations = mhs.primitive_traverse();
+            dbg!(&uni_number);
+            dbg!(&entry.magnetic_hall_symbol);
+            dbg!(&mhs.primitive_generators());
             let (db_ref_prim_operations, db_ref_prim_generators) =
                 db_reference_space_group_primitive(&entry);
 
@@ -308,35 +311,20 @@ fn find_conjugator_type4(
         rotation_types,
         stabilized_prim_rotation_generators,
     ) {
-        // Search integer linear combination such that the transformation matrix is unimodular
-        // Consider coefficients in [-2, 2], which will be sufficient for Delaunay reduced basis
-        for comb in (0..trans_mat_basis.len())
-            .map(|_| -2..=2)
-            .multi_cartesian_product()
-        {
-            let mut prim_trans_mat = UnimodularLinear::zeros();
-            for (i, matrix) in trans_mat_basis.iter().enumerate() {
-                prim_trans_mat += comb[i] * matrix;
+        for prim_trans_mat in iter_unimodular_trans_mat(trans_mat_basis) {
+            // (P, p)^-1 (E, c_src) (P, p) = (P^-1, -P^-1 p) (P, p + c_src) = (E, P^-1 c_src) == (E, c_dst)
+            let diff = prim_trans_mat.map(|e| e as f64) * dst_translation - src_translation;
+            if !diff.iter().all(|e| (e - e.round()).abs() < epsilon) {
+                continue;
             }
-            let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
-            if det < 0 {
-                prim_trans_mat *= -1;
-            }
-            if det == 1 {
-                // (P, p)^-1 (E, c_src) (P, p) = (P^-1, -P^-1 p) (P, p + c_src) = (E, P^-1 c_src) == (E, c_dst)
-                let diff = prim_trans_mat.map(|e| e as f64) * dst_translation - src_translation;
-                if !diff.iter().all(|e| (e - e.round()).abs() < epsilon) {
-                    continue;
-                }
 
-                if let Some(origin_shift) = match_origin_shift(
-                    stabilized_prim_operations,
-                    &prim_trans_mat,
-                    stabilized_prim_generators,
-                    epsilon,
-                ) {
-                    return Some(UnimodularTransformation::new(prim_trans_mat, origin_shift));
-                }
+            if let Some(origin_shift) = match_origin_shift(
+                stabilized_prim_operations,
+                &prim_trans_mat,
+                stabilized_prim_generators,
+                epsilon,
+            ) {
+                return Some(UnimodularTransformation::new(prim_trans_mat, origin_shift));
             }
         }
     }
@@ -397,7 +385,7 @@ mod tests {
 
             let mhs = MagneticHallSymbol::new(&entry.magnetic_hall_symbol).unwrap();
             let identity = Rotation::identity();
-            let expect: Operations = match entry.construct_type() {
+            let mut expect: Operations = match entry.construct_type() {
                 ConstructType::Type1 | ConstructType::Type2 => mhs
                     .primitive_generators()
                     .iter()
@@ -428,6 +416,10 @@ mod tests {
                     })
                     .collect(),
             };
+            if expect.is_empty() {
+                expect.push(Operation::identity());
+            }
+
             assert_eq!(actual.len(), expect.len());
             let mut hm_translation = HashMap::new();
             for ops1 in actual.iter() {
@@ -443,8 +435,8 @@ mod tests {
 
     #[test_with_log]
     fn test_identify_magnetic_space_group() {
-        // for uni_number in 1..=NUM_MAGNETIC_SPACE_GROUP_TYPES {
-        for uni_number in 282..=NUM_MAGNETIC_SPACE_GROUP_TYPES {
+        for uni_number in 1..=NUM_MAGNETIC_SPACE_GROUP_TYPES {
+            // for uni_number in 282..=NUM_MAGNETIC_SPACE_GROUP_TYPES {
             dbg!(uni_number);
             let prim_mag_operations = get_prim_mag_operations(uni_number as UNINumber);
             let magnetic_space_group = MagneticSpaceGroup::new(&prim_mag_operations, 1e-8).unwrap();

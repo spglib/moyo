@@ -136,24 +136,11 @@ fn match_with_point_group(
             rotation_types.to_vec(),
             other_prim_generators,
         ) {
-            // Search integer linear combination such that the transformation matrix is unimodular
-            // Consider coefficients in [-2, 2], which will be sufficient for Delaunay reduced basis
-            for comb in (0..trans_mat_basis.len())
-                .map(|_| -2..=2)
-                .multi_cartesian_product()
-            {
-                // prim_trans_mat: self -> DB(primitive)
-                let mut prim_trans_mat = UnimodularLinear::zeros();
-                for (i, matrix) in trans_mat_basis.iter().enumerate() {
-                    prim_trans_mat += comb[i] * matrix;
-                }
-                let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
-                if det == 1 {
-                    return Ok(PointGroup {
-                        arithmetic_number: entry.arithmetic_number,
-                        prim_trans_mat,
-                    });
-                }
+            if let Some(prim_trans_mat) = iter_unimodular_trans_mat(trans_mat_basis).nth(0) {
+                return Ok(PointGroup {
+                    arithmetic_number: entry.arithmetic_number,
+                    prim_trans_mat,
+                });
             }
         }
     }
@@ -263,6 +250,29 @@ pub fn iter_trans_mat_basis(
                 &pivot.iter().map(|&i| prim_rotations[i]).collect::<Vec<_>>(),
                 &other_prim_rotation_generators,
             )
+        })
+}
+
+/// Search integer linear combination such that the transformation matrix is unimodular
+/// Consider coefficients in [-2, 2], which will be sufficient for Delaunay reduced basis
+pub fn iter_unimodular_trans_mat(
+    trans_mat_basis: Vec<Matrix3<i32>>,
+) -> impl Iterator<Item = UnimodularLinear> {
+    (0..trans_mat_basis.len())
+        .map(|_| -2..=2)
+        .multi_cartesian_product()
+        .filter_map(move |comb| {
+            // prim_trans_mat: self -> DB(primitive)
+            let mut prim_trans_mat = UnimodularLinear::zeros();
+            for (i, matrix) in trans_mat_basis.iter().enumerate() {
+                prim_trans_mat += comb[i] * matrix;
+            }
+            let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
+            if det == 1 {
+                Some(prim_trans_mat)
+            } else {
+                None
+            }
         })
 }
 

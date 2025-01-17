@@ -589,6 +589,7 @@ fn purify_translation_mod1(translation: &Translation) -> Translation {
 mod tests {
     use nalgebra::{matrix, vector};
     use rstest::rstest;
+    use test_log::test as test_with_log;
 
     use super::*;
 
@@ -614,7 +615,7 @@ mod tests {
         assert_eq!(operations.len(), num_operations);
     }
 
-    #[test]
+    #[test_with_log]
     fn test_hall_symbol_generators() {
         // No. 178
         let hs = HallSymbol::new("P 61 2 (0 0 5)").unwrap();
