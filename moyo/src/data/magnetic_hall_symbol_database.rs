@@ -321,9 +321,9 @@ const MAGNETIC_HALL_SYMBOL_DATABASE: [MagneticHallSymbolEntry; NUM_MAGNETIC_SPAC
     MagneticHallSymbolEntry::new("C 2 -2c 1'", 279),
     MagneticHallSymbolEntry::new("C 2' -2c", 280),
     MagneticHallSymbolEntry::new("C 2 -2c'", 281),
-    MagneticHallSymbolEntry::new("C 2' -2c 1c'", 282),
-    MagneticHallSymbolEntry::new("C 2' -2c 1a'", 283),
-    MagneticHallSymbolEntry::new("C 2' -2c 1bc'", 284),
+    MagneticHallSymbolEntry::new("C 2 -2c 1c'", 282), // Remove primal axis symbol
+    MagneticHallSymbolEntry::new("C 2 -2c 1a'", 283), // Remove primal axis symbol
+    MagneticHallSymbolEntry::new("C 2 -2c 1bc'", 284), // Remove primal axis symbol
     MagneticHallSymbolEntry::new("A 2 -2", 285),
     MagneticHallSymbolEntry::new("A 2 -2 1'", 286),
     MagneticHallSymbolEntry::new("A 2' -2'", 287),

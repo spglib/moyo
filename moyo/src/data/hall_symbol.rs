@@ -642,6 +642,7 @@ mod tests {
     }
 
     #[rstest]
+    #[case("C 2c -2 1c'", Centering::C, 1, 3, 8)] // 36.177 (type-IV)
     #[case("P 31 2 1c' (0 0 4)", Centering::P, 0, 3, 12)] // 151.32 (type-IV)
     #[case("P 6c 2c' -1'", Centering::P, 0, 3, 24)] // 194.265 (type-III)
     #[case("F 4d 2 3 1'", Centering::F, 3, 4, 48)] // 210.53 (type-II)

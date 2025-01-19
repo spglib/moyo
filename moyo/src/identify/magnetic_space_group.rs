@@ -60,9 +60,6 @@ impl MagneticSpaceGroup {
             let mhs = MagneticHallSymbol::new(&entry.magnetic_hall_symbol)
                 .ok_or(MoyoError::MagneticSpaceGroupTypeIdentificationError)?;
             let db_prim_mag_operations = mhs.primitive_traverse();
-            dbg!(&uni_number);
-            dbg!(&entry.magnetic_hall_symbol);
-            dbg!(&mhs.primitive_generators());
             let (db_ref_prim_operations, db_ref_prim_generators) =
                 db_reference_space_group_primitive(&entry);
 
@@ -135,10 +132,18 @@ impl MagneticSpaceGroup {
                         epsilon,
                     ) {
                         let new_transformation = std_ref_spg.transformation.clone() * corr_trans;
-                        return Ok(Self {
-                            uni_number,
-                            transformation: new_transformation,
-                        });
+                        let new_prim_mag_operations =
+                            new_transformation.transform_magnetic_operations(&prim_mag_operations);
+                        if Self::match_prim_mag_operations(
+                            &new_prim_mag_operations,
+                            &db_prim_mag_operations,
+                            epsilon,
+                        ) {
+                            return Ok(Self {
+                                uni_number,
+                                transformation: new_transformation,
+                            });
+                        }
                     }
                 }
                 _ => unreachable!(),
@@ -436,8 +441,6 @@ mod tests {
     #[test_with_log]
     fn test_identify_magnetic_space_group() {
         for uni_number in 1..=NUM_MAGNETIC_SPACE_GROUP_TYPES {
-            // for uni_number in 282..=NUM_MAGNETIC_SPACE_GROUP_TYPES {
-            dbg!(uni_number);
             let prim_mag_operations = get_prim_mag_operations(uni_number as UNINumber);
             let magnetic_space_group = MagneticSpaceGroup::new(&prim_mag_operations, 1e-8).unwrap();
             assert_eq!(magnetic_space_group.uni_number, uni_number as UNINumber);
