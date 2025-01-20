@@ -5,6 +5,7 @@ use log::debug;
 use nalgebra::{Matrix3, Vector3};
 
 use super::{
+    primitive_cell::PrimitiveMagneticCell,
     solve::{
         pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
         PeriodicKdTree,
@@ -13,7 +14,7 @@ use super::{
 };
 use crate::base::{
     traverse, AngleTolerance, Cell, Lattice, MagneticCell, MagneticMoment, MagneticOperation,
-    MagneticOperations, MoyoError, Operation, Operations, Permutation, Position, Rotation,
+    MagneticOperations, MoyoError, Operation, Operations, Permutation, Rotation,
     RotationMagneticMomentAction, Rotations, Transformation, EPS,
 };
 
@@ -173,7 +174,7 @@ impl PrimitiveMagneticSymmetrySearch {
     /// Assume `primitive_magnetic_cell` is a primitive magnetic cell and its basis vectors are Minkowski reduced.
     /// Returned magnetic operations are guaranteed to form a group.
     /// If the group closure and tolerance (symprec, angle_tolerance, and mag_symprec) are incompatible, the former is prioritized.
-    pub fn new<M: MagneticMoment + Clone>(
+    pub fn new<M: MagneticMoment>(
         primitive_magnetic_cell: &MagneticCell<M>,
         symprec: f64,
         angle_tolerance: AngleTolerance,
@@ -290,6 +291,27 @@ pub fn operations_in_cell(prim_cell: &PrimitiveCell, prim_operations: &Operation
         }
     }
     operations
+}
+
+pub fn magnetic_operations_in_magnetic_cell<M: MagneticMoment>(
+    prim_mag_cell: &PrimitiveMagneticCell<M>,
+    prim_mag_operations: &MagneticOperations,
+) -> MagneticOperations {
+    let input_mag_operations = Transformation::from_linear(prim_mag_cell.linear)
+        .transform_magnetic_operations(prim_mag_operations);
+    let mut mag_operations = vec![];
+    for t1 in prim_mag_cell.translations.iter() {
+        for ops2 in input_mag_operations.iter() {
+            // (E, t1) (rotation, t2) theta = (rotation, t1 + t2) theta
+            let t12 = (t1 + ops2.operation.translation).map(|e| e % 1.);
+            mag_operations.push(MagneticOperation::new(
+                ops2.operation.rotation,
+                t12,
+                ops2.time_reversal,
+            ));
+        }
+    }
+    mag_operations
 }
 
 /// Relevant to spglib.c/symmetry.c::get_lattice_symmetry

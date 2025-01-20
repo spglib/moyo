@@ -1,4 +1,4 @@
-use super::classification::{BravaisClass, GeometricCrystalClass};
+use super::classification::{BravaisClass, GeometricCrystalClass, LatticeSystem};
 
 pub type ArithmeticNumber = i32;
 
@@ -24,6 +24,10 @@ impl ArithmeticCrystalClassEntry {
             geometric_crystal_class,
             bravais_class,
         }
+    }
+
+    pub fn lattice_system(&self) -> LatticeSystem {
+        LatticeSystem::from_bravais_class(self.bravais_class)
     }
 }
 

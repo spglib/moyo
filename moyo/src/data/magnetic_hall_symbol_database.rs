@@ -1,4 +1,8 @@
-use super::magnetic_space_group::UNINumber;
+use super::hall_symbol_database::HallNumber;
+use super::magnetic_space_group::{
+    get_magnetic_space_group_type, ConstructType, UNINumber, NUM_MAGNETIC_SPACE_GROUP_TYPES,
+};
+use super::setting::Setting;
 
 #[derive(Debug, Clone)]
 pub struct MagneticHallSymbolEntry {
@@ -13,15 +17,20 @@ impl MagneticHallSymbolEntry {
             uni_number,
         }
     }
+
+    pub fn construct_type(&self) -> ConstructType {
+        get_magnetic_space_group_type(self.uni_number)
+            .unwrap()
+            .construct_type
+    }
+
+    pub fn reference_hall_number(&self) -> HallNumber {
+        let number = get_magnetic_space_group_type(self.uni_number)
+            .unwrap()
+            .number;
+        Setting::Standard.hall_number(number).unwrap()
+    }
 }
-
-// TODO:
-// smallest and largest UNI numbers for each Hall number
-// let hall_number_to_uni_numbers: HashMap<HallNumber, (UNINumber, UNINumber)>;
-
-// TODO:
-// smallest and largest Hall numbers for XSG of each UNI number
-// let uni_number_to_xsg_hall_numbers: HashMap<UNINumber, (HallNumber, HallNumber)>;
 
 pub fn magnetic_hall_symbol_entry(uni_number: UNINumber) -> Option<MagneticHallSymbolEntry> {
     MAGNETIC_HALL_SYMBOL_DATABASE
@@ -29,7 +38,8 @@ pub fn magnetic_hall_symbol_entry(uni_number: UNINumber) -> Option<MagneticHallS
         .cloned()
 }
 
-const MAGNETIC_HALL_SYMBOL_DATABASE: [MagneticHallSymbolEntry; 1651] = [
+// For type-IV MSG, we assume their Magnetic Hall symbol explicitly contains the anti-translation operation.
+const MAGNETIC_HALL_SYMBOL_DATABASE: [MagneticHallSymbolEntry; NUM_MAGNETIC_SPACE_GROUP_TYPES] = [
     MagneticHallSymbolEntry::new("P 1", 1),
     MagneticHallSymbolEntry::new("P 1 1'", 2),
     MagneticHallSymbolEntry::new("P 1 1c'", 3),
@@ -311,9 +321,9 @@ const MAGNETIC_HALL_SYMBOL_DATABASE: [MagneticHallSymbolEntry; 1651] = [
     MagneticHallSymbolEntry::new("C 2 -2c 1'", 279),
     MagneticHallSymbolEntry::new("C 2' -2c", 280),
     MagneticHallSymbolEntry::new("C 2 -2c'", 281),
-    MagneticHallSymbolEntry::new("C 2' -2c 1c'", 282),
-    MagneticHallSymbolEntry::new("C 2' -2c 1a'", 283),
-    MagneticHallSymbolEntry::new("C 2' -2c 1bc'", 284),
+    MagneticHallSymbolEntry::new("C 2 -2c 1c'", 282), // Remove primal axis symbol
+    MagneticHallSymbolEntry::new("C 2 -2c 1a'", 283), // Remove primal axis symbol
+    MagneticHallSymbolEntry::new("C 2 -2c 1bc'", 284), // Remove primal axis symbol
     MagneticHallSymbolEntry::new("A 2 -2", 285),
     MagneticHallSymbolEntry::new("A 2 -2 1'", 286),
     MagneticHallSymbolEntry::new("A 2' -2'", 287),
@@ -1686,7 +1696,7 @@ const MAGNETIC_HALL_SYMBOL_DATABASE: [MagneticHallSymbolEntry; 1651] = [
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::data::hall_symbol::MagneticHallSymbol;
+    use crate::data::MagneticHallSymbol;
 
     fn iter_magnetic_hall_symbol_entry() -> impl Iterator<Item = &'static MagneticHallSymbolEntry> {
         MAGNETIC_HALL_SYMBOL_DATABASE.iter()

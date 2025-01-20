@@ -6,7 +6,7 @@ use super::cell::{AtomicSpecie, Cell, Position};
 use super::lattice::Lattice;
 use super::operation::{CartesianRotation, TimeReversal};
 
-pub trait MagneticMoment {
+pub trait MagneticMoment: Sized + Clone {
     fn act_rotation(
         &self,
         cartesian_rotation: &CartesianRotation,
@@ -17,15 +17,14 @@ pub trait MagneticMoment {
 
     fn is_close(&self, other: &Self, mag_symprec: f64) -> bool;
 
+    fn average(magnetic_moments: &[Self]) -> Self;
+
     fn act_magnetic_operation(
         &self,
         cartesian_rotation: &CartesianRotation,
         time_reversal: TimeReversal,
         action: RotationMagneticMomentAction,
-    ) -> Self
-    where
-        Self: Sized,
-    {
+    ) -> Self {
         let rotated = self.act_rotation(cartesian_rotation, action);
         rotated.act_time_reversal(time_reversal)
     }
@@ -60,6 +59,11 @@ impl MagneticMoment for Collinear {
     fn is_close(&self, other: &Self, mag_symprec: f64) -> bool {
         (self.0 - other.0).abs() < mag_symprec
     }
+
+    fn average(magnetic_moments: &[Self]) -> Self {
+        let sum = magnetic_moments.iter().map(|m| m.0).sum::<f64>();
+        Collinear(sum / magnetic_moments.len() as f64)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -91,6 +95,14 @@ impl MagneticMoment for NonCollinear {
     fn is_close(&self, other: &Self, mag_symprec: f64) -> bool {
         // L2 norm
         (self.0 - other.0).norm() < mag_symprec
+    }
+
+    fn average(magnetic_moments: &[Self]) -> Self {
+        let sum = magnetic_moments
+            .iter()
+            .map(|m| m.0)
+            .fold(Vector3::zeros(), |acc, x| acc + x);
+        NonCollinear(sum / magnetic_moments.len() as f64)
     }
 }
 

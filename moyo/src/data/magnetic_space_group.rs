@@ -1,9 +1,15 @@
+use std::ops::RangeInclusive;
+
+use once_cell::sync::Lazy;
+
 use super::hall_symbol_database::Number;
+
+pub const NUM_MAGNETIC_SPACE_GROUP_TYPES: usize = 1651;
 
 /// UNI Number for magnetic space groups (1 - 1651)
 pub type UNINumber = i32;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ConstructType {
     Type1,
     Type2,
@@ -17,8 +23,8 @@ pub struct MagneticSpaceGroupType {
     pub litvin_number: i32,
     pub bns_number: &'static str,
     pub og_number: &'static str,
-    /// ITA number for maximal space subgroup (XSG)
-    pub xsg_number: Number,
+    /// ITA number for reference space group in BNS setting
+    pub number: Number,
     pub construct_type: ConstructType,
 }
 
@@ -28,7 +34,7 @@ impl MagneticSpaceGroupType {
         litvin_number: i32,
         bns_number: &'static str,
         og_number: &'static str,
-        xsg_number: Number,
+        number: Number,
         construct_type: ConstructType,
     ) -> Self {
         Self {
@@ -36,11 +42,34 @@ impl MagneticSpaceGroupType {
             litvin_number,
             bns_number,
             og_number,
-            xsg_number,
+            number,
             construct_type,
         }
     }
 }
+
+/// Return inclusive range for UNI numbers associated with the given ITA number.
+pub fn uni_number_range(number: Number) -> Option<RangeInclusive<UNINumber>> {
+    ITA_NUMBER_TO_UNI_NUMBERS
+        .get((number - 1) as usize)
+        .cloned()
+}
+
+static ITA_NUMBER_TO_UNI_NUMBERS: Lazy<Vec<RangeInclusive<UNINumber>>> = Lazy::new(|| {
+    let mut ret = vec![];
+    let mut start = 1;
+    for uni_number in 1..=NUM_MAGNETIC_SPACE_GROUP_TYPES {
+        if (uni_number == NUM_MAGNETIC_SPACE_GROUP_TYPES)
+            || (MAGNETIC_SPACE_GROUP_TYPES[uni_number - 1].number
+                != MAGNETIC_SPACE_GROUP_TYPES[uni_number].number)
+        {
+            ret.push(start..=uni_number as UNINumber);
+            start = uni_number as UNINumber + 1;
+        }
+    }
+    assert_eq!(ret.len(), 230);
+    ret
+});
 
 pub fn get_magnetic_space_group_type(uni_number: UNINumber) -> Option<MagneticSpaceGroupType> {
     MAGNETIC_SPACE_GROUP_TYPES
@@ -48,7 +77,7 @@ pub fn get_magnetic_space_group_type(uni_number: UNINumber) -> Option<MagneticSp
         .cloned()
 }
 
-const MAGNETIC_SPACE_GROUP_TYPES: [MagneticSpaceGroupType; 1651] = [
+const MAGNETIC_SPACE_GROUP_TYPES: [MagneticSpaceGroupType; NUM_MAGNETIC_SPACE_GROUP_TYPES] = [
     MagneticSpaceGroupType::new(1, 1, "1.1", "1.1.1", 1, ConstructType::Type1),
     MagneticSpaceGroupType::new(2, 2, "1.2", "1.2.2", 1, ConstructType::Type2),
     MagneticSpaceGroupType::new(3, 3, "1.3", "1.3.3", 1, ConstructType::Type4),

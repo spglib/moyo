@@ -69,6 +69,19 @@ impl SpaceGroup {
 
         Err(MoyoError::SpaceGroupTypeIdentificationError)
     }
+
+    pub fn from_hall_number_and_transformation(
+        hall_number: HallNumber,
+        transformation: UnimodularTransformation,
+    ) -> Result<Self, MoyoError> {
+        let entry =
+            hall_symbol_entry(hall_number).ok_or(MoyoError::SpaceGroupTypeIdentificationError)?;
+        Ok(Self {
+            number: entry.number,
+            hall_number,
+            transformation,
+        })
+    }
 }
 
 fn correction_transformation_matrices(
@@ -163,7 +176,7 @@ fn correction_transformation_matrices(
 }
 
 /// Search for origin_shift such that (trans_mat, origin_shift) transforms <prim_operations> into <db_prim_generators>
-fn match_origin_shift(
+pub fn match_origin_shift(
     prim_operations: &Operations,
     trans_mat: &UnimodularLinear,
     db_prim_generators: &Operations,
@@ -203,7 +216,6 @@ fn match_origin_shift(
     match solve_mod1(&a, &b, epsilon) {
         Some(s) => {
             let origin_shift = (trans_mat.map(|e| e as f64) * s).map(|e| e % 1.);
-
             Some(origin_shift)
         }
         None => None,
@@ -211,7 +223,7 @@ fn match_origin_shift(
 }
 
 /// Solve a * x = b (mod 1)
-fn solve_mod1(
+pub fn solve_mod1(
     a: &OMatrix<i32, Dyn, U3>,
     b: &OVector<f64, Dyn>,
     epsilon: f64,
@@ -249,7 +261,7 @@ mod tests {
     use rstest::rstest;
     use std::collections::HashMap;
 
-    use crate::base::{Transformation, UnimodularTransformation, EPS};
+    use crate::base::{UnimodularTransformation, EPS};
     use crate::data::{hall_symbol_entry, HallSymbol, Setting};
 
     use super::{correction_transformation_matrices, solve_mod1, SpaceGroup};
@@ -273,11 +285,7 @@ mod tests {
     fn test_correction_transformation_matrices() {
         let hall_number = 21; // P 1 c 1
         let hall_symbol = HallSymbol::from_hall_number(hall_number).unwrap();
-        let operations = hall_symbol.traverse();
-
-        // conventional -> primitive
-        let prim_operations = Transformation::from_linear(hall_symbol.centering.linear())
-            .inverse_transform_operations(&operations);
+        let prim_operations = hall_symbol.primitive_traverse();
 
         // The correction transformation matrices should change the group into P1c1, P1a1, and P1n1
         let entry = hall_symbol_entry(hall_number).unwrap();
@@ -310,11 +318,7 @@ mod tests {
     fn test_identify_space_group(#[case] setting: Setting) {
         for hall_number in 1..=530 {
             let hall_symbol = HallSymbol::from_hall_number(hall_number).unwrap();
-            let operations = hall_symbol.traverse();
-
-            // conventional -> primitive
-            let prim_operations = Transformation::from_linear(hall_symbol.centering.linear())
-                .inverse_transform_operations(&operations);
+            let prim_operations = hall_symbol.primitive_traverse();
 
             let space_group = SpaceGroup::new(&prim_operations, setting, 1e-8).unwrap();
 
@@ -334,10 +338,7 @@ mod tests {
 
             let matched_hall_symbol =
                 HallSymbol::from_hall_number(space_group.hall_number).unwrap();
-            let matched_operations = matched_hall_symbol.traverse();
-            let matched_prim_operations =
-                Transformation::from_linear(matched_hall_symbol.centering.linear())
-                    .inverse_transform_operations(&matched_operations);
+            let matched_prim_operations = matched_hall_symbol.primitive_traverse();
 
             let mut hm_translations = HashMap::new();
             for operation in matched_prim_operations.iter() {

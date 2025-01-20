@@ -54,7 +54,7 @@ pub fn iterative_symmetry_search(
     Err(MoyoError::PrimitiveSymmetrySearchError)
 }
 
-pub fn iterative_magnetic_symmetry_search<M: MagneticMoment + Clone>(
+pub fn iterative_magnetic_symmetry_search<M: MagneticMoment>(
     magnetic_cell: &MagneticCell<M>,
     symprec: f64,
     angle_tolerance: AngleTolerance,

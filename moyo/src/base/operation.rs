@@ -1,4 +1,5 @@
 use std::collections::{HashSet, VecDeque};
+use std::fmt;
 use std::ops::Mul;
 
 use nalgebra::base::{Matrix3, Vector3};
@@ -13,7 +14,7 @@ pub type Translation = Vector3<f64>;
 /// Time reversal operation
 pub type TimeReversal = bool;
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Operation {
     pub rotation: Rotation,
     pub translation: Translation,
@@ -38,6 +39,47 @@ impl Operation {
     }
 }
 
+impl fmt::Debug for Operation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let symbols = ["x", "y", "z"];
+        let xyz = (0..3)
+            .map(|i| {
+                let rows = (0..3)
+                    .filter_map(|j| {
+                        if self.rotation[(i, j)] != 0 {
+                            Some(format!(
+                                "{}{}{}",
+                                if self.rotation[(i, j)] > 0 { "+" } else { "-" },
+                                if self.rotation[(i, j)].abs() != 1 {
+                                    self.rotation[(i, j)].abs().to_string()
+                                } else {
+                                    "".to_string()
+                                },
+                                symbols[j]
+                            ))
+                        } else {
+                            None
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .concat();
+                format!(
+                    "{}{}{}",
+                    rows,
+                    if self.translation[i] > 0.0 { "+" } else { "" },
+                    if self.translation[i] != 0.0 {
+                        self.translation[i].to_string()
+                    } else {
+                        "".to_string()
+                    }
+                )
+            })
+            .collect::<Vec<_>>();
+        let ret = format!("{},{},{}", xyz[0], xyz[1], xyz[2]);
+        write!(f, "{}", ret)
+    }
+}
+
 impl Mul for Operation {
     type Output = Self;
 
@@ -49,7 +91,7 @@ impl Mul for Operation {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct MagneticOperation {
     pub operation: Operation,
     pub time_reversal: TimeReversal,
@@ -73,6 +115,16 @@ impl MagneticOperation {
     }
 }
 
+impl fmt::Debug for MagneticOperation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.time_reversal {
+            write!(f, "{:?}'", self.operation)
+        } else {
+            write!(f, "{:?}", self.operation)
+        }
+    }
+}
+
 impl Mul for MagneticOperation {
     type Output = Self;
 
@@ -89,13 +141,6 @@ pub type MagneticOperations = Vec<MagneticOperation>;
 
 pub fn project_rotations(operations: &Operations) -> Rotations {
     operations.iter().map(|ops| ops.rotation).collect()
-}
-
-pub fn project_operations(magnetic_operations: &MagneticOperations) -> Operations {
-    magnetic_operations
-        .iter()
-        .map(|mops| mops.operation.clone())
-        .collect()
 }
 
 #[allow(dead_code)]
@@ -126,9 +171,10 @@ pub fn traverse(generators: &Rotations) -> Rotations {
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::matrix;
+    use nalgebra::{matrix, vector};
+    use test_log::test;
 
-    use super::Translation;
+    use super::*;
     use crate::base::{lattice::Lattice, Operation};
 
     #[test]
@@ -154,5 +200,32 @@ mod tests {
             0.0, 0.0, 1.0;
         ];
         assert_relative_eq!(actual, expect);
+    }
+
+    #[test]
+    fn test_operation_format() {
+        let operation = Operation::new(
+            matrix![
+                1, 0, 0;
+                2, -1, 0;
+                0, 0, 1;
+            ],
+            vector![0.0, 0.25, -0.75],
+        );
+        assert_eq!(format!("{:?}", operation), "+x,+2x-y+0.25,+z-0.75")
+    }
+
+    #[test]
+    fn test_magnetic_operation_format() {
+        let magnetic_operation = MagneticOperation::new(
+            matrix![
+                1, 0, 0;
+                1, -1, 0;
+                0, 0, 1;
+            ],
+            vector![0.0, 0.25, -0.75],
+            true,
+        );
+        assert_eq!(format!("{:?}", magnetic_operation), "+x,+x-y+0.25,+z-0.75'")
     }
 }

@@ -6,6 +6,8 @@ use nalgebra::{matrix, Vector3};
 
 use super::centering::Centering;
 use super::hall_symbol_database::{hall_symbol_entry, HallNumber};
+use super::magnetic_hall_symbol_database::magnetic_hall_symbol_entry;
+use super::magnetic_space_group::UNINumber;
 use crate::base::{
     MagneticOperation, MagneticOperations, Operation, Operations, OriginShift, Rotation,
     TimeReversal, Transformation, Translation, EPS,
@@ -100,6 +102,12 @@ impl HallSymbol {
         }
 
         operations
+    }
+
+    pub fn primitive_traverse(&self) -> Operations {
+        let operations = self.traverse();
+        Transformation::from_linear(self.centering.linear())
+            .inverse_transform_operations(&operations)
     }
 
     pub fn from_hall_number(hall_number: HallNumber) -> Option<Self> {
@@ -205,6 +213,25 @@ impl MagneticHallSymbol {
         }
 
         operations
+    }
+
+    pub fn primitive_traverse(&self) -> MagneticOperations {
+        let operations = self.traverse();
+        Transformation::from_linear(self.centering.linear())
+            .inverse_transform_magnetic_operations(&operations)
+    }
+
+    pub fn from_uni_number(uni_number: UNINumber) -> Option<Self> {
+        if let Some(entry) = magnetic_hall_symbol_entry(uni_number) {
+            Self::new(entry.magnetic_hall_symbol)
+        } else {
+            None
+        }
+    }
+
+    pub fn primitive_generators(&self) -> MagneticOperations {
+        Transformation::from_linear(self.centering.linear())
+            .inverse_transform_magnetic_operations(&self.generators)
     }
 }
 
@@ -562,6 +589,7 @@ fn purify_translation_mod1(translation: &Translation) -> Translation {
 mod tests {
     use nalgebra::{matrix, vector};
     use rstest::rstest;
+    use test_log::test as test_with_log;
 
     use super::*;
 
@@ -587,7 +615,7 @@ mod tests {
         assert_eq!(operations.len(), num_operations);
     }
 
-    #[test]
+    #[test_with_log]
     fn test_hall_symbol_generators() {
         // No. 178
         let hs = HallSymbol::new("P 61 2 (0 0 5)").unwrap();
@@ -614,6 +642,7 @@ mod tests {
     }
 
     #[rstest]
+    #[case("C 2c -2 1c'", Centering::C, 1, 3, 8)] // 36.177 (type-IV)
     #[case("P 31 2 1c' (0 0 4)", Centering::P, 0, 3, 12)] // 151.32 (type-IV)
     #[case("P 6c 2c' -1'", Centering::P, 0, 3, 24)] // 194.265 (type-III)
     #[case("F 4d 2 3 1'", Centering::F, 3, 4, 48)] // 210.53 (type-II)
