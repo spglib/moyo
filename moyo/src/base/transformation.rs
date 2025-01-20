@@ -52,6 +52,14 @@ impl UnimodularTransformation {
         Self::new(UnimodularLinear::identity(), origin_shift)
     }
 
+    pub fn inverse(&self) -> Self {
+        // (P, p)^-1 = (P^-1, -P^-1 p)
+        Self::new(
+            self.linear_inv,
+            -self.linear_inv.map(|e| e as f64) * self.origin_shift,
+        )
+    }
+
     pub fn linear_as_f64(&self) -> Matrix3<f64> {
         self.linear.map(|e| e as f64)
     }
@@ -104,7 +112,15 @@ impl UnimodularTransformation {
         Cell::new(new_lattice, new_positions, cell.numbers.clone())
     }
 
-    pub fn transform_magnetic_cell<M: MagneticMoment + Clone>(
+    pub fn transform_magnetic_moments<M: MagneticMoment>(
+        &self,
+        magnetic_moments: &Vec<M>,
+    ) -> Vec<M> {
+        // Magnetic moments are not transformed
+        magnetic_moments.clone()
+    }
+
+    pub fn transform_magnetic_cell<M: MagneticMoment>(
         &self,
         magnetic_cell: &MagneticCell<M>,
     ) -> MagneticCell<M> {
@@ -113,7 +129,7 @@ impl UnimodularTransformation {
             new_cell.lattice,
             new_cell.positions,
             new_cell.numbers,
-            magnetic_cell.magnetic_moments.clone(), // Magnetic moments are not transformed
+            self.transform_magnetic_moments(&magnetic_cell.magnetic_moments),
         )
     }
 }
@@ -307,7 +323,7 @@ impl Transformation {
         )
     }
 
-    pub fn transform_magnetic_cell<M: MagneticMoment + Clone>(
+    pub fn transform_magnetic_cell<M: MagneticMoment>(
         &self,
         magnetic_cell: &MagneticCell<M>,
     ) -> (MagneticCell<M>, Vec<usize>) {

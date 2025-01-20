@@ -154,10 +154,11 @@ pub struct PrimitiveMagneticCell<M: MagneticMoment> {
     /// Translations in the **input** magnetic cell
     pub translations: Vec<Translation>,
     /// Permutations induced by translations in the input magnetic cell
+    #[allow(dead_code)]
     pub permutations: Vec<Permutation>,
 }
 
-impl<M: MagneticMoment + Clone> PrimitiveMagneticCell<M> {
+impl<M: MagneticMoment> PrimitiveMagneticCell<M> {
     pub fn new(
         magnetic_cell: &MagneticCell<M>,
         symprec: f64,
@@ -306,7 +307,7 @@ fn primitive_cell_from_transformation(
     (primitive_cell, site_mapping, representatives)
 }
 
-fn primitive_magnetic_cell_from_transformation<M: MagneticMoment + Clone>(
+fn primitive_magnetic_cell_from_transformation<M: MagneticMoment>(
     magnetic_cell: &MagneticCell<M>,
     trans_mat: &Linear,
     translations: &[Translation],

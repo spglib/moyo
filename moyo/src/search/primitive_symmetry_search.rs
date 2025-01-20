@@ -174,7 +174,7 @@ impl PrimitiveMagneticSymmetrySearch {
     /// Assume `primitive_magnetic_cell` is a primitive magnetic cell and its basis vectors are Minkowski reduced.
     /// Returned magnetic operations are guaranteed to form a group.
     /// If the group closure and tolerance (symprec, angle_tolerance, and mag_symprec) are incompatible, the former is prioritized.
-    pub fn new<M: MagneticMoment + Clone>(
+    pub fn new<M: MagneticMoment>(
         primitive_magnetic_cell: &MagneticCell<M>,
         symprec: f64,
         angle_tolerance: AngleTolerance,

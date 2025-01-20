@@ -76,11 +76,14 @@ impl StandardizedCell {
         )?;
 
         Ok(StandardizedCell {
+            // Primitive standardized cell
             prim_cell: prim_std_cell,
             prim_transformation,
+            // Standardized cell
             cell: std_cell,
             wyckoffs,
             transformation,
+            // Miscellaneous
             rotation_matrix,
             site_mapping,
         })

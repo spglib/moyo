@@ -33,6 +33,8 @@ pub enum MoyoError {
     MagneticSpaceGroupTypeIdentificationError,
     #[error("Standardization failed")]
     StandardizationError,
+    #[error("Magnetic standardization failed")]
+    MagneticStandardizationError,
     #[error("Wyckoff position assignment failed")]
     WyckoffPositionAssignmentError,
     #[error("Hall symbol parsing failed")]

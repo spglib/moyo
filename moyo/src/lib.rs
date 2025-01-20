@@ -81,7 +81,7 @@ use crate::search::{
     iterative_magnetic_symmetry_search, iterative_symmetry_search,
     magnetic_operations_in_magnetic_cell, operations_in_cell,
 };
-use crate::symmetrize::{orbits_in_cell, StandardizedCell};
+use crate::symmetrize::{orbits_in_cell, StandardizedCell, StandardizedMagneticCell};
 
 use nalgebra::Matrix3;
 
@@ -157,6 +157,7 @@ impl MoyoDataset {
     ) -> Result<Self, MoyoError> {
         let (prim_cell, symmetry_search, symprec, angle_tolerance) =
             iterative_symmetry_search(cell, symprec, angle_tolerance)?;
+        let operations = operations_in_cell(&prim_cell, &symmetry_search.operations);
 
         // Space-group type identification
         let epsilon = symprec / prim_cell.cell.lattice.volume().powf(1.0 / 3.0);
@@ -203,7 +204,6 @@ impl MoyoDataset {
         let prim_std_origin_shift =
             prim_cell_linear_inv * std_cell.prim_transformation.origin_shift;
 
-        let operations = operations_in_cell(&prim_cell, &symmetry_search.operations);
         Ok(Self {
             // Space-group type
             number: space_group.number,
@@ -251,6 +251,12 @@ pub struct MoyoMagneticDataset<M: MagneticMoment> {
     /// Magnetic symmetry operations in the input cell.
     pub magnetic_operations: MagneticOperations,
     // ------------------------------------------------------------------------
+    // Site symmetry
+    // ------------------------------------------------------------------------
+    /// The `i`th atom in the input magnetic cell is equivalent to the `orbits[i]`th atom in the **input** magnetic cell.
+    /// For example, orbits=[0, 0, 2, 2, 2, 2] means the first two atoms are equivalent and the last four atoms are equivalent to each other.
+    pub orbits: Vec<usize>,
+    // ------------------------------------------------------------------------
     // Standardized magnetic cell
     // ------------------------------------------------------------------------
     /// Standardized magnetic cell
@@ -262,6 +268,17 @@ pub struct MoyoMagneticDataset<M: MagneticMoment> {
     /// Rigid rotation
     pub std_rotation_matrix: Matrix3<f64>,
     // ------------------------------------------------------------------------
+    // Primitive standardized magnetic cell
+    // ------------------------------------------------------------------------
+    pub prim_std_mag_cell: MagneticCell<M>,
+    /// Linear part of transformation from the input magnetic cell to the primitive standardized magnetic cell.
+    pub prim_std_linear: Matrix3<f64>,
+    /// Origin shift of transformation from the input magnetic cell to the primitive standardized magnetic cell.
+    pub prim_std_origin_shift: OriginShift,
+    /// Mapping sites in the input magnetic cell to those in the primitive standardized magnetic cell.
+    /// The `i`th atom in the input magnetic cell is mapped to the `mapping_to_std_prim[i]`th atom in the primitive standardized magnetic cell.
+    pub mapping_std_prim: Vec<usize>,
+    // ------------------------------------------------------------------------
     // Final parameters
     // ------------------------------------------------------------------------
     /// Actually used `symprec` in iterative symmetry search.
@@ -272,7 +289,7 @@ pub struct MoyoMagneticDataset<M: MagneticMoment> {
     pub mag_symprec: f64,
 }
 
-impl<M: MagneticMoment + Clone> MoyoMagneticDataset<M> {
+impl<M: MagneticMoment> MoyoMagneticDataset<M> {
     pub fn new(
         magnetic_cell: &MagneticCell<M>,
         symprec: f64,
@@ -288,6 +305,10 @@ impl<M: MagneticMoment + Clone> MoyoMagneticDataset<M> {
                 mag_symprec,
                 action,
             )?;
+        let magnetic_operations = magnetic_operations_in_magnetic_cell(
+            &prim_mag_cell,
+            &magnetic_symmetry_search.magnetic_operations,
+        );
 
         // Magnetic space-group type identification
         let epsilon = symprec
@@ -300,24 +321,67 @@ impl<M: MagneticMoment + Clone> MoyoMagneticDataset<M> {
         let magnetic_space_group =
             MagneticSpaceGroup::new(&magnetic_symmetry_search.magnetic_operations, epsilon)?;
 
-        let magnetic_operations = magnetic_operations_in_magnetic_cell(
+        // Standardized magnetic cell
+        let std_mag_cell = StandardizedMagneticCell::new(
             &prim_mag_cell,
-            &magnetic_symmetry_search.magnetic_operations,
+            &magnetic_symmetry_search,
+            &magnetic_space_group,
+            symprec,
+            mag_symprec,
+            action,
+        )?;
+
+        // Site symmetry
+        // StandardizedMagneticCell.prim_mag_cell and prim_mag_cell have the same site order
+        let mapping_std_prim = prim_mag_cell.site_mapping.clone();
+        let orbits = orbits_in_cell(
+            prim_mag_cell.magnetic_cell.num_atoms(),
+            &magnetic_symmetry_search.permutations,
+            &mapping_std_prim,
         );
+
+        // magnetic_cell <-(prim_mag_cell.linear, 0)- prim_mag_cell.magnetic_cell -(std_mag_cell.transformation)-> std_mag_cell.mag_cell
+        // (std_linear, std_origin_shift) = (prim_mag_cell.linear^-1, 0) * std_mag_cell.transformation
+        let prim_mag_cell_linear_inv = prim_mag_cell
+            .linear
+            .map(|e| e as f64)
+            .try_inverse()
+            .unwrap();
+        let std_linear = prim_mag_cell_linear_inv * std_mag_cell.transformation.linear_as_f64();
+        let std_origin_shift = prim_mag_cell_linear_inv * std_mag_cell.transformation.origin_shift;
+
+        // (prim_std_linear, prim_std_origin_shift) = (prim_mag_cell.linear^-1, 0) * std_mag_cell.prim_transformation
+        let prim_std_linear =
+            prim_mag_cell_linear_inv * std_mag_cell.prim_transformation.linear_as_f64();
+        let prim_std_origin_shift =
+            prim_mag_cell_linear_inv * std_mag_cell.prim_transformation.origin_shift;
+
         Ok(Self {
             // Magnetic space-group type
             uni_number: magnetic_space_group.uni_number,
             // Magnetic symmetry operations in the input cell
             magnetic_operations,
+            // Site symmetry
+            orbits,
             // Standardized magnetic cell
-            std_mag_cell: todo!(),
-            std_linear: todo!(),
-            std_origin_shift: todo!(),
-            std_rotation_matrix: todo!(),
+            std_mag_cell: std_mag_cell.mag_cell,
+            std_linear,
+            std_origin_shift,
+            std_rotation_matrix: std_mag_cell.rotation_matrix,
+            // Primitive standardized magnetic cell
+            prim_std_mag_cell: std_mag_cell.prim_mag_cell,
+            prim_std_linear,
+            prim_std_origin_shift,
+            mapping_std_prim,
             // Final parameters
             symprec,
             angle_tolerance,
             mag_symprec,
         })
+    }
+
+    /// Return the number of magnetic symmetry operations in the input magnetic cell.
+    pub fn num_magnetic_operations(&self) -> usize {
+        self.magnetic_operations.len()
     }
 }

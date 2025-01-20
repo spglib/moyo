@@ -143,13 +143,6 @@ pub fn project_rotations(operations: &Operations) -> Rotations {
     operations.iter().map(|ops| ops.rotation).collect()
 }
 
-pub fn project_operations(magnetic_operations: &MagneticOperations) -> Operations {
-    magnetic_operations
-        .iter()
-        .map(|mops| mops.operation.clone())
-        .collect()
-}
-
 #[allow(dead_code)]
 /// Used for testing
 pub fn traverse(generators: &Rotations) -> Rotations {

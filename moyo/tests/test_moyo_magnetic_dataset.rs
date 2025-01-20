@@ -45,5 +45,10 @@ fn test_with_rutile() {
         .unwrap();
 
         assert_eq!(dataset.uni_number, 1158);
+        assert_eq!(dataset.num_magnetic_operations(), 16);
+        assert_eq!(dataset.orbits, vec![0, 0, 2, 2, 2, 2]);
+        assert_eq!(dataset.std_mag_cell.num_atoms(), 6);
+        assert_eq!(dataset.prim_std_mag_cell.num_atoms(), 6);
+        assert_eq!(dataset.mapping_std_prim, vec![0, 1, 2, 3, 4, 5]);
     }
 }
