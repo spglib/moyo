@@ -71,19 +71,19 @@ pub mod search; // Public for benchmarking
 mod identify;
 mod symmetrize;
 
-use base::{
-    AngleTolerance, Cell, MagneticCell, MagneticMoment, MoyoError, Operations, OriginShift,
-    RotationMagneticMomentAction,
+use crate::base::{
+    AngleTolerance, Cell, MagneticCell, MagneticMoment, MagneticOperations, MoyoError, Operations,
+    OriginShift, RotationMagneticMomentAction,
 };
-use data::{HallNumber, Number, Setting};
-
-use nalgebra::Matrix3;
-
+use crate::data::{HallNumber, Number, Setting, UNINumber};
 use crate::identify::{MagneticSpaceGroup, SpaceGroup};
 use crate::search::{
-    iterative_magnetic_symmetry_search, iterative_symmetry_search, operations_in_cell,
+    iterative_magnetic_symmetry_search, iterative_symmetry_search,
+    magnetic_operations_in_magnetic_cell, operations_in_cell,
 };
 use crate::symmetrize::{orbits_in_cell, StandardizedCell};
+
+use nalgebra::Matrix3;
 
 #[derive(Debug)]
 /// A dataset containing symmetry information of the input crystal structure.
@@ -157,7 +157,6 @@ impl MoyoDataset {
     ) -> Result<Self, MoyoError> {
         let (prim_cell, symmetry_search, symprec, angle_tolerance) =
             iterative_symmetry_search(cell, symprec, angle_tolerance)?;
-        let operations = operations_in_cell(&prim_cell, &symmetry_search.operations);
 
         // Space-group type identification
         let epsilon = symprec / prim_cell.cell.lattice.volume().powf(1.0 / 3.0);
@@ -198,6 +197,7 @@ impl MoyoDataset {
         let prim_std_origin_shift =
             prim_cell_linear_inv * std_cell.prim_transformation.origin_shift;
 
+        let operations = operations_in_cell(&prim_cell, &symmetry_search.operations);
         Ok(Self {
             // Space-group type
             number: space_group.number,
@@ -234,7 +234,27 @@ impl MoyoDataset {
 }
 
 #[derive(Debug)]
-pub struct MoyoMagneticDataset {
+pub struct MoyoMagneticDataset<M: MagneticMoment> {
+    // ------------------------------------------------------------------------
+    // Magnetic space-group type
+    // ------------------------------------------------------------------------
+    pub uni_number: UNINumber,
+    // ------------------------------------------------------------------------
+    // Magnetic symmetry operations in the input cell
+    // ------------------------------------------------------------------------
+    /// Magnetic symmetry operations in the input cell.
+    pub magnetic_operations: MagneticOperations,
+    // ------------------------------------------------------------------------
+    // Standardized magnetic cell
+    // ------------------------------------------------------------------------
+    /// Standardized magnetic cell
+    pub std_mag_cell: MagneticCell<M>,
+    /// Linear part of transformation from the input magnetic cell to the standardized one.
+    pub std_linear: Matrix3<f64>,
+    /// Origin shift of transformation from the input magnetic cell to the standardized one.
+    pub std_origin_shift: OriginShift,
+    /// Rigid rotation
+    pub std_rotation_matrix: Matrix3<f64>,
     // ------------------------------------------------------------------------
     // Final parameters
     // ------------------------------------------------------------------------
@@ -246,17 +266,14 @@ pub struct MoyoMagneticDataset {
     pub mag_symprec: f64,
 }
 
-impl MoyoMagneticDataset {
-    pub fn new<M>(
+impl<M: MagneticMoment + Clone> MoyoMagneticDataset<M> {
+    pub fn new(
         magnetic_cell: &MagneticCell<M>,
         symprec: f64,
         angle_tolerance: AngleTolerance,
         mag_symprec: Option<f64>,
         action: RotationMagneticMomentAction,
-    ) -> Result<Self, MoyoError>
-    where
-        M: MagneticMoment + Clone,
-    {
+    ) -> Result<Self, MoyoError> {
         let (prim_mag_cell, magnetic_symmetry_search, symprec, angle_tolerance, mag_symprec) =
             iterative_magnetic_symmetry_search(
                 magnetic_cell,
@@ -274,10 +291,24 @@ impl MoyoMagneticDataset {
                 .lattice
                 .volume()
                 .powf(1.0 / 3.0);
-        let space_group =
+        let magnetic_space_group =
             MagneticSpaceGroup::new(&magnetic_symmetry_search.magnetic_operations, epsilon)?;
 
+        let magnetic_operations = magnetic_operations_in_magnetic_cell(
+            &prim_mag_cell,
+            &magnetic_symmetry_search.magnetic_operations,
+        );
         Ok(Self {
+            // Magnetic space-group type
+            uni_number: magnetic_space_group.uni_number,
+            // Magnetic symmetry operations in the input cell
+            magnetic_operations,
+            // Standardized magnetic cell
+            std_mag_cell: todo!(),
+            std_linear: todo!(),
+            std_origin_shift: todo!(),
+            std_rotation_matrix: todo!(),
+            // Final parameters
             symprec,
             angle_tolerance,
             mag_symprec,

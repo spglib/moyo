@@ -7,6 +7,9 @@ pub use solve::{
     solve_correspondence, solve_correspondence_naive, PeriodicKdTree, PeriodicNeighbor,
 };
 
-pub(super) use primitive_cell::PrimitiveCell;
-pub(super) use primitive_symmetry_search::{operations_in_cell, PrimitiveSymmetrySearch};
+pub(super) use primitive_cell::{PrimitiveCell, PrimitiveMagneticCell};
+pub(super) use primitive_symmetry_search::{
+    magnetic_operations_in_magnetic_cell, operations_in_cell, PrimitiveMagneticSymmetrySearch,
+    PrimitiveSymmetrySearch,
+};
 pub(super) use symmetry_search::{iterative_magnetic_symmetry_search, iterative_symmetry_search};
