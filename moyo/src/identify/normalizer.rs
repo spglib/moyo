@@ -1,9 +1,7 @@
-use itertools::Itertools;
-
 use super::point_group::{iter_trans_mat_basis, iter_unimodular_trans_mat};
 use super::rotation_type::identify_rotation_type;
 use super::space_group::match_origin_shift;
-use crate::base::{project_rotations, Operations, UnimodularLinear, UnimodularTransformation};
+use crate::base::{project_rotations, Operations, UnimodularTransformation};
 
 /// Return integral normalizer of the point group representative up to its centralizer.
 

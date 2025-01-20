@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use itertools::Itertools;
 use log::debug;
 
 use super::normalizer::integral_normalizer;
@@ -9,7 +8,7 @@ use super::rotation_type::identify_rotation_type;
 use super::space_group::{match_origin_shift, SpaceGroup};
 use crate::base::{
     project_rotations, MagneticOperations, MoyoError, Operation, Operations, Rotation, Translation,
-    UnimodularLinear, UnimodularTransformation,
+    UnimodularTransformation,
 };
 use crate::data::{
     get_magnetic_space_group_type, hall_symbol_entry, magnetic_hall_symbol_entry, uni_number_range,
