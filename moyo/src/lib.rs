@@ -163,7 +163,13 @@ impl MoyoDataset {
         let space_group = SpaceGroup::new(&symmetry_search.operations, setting, epsilon)?;
 
         // Standardized cell
-        let std_cell = StandardizedCell::new(&prim_cell, &symmetry_search, &space_group, symprec)?;
+        let std_cell = StandardizedCell::new(
+            &prim_cell.cell,
+            &symmetry_search.operations,
+            &symmetry_search.permutations,
+            &space_group,
+            symprec,
+        )?;
 
         // site symmetry
         let orbits = orbits_in_cell(

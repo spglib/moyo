@@ -69,6 +69,19 @@ impl SpaceGroup {
 
         Err(MoyoError::SpaceGroupTypeIdentificationError)
     }
+
+    pub fn from_hall_number_and_transformation(
+        hall_number: HallNumber,
+        transformation: UnimodularTransformation,
+    ) -> Result<Self, MoyoError> {
+        let entry =
+            hall_symbol_entry(hall_number).ok_or(MoyoError::SpaceGroupTypeIdentificationError)?;
+        Ok(Self {
+            number: entry.number,
+            hall_number,
+            transformation,
+        })
+    }
 }
 
 fn correction_transformation_matrices(

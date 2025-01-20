@@ -151,6 +151,17 @@ impl MagneticSpaceGroup {
         Err(MoyoError::MagneticSpaceGroupTypeIdentificationError)
     }
 
+    pub fn reference_space_group(&self) -> SpaceGroup {
+        let ref_hall_number = magnetic_hall_symbol_entry(self.uni_number)
+            .unwrap()
+            .reference_hall_number();
+        SpaceGroup::from_hall_number_and_transformation(
+            ref_hall_number,
+            self.transformation.clone(),
+        )
+        .unwrap()
+    }
+
     fn match_prim_mag_operations(
         prim_mag_operations1: &MagneticOperations,
         prim_mag_operations2: &MagneticOperations,
@@ -188,8 +199,9 @@ fn identify_reference_space_group(
     prim_mag_operations: &MagneticOperations,
     epsilon: f64,
 ) -> Option<(Operations, ConstructType)> {
-    let prim_xsg = primitive_maximal_space_subgroup_from_magnetic_space_group(prim_mag_operations);
-    let (fsg, is_type2) =
+    let (prim_xsg, _) =
+        primitive_maximal_space_subgroup_from_magnetic_space_group(prim_mag_operations);
+    let (fsg, is_type2, _) =
         family_space_group_from_magnetic_space_group(prim_mag_operations, epsilon);
 
     if (prim_mag_operations.len() % prim_xsg.len() != 0)
@@ -236,31 +248,34 @@ fn identify_reference_space_group(
 }
 
 /// XSG: take only operations without time-reversal
-fn primitive_maximal_space_subgroup_from_magnetic_space_group(
+pub fn primitive_maximal_space_subgroup_from_magnetic_space_group(
     prim_mag_operations: &MagneticOperations,
-) -> Operations {
+) -> (Operations, Vec<bool>) {
     let mut xsg = vec![];
+    let mut contained = vec![false; prim_mag_operations.len()];
 
-    for mops in prim_mag_operations {
+    for (i, mops) in prim_mag_operations.iter().enumerate() {
         if mops.time_reversal {
             continue;
         }
         xsg.push(mops.operation.clone());
+        contained[i] = true;
     }
-    xsg
+    (xsg, contained)
 }
 
 /// FSG: take all operations ignoring time-reversal parts
 /// Returned operations may contain duplicated rotation parts (for type-IV).
-fn family_space_group_from_magnetic_space_group(
+pub fn family_space_group_from_magnetic_space_group(
     prim_mag_operations: &MagneticOperations,
     epsilon: f64,
-) -> (Operations, bool) {
+) -> (Operations, bool, Vec<bool>) {
     let mut fsg = vec![];
     let mut hm_translation = HashMap::new();
+    let mut contained = vec![false; prim_mag_operations.len()];
     let mut is_type2 = false;
 
-    for mops in prim_mag_operations {
+    for (i, mops) in prim_mag_operations.iter().enumerate() {
         if let Some(&other_translation) = hm_translation.get(&mops.operation.rotation) {
             let diff: Translation = mops.operation.translation - other_translation;
             if diff.iter().all(|e| (e - e.round()).abs() < epsilon) {
@@ -271,8 +286,9 @@ fn family_space_group_from_magnetic_space_group(
 
         fsg.push(mops.operation.clone());
         hm_translation.insert(mops.operation.rotation.clone(), mops.operation.translation);
+        contained[i] = true;
     }
-    (fsg, is_type2)
+    (fsg, is_type2, contained)
 }
 
 /// Return operations and generators of the reference space group of magnetic space group `entry`.
@@ -366,11 +382,13 @@ mod tests {
         let prim_mag_operations = get_prim_mag_operations(uni_number);
         assert_eq!(prim_mag_operations.len(), order_msg);
 
-        let xsg = primitive_maximal_space_subgroup_from_magnetic_space_group(&prim_mag_operations);
+        let (xsg, _) =
+            primitive_maximal_space_subgroup_from_magnetic_space_group(&prim_mag_operations);
         assert_eq!(xsg.len(), order_xsg);
 
         let epsilon = 1e-8;
-        let (fsg, _) = family_space_group_from_magnetic_space_group(&prim_mag_operations, epsilon);
+        let (fsg, _, _) =
+            family_space_group_from_magnetic_space_group(&prim_mag_operations, epsilon);
         assert_eq!(fsg.len(), order_fsg);
 
         let (_, construct_type_actual) =

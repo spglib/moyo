@@ -14,18 +14,26 @@ use crate::data::{
 };
 use crate::identify::SpaceGroup;
 use crate::math::SNF;
-use crate::search::{PrimitiveCell, PrimitiveSymmetrySearch};
 
 pub struct StandardizedCell {
+    // ------------------------------------------------------------------------
+    // Primitive standardized cell
+    // ------------------------------------------------------------------------
     pub prim_cell: Cell,
     /// Transformation from the input primitive cell to the primitive standardized cell.
     pub prim_transformation: UnimodularTransformation,
+    // ------------------------------------------------------------------------
+    // Standardized cell
+    // ------------------------------------------------------------------------
     pub cell: Cell,
     /// Wyckoff positions of sites in the `cell`
     pub wyckoffs: Vec<WyckoffPosition>,
     /// Transformation from the input primitive cell to the standardized cell.
     pub transformation: Transformation,
     /// Rotation matrix to map the lattice of the input primitive cell to that of the standardized cell.
+    // ------------------------------------------------------------------------
+    // Miscellaneous
+    // ------------------------------------------------------------------------
     pub rotation_matrix: Matrix3<f64>,
     /// Mapping from the site in the `cell` to that in the `prim_cell`
     pub site_mapping: Vec<usize>,
@@ -37,8 +45,9 @@ impl StandardizedCell {
     /// Basis vectors are rotated to be a upper triangular matrix.
     /// TODO: option not to rotate basis vectors
     pub fn new(
-        prim_cell: &PrimitiveCell,
-        symmetry_search: &PrimitiveSymmetrySearch,
+        prim_cell: &Cell,
+        prim_operations: &Operations,
+        prim_permutations: &[Permutation],
         space_group: &SpaceGroup,
         symprec: f64,
     ) -> Result<Self, MoyoError> {
@@ -50,7 +59,12 @@ impl StandardizedCell {
             transformation,
             rotation_matrix,
             site_mapping,
-        ) = Self::standardize_and_symmetrize_cell(prim_cell, symmetry_search, space_group)?;
+        ) = Self::standardize_and_symmetrize_cell(
+            prim_cell,
+            prim_operations,
+            prim_permutations,
+            space_group,
+        )?;
 
         let wyckoffs = Self::assign_wyckoffs(
             &prim_std_cell,
@@ -74,8 +88,9 @@ impl StandardizedCell {
 
     #[allow(clippy::type_complexity)]
     fn standardize_and_symmetrize_cell(
-        prim_cell: &PrimitiveCell,
-        symmetry_search: &PrimitiveSymmetrySearch,
+        prim_cell: &Cell,
+        prim_operations: &Operations,
+        prim_permutations: &[Permutation],
         space_group: &SpaceGroup,
     ) -> Result<
         (
@@ -91,38 +106,29 @@ impl StandardizedCell {
     > {
         let entry =
             hall_symbol_entry(space_group.hall_number).ok_or(MoyoError::StandardizationError)?;
-        let arithmetic_number = entry.arithmetic_number;
-        let bravais_class = arithmetic_crystal_class_entry(arithmetic_number).bravais_class;
-        let lattice_system = LatticeSystem::from_bravais_class(bravais_class);
 
         // To standardized primitive cell
+        let arithmetic_number = entry.arithmetic_number;
+        let lattice_system = arithmetic_crystal_class_entry(arithmetic_number).lattice_system();
         let prim_transformation = match lattice_system {
-            LatticeSystem::Triclinic => {
-                // Niggli reduction for distorted triclinic lattice systems is numerically so challenging.
-                // Thus, we skip checking reduction condition.
-                let (_, linear) = prim_cell.cell.lattice.unchecked_niggli_reduce();
-                UnimodularTransformation::from_linear(linear)
-            }
+            LatticeSystem::Triclinic => standardize_triclinic_cell(&prim_cell.lattice),
             _ => space_group.transformation.clone(),
         };
-        let prim_std_cell_tmp = prim_transformation.transform_cell(&prim_cell.cell);
+        let prim_std_cell_tmp = prim_transformation.transform_cell(&prim_cell);
 
         // Symmetrize positions of prim_std_cell by refined symmetry operations
-        // - Prepare operations in primitive standard
+        // 1. Prepare operations in primitive standard
         let hs = HallSymbol::from_hall_number(space_group.hall_number)
             .ok_or(MoyoError::StandardizationError)?;
         let conv_std_operations = hs.traverse();
         let prim_std_operations = Transformation::from_linear(entry.centering.linear())
             .inverse_transform_operations(&conv_std_operations);
 
-        // - Reorder permutations
+        // 2. Reorder permutations because prim_std_operations may have different order from symmetry_search.operations!
         let mut permutation_mapping = HashMap::new();
-        let prim_operations = prim_transformation.transform_operations(&symmetry_search.operations);
+        let prim_operations = prim_transformation.transform_operations(&prim_operations);
         let prim_rotations = project_rotations(&prim_operations);
-        for (prim_rotation, permutation) in prim_rotations
-            .iter()
-            .zip(symmetry_search.permutations.iter())
-        {
+        for (prim_rotation, permutation) in prim_rotations.iter().zip(prim_permutations.iter()) {
             permutation_mapping.insert(*prim_rotation, permutation.clone());
         }
         let prim_std_permutations = prim_std_operations
@@ -257,6 +263,13 @@ pub fn orbits_in_cell(
         orbits.push(*map.get(&key).unwrap());
     }
     orbits
+}
+
+/// Niggli reduction for distorted triclinic lattice systems is numerically so challenging.
+/// Thus, we skip checking reduction condition.
+fn standardize_triclinic_cell(lattice: &Lattice) -> UnimodularTransformation {
+    let (_, linear) = lattice.unchecked_niggli_reduce();
+    UnimodularTransformation::from_linear(linear)
 }
 
 fn assign_wyckoff_position(
