@@ -590,3 +590,22 @@ fn test_primitive_symmetry_search_corner_case() {
     assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 }
+
+#[test]
+fn test_with_high_symprec_and_angle_tolerance() {
+    let lattice = Lattice::new(Matrix3::identity());
+    let positions = vec![
+        vector![0.0, 0.0, 0.0],
+        vector![0.0, 0.5, 0.5],
+        vector![0.5, 0.0, 0.5],
+        vector![0.5, 0.5, 0.0],
+    ];
+    let numbers = vec![0, 0, 0, 0];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 0.1;
+    let angle_tolerance = AngleTolerance::Radian(1.0);
+    let setting = Setting::Spglib;
+
+    let _ = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
+}
