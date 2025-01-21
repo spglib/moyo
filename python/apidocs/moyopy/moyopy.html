@@ -591,6 +591,19 @@ and origin choice 2 for centrosymmetric space groups.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy.</span></span><span class="sig-name descname"><span class="pre">MoyoDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#moyopy.Cell" title="moyopy.Cell"><span class="pre">moyopy.Cell</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">symprec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#moyopy.Setting" title="moyopy.Setting"><span class="pre">moyopy.Setting</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#moyopy.MoyoDataset" title="Link to this definition">#</a></dt>
 <dd><p>A dataset containing symmetry information of the input crystal structure.</p>
 <p class="rubric">Initialization</p>
+<section id="parameters">
+<h4>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h4>
+<dl class="simple">
+<dt>cell: Cell</dt><dd><p>Input crystal structure.</p>
+</dd>
+<dt>symprec: float</dt><dd><p>Symmetry search tolerance in the unit of cell.lattice.</p>
+</dd>
+<dt>angle_tolerance: float | None</dt><dd><p>Symmetry search tolerance in the unit of radians.</p>
+</dd>
+<dt>setting: Setting | None</dt><dd><p>Preference for the setting of the space group.</p>
+</dd>
+</dl>
+</section>
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy.MoyoDataset.number">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy.MoyoDataset.number" title="Link to this definition">#</a></dt>
