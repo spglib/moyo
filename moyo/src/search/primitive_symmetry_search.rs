@@ -407,7 +407,12 @@ fn search_bravais_group(
         }
     }
 
-    // Recover rotations by group multiplication
+    // 48 for Oh
+    if rotations.is_empty() || (48 % rotations.len() != 0) {
+        debug!("Found automorphisms for the lattice do not form a group. Consider reducing symprec and angle_tolerance.");
+        return Err(MoyoError::TooLargeToleranceError);
+    }
+
     let complemented_rotations = traverse(&rotations);
     if complemented_rotations.len() != rotations.len() {
         debug!("Found automorphisms for the lattice do not form a group. Consider reducing symprec and angle_tolerance.");
