@@ -93,7 +93,19 @@ class MoyoDataset:
         symprec: float = 1e-4,
         angle_tolerance: float | None = None,
         setting: Setting | None = None,
-    ): ...
+    ):
+        """
+        Parameters
+        ----------
+        cell: Cell
+            Input crystal structure.
+        symprec: float
+            Symmetry search tolerance in the unit of cell.lattice.
+        angle_tolerance: float | None
+            Symmetry search tolerance in the unit of radians.
+        setting: Setting | None
+            Preference for the setting of the space group.
+        """
     # Space-group type
     @property
     def number(self) -> int:
