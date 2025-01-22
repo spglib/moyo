@@ -1,7 +1,7 @@
 mod hall_symbol;
 mod setting;
 
-pub use hall_symbol::PyHallSymbolEntry;
+pub use hall_symbol::{PyCentering, PyHallSymbolEntry};
 pub use setting::PySetting;
 
 use pyo3::prelude::*;
