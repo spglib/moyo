@@ -1,0 +1,22 @@
+changelog:
+  categories:
+    - title: 🛠 Breaking Changes
+      labels:
+        - Semver-Major
+        - breaking-changes
+    - title: 🎉 New Features
+      labels:
+        - Semver-Minor
+        - enhancement
+    - title: ⚠️ Deprecation
+      labels:
+        - deprecation
+    - title: 🐞 Bug fixes
+      labels:
+        - bug
+    - title: 📔 Documentation
+      labels:
+        - documentation
+    - title: Other changes
+      labels:
+        - '*'
