@@ -359,6 +359,7 @@ lcov.info
 !**/assets/*.json
 .env
 *.png
+*.cif
 
 docs/note/
 
