@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-import moyopy
 import numpy as np
 import pytest
+
+import moyopy
 from moyopy.interface import MoyoAdapter
 
 
