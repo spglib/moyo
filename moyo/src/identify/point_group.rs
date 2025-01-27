@@ -258,22 +258,28 @@ pub fn iter_trans_mat_basis(
 pub fn iter_unimodular_trans_mat(
     trans_mat_basis: Vec<Matrix3<i32>>,
 ) -> impl Iterator<Item = UnimodularLinear> {
-    (0..trans_mat_basis.len())
+    // First try with coefficients in [-1, 1]
+    let iter_multi_1 = (0..trans_mat_basis.len())
+        .map(|_| -1..=1)
+        .multi_cartesian_product();
+    let iter_multi_2 = (0..trans_mat_basis.len())
         .map(|_| -2..=2)
         .multi_cartesian_product()
-        .filter_map(move |comb| {
-            // prim_trans_mat: self -> DB(primitive)
-            let mut prim_trans_mat = UnimodularLinear::zeros();
-            for (i, matrix) in trans_mat_basis.iter().enumerate() {
-                prim_trans_mat += comb[i] * matrix;
-            }
-            let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
-            if det == 1 {
-                Some(prim_trans_mat)
-            } else {
-                None
-            }
-        })
+        .filter(|comb| comb.iter().any(|&e| (e as i32).abs() == 2));
+
+    iter_multi_1.chain(iter_multi_2).filter_map(move |comb| {
+        // prim_trans_mat: self -> DB(primitive)
+        let mut prim_trans_mat = UnimodularLinear::zeros();
+        for (i, matrix) in trans_mat_basis.iter().enumerate() {
+            prim_trans_mat += comb[i] * matrix;
+        }
+        let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
+        if det == 1 {
+            Some(prim_trans_mat)
+        } else {
+            None
+        }
+    })
 }
 
 #[cfg(test)]

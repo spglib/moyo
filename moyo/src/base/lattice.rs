@@ -91,6 +91,18 @@ impl Lattice {
         self.basis.determinant().abs()
     }
 
+    #[allow(dead_code)]
+    pub(crate) fn lattice_constant(&self) -> [f64; 6] {
+        let g = self.metric_tensor();
+        let a = g[(0, 0)].sqrt();
+        let b = g[(1, 1)].sqrt();
+        let c = g[(2, 2)].sqrt();
+        let alpha = (g[(1, 2)] / (b * c)).acos().to_degrees();
+        let beta = (g[(0, 2)] / (a * c)).acos().to_degrees();
+        let gamma = (g[(0, 1)] / (a * b)).acos().to_degrees();
+        [a, b, c, alpha, beta, gamma]
+    }
+
     /// Rotate the lattice by the given rotation matrix
     pub fn rotate(&self, rotation_matrix: &Matrix3<f64>) -> Self {
         Self {
