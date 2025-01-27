@@ -609,3 +609,20 @@ fn test_with_high_symprec_and_angle_tolerance() {
 
     let _ = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
 }
+
+#[test]
+fn test_wyckoff_position_assignment() {
+    // https://github.com/spglib/moyo/issues/54
+    let path = Path::new("tests/assets/wyckoff_edge_case.json");
+    let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+
+    let symprec = 1e-4;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let dataset = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
+    assert_eq!(
+        dataset.wyckoffs,
+        vec!['e', 'e', 'e', 'e', 'a', 'a', 'a', 'a']
+    );
+}
