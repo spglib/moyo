@@ -128,6 +128,18 @@ impl PyMoyoDataset {
             None
         }
     }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "MoyoDataset(number={}, hall_number={}, operations=<{} operations>, orbits={:?}, wyckoffs={:?}, site_symmetry_symbols={:?})",
+            self.0.number,
+            self.0.hall_number,
+            self.0.operations.len(),
+            self.0.orbits,
+            self.0.wyckoffs,
+            self.0.site_symmetry_symbols
+        )
+    }
 }
 
 // https://github.com/pydantic/pydantic-core/blob/main/src/lib.rs
