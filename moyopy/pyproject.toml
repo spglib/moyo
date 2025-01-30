@@ -30,7 +30,7 @@ classifiers = [
 
 [project.optional-dependencies]
 interface = [
-    "numpy<2",  # pymatgen seems to be still imcompatible with numpy>=2
+    "numpy<2",  # pymatgen seems to be still incompatible with numpy>=2
     "pymatgen",
     "ase>=3.23",
 ]
@@ -75,7 +75,7 @@ extend-ignore = [
     "D101",
     "D102",
     "D103",
-    "D203",  # Confilct with D211
+    "D203",  # Conflict with D211
     "D205",
     "D213",  # Conflict with D212
 ]
