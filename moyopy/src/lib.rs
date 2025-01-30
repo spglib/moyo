@@ -129,7 +129,7 @@ impl PyMoyoDataset {
         }
     }
 
-    fn __repr__(&self) -> String {
+    fn __str__(&self) -> String {
         format!(
             "MoyoDataset(number={}, hall_number={}, operations=<{} operations>, orbits={:?}, wyckoffs={:?}, site_symmetry_symbols={:?})",
             self.0.number,
