@@ -19,7 +19,7 @@ def test_moyo_dataset_repr(wurtzite: moyopy.Cell):
     dataset = moyopy.MoyoDataset(wurtzite)
     dataset_str = str(dataset)
 
-    # Test that repr contains key information
+    # Test that string representation of MoyoDataset contains key information
     assert "MoyoDataset" in dataset_str
     assert f"number={dataset.number}" in dataset_str
     assert f"hall_number={dataset.hall_number}" in dataset_str

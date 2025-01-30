@@ -3,6 +3,7 @@ from __future__ import annotations
 try:
     import ase
     from pymatgen.core import Element, Structure
+    from pymatgen.io.ase import MSONAtoms
 except ImportError:
     raise ImportError("Try installing dependencies with `pip install moyopy[interface]`")
 
@@ -59,7 +60,7 @@ class MoyoAdapter:
         Returns:
             moyopy.Cell: The converted Moyo cell
         """
-        if isinstance(struct, ase.Atoms):
+        if isinstance(struct, (ase.Atoms, MSONAtoms)):
             return MoyoAdapter.from_atoms(struct)
         elif isinstance(struct, Structure):
             return MoyoAdapter.from_structure(struct)

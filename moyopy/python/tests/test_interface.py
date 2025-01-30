@@ -38,6 +38,13 @@ def test_from_py_obj(wurtzite: moyopy.Cell):
     assert np.allclose(cell2.positions, wurtzite.positions)
     assert cell2.numbers == wurtzite.numbers
 
+    # Test with MSONAtoms
+    mson_atoms = structure.to_ase_atoms()
+    cell3 = MoyoAdapter.from_py_obj(mson_atoms)
+    assert np.allclose(cell3.basis, wurtzite.basis)
+    assert np.allclose(cell3.positions, wurtzite.positions)
+    assert cell3.numbers == wurtzite.numbers
+
     # Test invalid input type
     with pytest.raises(TypeError, match="Expected Structure or Atoms"):
         MoyoAdapter.from_py_obj([1, 2, 3])
