@@ -51,11 +51,11 @@ class MoyoAdapter:
         )
 
     @staticmethod
-    def from_py_obj(struct: Structure | ase.Atoms) -> moyopy.Cell:
+    def from_py_obj(struct: Structure | ase.Atoms | MSONAtoms) -> moyopy.Cell:
         """Convert a Python atomic structure object to a Moyo Cell.
 
         Args:
-            struct: Currently supports pymatgen Structure and ASE Atoms
+            struct: Currently supports pymatgen Structure, ASE Atoms, and MSONAtoms
 
         Returns:
             moyopy.Cell: The converted Moyo cell
@@ -65,4 +65,5 @@ class MoyoAdapter:
         elif isinstance(struct, Structure):
             return MoyoAdapter.from_structure(struct)
         else:
-            raise TypeError(f"Expected Structure or Atoms, got {type(struct).__name__}")
+            cls_name = type(struct).__name__
+            raise TypeError(f"Expected Structure, Atoms, or MSONAtoms, got {cls_name}")
