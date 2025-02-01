@@ -43,4 +43,6 @@ pub enum MoyoError {
     UnknownHallNumberError,
     #[error("Unknown number")]
     UnknownNumberError,
+    #[error("Invalid space group number: {0} (must be between 1 and 230)")]
+    InvalidSpaceGroupNumber(i32),
 }

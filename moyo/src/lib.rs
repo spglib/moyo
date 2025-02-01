@@ -85,6 +85,31 @@ use crate::symmetrize::{orbits_in_cell, StandardizedCell, StandardizedMagneticCe
 
 use nalgebra::Matrix3;
 
+/// The crystal system of a structure.
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum CrystalSystem {
+    /// space groups 1-2: no symmetry constraints on cell parameters
+    Triclinic,
+    /// space groups 3-15: one unique axis with α = γ = 90°
+    Monoclinic,
+    /// space groups 16-74: Three orthogonal axes with α = β = γ = 90°
+    Orthorhombic,
+    /// space groups 75-142: two equal axes with α = β = γ = 90°
+    Tetragonal,
+    /// space groups 143-167: three equal axes with α = β = γ ≠ 90°
+    Trigonal,
+    /// space groups 168-194: two equal axes with α = β = 90°, γ = 120°
+    Hexagonal,
+    /// space groups 195-230: three equal axes with α = β = γ = 90°
+    Cubic,
+}
+
+impl std::fmt::Display for CrystalSystem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
 #[derive(Debug)]
 /// A dataset containing symmetry information of the input crystal structure.
 pub struct MoyoDataset {
@@ -95,6 +120,8 @@ pub struct MoyoDataset {
     pub number: Number,
     /// Hall symbol number.
     pub hall_number: HallNumber,
+    /// The crystal system based on the space group number.
+    pub crystal_system: Result<CrystalSystem, MoyoError>,
     // ------------------------------------------------------------------------
     // Symmetry operations in the input cell
     // ------------------------------------------------------------------------
@@ -204,10 +231,25 @@ impl MoyoDataset {
         let prim_std_origin_shift =
             prim_cell_linear_inv * std_cell.prim_transformation.origin_shift;
 
+        let crystal_system = match space_group.number {
+            n if (1..=230).contains(&n) => Ok(match n {
+                1..=2 => CrystalSystem::Triclinic,
+                3..=15 => CrystalSystem::Monoclinic,
+                16..=74 => CrystalSystem::Orthorhombic,
+                75..=142 => CrystalSystem::Tetragonal,
+                143..=167 => CrystalSystem::Trigonal,
+                168..=194 => CrystalSystem::Hexagonal,
+                195..=230 => CrystalSystem::Cubic,
+                _ => unreachable!(),
+            }),
+            n => Err(MoyoError::InvalidSpaceGroupNumber(n)),
+        };
+
         Ok(Self {
             // Space-group type
             number: space_group.number,
             hall_number: space_group.hall_number,
+            crystal_system,
             // Symmetry operations in the input cell
             operations,
             // Standardized cell

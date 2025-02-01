@@ -7,9 +7,11 @@ use std::fs;
 use std::path::Path;
 use test_log::test;
 
-use moyo::base::{AngleTolerance, Cell, Lattice, Permutation, Rotation, Translation};
-use moyo::data::Setting;
-use moyo::MoyoDataset;
+use moyo::{
+    base::{AngleTolerance, Cell, Lattice, Permutation, Rotation, Translation},
+    data::Setting,
+    CrystalSystem, MoyoDataset,
+};
 
 /// Sanity-check MoyoDataset
 fn assert_dataset(
@@ -150,6 +152,7 @@ fn test_with_fcc() {
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 225); // Fm-3m
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Cubic));
     assert_eq!(dataset.hall_number, 523);
     assert_eq!(dataset.num_operations(), 48 * 4);
     assert_eq!(dataset.orbits, vec![0, 0, 0, 0]);
@@ -186,10 +189,84 @@ fn test_with_rutile() {
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 136); // P4_2/mnm
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Tetragonal));
     assert_eq!(dataset.hall_number, 419);
     assert_eq!(dataset.num_operations(), 16);
     assert_eq!(dataset.orbits, vec![0, 0, 2, 2, 2, 2]);
     assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'f', 'f', 'f', 'f']);
+}
+
+#[test]
+fn test_with_perovskite() {
+    // SrTiO3 structure, Pm-3m (No. 221)
+    let a = 3.905;
+    let lattice = Lattice::new(matrix![
+        a, 0.0, 0.0;
+        0.0, a, 0.0;
+        0.0, 0.0, a;
+    ]);
+    let positions = vec![
+        vector![0.0, 0.0, 0.0], // Sr at 1a (0,0,0)
+        vector![0.5, 0.5, 0.5], // Ti at 1b (1/2,1/2,1/2)
+        vector![0.5, 0.5, 0.0], // O at 3c (1/2,1/2,0)
+        vector![0.5, 0.0, 0.5], // O at 3c (1/2,0,1/2)
+        vector![0.0, 0.5, 0.5], // O at 3c (0,1/2,1/2)
+    ];
+    let numbers = vec![0, 1, 2, 2, 2]; // Sr = 0, Ti = 1, O = 2
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let angle_tolerance = AngleTolerance::Default;
+    let setting = Setting::Standard;
+
+    let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
+    assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+
+    assert_eq!(dataset.number, 221); // Pm-3m
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Cubic));
+    assert_eq!(dataset.hall_number, 517);
+    assert_eq!(dataset.num_operations(), 48);
+    assert_eq!(dataset.orbits, vec![0, 1, 2, 2, 2]);
+    assert_eq!(dataset.wyckoffs, vec!['a', 'b', 'c', 'c', 'c']);
+}
+
+#[test]
+fn test_with_distorted_perovskite() {
+    // Simple orthorhombic structure with small distortions
+    let a = 4.0;
+    let b = a * 1.001; // 0.1% distortion
+    let c = a * 0.999;
+    let lattice = Lattice::new(matrix![
+        a, 0.0, 0.0;
+        0.0, b, 0.0;
+        0.0, 0.0, c;
+    ]);
+    // Simple cubic-like positions with small displacements
+    let positions = vec![
+        vector![0.0, 0.0, 0.0], // Origin
+        vector![0.5, 0.5, 0.5], // Body center
+    ];
+    let numbers = vec![0, 0]; // Same atom type
+    let cell = Cell::new(lattice, positions, numbers);
+
+    // Test with different tolerance levels
+    let settings = [
+        // With tight tolerance, should find orthorhombic symmetry
+        (1e-4, 71), // Immm (orthorhombic)
+        // With loose tolerance, should find cubic symmetry
+        (1e-2, 229), // Im-3m (cubic)
+    ];
+
+    for (symprec, expected_number) in settings.iter() {
+        let dataset =
+            MoyoDataset::new(&cell, *symprec, AngleTolerance::Default, Setting::Standard).unwrap();
+        assert_eq!(
+            dataset.number, *expected_number,
+            "With symprec={}, expected space group {} but got {}",
+            symprec, expected_number, dataset.number
+        );
+    }
 }
 
 #[test]
@@ -220,6 +297,7 @@ fn test_with_hcp() {
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 194);
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Hexagonal));
     assert_eq!(dataset.hall_number, 488);
     assert_eq!(dataset.num_operations(), 24);
     assert_eq!(dataset.orbits, vec![0, 0]);
@@ -263,6 +341,7 @@ fn test_with_wurtzite() {
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 186);
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Hexagonal));
     assert_eq!(dataset.hall_number, 480);
     assert_eq!(dataset.num_operations(), 12);
     assert_eq!(dataset.orbits, vec![0, 0, 2, 2]);
@@ -332,6 +411,7 @@ fn test_with_corundum() {
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 167);
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Trigonal));
     assert_eq!(dataset.hall_number, 460); // Hexagonal setting
     assert_eq!(dataset.num_operations(), 36);
     assert_eq!(
@@ -384,6 +464,7 @@ fn test_with_hexagonal_Sc() {
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 178);
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Hexagonal));
     assert_eq!(dataset.hall_number, 472);
     assert_eq!(dataset.num_operations(), 12);
     assert_eq!(dataset.orbits, vec![0, 0, 0, 0, 0, 0]);
@@ -412,6 +493,7 @@ fn test_with_trigonal_Sc() {
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 166);
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Trigonal));
     assert_eq!(dataset.hall_number, 458);
     assert_eq!(dataset.num_operations(), 12); // Rhombohedral setting
     assert_eq!(dataset.orbits, vec![0]);
@@ -437,6 +519,7 @@ fn test_with_clathrate_Si() {
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 205);
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Cubic));
     assert_eq!(dataset.hall_number, 501);
     assert_eq!(dataset.num_operations(), 24);
 }
@@ -456,6 +539,7 @@ fn test_with_mp_1197586() {
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 194); // P6_3/mmc
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Hexagonal));
     assert_eq!(dataset.hall_number, 488);
     assert_eq!(dataset.num_operations(), 24);
 }
@@ -475,6 +559,7 @@ fn test_with_mp_1185639() {
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 187); // P-6m2
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Hexagonal));
     assert_eq!(dataset.hall_number, 481);
     assert_eq!(dataset.num_operations(), 12);
 }
@@ -494,6 +579,7 @@ fn test_with_mp_1221598() {
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 225); // Fm-3m
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Cubic));
 }
 
 #[test]
@@ -510,6 +596,7 @@ fn test_with_mp_569901() {
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
 
     assert_eq!(dataset.number, 118); // P-4n2
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Tetragonal));
 }
 
 #[test]
@@ -524,6 +611,9 @@ fn test_with_mp_30665() {
     let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
     assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+
+    assert_eq!(dataset.number, 116); // Pm-3m
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Tetragonal));
 }
 
 #[test]
@@ -555,6 +645,9 @@ fn test_with_mp_550745() {
     let dataset = assert_dataset(&cell, symprec, angle_tolerance, setting);
     assert_dataset(&dataset.std_cell, symprec, angle_tolerance, setting);
     assert_dataset(&dataset.prim_std_cell, symprec, angle_tolerance, setting);
+
+    assert_eq!(dataset.number, 1); // P-4n2
+    assert_eq!(dataset.crystal_system, Ok(CrystalSystem::Triclinic));
 }
 
 #[test]

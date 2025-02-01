@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import numpy as np
+
 import moyopy
 
 
@@ -34,3 +36,45 @@ def test_moyo_dataset_repr(wurtzite: moyopy.Cell):
 
     # Test that repr() gives different output
     assert str(dataset) != repr(dataset)
+
+
+def test_crystal_system(wurtzite: moyopy.Cell):
+    # Test wurtzite structure (space group 186, hexagonal)
+    # Use higher symprec since wurtzite structure is slightly distorted
+    dataset = moyopy.MoyoDataset(wurtzite, symprec=1e-2)
+    assert dataset.crystal_system == moyopy.CrystalSystem.Hexagonal
+    assert str(dataset.crystal_system) == "Hexagonal"
+    assert repr(dataset.crystal_system) == "CrystalSystem.Hexagonal"
+
+    # Test FCC structure (space group 225, cubic)
+    positions = [
+        [0.0, 0.0, 0.0],
+        [0.0, 0.5, 0.5],
+        [0.5, 0.0, 0.5],
+        [0.5, 0.5, 0.0],
+    ]
+    fcc = moyopy.Cell(basis=np.eye(3), positions=positions, numbers=[0, 0, 0, 0])
+    dataset = moyopy.MoyoDataset(fcc)
+    crystal_system = dataset.crystal_system
+    assert crystal_system == moyopy.CrystalSystem.Cubic
+
+    # Test that crystal_system appears in string representation
+    assert f"{crystal_system=!s}" in str(dataset)
+
+    # Test all crystal systems are accessible as enum members
+    for crys_sys in (
+        "Triclinic",
+        "Monoclinic",
+        "Orthorhombic",
+        "Tetragonal",
+        "Trigonal",
+        "Hexagonal",
+        "Cubic",
+    ):
+        assert str(getattr(moyopy.CrystalSystem, crys_sys)) == crys_sys
+
+    assert moyopy.CrystalSystem.__module__ == "moyopy"
+    assert moyopy.CrystalSystem.__name__ == "CrystalSystem"
+    assert (
+        repr(moyopy.CrystalSystem) == str(moyopy.CrystalSystem) == "<class 'moyopy.CrystalSystem'>"
+    )

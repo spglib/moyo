@@ -6,10 +6,53 @@ pub mod data;
 
 use moyo::base::AngleTolerance;
 use moyo::data::Setting;
-use moyo::MoyoDataset;
+use moyo::{CrystalSystem, MoyoDataset};
 
 use crate::base::{PyMoyoError, PyOperations, PyStructure};
 use crate::data::{operations_from_number, PyCentering, PyHallSymbolEntry, PySetting};
+
+/// The crystal system of a space group.
+#[derive(Debug, PartialEq, Eq)]
+#[pyclass(name = "CrystalSystem", frozen)]
+pub enum PyCrystalSystem {
+    Triclinic,
+    Monoclinic,
+    Orthorhombic,
+    Tetragonal,
+    Trigonal,
+    Hexagonal,
+    Cubic,
+}
+
+impl From<CrystalSystem> for PyCrystalSystem {
+    fn from(cs: CrystalSystem) -> Self {
+        match cs {
+            CrystalSystem::Triclinic => Self::Triclinic,
+            CrystalSystem::Monoclinic => Self::Monoclinic,
+            CrystalSystem::Orthorhombic => Self::Orthorhombic,
+            CrystalSystem::Tetragonal => Self::Tetragonal,
+            CrystalSystem::Trigonal => Self::Trigonal,
+            CrystalSystem::Hexagonal => Self::Hexagonal,
+            CrystalSystem::Cubic => Self::Cubic,
+        }
+    }
+}
+
+impl std::fmt::Display for PyCrystalSystem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+#[pymethods]
+impl PyCrystalSystem {
+    fn __str__(&self) -> String {
+        self.to_string()
+    }
+
+    #[classattr]
+    const __module__: &'static str = "moyopy";
+}
 
 #[derive(Debug)]
 #[pyclass(name = "MoyoDataset", frozen)]
@@ -45,6 +88,16 @@ impl PyMoyoDataset {
     #[getter]
     pub fn number(&self) -> i32 {
         self.0.number
+    }
+
+    /// The crystal system based on the space group number.
+    #[getter]
+    pub fn crystal_system(&self) -> PyResult<PyCrystalSystem> {
+        self.0
+            .crystal_system
+            .clone()
+            .map_err(|err| PyMoyoError::from(err).into())
+            .map(Into::into)
     }
 
     #[getter]
@@ -131,8 +184,9 @@ impl PyMoyoDataset {
 
     fn __str__(&self) -> String {
         format!(
-            "MoyoDataset(number={}, hall_number={}, operations=<{} operations>, orbits={:?}, wyckoffs={:?}, site_symmetry_symbols={:?})",
+            "MoyoDataset(number={}, crystal_system={}, hall_number={}, operations=<{} operations>, orbits={:?}, wyckoffs={:?}, site_symmetry_symbols={:?})",
             self.0.number,
+            self.0.crystal_system.map_or("Unknown".to_string(), |cs| format!("{:?}", cs)),
             self.0.hall_number,
             self.0.operations.len(),
             self.0.orbits,
@@ -172,6 +226,7 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyStructure>()?;
     m.add_class::<PyMoyoError>()?;
     m.add_class::<PyOperations>()?;
+    m.add_class::<PyCrystalSystem>()?;
 
     // data
     m.add_class::<PyHallSymbolEntry>()?;
