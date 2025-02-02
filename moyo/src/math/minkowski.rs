@@ -1,5 +1,8 @@
 use itertools::Itertools;
-use nalgebra::{DMatrix, DVector, Matrix3, Vector3, U3};
+use nalgebra::allocator::Allocator;
+use nalgebra::{
+    DMatrix, DVector, DefaultAllocator, Dim, DimName, Matrix3, OMatrix, OVector, Vector3, U3,
+};
 
 use super::cycle_checker::CycleChecker;
 use super::elementary::swapping_column_matrix;
@@ -10,7 +13,7 @@ const EPS: f64 = 1e-8;
 pub fn minkowski_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
     let mut reduced_basis = *basis;
     let mut trans_mat = Matrix3::<i32>::identity();
-    minkowski_reduce_greedy(&mut reduced_basis, &mut trans_mat, 3);
+    minkowski_reduce_greedy(U3, &mut reduced_basis, &mut trans_mat, 3);
 
     // Preserve parity
     if trans_mat.map(|e| e as f64).determinant() < 0. {
@@ -25,9 +28,16 @@ pub fn minkowski_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
 /// basis * trans_mat is always preserved
 ///
 /// [1] https://royalsocietypublishing.org/doi/abs/10.1098/rspa.1992.0004
-fn minkowski_reduce_greedy(basis: &mut Matrix3<f64>, trans_mat: &mut Matrix3<i32>, dim: usize) {
+fn minkowski_reduce_greedy<N: Dim + DimName>(
+    dim: N,
+    basis: &mut OMatrix<f64, N, N>,
+    trans_mat: &mut OMatrix<i32, N, N>,
+    rank: usize,
+) where
+    DefaultAllocator: Allocator<f64, N, N> + Allocator<i32, N, N> + Allocator<f64, N>,
+{
     // Line 1: exit condition
-    if dim == 1 {
+    if rank == 1 {
         return;
     }
 
@@ -35,39 +45,39 @@ fn minkowski_reduce_greedy(basis: &mut Matrix3<f64>, trans_mat: &mut Matrix3<i32
     loop {
         // Line 3: sort basis vectors by their lengths
         let lengths: Vec<f64> = basis.column_iter().map(|column| column.norm()).collect();
-        for i in 0..dim {
-            for j in 0..(dim - 1 - i) {
+        for i in 0..rank {
+            for j in 0..(rank - 1 - i) {
                 if lengths[j] > lengths[j + 1] + EPS {
                     basis.swap_columns(j, j + 1);
-                    *trans_mat *= swapping_column_matrix(U3, j, j + 1);
+                    *trans_mat *= swapping_column_matrix(dim, j, j + 1);
                 }
             }
         }
 
         // Line 4: Recursive call
-        minkowski_reduce_greedy(basis, trans_mat, dim - 1);
+        minkowski_reduce_greedy(dim, basis, trans_mat, rank - 1);
 
         // Line 5: Solve the closest vector problem (CVP) for basis.column(d - 1)
         // linear projection (Gram-Schmidt)
-        let h = DMatrix::from_fn(dim - 1, dim - 1, |i, j| {
+        let h = DMatrix::from_fn(rank - 1, rank - 1, |i, j| {
             basis.column(i).dot(&basis.column(j)) / basis.column(i).norm_squared()
         });
-        let u = DVector::from_fn(dim - 1, |i, _| {
-            basis.column(i).dot(&basis.column(dim - 1)) / basis.column(i).norm_squared()
+        let u = DVector::from_fn(rank - 1, |i, _| {
+            basis.column(i).dot(&basis.column(rank - 1)) / basis.column(i).norm_squared()
         });
         let gs_coeffs = h.try_inverse().unwrap() * u;
-        let gs_coeffs_rint = DVector::from_fn(dim - 1, |i, _| gs_coeffs[(i, 0)].round() as i32);
+        let gs_coeffs_rint = DVector::from_fn(rank - 1, |i, _| gs_coeffs[(i, 0)].round() as i32);
 
-        // Since basis[0..(dim-1)] are already Minkowski reduced, we only need to check Voronoi relevant vectors from y_int
+        // Since basis[0..(rank-1)] are already Minkowski reduced, we only need to check Voronoi relevant vectors from y_int
         let mut cvp_min = f64::INFINITY;
-        let mut coeffs_argmin = DVector::<i32>::zeros(dim - 1);
-        let mut c_argmin = Vector3::<f64>::zeros();
+        let mut coeffs_argmin = DVector::<i32>::zeros(rank - 1);
+        let mut c_argmin = OVector::<f64, N>::zeros();
 
         // [-1, 0, 1] is sufficient for up to three dimensional Minkowski-reduced basis
-        for voronoi_vector in (0..dim - 1).map(|_| -1..=1).multi_cartesian_product() {
-            let coeffs = gs_coeffs_rint.clone() + DVector::from_iterator(dim - 1, voronoi_vector);
-            let c = basis.columns(0, dim - 1) * coeffs.map(|e| e as f64);
-            let cvp = (c - basis.column(dim - 1)).norm();
+        for voronoi_vector in (0..rank - 1).map(|_| -1..=1).multi_cartesian_product() {
+            let coeffs = gs_coeffs_rint.clone() + DVector::from_iterator(rank - 1, voronoi_vector);
+            let c = basis.columns(0, rank - 1) * coeffs.map(|e| e as f64);
+            let cvp = (c.clone() - basis.column(rank - 1)).norm();
             if cvp < cvp_min {
                 cvp_min = cvp;
                 coeffs_argmin = coeffs.clone();
@@ -75,18 +85,18 @@ fn minkowski_reduce_greedy(basis: &mut Matrix3<f64>, trans_mat: &mut Matrix3<i32
             }
         }
 
-        // Line 6: update basis.column(dim - 1)
+        // Line 6: update basis.column(rank - 1)
         for j in 0..3 {
-            basis[(j, dim - 1)] -= c_argmin[j];
+            basis[(j, rank - 1)] -= c_argmin[j];
         }
-        let mut add_mat = Matrix3::<i32>::identity();
-        for i in 0..(dim - 1) {
-            add_mat[(i, dim - 1)] = -coeffs_argmin[i];
+        let mut add_mat = OMatrix::<i32, N, N>::identity();
+        for i in 0..(rank - 1) {
+            add_mat[(i, rank - 1)] = -coeffs_argmin[i];
         }
         *trans_mat *= add_mat;
 
         // Line 7: loop until length ordering is changed
-        if basis.column(dim - 1).norm() + EPS > basis.column(dim - 2).norm() {
+        if basis.column(rank - 1).norm() + EPS > basis.column(rank - 2).norm() {
             break;
         }
 
