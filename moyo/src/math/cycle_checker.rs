@@ -1,14 +1,21 @@
 use std::collections::HashSet;
 
-use nalgebra::Matrix3;
+use nalgebra::base::allocator::Allocator;
+use nalgebra::{DefaultAllocator, Dim, OMatrix};
 
 /// Record transformation matrices during lattice reduction
 #[derive(Debug)]
-pub struct CycleChecker {
-    visited: HashSet<Matrix3<i32>>,
+pub struct CycleChecker<N: Dim>
+where
+    DefaultAllocator: Allocator<i32, N, N>,
+{
+    visited: HashSet<OMatrix<i32, N, N>>,
 }
 
-impl CycleChecker {
+impl<N: Dim> CycleChecker<N>
+where
+    DefaultAllocator: Allocator<i32, N, N>,
+{
     pub fn new() -> Self {
         Self {
             visited: HashSet::new(),
@@ -16,11 +23,11 @@ impl CycleChecker {
     }
 
     /// If `matrix` is not visited, insert it and return true.
-    pub fn insert(&mut self, matrix: &Matrix3<i32>) -> bool {
+    pub fn insert(&mut self, matrix: &OMatrix<i32, N, N>) -> bool {
         if self.visited.contains(matrix) {
             return false;
         }
-        self.visited.insert(*matrix);
+        self.visited.insert(matrix.clone());
         true
     }
 }
