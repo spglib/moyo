@@ -294,7 +294,13 @@ fn assign_wyckoff_position(
         //    = lattice * (D * R^-1 * y - L * (offset + position - space.origin)
         let space = WyckoffPositionSpace::new(wyckoff.coordinates);
         let snf = SNF::new(&space.linear);
-        for offset in iproduct!(-1..=1, -1..=1, -1..=1) {
+
+        let iter_multi_1 = iproduct!(-1..=1, -1..=1, -1..=1);
+        let iter_multi_2 = iproduct!(-2..=2, -2..=2, -2..=2).filter(|&(n1, n2, n3)| {
+            (n1 as i32).abs() == 2 || (n2 as i32).abs() == 2 || (n3 as i32).abs() == 2
+        });
+
+        for offset in iter_multi_1.chain(iter_multi_2) {
             let offset = Vector3::new(offset.0 as f64, offset.1 as f64, offset.2 as f64);
             let b = snf.l.map(|e| e as f64) * (offset + position - space.origin);
             let mut rinvy = Vector3::zeros();
