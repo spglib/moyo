@@ -6,6 +6,6 @@ This page contains auto-generated API reference documentation [#f1]_.
 .. toctree::
    :titlesonly:
 
-   moyopy/moyopy
+   /autoapi/moyopy/index
 
-.. [#f1] Created with `sphinx-autodoc2 <https://github.com/chrisjsewell/sphinx-autodoc2>`_
+.. [#f1] Created with `sphinx-autoapi <https://github.com/readthedocs/sphinx-autoapi>`_

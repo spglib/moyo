@@ -6,8 +6,6 @@ hidden:
 ---
     Introduction <self>
     Examples <examples/index>
-    API Reference <apidocs/index>
-    Index <genindex>
 ```
 
 ```{include} ../README.md
