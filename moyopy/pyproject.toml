@@ -45,7 +45,7 @@ docs = [
     "sphinx-autobuild",
     "sphinxcontrib-bibtex >= 2.5",
     "sphinx-book-theme",
-    "sphinx-autodoc2",
+    "sphinx-autoapi",
     "myst-parser >= 2.0",
     "linkify-it-py",
 ]

@@ -64,38 +64,44 @@ class SpaceGroupType:
     def arithmetic_symbol(self) -> str:
         """Symbol for arithmetic crystal class.
 
-        See moyo/src/data/arithmetic_crystal_class.rs for string values.
+        See https://github.com/spglib/moyo/blob/main/moyo/src/data/arithmetic_crystal_class.rs
+        for string values.
         """
     # Other classifications
     @property
     def geometric_crystal_class(self) -> str:
         """Geometric crystal class.
 
-        See moyo/src/data/classification.rs for string values.
+        See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs
+        for string values.
         """
     @property
     def crystal_system(self) -> str:
         """Crystal system.
 
-        See moyo/src/data/classification.rs for string values.
+        See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs
+        for string values.
         """
     @property
     def bravais_class(self) -> str:
         """Bravais class.
 
-        See moyo/src/data/classification.rs for string values.
+        See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs
+        for string values.
         """
     @property
     def lattice_system(self) -> str:
         """Lattice system.
 
-        See moyo/src/data/classification.rs for string values.
+        See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs
+        for string values.
         """
     @property
     def crystal_family(self) -> str:
         """Crystal family.
 
-        See moyo/src/data/classification.rs for string values.
+        See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs
+        for string values.
         """
 
 def operations_from_number(number: int, setting: Setting) -> Operations: ...

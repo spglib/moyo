@@ -79,4 +79,12 @@ impl PySpaceGroupType {
             crystal_family: crystal_family.to_string(),
         })
     }
+
+    fn __repr__(&self) -> String {
+        format!("SpaceGroupType({})", self.number)
+    }
+
+    fn __str__(&self) -> String {
+        format!("{:?}", self)
+    }
 }
