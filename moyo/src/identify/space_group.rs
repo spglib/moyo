@@ -87,8 +87,9 @@ impl SpaceGroup {
 fn correction_transformation_matrices(
     arithmetic_number: ArithmeticNumber,
 ) -> Vec<UnimodularLinear> {
-    let geometric_crystal_class =
-        arithmetic_crystal_class_entry(arithmetic_number).geometric_crystal_class;
+    let geometric_crystal_class = arithmetic_crystal_class_entry(arithmetic_number)
+        .unwrap()
+        .geometric_crystal_class;
 
     // conventional -> conventional(standard)
     let convs = match geometric_crystal_class {

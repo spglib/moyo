@@ -51,6 +51,7 @@ jobs:
           uv pip install --system --no-index --find-links dist moyopy
           uv pip install --system moyopy[interface]
           python moyopy/examples/basic.py
+          python moyopy/examples/space_group_type.py
           python moyopy/examples/pymatgen_structure.py
 
   linux:

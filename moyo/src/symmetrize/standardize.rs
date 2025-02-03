@@ -112,7 +112,9 @@ impl StandardizedCell {
 
         // To standardized primitive cell
         let arithmetic_number = entry.arithmetic_number;
-        let lattice_system = arithmetic_crystal_class_entry(arithmetic_number).lattice_system();
+        let lattice_system = arithmetic_crystal_class_entry(arithmetic_number)
+            .unwrap()
+            .lattice_system();
         let prim_transformation = match lattice_system {
             LatticeSystem::Triclinic => standardize_triclinic_cell(&prim_cell.lattice),
             _ => space_group.transformation.clone(),

@@ -14,7 +14,7 @@ extensions = [
     "sphinxcontrib.bibtex",
     # "nbsphinx",
     "myst_parser",
-    "autodoc2",
+    "autoapi.extension",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -70,17 +70,10 @@ myst_dmath_double_inline = True
 myst_heading_anchors = 3
 
 # -----------------------------------------------------------------------------
-# autodoc2
+# autoapi
 # -----------------------------------------------------------------------------
-autodoc2_packages = [
-    {
-        "path": "../python/moyopy/_moyopy.pyi",
-        "module": project,
-    }
-]
-autodoc2_render_plugin = "myst"
-autodoc2_docstring_parser_regexes = [
-    (r".*", "rst"),
+autoapi_dirs = [
+    "../python/moyopy",
 ]
 
 # -----------------------------------------------------------------------------

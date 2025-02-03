@@ -43,4 +43,65 @@ class HallSymbolEntry:
     def centering(self) -> Centering:
         """Centering."""
 
+class SpaceGroupType:
+    """Space-group type information."""
+    def __init__(self, number: int): ...
+    # Space group type
+    @property
+    def number(self) -> int:
+        """ITA number for space group types (1 - 230)."""
+    @property
+    def hm_short(self) -> str:
+        """Hermann-Mauguin symbol in short notation."""
+    @property
+    def hm_full(self) -> str:
+        """Hermann-Mauguin symbol in full notation."""
+    # Arithmetic crystal class
+    @property
+    def arithmetic_number(self) -> int:
+        """Number for arithmetic crystal classes (1 - 73)."""
+    @property
+    def arithmetic_symbol(self) -> str:
+        """Symbol for arithmetic crystal class.
+
+        See https://github.com/spglib/moyo/blob/main/moyo/src/data/arithmetic_crystal_class.rs
+        for string values.
+        """
+    # Other classifications
+    @property
+    def geometric_crystal_class(self) -> str:
+        """Geometric crystal class.
+
+        See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs
+        for string values.
+        """
+    @property
+    def crystal_system(self) -> str:
+        """Crystal system.
+
+        See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs
+        for string values.
+        """
+    @property
+    def bravais_class(self) -> str:
+        """Bravais class.
+
+        See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs
+        for string values.
+        """
+    @property
+    def lattice_system(self) -> str:
+        """Lattice system.
+
+        See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs
+        for string values.
+        """
+    @property
+    def crystal_family(self) -> str:
+        """Crystal family.
+
+        See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs
+        for string values.
+        """
+
 def operations_from_number(number: int, setting: Setting) -> Operations: ...

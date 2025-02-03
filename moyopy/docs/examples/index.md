@@ -9,3 +9,10 @@ When we need a secondary symmetry information such as Hermann-Mauguin symbol for
 
 ```{literalinclude} ../../examples/basic.py
 ```
+
+## Accessing space-group type information
+
+You can access the space-group classification information using {py:class}`moyopy.SpaceGroupType`.
+
+```{literalinclude} ../../examples/space_group_type.py
+```
