@@ -4,10 +4,13 @@ pub type ArithmeticNumber = i32;
 
 #[derive(Debug, Clone)]
 pub struct ArithmeticCrystalClassEntry {
+    /// Number for arithmetic crystal classes (1 - 73)
     pub arithmetic_number: ArithmeticNumber,
-    #[allow(dead_code)]
+    /// Symbol for arithmetic crystal class
     pub symbol: &'static str,
+    /// Geometric crystal class
     pub geometric_crystal_class: GeometricCrystalClass,
+    /// Bravais class
     pub bravais_class: BravaisClass,
 }
 
@@ -33,8 +36,10 @@ impl ArithmeticCrystalClassEntry {
 
 pub fn arithmetic_crystal_class_entry(
     arithmetic_number: ArithmeticNumber,
-) -> ArithmeticCrystalClassEntry {
-    ARITHMETIC_CRYSTAL_CLASS_DATABASE[arithmetic_number as usize - 1].clone()
+) -> Option<ArithmeticCrystalClassEntry> {
+    ARITHMETIC_CRYSTAL_CLASS_DATABASE
+        .get(arithmetic_number as usize - 1)
+        .cloned()
 }
 
 pub fn iter_arithmetic_crystal_entry() -> impl Iterator<Item = &'static ArithmeticCrystalClassEntry>

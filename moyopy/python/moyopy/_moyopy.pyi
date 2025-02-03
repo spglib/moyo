@@ -1,5 +1,11 @@
 from moyopy._base import Cell, Operations  # noqa: F401
-from moyopy._data import Centering, HallSymbolEntry, Setting, operations_from_number  # noqa: F401
+from moyopy._data import (
+    Centering,
+    HallSymbolEntry,
+    Setting,
+    SpaceGroupType,
+    operations_from_number,
+)  # noqa: F401
 
 __version__: str
 
@@ -100,6 +106,7 @@ __all__ = [
     "Setting",
     "Centering",
     "HallSymbolEntry",
+    "SpaceGroupType",
     "operations_from_number",
     # lib
     "__version__",

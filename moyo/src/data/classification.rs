@@ -47,6 +47,52 @@ pub enum GeometricCrystalClass {
     Oh, // m-3m
 }
 
+impl ToString for GeometricCrystalClass {
+    fn to_string(&self) -> String {
+        match self {
+            // Triclinic
+            GeometricCrystalClass::C1 => "1".to_string(),
+            GeometricCrystalClass::Ci => "-1".to_string(),
+            // Monoclinic
+            GeometricCrystalClass::C2 => "2".to_string(),
+            GeometricCrystalClass::C1h => "m".to_string(),
+            GeometricCrystalClass::C2h => "2/m".to_string(),
+            // Orthorhombic
+            GeometricCrystalClass::D2 => "222".to_string(),
+            GeometricCrystalClass::C2v => "mm2".to_string(),
+            GeometricCrystalClass::D2h => "mmm".to_string(),
+            // Tetragonal
+            GeometricCrystalClass::C4 => "4".to_string(),
+            GeometricCrystalClass::S4 => "-4".to_string(),
+            GeometricCrystalClass::C4h => "4/m".to_string(),
+            GeometricCrystalClass::D4 => "422".to_string(),
+            GeometricCrystalClass::C4v => "4mm".to_string(),
+            GeometricCrystalClass::D2d => "-42m".to_string(),
+            GeometricCrystalClass::D4h => "4/mmm".to_string(),
+            // Trigonal
+            GeometricCrystalClass::C3 => "3".to_string(),
+            GeometricCrystalClass::C3i => "-3".to_string(),
+            GeometricCrystalClass::D3 => "32".to_string(),
+            GeometricCrystalClass::C3v => "3m".to_string(),
+            GeometricCrystalClass::D3d => "-3m".to_string(),
+            // Hexagonal
+            GeometricCrystalClass::C6 => "6".to_string(),
+            GeometricCrystalClass::C3h => "-6".to_string(),
+            GeometricCrystalClass::C6h => "6/m".to_string(),
+            GeometricCrystalClass::D6 => "622".to_string(),
+            GeometricCrystalClass::C6v => "6mm".to_string(),
+            GeometricCrystalClass::D3h => "-6m2".to_string(),
+            GeometricCrystalClass::D6h => "6/mmm".to_string(),
+            // Cubic
+            GeometricCrystalClass::T => "23".to_string(),
+            GeometricCrystalClass::Th => "m-3".to_string(),
+            GeometricCrystalClass::O => "432".to_string(),
+            GeometricCrystalClass::Td => "-43m".to_string(),
+            GeometricCrystalClass::Oh => "m-3m".to_string(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 pub enum LaueClass {
     Ci,  // -1
@@ -155,6 +201,20 @@ impl CrystalSystem {
     }
 }
 
+impl ToString for CrystalSystem {
+    fn to_string(&self) -> String {
+        match self {
+            CrystalSystem::Triclinic => "Triclinic".to_string(),
+            CrystalSystem::Monoclinic => "Monoclinic".to_string(),
+            CrystalSystem::Orthorhombic => "Orthorhombic".to_string(),
+            CrystalSystem::Tetragonal => "Tetragonal".to_string(),
+            CrystalSystem::Trigonal => "Trigonal".to_string(),
+            CrystalSystem::Hexagonal => "Hexagonal".to_string(),
+            CrystalSystem::Cubic => "Cubic".to_string(),
+        }
+    }
+}
+
 /// ===========================================================================
 /// Classification based on lattice
 /// ===========================================================================
@@ -162,20 +222,55 @@ impl CrystalSystem {
 #[allow(non_camel_case_types)]
 #[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 pub enum BravaisClass {
+    // Triclinic
     aP,
+    // Monoclinic
     mP,
     mC,
+    // Orthorhombic
     oP,
     oS,
     oF,
     oI,
+    // Tetragonal
     tP,
     tI,
+    // Rhombohedral
     hR,
+    // Hexagonal
     hP,
+    // Cubic
     cP,
     cF,
     cI,
+}
+
+impl ToString for BravaisClass {
+    fn to_string(&self) -> String {
+        match self {
+            // Triclinic
+            BravaisClass::aP => "aP".to_string(),
+            // Monoclinic
+            BravaisClass::mP => "mP".to_string(),
+            BravaisClass::mC => "mC".to_string(),
+            // Orthorhombic
+            BravaisClass::oP => "oP".to_string(),
+            BravaisClass::oS => "oS".to_string(),
+            BravaisClass::oF => "oF".to_string(),
+            BravaisClass::oI => "oI".to_string(),
+            // Tetragonal
+            BravaisClass::tP => "tP".to_string(),
+            BravaisClass::tI => "tI".to_string(),
+            // Rhombohedral
+            BravaisClass::hR => "hR".to_string(),
+            // Hexagonal
+            BravaisClass::hP => "hP".to_string(),
+            // Cubic
+            BravaisClass::cP => "cP".to_string(),
+            BravaisClass::cF => "cF".to_string(),
+            BravaisClass::cI => "cI".to_string(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
@@ -202,6 +297,20 @@ impl LatticeSystem {
             BravaisClass::hR => LatticeSystem::Rhombohedral,
             BravaisClass::hP => LatticeSystem::Hexagonal,
             BravaisClass::cP | BravaisClass::cF | BravaisClass::cI => LatticeSystem::Cubic,
+        }
+    }
+}
+
+impl ToString for LatticeSystem {
+    fn to_string(&self) -> String {
+        match self {
+            LatticeSystem::Triclinic => "Triclinic".to_string(),
+            LatticeSystem::Monoclinic => "Monoclinic".to_string(),
+            LatticeSystem::Orthorhombic => "Orthorhombic".to_string(),
+            LatticeSystem::Tetragonal => "Tetragonal".to_string(),
+            LatticeSystem::Rhombohedral => "Rhombohedral".to_string(),
+            LatticeSystem::Hexagonal => "Hexagonal".to_string(),
+            LatticeSystem::Cubic => "Cubic".to_string(),
         }
     }
 }
@@ -242,6 +351,19 @@ impl CrystalFamily {
             LatticeSystem::Tetragonal => CrystalFamily::Tetragonal,
             LatticeSystem::Rhombohedral | LatticeSystem::Hexagonal => CrystalFamily::Hexagonal,
             LatticeSystem::Cubic => CrystalFamily::Cubic,
+        }
+    }
+}
+
+impl ToString for CrystalFamily {
+    fn to_string(&self) -> String {
+        match self {
+            CrystalFamily::Triclinic => "Triclinic".to_string(),
+            CrystalFamily::Monoclinic => "Monoclinic".to_string(),
+            CrystalFamily::Orthorhombic => "Orthorhombic".to_string(),
+            CrystalFamily::Tetragonal => "Tetragonal".to_string(),
+            CrystalFamily::Hexagonal => "Hexagonal".to_string(),
+            CrystalFamily::Cubic => "Cubic".to_string(),
         }
     }
 }

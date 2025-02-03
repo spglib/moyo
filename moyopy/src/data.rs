@@ -1,8 +1,10 @@
 mod hall_symbol;
 mod setting;
+mod space_group_type;
 
 pub use hall_symbol::{PyCentering, PyHallSymbolEntry};
 pub use setting::PySetting;
+pub use space_group_type::PySpaceGroupType;
 
 use pyo3::prelude::*;
 

@@ -9,7 +9,9 @@ use moyo::data::Setting;
 use moyo::MoyoDataset;
 
 use crate::base::{PyMoyoError, PyOperations, PyStructure};
-use crate::data::{operations_from_number, PyCentering, PyHallSymbolEntry, PySetting};
+use crate::data::{
+    operations_from_number, PyCentering, PyHallSymbolEntry, PySetting, PySpaceGroupType,
+};
 
 #[derive(Debug)]
 #[pyclass(name = "MoyoDataset", frozen)]
@@ -177,6 +179,7 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyHallSymbolEntry>()?;
     m.add_class::<PySetting>()?;
     m.add_class::<PyCentering>()?;
+    m.add_class::<PySpaceGroupType>()?;
     m.add_wrapped(wrap_pyfunction!(operations_from_number))?;
 
     Ok(())
