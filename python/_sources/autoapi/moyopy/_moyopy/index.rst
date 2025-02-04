@@ -354,6 +354,13 @@ Module Contents
       Rigid rotation.
 
 
+   .. py:property:: pearson_symbol
+      :type: str
+
+
+      Pearson symbol for standardized cell.
+
+
    .. py:property:: prim_std_cell
       :type: moyopy._base.Cell
 
