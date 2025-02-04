@@ -97,6 +97,11 @@ impl PyMoyoDataset {
     }
 
     #[getter]
+    pub fn pearson_symbol(&self) -> String {
+        self.0.pearson_symbol.clone()
+    }
+
+    #[getter]
     pub fn prim_std_cell(&self) -> PyStructure {
         self.0.prim_std_cell.clone().into()
     }

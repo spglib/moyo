@@ -72,6 +72,9 @@ class MoyoDataset:
     @property
     def std_rotation_matrix(self) -> list[list[float]]:
         """Rigid rotation."""
+    @property
+    def pearson_symbol(self) -> str:
+        """Pearson symbol for standardized cell."""
     # Primitive standardized cell
     @property
     def prim_std_cell(self) -> Cell:

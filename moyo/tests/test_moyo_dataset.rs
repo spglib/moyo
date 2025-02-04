@@ -59,12 +59,14 @@ fn assert_dataset(
         MoyoDataset::new(&dataset.std_cell, symprec, angle_tolerance, setting).unwrap();
     assert_eq!(std_dataset.number, dataset.number);
     assert_eq!(std_dataset.hall_number, dataset.hall_number);
+    assert_eq!(std_dataset.pearson_symbol, dataset.pearson_symbol);
 
     // prim_std_cell
     let prim_std_dataset =
         MoyoDataset::new(&dataset.prim_std_cell, symprec, angle_tolerance, setting).unwrap();
     assert_eq!(prim_std_dataset.number, dataset.number);
     assert_eq!(prim_std_dataset.hall_number, dataset.hall_number);
+    assert_eq!(prim_std_dataset.pearson_symbol, dataset.pearson_symbol);
 
     // prim_std_linear should be an inverse of an integer matrix
     let prim_std_linear_inv = dataset
@@ -154,6 +156,7 @@ fn test_with_fcc() {
     assert_eq!(dataset.num_operations(), 48 * 4);
     assert_eq!(dataset.orbits, vec![0, 0, 0, 0]);
     assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'a', 'a']);
+    assert_eq!(dataset.pearson_symbol, "cF4");
 }
 
 #[test]
@@ -190,6 +193,7 @@ fn test_with_rutile() {
     assert_eq!(dataset.num_operations(), 16);
     assert_eq!(dataset.orbits, vec![0, 0, 2, 2, 2, 2]);
     assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'f', 'f', 'f', 'f']);
+    assert_eq!(dataset.pearson_symbol, "tP6");
 }
 
 #[test]
@@ -228,6 +232,7 @@ fn test_with_hcp() {
     if dataset.wyckoffs[0] != 'c' && dataset.wyckoffs[0] != 'd' {
         panic!("Unexpected Wyckoff letter: {}", dataset.wyckoffs[0]);
     }
+    assert_eq!(dataset.pearson_symbol, "hP2");
 }
 
 #[test]
@@ -271,6 +276,7 @@ fn test_with_wurtzite() {
     if dataset.wyckoffs[0] != 'a' && dataset.wyckoffs[0] != 'b' {
         panic!("Unexpected Wyckoff letter: {}", dataset.wyckoffs[0]);
     }
+    assert_eq!(dataset.pearson_symbol, "hP4");
 }
 
 #[test]
@@ -348,6 +354,7 @@ fn test_with_corundum() {
             'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e', 'e',
         ]
     );
+    assert_eq!(dataset.pearson_symbol, "hR30");
 }
 
 #[test]
@@ -388,6 +395,7 @@ fn test_with_hexagonal_Sc() {
     assert_eq!(dataset.num_operations(), 12);
     assert_eq!(dataset.orbits, vec![0, 0, 0, 0, 0, 0]);
     assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'a', 'a', 'a', 'a']);
+    assert_eq!(dataset.pearson_symbol, "hP6");
 }
 
 #[test]
@@ -418,6 +426,7 @@ fn test_with_trigonal_Sc() {
     if dataset.wyckoffs[0] != 'a' && dataset.wyckoffs[0] != 'b' {
         panic!("Unexpected Wyckoff letter: {}", dataset.wyckoffs[0]);
     }
+    assert_eq!(dataset.pearson_symbol, "hR3");
 }
 
 #[test]

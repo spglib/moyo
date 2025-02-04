@@ -7,6 +7,7 @@ def test_moyo_dataset(wurtzite: moyopy.Cell):
     dataset = moyopy.MoyoDataset(wurtzite)
     assert dataset.number == 186
     assert dataset.hall_number == 480
+    assert dataset.pearson_symbol == "hP4"
 
 
 def test_serialization(wurtzite: moyopy.Cell):
