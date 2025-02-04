@@ -75,7 +75,7 @@ use crate::base::{
     AngleTolerance, Cell, MagneticCell, MagneticMoment, MagneticOperations, MoyoError, Operations,
     OriginShift, RotationMagneticMomentAction,
 };
-use crate::data::{HallNumber, Number, Setting, UNINumber};
+use crate::data::{arithmetic_crystal_class_entry, HallNumber, Number, Setting, UNINumber};
 use crate::identify::{MagneticSpaceGroup, SpaceGroup};
 use crate::search::{
     iterative_magnetic_symmetry_search, iterative_symmetry_search,
@@ -83,6 +83,7 @@ use crate::search::{
 };
 use crate::symmetrize::{orbits_in_cell, StandardizedCell, StandardizedMagneticCell};
 
+use data::hall_symbol_entry;
 use nalgebra::Matrix3;
 
 #[derive(Debug)]
@@ -123,6 +124,8 @@ pub struct MoyoDataset {
     pub std_origin_shift: OriginShift,
     /// Rigid rotation
     pub std_rotation_matrix: Matrix3<f64>,
+    /// Pearson symbol for standardized cell
+    pub pearson_symbol: String,
     // ------------------------------------------------------------------------
     // Primitive standardized cell
     // ------------------------------------------------------------------------
@@ -204,6 +207,13 @@ impl MoyoDataset {
         let prim_std_origin_shift =
             prim_cell_linear_inv * std_cell.prim_transformation.origin_shift;
 
+        // Pearson symbol
+        let hall_symbol = hall_symbol_entry(space_group.hall_number).unwrap();
+        let arithmetic_entry =
+            arithmetic_crystal_class_entry(hall_symbol.arithmetic_number).unwrap();
+        let bravais_class = arithmetic_entry.bravais_class;
+        let pearson_symbol = format!("{}{}", bravais_class.to_string(), std_cell.cell.num_atoms());
+
         Ok(Self {
             // Space-group type
             number: space_group.number,
@@ -215,6 +225,7 @@ impl MoyoDataset {
             std_linear,
             std_origin_shift,
             std_rotation_matrix: std_cell.rotation_matrix,
+            pearson_symbol,
             // Primitive standardized cell
             prim_std_cell: std_cell.prim_cell,
             prim_std_linear,
