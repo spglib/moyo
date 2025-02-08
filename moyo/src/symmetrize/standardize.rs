@@ -1,16 +1,17 @@
-use itertools::iproduct;
+use itertools::{iproduct, Itertools};
 use log::debug;
 use nalgebra::linalg::{Cholesky, QR};
 use nalgebra::{vector, Matrix3, Vector3};
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
 
 use crate::base::{
-    orbits_from_permutations, project_rotations, Cell, Lattice, MoyoError, Operations, Permutation,
-    Position, Rotations, Transformation, UnimodularTransformation, EPS,
+    orbits_from_permutations, project_rotations, Cell, Lattice, Linear, MoyoError, Operations,
+    Permutation, Position, Rotations, Transformation, UnimodularTransformation, EPS,
 };
 use crate::data::{
-    arithmetic_crystal_class_entry, hall_symbol_entry, iter_wyckoff_positions, HallNumber,
-    HallSymbol, LatticeSystem, WyckoffPosition, WyckoffPositionSpace,
+    arithmetic_crystal_class_entry, hall_symbol_entry, iter_wyckoff_positions, Centering,
+    HallNumber, HallSymbol, LatticeSystem, WyckoffPosition, WyckoffPositionSpace,
 };
 use crate::identify::SpaceGroup;
 use crate::math::SNF;
@@ -50,6 +51,7 @@ impl StandardizedCell {
         prim_permutations: &[Permutation],
         space_group: &SpaceGroup,
         symprec: f64,
+        epsilon: f64,
     ) -> Result<Self, MoyoError> {
         let (
             prim_std_cell,
@@ -64,6 +66,7 @@ impl StandardizedCell {
             prim_operations,
             prim_permutations,
             space_group,
+            epsilon,
         )?;
 
         let wyckoffs = Self::assign_wyckoffs(
@@ -95,6 +98,7 @@ impl StandardizedCell {
         prim_operations: &Operations,
         prim_permutations: &[Permutation],
         space_group: &SpaceGroup,
+        epsilon: f64,
     ) -> Result<
         (
             Cell,
@@ -110,29 +114,41 @@ impl StandardizedCell {
         let entry =
             hall_symbol_entry(space_group.hall_number).ok_or(MoyoError::StandardizationError)?;
 
-        // To standardized primitive cell
-        let arithmetic_number = entry.arithmetic_number;
-        let lattice_system = arithmetic_crystal_class_entry(arithmetic_number)
-            .unwrap()
-            .lattice_system();
-        let prim_transformation = match lattice_system {
-            LatticeSystem::Triclinic => standardize_triclinic_cell(&prim_cell.lattice),
-            _ => space_group.transformation.clone(),
-        };
-        let prim_std_cell_tmp = prim_transformation.transform_cell(&prim_cell);
-
-        // Symmetrize positions of prim_std_cell by refined symmetry operations
-        // 1. Prepare operations in primitive standard
+        // Prepare operations in primitive standard
         let hs = HallSymbol::from_hall_number(space_group.hall_number)
             .ok_or(MoyoError::StandardizationError)?;
         let conv_std_operations = hs.traverse();
-        let prim_std_operations = Transformation::from_linear(entry.centering.linear())
-            .inverse_transform_operations(&conv_std_operations);
+        let prim_std_operations = hs.primitive_traverse();
 
-        // 2. Reorder permutations because prim_std_operations may have different order from symmetry_search.operations!
+        // To standardized primitive cell
+        let lattice_system = arithmetic_crystal_class_entry(entry.arithmetic_number)
+            .unwrap()
+            .lattice_system();
+        let (prim_transformation, conv_trans_linear) = match lattice_system {
+            LatticeSystem::Triclinic => (
+                standardize_triclinic_cell(&prim_cell.lattice),
+                Linear::identity(),
+            ),
+            LatticeSystem::Monoclinic => {
+                let trans_std_prim_to_conv = standardize_monoclinic_conv_cell(
+                    &prim_cell.lattice,
+                    &space_group.transformation,
+                    entry.centering,
+                    &hs.generators,
+                    epsilon,
+                );
+                (space_group.transformation.clone(), trans_std_prim_to_conv)
+            }
+            _ => (space_group.transformation.clone(), entry.centering.linear()),
+        };
+
+        let prim_std_cell_tmp = prim_transformation.transform_cell(&prim_cell);
+
+        // Symmetrize positions of prim_std_cell by refined symmetry operations
+        // Reorder permutations because prim_std_operations may have different order from symmetry_search.operations!
         let mut permutation_mapping = HashMap::new();
-        let prim_operations = prim_transformation.transform_operations(&prim_operations);
-        let prim_rotations = project_rotations(&prim_operations);
+        let prim_rotations =
+            project_rotations(&prim_transformation.transform_operations(&prim_operations));
         for (prim_rotation, permutation) in prim_rotations.iter().zip(prim_permutations.iter()) {
             permutation_mapping.insert(*prim_rotation, permutation.clone());
         }
@@ -154,8 +170,8 @@ impl StandardizedCell {
         );
 
         // To (conventional) standardized cell
-        let conv_trans = Transformation::from_linear(entry.centering.linear());
-        let (std_cell, site_mapping) = conv_trans.transform_cell(&prim_std_cell);
+        let (std_cell, site_mapping) =
+            Transformation::from_linear(conv_trans_linear.clone()).transform_cell(&prim_std_cell);
 
         // Symmetrize lattice
         let (_, rotation_matrix) =
@@ -166,9 +182,9 @@ impl StandardizedCell {
             prim_std_permutations,
             prim_transformation.clone(),
             std_cell.rotate(&rotation_matrix),
-            // prim_transformation * (conv_trans.linear, 0)
+            // prim_transformation * (conv_trans_linear, 0)
             Transformation::new(
-                prim_transformation.linear * conv_trans.linear,
+                prim_transformation.linear * conv_trans_linear,
                 prim_transformation.origin_shift,
             ),
             rotation_matrix,
@@ -275,6 +291,88 @@ pub fn orbits_in_cell(
 fn standardize_triclinic_cell(lattice: &Lattice) -> UnimodularTransformation {
     let (_, linear) = lattice.unchecked_niggli_reduce();
     UnimodularTransformation::from_linear(linear)
+}
+
+static UNIMODULAR3_RANGE1: Lazy<Vec<UnimodularTransformation>> = Lazy::new(|| {
+    (0..9)
+        .map(|_| -1..=1)
+        .multi_cartesian_product()
+        .filter_map(|v| {
+            let mat = Matrix3::new(
+                v[0] as i32,
+                v[1] as i32,
+                v[2] as i32,
+                v[3] as i32,
+                v[4] as i32,
+                v[5] as i32,
+                v[6] as i32,
+                v[7] as i32,
+                v[8] as i32,
+            );
+            let det = mat.map(|e| e as f64).determinant().round() as i32;
+            if det == 1 {
+                Some(UnimodularTransformation::from_linear(mat))
+            } else {
+                None
+            }
+        })
+        .collect()
+});
+
+/// Standardize monoclinic cell by choosing reduced basis vectors for perpendicular plane to the unique axis while keeping matrix representations of `conv_std_generators`.
+fn standardize_monoclinic_conv_cell(
+    prim_lattice: &Lattice,
+    transformation_to_prim_std: &UnimodularTransformation,
+    centering: Centering,
+    conv_std_generators: &Operations,
+    epsilon: f64,
+) -> Linear {
+    let mut candidate_conv_transformations = vec![];
+    for trans_corr in UNIMODULAR3_RANGE1.iter() {
+        // trans_corr should keep centering translations
+        if centering.lattice_points().iter().any(|translation| {
+            let mut diff = trans_corr.linear.map(|e| e as f64) * translation - translation;
+            diff -= diff.map(|e| e.round()); // in [-0.5, 0.5]
+            diff.iter().any(|e| e.abs() > epsilon)
+        }) {
+            continue;
+        }
+
+        // trans_corr should keep the matrix representations of `conv_std_generators`.
+        if conv_std_generators.iter().any(|ops| {
+            let corr_ops = trans_corr.transform_operation(ops);
+            if corr_ops.rotation != ops.rotation {
+                true
+            } else {
+                let mut diff = corr_ops.translation - ops.translation;
+                diff -= diff.map(|e| e.round()); // in [-0.5, 0.5]
+                diff.iter().any(|e| e.abs() > epsilon)
+            }
+        }) {
+            continue;
+        }
+
+        let refined_conv_trans = Transformation::new(
+            transformation_to_prim_std.linear * centering.linear() * trans_corr.linear,
+            transformation_to_prim_std.origin_shift,
+        );
+        let refined_conv_lattice = refined_conv_trans.transform_lattice(prim_lattice);
+        // `skewness` gets smaller as the basis vectors are closer to orthorhombic.
+        let skewness = refined_conv_lattice.lattice_constant()[3..]
+            .iter()
+            .map(|angle_deg| angle_deg.to_radians().cos().abs())
+            .sum::<f64>();
+        candidate_conv_transformations.push((skewness, centering.linear() * trans_corr.linear));
+    }
+
+    let refined_linear_std_prim_to_conv = candidate_conv_transformations
+        .into_iter()
+        .min_by(|(skewness_lhs, _), (skewness_rhs, _)| {
+            skewness_lhs.partial_cmp(skewness_rhs).unwrap()
+        })
+        .unwrap()
+        .1;
+    refined_linear_std_prim_to_conv
 }
 
 fn assign_wyckoff_position(

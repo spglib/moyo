@@ -44,6 +44,7 @@ impl<M: MagneticMoment> StandardizedMagneticCell<M> {
         magnetic_space_group: &MagneticSpaceGroup,
         symprec: f64,
         mag_symprec: f64,
+        epsilon: f64,
         action: RotationMagneticMomentAction,
     ) -> Result<Self, MoyoError> {
         // Symmetrize positions and lattice by reference space group
@@ -62,6 +63,7 @@ impl<M: MagneticMoment> StandardizedMagneticCell<M> {
             &ref_prim_permutations,
             &ref_space_group,
             symprec,
+            epsilon,
         )?;
 
         // Need to rotate magnetic moments because the standardization rotates the ref cell.
