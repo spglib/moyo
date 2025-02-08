@@ -360,6 +360,7 @@ lcov.info
 .env
 *.png
 *.cif
+*.html
 
 docs/note/
 
@@ -368,3 +369,6 @@ _build/
 apidocs/
 
 debug.py
+
+# TODO: write implementation note
+docs/
