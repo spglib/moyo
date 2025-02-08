@@ -173,6 +173,7 @@ impl MoyoDataset {
             &symmetry_search.permutations,
             &space_group,
             symprec,
+            epsilon,
         )?;
 
         // site symmetry
@@ -339,6 +340,7 @@ impl<M: MagneticMoment> MoyoMagneticDataset<M> {
             &magnetic_space_group,
             symprec,
             mag_symprec,
+            epsilon,
             action,
         )?;
 
