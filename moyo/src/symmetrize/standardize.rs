@@ -117,8 +117,7 @@ impl StandardizedCell {
         // Prepare operations in primitive standard
         let hs = HallSymbol::from_hall_number(space_group.hall_number)
             .ok_or(MoyoError::StandardizationError)?;
-        let conv_std_operations = hs.traverse();
-        let prim_std_operations = hs.primitive_traverse();
+        let (conv_std_operations, prim_std_operations) = hs.traverse_and_primitive_traverse();
 
         // To standardized primitive cell
         let lattice_system = arithmetic_crystal_class_entry(entry.arithmetic_number)

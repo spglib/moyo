@@ -93,9 +93,8 @@ impl HallSymbol {
 
             for rhs in self.generators.iter() {
                 let new_ops = ops_lhs.clone() * rhs.clone();
-                let new_translation_mod1 = purify_translation_mod1(&new_ops.translation);
-
                 if !hm_translations.contains_key(&new_ops.rotation) {
+                    let new_translation_mod1 = purify_translation_mod1(&new_ops.translation);
                     queue.push_back(Operation::new(new_ops.rotation, new_translation_mod1));
                 }
             }
@@ -105,9 +104,15 @@ impl HallSymbol {
     }
 
     pub fn primitive_traverse(&self) -> Operations {
+        let (_, primitive_operations) = self.traverse_and_primitive_traverse();
+        primitive_operations
+    }
+
+    pub fn traverse_and_primitive_traverse(&self) -> (Operations, Operations) {
         let operations = self.traverse();
-        Transformation::from_linear(self.centering.linear())
-            .inverse_transform_operations(&operations)
+        let primitive_operations = Transformation::from_linear(self.centering.linear())
+            .inverse_transform_operations(&operations);
+        (operations, primitive_operations)
     }
 
     pub fn from_hall_number(hall_number: HallNumber) -> Option<Self> {
