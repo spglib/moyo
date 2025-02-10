@@ -1,4 +1,4 @@
-use nalgebra::{OMatrix, RowVector3, Vector3};
+use nalgebra::Vector3;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 use pyo3::types::PyType;
@@ -29,12 +29,7 @@ impl PyStructure {
             ));
         }
 
-        // let lattice = Lattice::new(OMatrix::from(basis));
-        let lattice = Lattice::new(OMatrix::from_rows(&[
-            RowVector3::from(basis[0]),
-            RowVector3::from(basis[1]),
-            RowVector3::from(basis[2]),
-        ]));
+        let lattice = Lattice::from_basis(basis);
         let positions = positions
             .iter()
             .map(|x| Vector3::new(x[0], x[1], x[2]))

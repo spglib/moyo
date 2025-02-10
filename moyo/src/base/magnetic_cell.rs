@@ -30,7 +30,7 @@ pub trait MagneticMoment: Sized + Clone {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Collinear(pub f64);
 
 impl MagneticMoment for Collinear {
@@ -66,7 +66,7 @@ impl MagneticMoment for Collinear {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NonCollinear(pub Vector3<f64>);
 
 impl MagneticMoment for NonCollinear {

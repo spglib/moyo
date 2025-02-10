@@ -90,7 +90,7 @@ use nalgebra::Matrix3;
 /// A dataset containing symmetry information of the input crystal structure.
 pub struct MoyoDataset {
     // ------------------------------------------------------------------------
-    // Space-group type
+    // Identification
     // ------------------------------------------------------------------------
     /// Space group number.
     pub number: Number,
