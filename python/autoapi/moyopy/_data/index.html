@@ -47,7 +47,7 @@
     <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/moyopy/_data/index';</script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="moyopy._moyopy" href="../_moyopy/index.html" />
+    <link rel="next" title="moyopy._dataset" href="../_dataset/index.html" />
     <link rel="prev" title="moyopy._base" href="../_base/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -146,6 +146,7 @@
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../index.html">moyopy</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../_base/index.html">moyopy._base</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">moyopy._data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../_dataset/index.html">moyopy._dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../_moyopy/index.html">moyopy._moyopy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../interface/index.html">moyopy.interface</a></li>
 </ul>
@@ -346,6 +347,15 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.crystal_family"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.crystal_family</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.uni_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.uni_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.litvin_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.litvin_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.bns_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.bns_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.og_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.og_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.construct_type"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.construct_type</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.operations_from_number"><code class="docutils literal notranslate"><span class="pre">operations_from_number()</span></code></a></li>
 </ul>
 </li>
@@ -377,6 +387,9 @@
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#moyopy._data.SpaceGroupType" title="moyopy._data.SpaceGroupType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpaceGroupType</span></code></a></p></td>
 <td><p>Space-group type information.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#moyopy._data.MagneticSpaceGroupType" title="moyopy._data.MagneticSpaceGroupType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MagneticSpaceGroupType</span></code></a></p></td>
+<td><p>Magnetic space-group type information.</p></td>
 </tr>
 </tbody>
 </table>
@@ -557,6 +570,48 @@ for string values.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">MagneticSpaceGroupType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uni_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType" title="Link to this definition">#</a></dt>
+<dd><p>Magnetic space-group type information.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.uni_number">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uni_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.uni_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.uni_number" title="Link to this definition">#</a></dt>
+<dd><p>Serial number of UNI (and BNS) symbols.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.litvin_number">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">litvin_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.litvin_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.litvin_number" title="Link to this definition">#</a></dt>
+<dd><p>Serial number in Litvin’s <a class="reference external" href="https://www.iucr.org/publ/978-0-9553602-2-0">Magnetic group tables</a>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.bns_number">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bns_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.bns_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.bns_number" title="Link to this definition">#</a></dt>
+<dd><p>BNS number e.g. ‘151.32’</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.og_number">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">og_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.og_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.og_number" title="Link to this definition">#</a></dt>
+<dd><p>OG number e.g. ‘153.4.1270’</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.number">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.number" title="Link to this definition">#</a></dt>
+<dd><p>ITA number for reference space group in BNS setting.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.construct_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">construct_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.construct_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.construct_type" title="Link to this definition">#</a></dt>
+<dd><p>Construct type of magnetic space group from 1 to 4.</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="moyopy._data.operations_from_number">
 <span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">operations_from_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#moyopy._data.Setting" title="moyopy._data.Setting"><span class="pre">Setting</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../_base/index.html#moyopy._base.Operations" title="moyopy._base.Operations"><span class="pre">moyopy._base.Operations</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#operations_from_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.operations_from_number" title="Link to this definition">#</a></dt>
@@ -586,11 +641,11 @@ for string values.</p>
       </div>
     </a>
     <a class="right-next"
-       href="../_moyopy/index.html"
+       href="../_dataset/index.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">moyopy._moyopy</p>
+        <p class="prev-next-title">moyopy._dataset</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -643,6 +698,15 @@ for string values.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.bravais_class"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.bravais_class</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.lattice_system"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.lattice_system</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.crystal_family"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.crystal_family</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.uni_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.uni_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.litvin_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.litvin_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.bns_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.bns_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.og_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.og_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.construct_type"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.construct_type</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.operations_from_number"><code class="docutils literal notranslate"><span class="pre">operations_from_number()</span></code></a></li>

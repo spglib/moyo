@@ -18,12 +18,17 @@ Classes
 .. autoapisummary::
 
    moyopy._moyopy.Cell
+   moyopy._moyopy.CollinearMagneticCell
+   moyopy._moyopy.NonCollinearMagneticCell
    moyopy._moyopy.Operations
    moyopy._moyopy.Centering
    moyopy._moyopy.HallSymbolEntry
+   moyopy._moyopy.MagneticSpaceGroupType
    moyopy._moyopy.Setting
    moyopy._moyopy.SpaceGroupType
+   moyopy._moyopy.MoyoCollinearMagneticDataset
    moyopy._moyopy.MoyoDataset
+   moyopy._moyopy.MoyoNonCollinearMagneticDataset
 
 
 Functions
@@ -51,6 +56,81 @@ Module Contents
 
    .. py:property:: numbers
       :type: list[int]
+
+
+
+   .. py:property:: num_atoms
+      :type: int
+
+
+
+   .. py:method:: serialize_json() -> str
+
+
+   .. py:method:: deserialize_json(json_str: str) -> Cell
+      :classmethod:
+
+
+
+.. py:class:: CollinearMagneticCell(basis: list[list[float]], positions: list[list[float]], numbers: list[int], magnetic_moments: list[float])
+
+   .. py:property:: basis
+      :type: list[list[float]]
+
+
+
+   .. py:property:: positions
+      :type: list[list[float]]
+
+
+
+   .. py:property:: numbers
+      :type: list[int]
+
+
+
+   .. py:property:: magnetic_moments
+      :type: list[float]
+
+
+
+   .. py:property:: num_atoms
+      :type: int
+
+
+
+   .. py:method:: serialize_json() -> str
+
+
+   .. py:method:: deserialize_json(json_str: str) -> Cell
+      :classmethod:
+
+
+
+.. py:class:: NonCollinearMagneticCell(basis: list[list[float]], positions: list[list[float]], numbers: list[int], magnetic_moments: list[list[float]])
+
+   .. py:property:: basis
+      :type: list[list[float]]
+
+
+
+   .. py:property:: positions
+      :type: list[list[float]]
+
+
+
+   .. py:property:: numbers
+      :type: list[int]
+
+
+
+   .. py:property:: magnetic_moments
+      :type: list[list[float]]
+
+
+
+   .. py:property:: num_atoms
+      :type: int
 
 
 
@@ -143,6 +223,53 @@ Module Contents
 
 
       Centering.
+
+
+.. py:class:: MagneticSpaceGroupType(uni_number: int)
+
+   Magnetic space-group type information.
+
+
+   .. py:property:: uni_number
+      :type: int
+
+
+      Serial number of UNI (and BNS) symbols.
+
+
+   .. py:property:: litvin_number
+      :type: int
+
+
+      Serial number in Litvin's `Magnetic group tables <https://www.iucr.org/publ/978-0-9553602-2-0>`_.
+
+
+   .. py:property:: bns_number
+      :type: str
+
+
+      BNS number e.g. '151.32'
+
+
+   .. py:property:: og_number
+      :type: str
+
+
+      OG number e.g. '153.4.1270'
+
+
+   .. py:property:: number
+      :type: int
+
+
+      ITA number for reference space group in BNS setting.
+
+
+   .. py:property:: construct_type
+      :type: int
+
+
+      Construct type of magnetic space group from 1 to 4.
 
 
 .. py:class:: Setting
@@ -270,10 +397,119 @@ Module Contents
 
 .. py:function:: operations_from_number(number: int, setting: Setting) -> moyopy._base.Operations
 
-.. py:data:: __version__
-   :type:  str
+.. py:class:: MoyoCollinearMagneticDataset(magnetic_cell: moyopy._base.CollinearMagneticCell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, mag_symprec: float | None = None, is_axial: bool = False)
 
-.. py:class:: MoyoDataset(cell: moyopy._base.Cell, symprec: float = 0.0001, angle_tolerance: float | None = None, setting: moyopy._data.Setting | None = None)
+   A dataset containing magnetic symmetry information of the input collinear magnetic
+   structure.
+
+
+   .. py:property:: uni_number
+      :type: int
+
+
+      UNI number for magnetic space-group type.
+
+
+   .. py:property:: magnetic_operations
+      :type: moyopy._base.MagneticOperations
+
+
+      Magnetic symmetry operations in the input cell.
+
+
+   .. py:property:: orbits
+      :type: list[int]
+
+
+      The `i`th atom in the input magnetic cell is equivalent to the `orbits[i]`th atom
+      in the **input** magnetic cell. For example, orbits=[0, 0, 2, 2, 2, 2] means
+      the first two atoms are equivalent and the last four atoms are equivalent to each other.
+
+
+   .. py:property:: std_mag_cell
+      :type: moyopy._base.CollinearMagneticCell
+
+
+      Standardized magnetic cell.
+
+
+   .. py:property:: std_linear
+      :type: list[list[float]]
+
+
+      Linear part of transformation from the input magnetic cell to the standardized
+      magnetic cell.
+
+
+   .. py:property:: std_origin_shift
+      :type: list[float]
+
+
+      Origin shift of transformation from the input magnetic cell to the standardized
+      magnetic cell.
+
+
+   .. py:property:: std_rotation_matrix
+      :type: list[list[float]]
+
+
+      Rigid rotation.
+
+
+   .. py:property:: prim_std_mag_cell
+      :type: moyopy._base.CollinearMagneticCell
+
+
+      Primitive standardized magnetic cell.
+
+
+   .. py:property:: prim_std_linear
+      :type: list[list[float]]
+
+
+      Linear part of transformation from the input magnetic cell to the primitive
+      standardized magnetic cell.
+
+
+   .. py:property:: prim_std_origin_shift
+      :type: list[float]
+
+
+      Origin shift of transformation from the input magnetic cell to the primitive
+      standardized magnetic cell.
+
+
+   .. py:property:: mapping_std_prim
+      :type: list[int]
+
+
+      Mapping sites in the input magnetic cell to those in the primitive standardized magnetic
+      cell. The `i`th atom in the input magnetic cell is mapped to the `mapping_to_std_prim[i]`th
+      atom in the primitive standardized magnetic cell.
+
+
+   .. py:property:: symprec
+      :type: float
+
+
+      Actually used `symprec` in iterative symmetry search.
+
+
+   .. py:property:: angle_tolerance
+      :type: float | None
+
+
+      Actually used `angle_tolerance` in iterative symmetry search.
+
+
+   .. py:property:: mag_symprec
+      :type: float | None
+
+
+      Actually used `mag_symprec` in iterative symmetry search.
+
+
+.. py:class:: MoyoDataset(cell: moyopy._base.Cell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, setting: moyopy._data.Setting | None = None)
 
    A dataset containing symmetry information of the input crystal structure.
 
@@ -406,4 +642,119 @@ Module Contents
 
       Actually used `angle_tolerance` in iterative symmetry search.
 
+
+.. py:class:: MoyoNonCollinearMagneticDataset(magnetic_cell: moyopy._base.NonCollinearMagneticCell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, mag_symprec: float | None = None, is_axial: bool = True)
+
+   A dataset containing magnetic symmetry information of the input non-collinear magnetic
+   structure.
+
+
+   .. py:property:: uni_number
+      :type: int
+
+
+      UNI number for magnetic space-group type.
+
+
+   .. py:property:: magnetic_operations
+      :type: moyopy._base.MagneticOperations
+
+
+      Magnetic symmetry operations in the input cell.
+
+
+   .. py:property:: orbits
+      :type: list[int]
+
+
+      The `i`th atom in the input magnetic cell is equivalent to the `orbits[i]`th atom
+      in the **input** magnetic cell. For example, orbits=[0, 0, 2, 2, 2, 2] means
+      the first two atoms are equivalent and the last four atoms are equivalent to each other.
+
+
+   .. py:property:: std_mag_cell
+      :type: moyopy._base.NonCollinearMagneticCell
+
+
+      Standardized magnetic cell.
+
+
+   .. py:property:: std_linear
+      :type: list[list[float]]
+
+
+      Linear part of transformation from the input magnetic cell to the standardized
+      magnetic cell.
+
+
+   .. py:property:: std_origin_shift
+      :type: list[float]
+
+
+      Origin shift of transformation from the input magnetic cell to the standardized
+      magnetic cell.
+
+
+   .. py:property:: std_rotation_matrix
+      :type: list[list[float]]
+
+
+      Rigid rotation.
+
+
+   .. py:property:: prim_std_mag_cell
+      :type: moyopy._base.NonCollinearMagneticCell
+
+
+      Primitive standardized magnetic cell.
+
+
+   .. py:property:: prim_std_linear
+      :type: list[list[float]]
+
+
+      Linear part of transformation from the input magnetic cell to the primitive
+      standardized magnetic cell.
+
+
+   .. py:property:: prim_std_origin_shift
+      :type: list[float]
+
+
+      Origin shift of transformation from the input magnetic cell to the primitive
+      standardized magnetic cell.
+
+
+   .. py:property:: mapping_std_prim
+      :type: list[int]
+
+
+      Mapping sites in the input magnetic cell to those in the primitive standardized magnetic
+      cell. The `i`th atom in the input magnetic cell is mapped to the `mapping_to_std_prim[i]`th
+      atom in the primitive standardized magnetic cell.
+
+
+   .. py:property:: symprec
+      :type: float
+
+
+      Actually used `symprec` in iterative symmetry search.
+
+
+   .. py:property:: angle_tolerance
+      :type: float | None
+
+
+      Actually used `angle_tolerance` in iterative symmetry search.
+
+
+   .. py:property:: mag_symprec
+      :type: float | None
+
+
+      Actually used `mag_symprec` in iterative symmetry search.
+
+
+.. py:data:: __version__
+   :type:  str
 

@@ -13,6 +13,7 @@ Classes
    moyopy._data.Centering
    moyopy._data.HallSymbolEntry
    moyopy._data.SpaceGroupType
+   moyopy._data.MagneticSpaceGroupType
 
 
 Functions
@@ -210,6 +211,53 @@ Module Contents
 
       See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs
       for string values.
+
+
+.. py:class:: MagneticSpaceGroupType(uni_number: int)
+
+   Magnetic space-group type information.
+
+
+   .. py:property:: uni_number
+      :type: int
+
+
+      Serial number of UNI (and BNS) symbols.
+
+
+   .. py:property:: litvin_number
+      :type: int
+
+
+      Serial number in Litvin's `Magnetic group tables <https://www.iucr.org/publ/978-0-9553602-2-0>`_.
+
+
+   .. py:property:: bns_number
+      :type: str
+
+
+      BNS number e.g. '151.32'
+
+
+   .. py:property:: og_number
+      :type: str
+
+
+      OG number e.g. '153.4.1270'
+
+
+   .. py:property:: number
+      :type: int
+
+
+      ITA number for reference space group in BNS setting.
+
+
+   .. py:property:: construct_type
+      :type: int
+
+
+      Construct type of magnetic space group from 1 to 4.
 
 
 .. py:function:: operations_from_number(number: int, setting: Setting) -> moyopy._base.Operations

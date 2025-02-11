@@ -146,6 +146,7 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../autoapi/moyopy/index.html">moyopy</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/moyopy/_base/index.html">moyopy._base</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/moyopy/_data/index.html">moyopy._data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../autoapi/moyopy/_dataset/index.html">moyopy._dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/moyopy/_moyopy/index.html">moyopy._moyopy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../autoapi/moyopy/interface/index.html">moyopy.interface</a></li>
 </ul>
@@ -358,7 +359,7 @@ When we need a secondary symmetry information such as Hermann-Mauguin symbol for
 <span class="n">numbers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
 <span class="n">cell</span> <span class="o">=</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">Cell</span><span class="p">(</span><span class="n">basis</span><span class="p">,</span> <span class="n">positions</span><span class="p">,</span> <span class="n">numbers</span><span class="p">)</span>
 
-<span class="n">dataset</span> <span class="o">=</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">MoyoDataset</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">symprec</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">angle_tolerance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">setting</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">MoyoDataset</span><span class="p">(</span><span class="n">cell</span><span class="p">,</span> <span class="n">symprec</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">angle_tolerance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">setting</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">number</span> <span class="o">==</span> <span class="mi">186</span>
 <span class="k">assert</span> <span class="n">dataset</span><span class="o">.</span><span class="n">hall_number</span> <span class="o">==</span> <span class="mi">480</span>
 

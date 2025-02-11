@@ -145,6 +145,7 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../autoapi/moyopy/index.html">moyopy</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_base/index.html">moyopy._base</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_data/index.html">moyopy._data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_dataset/index.html">moyopy._dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_moyopy/index.html">moyopy._moyopy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/interface/index.html">moyopy.interface</a></li>
 </ul>
@@ -444,6 +445,49 @@
 <span class="sd">        See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs</span>
 <span class="sd">        for string values.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
+</div>
+
+
+<div class="viewcode-block" id="MagneticSpaceGroupType">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.MagneticSpaceGroupType">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MagneticSpaceGroupType</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Magnetic space-group type information.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uni_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span> <span class="o">...</span>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="MagneticSpaceGroupType.uni_number">
+<a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.MagneticSpaceGroupType.uni_number">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">uni_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serial number of UNI (and BNS) symbols.&quot;&quot;&quot;</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="MagneticSpaceGroupType.litvin_number">
+<a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.MagneticSpaceGroupType.litvin_number">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">litvin_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serial number in Litvin&#39;s `Magnetic group tables &lt;https://www.iucr.org/publ/978-0-9553602-2-0&gt;`_.&quot;&quot;&quot;</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="MagneticSpaceGroupType.bns_number">
+<a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.MagneticSpaceGroupType.bns_number">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bns_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;BNS number e.g. &#39;151.32&#39;&quot;&quot;&quot;</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="MagneticSpaceGroupType.og_number">
+<a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.MagneticSpaceGroupType.og_number">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">og_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;OG number e.g. &#39;153.4.1270&#39;&quot;&quot;&quot;</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="MagneticSpaceGroupType.number">
+<a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.MagneticSpaceGroupType.number">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;ITA number for reference space group in BNS setting.&quot;&quot;&quot;</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="MagneticSpaceGroupType.construct_type">
+<a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.MagneticSpaceGroupType.construct_type">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">construct_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct type of magnetic space group from 1 to 4.&quot;&quot;&quot;</span></div>
 </div>
 
 

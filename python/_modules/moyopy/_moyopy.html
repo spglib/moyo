@@ -145,6 +145,7 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../autoapi/moyopy/index.html">moyopy</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_base/index.html">moyopy._base</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_data/index.html">moyopy._data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_dataset/index.html">moyopy._dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_moyopy/index.html">moyopy._moyopy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/interface/index.html">moyopy.interface</a></li>
 </ul>
@@ -266,13 +267,24 @@
                 <article class="bd-article">
                   
   <h1>Source code for moyopy._moyopy</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">moyopy._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cell</span><span class="p">,</span> <span class="n">Operations</span>  <span class="c1"># noqa: F401</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">moyopy._base</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>  <span class="c1"># noqa: F401</span>
+    <span class="n">Cell</span><span class="p">,</span>
+    <span class="n">CollinearMagneticCell</span><span class="p">,</span>
+    <span class="n">NonCollinearMagneticCell</span><span class="p">,</span>
+    <span class="n">Operations</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">moyopy._data</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Centering</span><span class="p">,</span>
     <span class="n">HallSymbolEntry</span><span class="p">,</span>
+    <span class="n">MagneticSpaceGroupType</span><span class="p">,</span>
     <span class="n">Setting</span><span class="p">,</span>
     <span class="n">SpaceGroupType</span><span class="p">,</span>
     <span class="n">operations_from_number</span><span class="p">,</span>
+<span class="p">)</span>  <span class="c1"># noqa: F401</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">moyopy._dataset</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">MoyoCollinearMagneticDataset</span><span class="p">,</span>
+    <span class="n">MoyoDataset</span><span class="p">,</span>
+    <span class="n">MoyoNonCollinearMagneticDataset</span><span class="p">,</span>
 <span class="p">)</span>  <span class="c1"># noqa: F401</span>
 
 <div class="viewcode-block" id="__version__">
@@ -280,165 +292,25 @@
 <span class="n">__version__</span><span class="p">:</span> <span class="nb">str</span></div>
 
 
-<div class="viewcode-block" id="MoyoDataset">
-<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._moyopy.MoyoDataset">[docs]</a>
-<span class="k">class</span><span class="w"> </span><span class="nc">MoyoDataset</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A dataset containing symmetry information of the input crystal structure.&quot;&quot;&quot;</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">cell</span><span class="p">:</span> <span class="n">Cell</span><span class="p">,</span>
-        <span class="n">symprec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
-        <span class="n">angle_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">setting</span><span class="p">:</span> <span class="n">Setting</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        cell: Cell</span>
-<span class="sd">            Input crystal structure.</span>
-<span class="sd">        symprec: float</span>
-<span class="sd">            Symmetry search tolerance in the unit of cell.lattice.</span>
-<span class="sd">        angle_tolerance: float | None</span>
-<span class="sd">            Symmetry search tolerance in the unit of radians.</span>
-<span class="sd">        setting: Setting | None</span>
-<span class="sd">            Preference for the setting of the space group.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-    <span class="c1"># Space-group type</span>
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.number">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.number">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Space group number.&quot;&quot;&quot;</span></div>
-
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.hall_number">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.hall_number">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">hall_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Hall symbol number.&quot;&quot;&quot;</span></div>
-
-    <span class="c1"># Symmetry operations in the input cell</span>
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.operations">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.operations">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">operations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Operations</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Symmetry operations in the input cell.&quot;&quot;&quot;</span></div>
-
-    <span class="c1"># Site symmetry</span>
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.orbits">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.orbits">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">orbits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Spglib&#39;s `crystallographic_orbits` not `equivalent_atoms`.</span>
-
-<span class="sd">        The `i`th atom in the input cell is equivalent to the `orbits[i]`th atom in the **input**</span>
-<span class="sd">        cell. For example, orbits=[0, 0, 2, 2, 2, 2] means the first two atoms are equivalent</span>
-<span class="sd">        and the last four atoms are equivalent to each other.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.wyckoffs">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.wyckoffs">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">wyckoffs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Wyckoff letters for each site in the input cell.&quot;&quot;&quot;</span></div>
-
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.site_symmetry_symbols">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.site_symmetry_symbols">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">site_symmetry_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Site symmetry symbols for each site in the input cell.</span>
-
-<span class="sd">        The orientation of the site symmetry is w.r.t. the standardized cell.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-
-    <span class="c1"># Standardized cell</span>
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.std_cell">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.std_cell">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">std_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cell</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Standardized cell.&quot;&quot;&quot;</span></div>
-
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.std_linear">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.std_linear">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">std_linear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Linear part of transformation from the input cell to the standardized cell.&quot;&quot;&quot;</span></div>
-
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.std_origin_shift">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.std_origin_shift">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">std_origin_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Origin shift of transformation from the input cell to the standardized cell.&quot;&quot;&quot;</span></div>
-
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.std_rotation_matrix">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.std_rotation_matrix">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">std_rotation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rigid rotation.&quot;&quot;&quot;</span></div>
-
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.pearson_symbol">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.pearson_symbol">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">pearson_symbol</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Pearson symbol for standardized cell.&quot;&quot;&quot;</span></div>
-
-    <span class="c1"># Primitive standardized cell</span>
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.prim_std_cell">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.prim_std_cell">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">prim_std_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cell</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Primitive standardized cell.&quot;&quot;&quot;</span></div>
-
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.prim_std_linear">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.prim_std_linear">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">prim_std_linear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Linear part of transformation from the input cell to the primitive standardized cell.&quot;&quot;&quot;</span></div>
-
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.prim_std_origin_shift">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.prim_std_origin_shift">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">prim_std_origin_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Origin shift of transformation from the input cell to the primitive standardized</span>
-<span class="sd">        cell.&quot;&quot;&quot;</span></div>
-
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.mapping_std_prim">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.mapping_std_prim">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">mapping_std_prim</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Mapping sites in the input cell to those in the primitive standardized cell.</span>
-
-<span class="sd">        The `i`th atom in the input cell is mapped to the `mapping_to_std_prim[i]`th atom in the</span>
-<span class="sd">        primitive standardized cell.</span>
-<span class="sd">        &quot;&quot;&quot;</span></div>
-
-    <span class="c1"># Final parameters</span>
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.symprec">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.symprec">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">symprec</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Actually used `symprec` in iterative symmetry search.&quot;&quot;&quot;</span></div>
-
-    <span class="nd">@property</span>
-<div class="viewcode-block" id="MoyoDataset.angle_tolerance">
-<a class="viewcode-back" href="../../autoapi/moyopy/_moyopy/index.html#moyopy._moyopy.MoyoDataset.angle_tolerance">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">angle_tolerance</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Actually used `angle_tolerance` in iterative symmetry search.&quot;&quot;&quot;</span></div>
-</div>
-
-
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="c1"># base</span>
     <span class="s2">&quot;Cell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CollinearMagneticCell&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;NonCollinearMagneticCell&quot;</span><span class="p">,</span>
     <span class="s2">&quot;Operations&quot;</span><span class="p">,</span>
     <span class="c1"># data</span>
     <span class="s2">&quot;Setting&quot;</span><span class="p">,</span>
     <span class="s2">&quot;Centering&quot;</span><span class="p">,</span>
     <span class="s2">&quot;HallSymbolEntry&quot;</span><span class="p">,</span>
     <span class="s2">&quot;SpaceGroupType&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MagneticSpaceGroupType&quot;</span><span class="p">,</span>
     <span class="s2">&quot;operations_from_number&quot;</span><span class="p">,</span>
+    <span class="c1"># dataset</span>
+    <span class="s2">&quot;MoyoDataset&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MoyoCollinearMagneticDataset&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MoyoNonCollinearMagneticDataset&quot;</span><span class="p">,</span>
     <span class="c1"># lib</span>
     <span class="s2">&quot;__version__&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;MoyoDataset&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 </pre></div>
 

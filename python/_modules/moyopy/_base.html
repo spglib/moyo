@@ -145,6 +145,7 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../autoapi/moyopy/index.html">moyopy</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_base/index.html">moyopy._base</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_data/index.html">moyopy._data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_dataset/index.html">moyopy._dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_moyopy/index.html">moyopy._moyopy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/interface/index.html">moyopy.interface</a></li>
 </ul>
@@ -290,6 +291,11 @@
 <a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.Cell.numbers">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">numbers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span> <span class="o">...</span></div>
 
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="Cell.num_atoms">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.Cell.num_atoms">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span></div>
+
 <div class="viewcode-block" id="Cell.serialize_json">
 <a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._base.Cell.serialize_json">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">serialize_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span> <span class="o">...</span></div>
@@ -297,6 +303,98 @@
     <span class="nd">@classmethod</span>
 <div class="viewcode-block" id="Cell.deserialize_json">
 <a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._base.Cell.deserialize_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">deserialize_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">json_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cell</span><span class="p">:</span> <span class="o">...</span></div>
+</div>
+
+
+<div class="viewcode-block" id="CollinearMagneticCell">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._base.CollinearMagneticCell">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">CollinearMagneticCell</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">basis</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="n">positions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="n">numbers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">magnetic_moments</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="p">):</span> <span class="o">...</span>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="CollinearMagneticCell.basis">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.CollinearMagneticCell.basis">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">basis</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="CollinearMagneticCell.positions">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.CollinearMagneticCell.positions">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">positions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="CollinearMagneticCell.numbers">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.CollinearMagneticCell.numbers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">numbers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="CollinearMagneticCell.magnetic_moments">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.CollinearMagneticCell.magnetic_moments">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">magnetic_moments</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="CollinearMagneticCell.num_atoms">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.CollinearMagneticCell.num_atoms">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span></div>
+
+<div class="viewcode-block" id="CollinearMagneticCell.serialize_json">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._base.CollinearMagneticCell.serialize_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serialize_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span> <span class="o">...</span></div>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="CollinearMagneticCell.deserialize_json">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._base.CollinearMagneticCell.deserialize_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">deserialize_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">json_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cell</span><span class="p">:</span> <span class="o">...</span></div>
+</div>
+
+
+<div class="viewcode-block" id="NonCollinearMagneticCell">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._base.NonCollinearMagneticCell">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">NonCollinearMagneticCell</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">basis</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="n">positions</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="n">numbers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+        <span class="n">magnetic_moments</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+    <span class="p">):</span> <span class="o">...</span>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="NonCollinearMagneticCell.basis">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.NonCollinearMagneticCell.basis">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">basis</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="NonCollinearMagneticCell.positions">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.NonCollinearMagneticCell.positions">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">positions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="NonCollinearMagneticCell.numbers">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.NonCollinearMagneticCell.numbers">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">numbers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="NonCollinearMagneticCell.magnetic_moments">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.NonCollinearMagneticCell.magnetic_moments">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">magnetic_moments</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="NonCollinearMagneticCell.num_atoms">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.NonCollinearMagneticCell.num_atoms">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_atoms</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span></div>
+
+<div class="viewcode-block" id="NonCollinearMagneticCell.serialize_json">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._base.NonCollinearMagneticCell.serialize_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serialize_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span> <span class="o">...</span></div>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="NonCollinearMagneticCell.deserialize_json">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._base.NonCollinearMagneticCell.deserialize_json">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">deserialize_json</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">json_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cell</span><span class="p">:</span> <span class="o">...</span></div>
 </div>
 
@@ -321,6 +419,35 @@
 
 <div class="viewcode-block" id="Operations.__len__">
 <a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._base.Operations.__len__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span></div>
+</div>
+
+
+<div class="viewcode-block" id="MagneticOperations">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.MagneticOperations">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MagneticOperations</span><span class="p">:</span>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="MagneticOperations.rotations">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.MagneticOperations.rotations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]]:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="MagneticOperations.translations">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.MagneticOperations.translations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">translations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="MagneticOperations.time_reversals">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.MagneticOperations.time_reversals">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">time_reversals</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">bool</span><span class="p">]:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="MagneticOperations.num_operations">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.MagneticOperations.num_operations">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">num_operations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span></div>
+
+<div class="viewcode-block" id="MagneticOperations.__len__">
+<a class="viewcode-back" href="../../autoapi/moyopy/_base/index.html#moyopy._base.MagneticOperations.__len__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span></div>
 </div>
 
