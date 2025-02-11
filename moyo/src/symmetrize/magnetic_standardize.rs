@@ -114,7 +114,7 @@ impl<M: MagneticMoment> StandardizedMagneticCell<M> {
             action,
         );
         let prim_std_mag_cell =
-            MagneticCell::from_cell(ref_std_cell.cell.clone(), prim_std_magnetic_moments);
+            MagneticCell::from_cell(ref_std_cell.prim_cell.clone(), prim_std_magnetic_moments);
 
         // To (conventional) standardized magnetic cell
         let refined_prim_mag_cell = ref_std_cell
