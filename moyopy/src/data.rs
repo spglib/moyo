@@ -1,8 +1,10 @@
 mod hall_symbol;
+mod magnetic_space_group_type;
 mod setting;
 mod space_group_type;
 
 pub use hall_symbol::{PyCentering, PyHallSymbolEntry};
+pub use magnetic_space_group_type::PyMagneticSpaceGroupType;
 pub use setting::PySetting;
 pub use space_group_type::PySpaceGroupType;
 

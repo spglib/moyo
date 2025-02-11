@@ -10,7 +10,7 @@ build-python:
 install-python:
     python -m pip install uv maturin
     maturin develop --release --manifest-path moyopy/Cargo.toml
-    python -m uv pip install -e "moyopy[dev]"
+    python -m pip install -e "moyopy[dev]"
     pre-commit install
 
 test-python:

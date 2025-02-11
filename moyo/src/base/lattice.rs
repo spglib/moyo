@@ -1,4 +1,4 @@
-use nalgebra::base::{Matrix3, Vector3};
+use nalgebra::base::{Matrix3, OMatrix, RowVector3, Vector3};
 use serde::{Deserialize, Serialize};
 
 use crate::math::{
@@ -20,6 +20,14 @@ impl Lattice {
         Self {
             basis: row_basis.transpose(),
         }
+    }
+
+    pub fn from_basis(basis: [[f64; 3]; 3]) -> Self {
+        Self::new(OMatrix::from_rows(&[
+            RowVector3::from(basis[0]),
+            RowVector3::from(basis[1]),
+            RowVector3::from(basis[2]),
+        ]))
     }
 
     /// Return Minkowski reduced lattice and transformation matrix to it

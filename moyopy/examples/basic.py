@@ -23,7 +23,7 @@ positions = [
 numbers = [0, 0, 1, 1]
 cell = moyopy.Cell(basis, positions, numbers)
 
-dataset = moyopy.MoyoDataset(cell, symprec=1e-5, angle_tolerance=None, setting=None)
+dataset = moyopy.MoyoDataset(cell, symprec=1e-4, angle_tolerance=None, setting=None)
 assert dataset.number == 186
 assert dataset.hall_number == 480
 

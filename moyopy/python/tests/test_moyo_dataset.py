@@ -1,23 +1,23 @@
 from __future__ import annotations
 
-import moyopy
+from moyopy import Cell, CollinearMagneticCell, MoyoCollinearMagneticDataset, MoyoDataset
 
 
-def test_moyo_dataset(wurtzite: moyopy.Cell):
-    dataset = moyopy.MoyoDataset(wurtzite)
+def test_moyo_dataset(wurtzite: Cell):
+    dataset = MoyoDataset(wurtzite)
     assert dataset.number == 186
     assert dataset.hall_number == 480
     assert dataset.pearson_symbol == "hP4"
 
 
-def test_serialization(wurtzite: moyopy.Cell):
+def test_serialization(wurtzite: Cell):
     serialized = wurtzite.serialize_json()
-    deserialized = moyopy.Cell.deserialize_json(serialized)
+    deserialized = Cell.deserialize_json(serialized)
     assert len(wurtzite.positions) == len(deserialized.positions)
 
 
-def test_moyo_dataset_repr(wurtzite: moyopy.Cell):
-    dataset = moyopy.MoyoDataset(wurtzite)
+def test_moyo_dataset_repr(wurtzite: Cell):
+    dataset = MoyoDataset(wurtzite)
     dataset_str = str(dataset)
 
     # Test that string representation of MoyoDataset contains key information
@@ -35,3 +35,8 @@ def test_moyo_dataset_repr(wurtzite: moyopy.Cell):
 
     # Test that repr() gives different output
     assert str(dataset) != repr(dataset)
+
+
+def test_moyo_collinear_magnetic_dataset(rutile_type3: CollinearMagneticCell):
+    dataset = MoyoCollinearMagneticDataset(rutile_type3)
+    assert dataset.uni_number == 1158
