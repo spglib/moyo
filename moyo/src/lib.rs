@@ -18,10 +18,15 @@ moyo = "*"
 The basic usage of **moyo** is to create a [`moyo::base::Cell`](Cell) representing a crystal structure, and then create a [`moyo::MoyoDataset`](MoyoDataset) from the [`moyo::base::Cell`](Cell).
 The [`moyo::MoyoDataset`](MoyoDataset) contains symmetry information of the input crystal structure: for example, the space group number, symmetry operations, and standardized cell.
 
+Magnetic symmetry is also supported in **moyo**.
+Magnetic moments are represented by a struct implementing the [`moyo::base::MagneticMoment`](MagneticMoment) trait: for example, [`moyo::base::Collinear`](Collinear) or [`moyo::base::NonCollinear`](NonCollinear).
+Magnetic cell is represented by a [`moyo::base::MagneticCell`](MagneticCell) struct.
+The [`moyo::MoyoMagneticDataset`](MoyoMagneticDataset) contains magnetic symmetry information of the input magnetic cell: for example, the magnetic space-group type, magnetic symmetry operations, and standardized magnetic cell.
+
 ```
 use nalgebra::{matrix, vector, Matrix3, Vector3};
-use moyo::MoyoDataset;
-use moyo::base::{Cell, AngleTolerance, Lattice};
+use moyo::{MoyoDataset, MoyoMagneticDataset};
+use moyo::base::{Cell, MagneticCell, AngleTolerance, Lattice, NonCollinear, RotationMagneticMomentAction};
 use moyo::data::Setting;
 
 let lattice = Lattice::new(matrix![
@@ -39,15 +44,29 @@ let positions = vec![
     Vector3::new(x_4f + 0.5, -x_4f + 0.5, 0.5), // O(4f)
 ];
 let numbers = vec![0, 0, 1, 1, 1, 1];
-let cell = Cell::new(lattice, positions, numbers);
+let cell = Cell::new(lattice.clone(), positions.clone(), numbers.clone());
 
-let symprec = 1e-5;
+let symprec = 1e-4;
 let angle_tolerance = AngleTolerance::Default;
 let setting = Setting::Standard;
 
 let dataset = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
-
 assert_eq!(dataset.number, 136);  // P4_2/mnm
+
+let magnetic_moments = vec![
+    NonCollinear(vector![0.0, 0.0, 0.7]),
+    NonCollinear(vector![0.0, 0.0, -0.7]),
+    NonCollinear(vector![0.0, 0.0, 0.0]),
+    NonCollinear(vector![0.0, 0.0, 0.0]),
+    NonCollinear(vector![0.0, 0.0, 0.0]),
+    NonCollinear(vector![0.0, 0.0, 0.0]),
+];
+let magnetic_cell = MagneticCell::new(lattice, positions, numbers, magnetic_moments);
+
+let action = RotationMagneticMomentAction::Axial;
+
+let magnetic_dataset = MoyoMagneticDataset::new(&magnetic_cell, symprec, angle_tolerance, None, action).unwrap();
+assert_eq!(magnetic_dataset.uni_number, 1159);  // BNS 136.499
 ```
 
 ## Features
@@ -57,6 +76,7 @@ assert_eq!(dataset.number, 136);  // P4_2/mnm
 - Space-group type identification
 - Wyckoff position assignment
 - Crystal structure symmetrization
+- Magnetic space group support
 
 */
 #[allow(unused_imports)]
