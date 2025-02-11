@@ -104,4 +104,26 @@ class SpaceGroupType:
         for string values.
         """
 
+class MagneticSpaceGroupType:
+    """Magnetic space-group type information."""
+    def __init__(self, uni_number: int): ...
+    @property
+    def uni_number(self) -> int:
+        """Serial number of UNI (and BNS) symbols."""
+    @property
+    def litvin_number(self) -> int:
+        """Serial number in Litvin's `Magnetic group tables <https://www.iucr.org/publ/978-0-9553602-2-0>`_."""
+    @property
+    def bns_number(self) -> str:
+        """BNS number e.g. '151.32'"""
+    @property
+    def og_number(self) -> str:
+        """OG number e.g. '153.4.1270'"""
+    @property
+    def number(self) -> int:
+        """ITA number for reference space group in BNS setting."""
+    @property
+    def construct_type(self) -> int:
+        """Construct type of magnetic space group from 1 to 4."""
+
 def operations_from_number(number: int, setting: Setting) -> Operations: ...

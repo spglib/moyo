@@ -7,6 +7,7 @@ from moyopy._base import (  # noqa: F401
 from moyopy._data import (
     Centering,
     HallSymbolEntry,
+    MagneticSpaceGroupType,
     Setting,
     SpaceGroupType,
     operations_from_number,
@@ -30,6 +31,7 @@ __all__ = [
     "Centering",
     "HallSymbolEntry",
     "SpaceGroupType",
+    "MagneticSpaceGroupType",
     "operations_from_number",
     # dataset
     "MoyoDataset",

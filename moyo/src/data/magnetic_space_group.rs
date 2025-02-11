@@ -19,12 +19,17 @@ pub enum ConstructType {
 
 #[derive(Debug, Clone)]
 pub struct MagneticSpaceGroupType {
+    /// Serial number of UNI (and BNS) symbols
     pub uni_number: UNINumber,
+    /// Serial number in Litvin's [Magnetic group tables](https://www.iucr.org/publ/978-0-9553602-2-0)
     pub litvin_number: i32,
+    /// BNS number e.g. '151.32'
     pub bns_number: &'static str,
+    /// OG number e.g. '153.4.1270'
     pub og_number: &'static str,
     /// ITA number for reference space group in BNS setting
     pub number: Number,
+    /// Construct type of magnetic space group
     pub construct_type: ConstructType,
 }
 
