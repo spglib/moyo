@@ -14,6 +14,7 @@ class MoyoDataset:
     def __init__(
         self,
         cell: Cell,
+        *,
         symprec: float = 1e-4,
         angle_tolerance: float | None = None,
         setting: Setting | None = None,
@@ -107,6 +108,7 @@ class MoyoCollinearMagneticDataset:
     def __init__(
         self,
         magnetic_cell: CollinearMagneticCell,
+        *,
         symprec: float = 1e-4,
         angle_tolerance: float | None = None,
         mag_symprec: float | None = None,
@@ -191,6 +193,7 @@ class MoyoNonCollinearMagneticDataset:
     def __init__(
         self,
         magnetic_cell: NonCollinearMagneticCell,
+        *,
         symprec: float = 1e-4,
         angle_tolerance: float | None = None,
         mag_symprec: float | None = None,
