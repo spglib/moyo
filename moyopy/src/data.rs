@@ -15,6 +15,7 @@ use moyo::base::{MoyoError, Operation};
 use moyo::data::{hall_symbol_entry, HallSymbol, Setting};
 
 #[pyfunction]
+#[pyo3(signature = (number, *, setting=None))]
 pub fn operations_from_number(
     number: i32,
     setting: Option<PySetting>,

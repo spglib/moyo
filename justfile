@@ -27,6 +27,10 @@ doc:
     cargo doc --open
 
 [group('rust')]
+upgrade:
+    cargo upgrade -i
+
+[group('rust')]
 [working-directory: 'moyo']
 profile:
     CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --test test_moyo_dataset --root

@@ -471,15 +471,15 @@ mod tests {
 
         for _ in 0..256 {
             let basis = Matrix3::<f64>::new(
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
             );
             let (reduced_basis, trans_mat) = niggli_reduce(&basis);
 
@@ -489,15 +489,15 @@ mod tests {
 
         for _ in 0..256 {
             let basis = Matrix3::<f64>::new(
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
             );
             let (reduced_basis, trans_mat) = niggli_reduce(&basis);
             assert!(is_niggli_reduced(&reduced_basis));

@@ -133,13 +133,13 @@ mod tests {
         let mut rng: StdRng = SeedableRng::from_seed([0; 32]);
 
         for _ in 0..256 {
-            let m = SMatrix::<i32, 3, 3>::from_fn(|_, _| rng.gen_range(-4..4));
+            let m = SMatrix::<i32, 3, 3>::from_fn(|_, _| rng.random_range(-4..4));
             let _ = SNF::new(&m);
 
-            let m = SMatrix::<i32, 5, 7>::from_fn(|_, _| rng.gen_range(-4..4));
+            let m = SMatrix::<i32, 5, 7>::from_fn(|_, _| rng.random_range(-4..4));
             let _ = SNF::new(&m);
 
-            let m = SMatrix::<i32, 7, 5>::from_fn(|_, _| rng.gen_range(-4..4));
+            let m = SMatrix::<i32, 7, 5>::from_fn(|_, _| rng.random_range(-4..4));
             let _ = SNF::new(&m);
         }
     }
