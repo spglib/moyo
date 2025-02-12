@@ -4,28 +4,6 @@ set positional-arguments
 default:
     just --list
 
-build-python:
-    maturin develop --release --manifest-path moyopy/Cargo.toml
-
-install-python:
-    python -m pip install uv maturin
-    maturin develop --release --manifest-path moyopy/Cargo.toml
-    python -m pip install -e "moyopy[dev]"
-    pre-commit install
-
-test-python:
-    pytest -v moyopy/python/tests
-
-build-python-docs:
-    sphinx-autobuild moyopy/docs moyopy/docs/_build
-
-# at moyo/
-profile:
-    CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --test test_moyo_dataset --root
-
-doc:
-    cargo doc --open
-
 pre-commit:
     pre-commit run --all-files
 
@@ -34,3 +12,37 @@ pre-commit-all:
 
 clean:
     rm moyopy/python/moyopy/*.so
+    rm -r moyopy/docs/_build
+
+################################################################################
+# Rust
+################################################################################
+
+[group('rust')]
+doc:
+    cargo doc --open
+
+[group('rust')]
+[working-directory: 'moyo']
+profile:
+    CARGO_PROFILE_RELEASE_DEBUG=true cargo flamegraph --test test_moyo_dataset --root
+
+################################################################################
+# Python
+################################################################################
+
+[group('python')]
+py-build:
+    maturin develop --release --manifest-path moyopy/Cargo.toml
+
+[group('python')]
+py-install: py-build
+    python -m pip install -e "moyopy[dev]"
+
+[group('python')]
+py-test:
+    python -m pytest -v moyopy/python/tests
+
+[group('python')]
+py-docs:
+    sphinx-autobuild moyopy/docs moyopy/docs/_build
