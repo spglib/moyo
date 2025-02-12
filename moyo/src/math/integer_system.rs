@@ -6,7 +6,7 @@ use super::snf::SNF;
 #[derive(Debug)]
 pub struct IntegerLinearSystem<N: Dim>
 where
-    DefaultAllocator: Allocator<i32, N>,
+    DefaultAllocator: Allocator<N>,
 {
     /// rank of the integer linear system
     #[allow(dead_code)]
@@ -20,14 +20,13 @@ where
 
 impl<N: Dim> IntegerLinearSystem<N>
 where
-    DefaultAllocator: Allocator<i32, N>,
+    DefaultAllocator: Allocator<N>,
 {
     /// Solve a * x = b
     /// If no solution, return None
     pub fn new<M: DimMin<N>>(a: &OMatrix<i32, M, N>, b: &OVector<i32, M>) -> Option<Self>
     where
-        DefaultAllocator:
-            Allocator<i32, M, N> + Allocator<i32, M, M> + Allocator<i32, N, N> + Allocator<i32, M>,
+        DefaultAllocator: Allocator<M, N> + Allocator<M, M> + Allocator<N, N> + Allocator<M>,
     {
         let (_, n) = a.shape_generic();
         let snf = SNF::new(a);

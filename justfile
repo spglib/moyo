@@ -19,6 +19,10 @@ clean:
 ################################################################################
 
 [group('rust')]
+test:
+    cargo test
+
+[group('rust')]
 doc:
     cargo doc --open
 

@@ -34,7 +34,7 @@ fn minkowski_reduce_greedy<N: Dim + DimName>(
     trans_mat: &mut OMatrix<i32, N, N>,
     rank: usize,
 ) where
-    DefaultAllocator: Allocator<f64, N, N> + Allocator<i32, N, N> + Allocator<f64, N>,
+    DefaultAllocator: Allocator<N, N> + Allocator<N, N> + Allocator<N>,
 {
     // Line 1: exit condition
     if rank == 1 {

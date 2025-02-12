@@ -4,7 +4,7 @@ use nalgebra::{DefaultAllocator, Dim, OMatrix};
 /// Return elementary matrix swapping the `col1`th and `col2`th columns
 pub fn swapping_column_matrix<D: Dim>(dim: D, col1: usize, col2: usize) -> OMatrix<i32, D, D>
 where
-    DefaultAllocator: Allocator<i32, D, D>,
+    DefaultAllocator: Allocator<D, D>,
 {
     let mut trans_mat = OMatrix::zeros_generic(dim, dim);
     for i in 0..dim.value() {
@@ -22,7 +22,7 @@ where
 /// Return elementary matrix adding the `k`-multiplied `col1`th column into the `col2`th column
 pub fn adding_column_matrix<D: Dim>(dim: D, col1: usize, col2: usize, k: i32) -> OMatrix<i32, D, D>
 where
-    DefaultAllocator: Allocator<i32, D, D>,
+    DefaultAllocator: Allocator<D, D>,
 {
     let mut trans_mat = OMatrix::identity_generic(dim, dim);
     for i in 0..dim.value() {
@@ -36,7 +36,7 @@ where
 /// Return elementary matrix changing sign of the `col`th column
 pub fn changing_column_sign_matrix<D: Dim>(dim: D, col: usize) -> OMatrix<i32, D, D>
 where
-    DefaultAllocator: Allocator<i32, D, D>,
+    DefaultAllocator: Allocator<D, D>,
 {
     let mut trans_mat = OMatrix::identity_generic(dim, dim);
     trans_mat[(col, col)] = -1;

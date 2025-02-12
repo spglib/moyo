@@ -10,7 +10,7 @@ use super::elementary::{
 #[allow(clippy::upper_case_acronyms)]
 pub struct HNF<M: Dim, N: Dim>
 where
-    DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, N, N>,
+    DefaultAllocator: Allocator<M, N> + Allocator<N, N>,
 {
     pub h: OMatrix<i32, M, N>,
     pub r: OMatrix<i32, N, N>,
@@ -18,7 +18,7 @@ where
 
 impl<M: Dim, N: Dim> HNF<M, N>
 where
-    DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, N, N>,
+    DefaultAllocator: Allocator<M, N> + Allocator<N, N>,
 {
     /// Return column-wise Hermite norm form
     pub fn new(basis: &OMatrix<i32, M, N>) -> Self {
