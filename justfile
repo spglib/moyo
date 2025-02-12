@@ -19,8 +19,16 @@ clean:
 ################################################################################
 
 [group('rust')]
+test:
+    cargo test
+
+[group('rust')]
 doc:
     cargo doc --open
+
+[group('rust')]
+upgrade:
+    cargo upgrade -i
 
 [group('rust')]
 [working-directory: 'moyo']

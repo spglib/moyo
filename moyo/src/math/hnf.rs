@@ -10,7 +10,7 @@ use super::elementary::{
 #[allow(clippy::upper_case_acronyms)]
 pub struct HNF<M: Dim, N: Dim>
 where
-    DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, N, N>,
+    DefaultAllocator: Allocator<M, N> + Allocator<N, N>,
 {
     pub h: OMatrix<i32, M, N>,
     pub r: OMatrix<i32, N, N>,
@@ -18,7 +18,7 @@ where
 
 impl<M: Dim, N: Dim> HNF<M, N>
 where
-    DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, N, N>,
+    DefaultAllocator: Allocator<M, N> + Allocator<N, N>,
 {
     /// Return column-wise Hermite norm form
     pub fn new(basis: &OMatrix<i32, M, N>) -> Self {
@@ -133,13 +133,13 @@ mod tests {
         let mut rng: StdRng = SeedableRng::from_seed([0; 32]);
 
         for _ in 0..256 {
-            let m = SMatrix::<i32, 3, 3>::from_fn(|_, _| rng.gen_range(-4..4));
+            let m = SMatrix::<i32, 3, 3>::from_fn(|_, _| rng.random_range(-4..4));
             let _ = HNF::new(&m);
 
-            let m = SMatrix::<i32, 5, 7>::from_fn(|_, _| rng.gen_range(-4..4));
+            let m = SMatrix::<i32, 5, 7>::from_fn(|_, _| rng.random_range(-4..4));
             let _ = HNF::new(&m);
 
-            let m = SMatrix::<i32, 7, 5>::from_fn(|_, _| rng.gen_range(-4..4));
+            let m = SMatrix::<i32, 7, 5>::from_fn(|_, _| rng.random_range(-4..4));
             let _ = HNF::new(&m);
         }
     }

@@ -7,14 +7,14 @@ use nalgebra::{DefaultAllocator, Dim, OMatrix};
 #[derive(Debug)]
 pub struct CycleChecker<N: Dim>
 where
-    DefaultAllocator: Allocator<i32, N, N>,
+    DefaultAllocator: Allocator<N, N>,
 {
     visited: HashSet<OMatrix<i32, N, N>>,
 }
 
 impl<N: Dim> CycleChecker<N>
 where
-    DefaultAllocator: Allocator<i32, N, N>,
+    DefaultAllocator: Allocator<N, N>,
 {
     pub fn new() -> Self {
         Self {

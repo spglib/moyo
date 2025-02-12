@@ -6,7 +6,7 @@ use nalgebra::{DefaultAllocator, Dim, DimMin, OMatrix};
 #[allow(clippy::upper_case_acronyms)]
 pub struct SNF<M: DimMin<N>, N: Dim>
 where
-    DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, M, M> + Allocator<i32, N, N>,
+    DefaultAllocator: Allocator<M, N> + Allocator<M, M> + Allocator<N, N>,
 {
     pub d: OMatrix<i32, M, N>,
     pub l: OMatrix<i32, M, M>,
@@ -15,11 +15,11 @@ where
 
 impl<M: DimMin<N>, N: Dim> SNF<M, N>
 where
-    DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, M, M> + Allocator<i32, N, N>,
+    DefaultAllocator: Allocator<M, N> + Allocator<M, M> + Allocator<N, N>,
 {
     pub fn new(basis: &OMatrix<i32, M, N>) -> SNF<M, N>
     where
-        DefaultAllocator: Allocator<i32, M, N> + Allocator<i32, M, M> + Allocator<i32, N, N>,
+        DefaultAllocator: Allocator<M, N> + Allocator<M, M> + Allocator<N, N>,
     {
         let (m, n) = basis.shape_generic();
         let mut d = basis.clone();
@@ -133,13 +133,13 @@ mod tests {
         let mut rng: StdRng = SeedableRng::from_seed([0; 32]);
 
         for _ in 0..256 {
-            let m = SMatrix::<i32, 3, 3>::from_fn(|_, _| rng.gen_range(-4..4));
+            let m = SMatrix::<i32, 3, 3>::from_fn(|_, _| rng.random_range(-4..4));
             let _ = SNF::new(&m);
 
-            let m = SMatrix::<i32, 5, 7>::from_fn(|_, _| rng.gen_range(-4..4));
+            let m = SMatrix::<i32, 5, 7>::from_fn(|_, _| rng.random_range(-4..4));
             let _ = SNF::new(&m);
 
-            let m = SMatrix::<i32, 7, 5>::from_fn(|_, _| rng.gen_range(-4..4));
+            let m = SMatrix::<i32, 7, 5>::from_fn(|_, _| rng.random_range(-4..4));
             let _ = SNF::new(&m);
         }
     }

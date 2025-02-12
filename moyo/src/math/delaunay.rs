@@ -126,15 +126,15 @@ mod tests {
 
         for _ in 0..256 {
             let basis = Matrix3::<f64>::new(
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
-                rng.gen::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
             );
             let (reduced_basis, trans_mat) = delaunay_reduce(&basis);
             assert_relative_eq!(
@@ -146,15 +146,15 @@ mod tests {
 
         for _ in 0..256 {
             let basis = Matrix3::<f64>::new(
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
-                rng.gen(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
+                rng.random(),
             );
             let (reduced_basis, trans_mat) = delaunay_reduce(&basis);
             assert_relative_eq!(
