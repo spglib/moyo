@@ -260,5 +260,5 @@ Module Contents
       Construct type of magnetic space group from 1 to 4.
 
 
-.. py:function:: operations_from_number(number: int, setting: Setting) -> moyopy._base.Operations
+.. py:function:: operations_from_number(number: int, *, setting: Setting | None = None) -> moyopy._base.Operations
 

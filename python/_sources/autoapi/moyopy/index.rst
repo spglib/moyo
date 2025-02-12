@@ -408,7 +408,7 @@ Package Contents
       Construct type of magnetic space group from 1 to 4.
 
 
-.. py:function:: operations_from_number(number: int, setting: Setting) -> moyopy._base.Operations
+.. py:function:: operations_from_number(number: int, *, setting: Setting | None = None) -> moyopy._base.Operations
 
 .. py:class:: MoyoDataset(cell: moyopy._base.Cell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, setting: moyopy._data.Setting | None = None)
 

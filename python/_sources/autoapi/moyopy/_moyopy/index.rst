@@ -395,7 +395,7 @@ Module Contents
       for string values.
 
 
-.. py:function:: operations_from_number(number: int, setting: Setting) -> moyopy._base.Operations
+.. py:function:: operations_from_number(number: int, *, setting: Setting | None = None) -> moyopy._base.Operations
 
 .. py:class:: MoyoCollinearMagneticDataset(magnetic_cell: moyopy._base.CollinearMagneticCell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, mag_symprec: float | None = None, is_axial: bool = False)
 
