@@ -3,6 +3,7 @@
 members = [
     "moyo",
     "moyopy",
+    "moyoc",
 ]
 
 resolver = "2"

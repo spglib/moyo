@@ -54,3 +54,22 @@ py-test:
 [group('python')]
 py-docs:
     sphinx-autobuild moyopy/docs moyopy/docs/_build
+
+################################################################################
+# C
+################################################################################
+
+[group('c')]
+[working-directory: 'moyoc']
+c-build:
+    make build
+
+[group('c')]
+[working-directory: 'moyoc']
+c-test:
+    make test
+
+[group('c')]
+[working-directory: 'moyoc']
+c-clean:
+    make clean
