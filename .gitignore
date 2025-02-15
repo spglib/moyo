@@ -353,8 +353,12 @@ flamegraph.svg
 output/
 target/
 *.so
+*.dylib
 .ipynb_checkpoints/
 lcov.info
+*.out
+
+moyoc.h
 
 !**/assets/*.json
 .env
