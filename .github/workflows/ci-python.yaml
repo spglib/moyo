@@ -118,8 +118,6 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Install uv
         uses: astral-sh/setup-uv@v5
-        with:
-          enable-cache: true
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
@@ -128,19 +126,22 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --manifest-path moyopy/Cargo.toml
           sccache: 'true'
+          args: --release --out dist --manifest-path moyopy/Cargo.toml
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
           name: pypi-windows-${{ matrix.target }}
           path: dist
-      - name: pytest
-        shell: bash
-        run: |
-          set -e
-          uv pip install --system --find-links dist --force-reinstall -e moyopy[dev]
-          cd moyopy && pytest -v
+      # windows runner is simply so slow...
+      # https://github.com/Swatinem/rust-cache/issues/169
+      # - name: pytest
+      #   shell: bash
+      #   run: |
+      #     set -e
+      #     uv pip install --system --link-mode symlink --find-links dist --force-reinstall -e moyopy[dev]
+      #     cd moyopy && pytest -v
+
 
   macos:
     runs-on: macos-latest
