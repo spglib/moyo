@@ -16,29 +16,26 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!--
-    this give us a css class that will be invisible only if js is disabled
-  -->
-  <noscript>
-    <style>
-      .pst-js-only { display: none !important; }
-
-    </style>
-  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
   
-  <!-- So that users can add custom icons -->
-  <script src="../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
     <script src="../../../_static/documentation_options.js?v=c73c0f3e"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
@@ -51,7 +48,6 @@
     <link rel="prev" title="moyopy._dataset" href="../_dataset/index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.4.0" />
   </head>
   
   
@@ -67,8 +63,19 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <dialog id="pst-search-dialog">
-    
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
 <form class="bd-search d-flex align-items-center"
       action="../../../search.html"
       method="get">
@@ -76,6 +83,7 @@
   <input type="search"
          class="form-control"
          name="q"
+         id="search-input"
          placeholder="Search..."
          aria-label="Search..."
          autocomplete="off"
@@ -83,8 +91,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form>
-  </dialog>
+</form></div>
+  </div>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -100,8 +108,7 @@
       
       
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
-      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+      <div class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -131,11 +138,15 @@
 </a></div>
         <div class="sidebar-primary-item">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
- <i class="fa-solid fa-magnifying-glass"></i>
- <span class="search-button__default-text">Search</span>
- <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-</button></div>
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
@@ -161,14 +172,9 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
-      <div class="sidebar-primary-item">
-<div id="ethical-ad-placement"
-      class="flat"
-      data-ea-publisher="readthedocs"
-      data-ea-type="readthedocs-sidebar"
-      data-ea-manual="true">
-</div></div>
   </div>
+  
+  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -280,16 +286,24 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
 
 
-<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-</button>
+  </button>
+`);
+</script>
 <button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
 </button>
@@ -466,7 +480,7 @@
 <span id="moyopy-moyopy"></span><h1>moyopy._moyopy<a class="headerlink" href="#module-moyopy._moyopy" title="Link to this heading">#</a></h1>
 <section id="attributes">
 <h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading">#</a></h2>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#moyopy._moyopy.__version__" title="moyopy._moyopy.__version__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__version__</span></code></a></p></td>
 <td><p></p></td>
@@ -477,7 +491,7 @@
 </section>
 <section id="classes">
 <h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h2>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#moyopy._moyopy.Cell" title="moyopy._moyopy.Cell"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Cell</span></code></a></p></td>
 <td><p></p></td>
@@ -521,7 +535,7 @@
 </section>
 <section id="functions">
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h2>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#moyopy._moyopy.operations_from_number" title="moyopy._moyopy.operations_from_number"><code class="xref py py-obj docutils literal notranslate"><span class="pre">operations_from_number</span></code></a>(→ moyopy._base.Operations)</p></td>
 <td><p></p></td>
@@ -534,25 +548,25 @@
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._moyopy.Cell">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">Cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numbers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_base.html#Cell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Cell" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">Cell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numbers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_base.html#Cell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Cell" title="Link to this definition">#</a></dt>
 <dd><dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.Cell.basis">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">basis</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.Cell.basis" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">basis</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.Cell.basis" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.Cell.positions">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.Cell.positions" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.Cell.positions" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.Cell.numbers">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numbers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.Cell.numbers" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numbers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.Cell.numbers" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.Cell.num_atoms">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_atoms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.Cell.num_atoms" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_atoms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.Cell.num_atoms" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -562,37 +576,37 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="moyopy._moyopy.Cell.deserialize_json">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deserialize_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._moyopy.Cell" title="moyopy._moyopy.Cell"><span class="pre">Cell</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_base.html#Cell.deserialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Cell.deserialize_json" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deserialize_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._moyopy.Cell" title="moyopy._moyopy.Cell"><span class="pre">Cell</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_base.html#Cell.deserialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Cell.deserialize_json" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._moyopy.CollinearMagneticCell">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">CollinearMagneticCell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numbers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magnetic_moments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_base.html#CollinearMagneticCell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">CollinearMagneticCell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numbers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magnetic_moments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_base.html#CollinearMagneticCell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell" title="Link to this definition">#</a></dt>
 <dd><dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.CollinearMagneticCell.basis">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">basis</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell.basis" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">basis</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell.basis" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.CollinearMagneticCell.positions">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell.positions" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell.positions" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.CollinearMagneticCell.numbers">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numbers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell.numbers" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numbers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell.numbers" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.CollinearMagneticCell.magnetic_moments">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">magnetic_moments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell.magnetic_moments" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">magnetic_moments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell.magnetic_moments" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.CollinearMagneticCell.num_atoms">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_atoms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell.num_atoms" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_atoms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell.num_atoms" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -602,37 +616,37 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="moyopy._moyopy.CollinearMagneticCell.deserialize_json">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deserialize_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._moyopy.Cell" title="moyopy._moyopy.Cell"><span class="pre">Cell</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_base.html#CollinearMagneticCell.deserialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell.deserialize_json" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deserialize_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._moyopy.Cell" title="moyopy._moyopy.Cell"><span class="pre">Cell</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_base.html#CollinearMagneticCell.deserialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.CollinearMagneticCell.deserialize_json" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._moyopy.NonCollinearMagneticCell">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">NonCollinearMagneticCell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numbers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magnetic_moments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_base.html#NonCollinearMagneticCell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">NonCollinearMagneticCell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">numbers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">magnetic_moments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_base.html#NonCollinearMagneticCell"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell" title="Link to this definition">#</a></dt>
 <dd><dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.NonCollinearMagneticCell.basis">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">basis</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell.basis" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">basis</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell.basis" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.NonCollinearMagneticCell.positions">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell.positions" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">positions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell.positions" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.NonCollinearMagneticCell.numbers">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numbers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell.numbers" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numbers</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell.numbers" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.NonCollinearMagneticCell.magnetic_moments">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">magnetic_moments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell.magnetic_moments" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">magnetic_moments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell.magnetic_moments" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.NonCollinearMagneticCell.num_atoms">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_atoms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell.num_atoms" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_atoms</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell.num_atoms" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -642,27 +656,27 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="moyopy._moyopy.NonCollinearMagneticCell.deserialize_json">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deserialize_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._moyopy.Cell" title="moyopy._moyopy.Cell"><span class="pre">Cell</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_base.html#NonCollinearMagneticCell.deserialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell.deserialize_json" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deserialize_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">json_str</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._moyopy.Cell" title="moyopy._moyopy.Cell"><span class="pre">Cell</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_base.html#NonCollinearMagneticCell.deserialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.NonCollinearMagneticCell.deserialize_json" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._moyopy.Operations">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">Operations</span></span><a class="reference internal" href="../../../_modules/moyopy/_base.html#Operations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Operations" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">Operations</span></span><a class="reference internal" href="../../../_modules/moyopy/_base.html#Operations"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Operations" title="Link to this definition">#</a></dt>
 <dd><dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.Operations.rotations">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.Operations.rotations" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.Operations.rotations" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.Operations.translations">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">translations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.Operations.translations" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">translations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.Operations.translations" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.Operations.num_operations">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_operations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.Operations.num_operations" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">num_operations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.Operations.num_operations" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -674,58 +688,58 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._moyopy.Centering">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">Centering</span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Centering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Centering" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">Centering</span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Centering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Centering" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._moyopy.HallSymbolEntry">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">HallSymbolEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hall_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_data.html#HallSymbolEntry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">HallSymbolEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hall_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_data.html#HallSymbolEntry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry" title="Link to this definition">#</a></dt>
 <dd><p>An entry containing space-group information for a specified hall_number.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.HallSymbolEntry.hall_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hall_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.hall_number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hall_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.hall_number" title="Link to this definition">#</a></dt>
 <dd><p>Number for Hall symbols (1 - 530).</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.HallSymbolEntry.number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.number" title="Link to this definition">#</a></dt>
 <dd><p>ITA number for space group types (1 - 230).</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.HallSymbolEntry.arithmetic_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arithmetic_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.arithmetic_number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arithmetic_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.arithmetic_number" title="Link to this definition">#</a></dt>
 <dd><p>Number for arithmetic crystal classes (1 - 73).</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.HallSymbolEntry.setting">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setting</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#moyopy._moyopy.Setting" title="moyopy._moyopy.Setting"><span class="pre">Setting</span></a></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.setting" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setting</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#moyopy._moyopy.Setting" title="moyopy._moyopy.Setting"><span class="pre">Setting</span></a></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.setting" title="Link to this definition">#</a></dt>
 <dd><p>Setting.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.HallSymbolEntry.hall_symbol">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hall_symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.hall_symbol" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hall_symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.hall_symbol" title="Link to this definition">#</a></dt>
 <dd><p>Hall symbol.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.HallSymbolEntry.hm_short">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hm_short</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.hm_short" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hm_short</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.hm_short" title="Link to this definition">#</a></dt>
 <dd><p>Hermann-Mauguin symbol in short notation.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.HallSymbolEntry.hm_full">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hm_full</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.hm_full" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hm_full</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.hm_full" title="Link to this definition">#</a></dt>
 <dd><p>Hermann-Mauguin symbol in full notation.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.HallSymbolEntry.centering">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">centering</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#moyopy._moyopy.Centering" title="moyopy._moyopy.Centering"><span class="pre">Centering</span></a></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.centering" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">centering</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#moyopy._moyopy.Centering" title="moyopy._moyopy.Centering"><span class="pre">Centering</span></a></em><a class="headerlink" href="#moyopy._moyopy.HallSymbolEntry.centering" title="Link to this definition">#</a></dt>
 <dd><p>Centering.</p>
 </dd></dl>
 
@@ -733,41 +747,41 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._moyopy.MagneticSpaceGroupType">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">MagneticSpaceGroupType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uni_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">MagneticSpaceGroupType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uni_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType" title="Link to this definition">#</a></dt>
 <dd><p>Magnetic space-group type information.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MagneticSpaceGroupType.uni_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uni_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType.uni_number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uni_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType.uni_number" title="Link to this definition">#</a></dt>
 <dd><p>Serial number of UNI (and BNS) symbols.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MagneticSpaceGroupType.litvin_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">litvin_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType.litvin_number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">litvin_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType.litvin_number" title="Link to this definition">#</a></dt>
 <dd><p>Serial number in Litvin’s <a class="reference external" href="https://www.iucr.org/publ/978-0-9553602-2-0">Magnetic group tables</a>.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MagneticSpaceGroupType.bns_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bns_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType.bns_number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bns_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType.bns_number" title="Link to this definition">#</a></dt>
 <dd><p>BNS number e.g. ‘151.32’</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MagneticSpaceGroupType.og_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">og_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType.og_number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">og_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType.og_number" title="Link to this definition">#</a></dt>
 <dd><p>OG number e.g. ‘153.4.1270’</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MagneticSpaceGroupType.number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType.number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType.number" title="Link to this definition">#</a></dt>
 <dd><p>ITA number for reference space group in BNS setting.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MagneticSpaceGroupType.construct_type">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">construct_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType.construct_type" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">construct_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MagneticSpaceGroupType.construct_type" title="Link to this definition">#</a></dt>
 <dd><p>Construct type of magnetic space group from 1 to 4.</p>
 </dd></dl>
 
@@ -775,24 +789,24 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._moyopy.Setting">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">Setting</span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Setting" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">Setting</span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Setting" title="Link to this definition">#</a></dt>
 <dd><p>Preference for the setting of the space group.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="moyopy._moyopy.Setting.spglib">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spglib</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._moyopy.Setting" title="moyopy._moyopy.Setting"><span class="pre">Setting</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting.spglib"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Setting.spglib" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spglib</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._moyopy.Setting" title="moyopy._moyopy.Setting"><span class="pre">Setting</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting.spglib"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Setting.spglib" title="Link to this definition">#</a></dt>
 <dd><p>The setting of the smallest Hall number.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="moyopy._moyopy.Setting.standard">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">standard</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._moyopy.Setting" title="moyopy._moyopy.Setting"><span class="pre">Setting</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting.standard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Setting.standard" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">standard</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._moyopy.Setting" title="moyopy._moyopy.Setting"><span class="pre">Setting</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting.standard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Setting.standard" title="Link to this definition">#</a></dt>
 <dd><p>Unique axis b, cell choice 1 for monoclinic, hexagonal axes for rhombohedral,
 and origin choice 2 for centrosymmetric space groups.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="moyopy._moyopy.Setting.hall_number">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hall_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hall_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._moyopy.Setting" title="moyopy._moyopy.Setting"><span class="pre">Setting</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting.hall_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Setting.hall_number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hall_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hall_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._moyopy.Setting" title="moyopy._moyopy.Setting"><span class="pre">Setting</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting.hall_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.Setting.hall_number" title="Link to this definition">#</a></dt>
 <dd><p>Specific Hall number from 1 to 530.</p>
 </dd></dl>
 
@@ -800,35 +814,35 @@ and origin choice 2 for centrosymmetric space groups.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._moyopy.SpaceGroupType">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">SpaceGroupType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">SpaceGroupType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType" title="Link to this definition">#</a></dt>
 <dd><p>Space-group type information.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.SpaceGroupType.number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.number" title="Link to this definition">#</a></dt>
 <dd><p>ITA number for space group types (1 - 230).</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.SpaceGroupType.hm_short">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hm_short</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.hm_short" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hm_short</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.hm_short" title="Link to this definition">#</a></dt>
 <dd><p>Hermann-Mauguin symbol in short notation.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.SpaceGroupType.hm_full">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hm_full</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.hm_full" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hm_full</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.hm_full" title="Link to this definition">#</a></dt>
 <dd><p>Hermann-Mauguin symbol in full notation.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.SpaceGroupType.arithmetic_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arithmetic_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.arithmetic_number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arithmetic_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.arithmetic_number" title="Link to this definition">#</a></dt>
 <dd><p>Number for arithmetic crystal classes (1 - 73).</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.SpaceGroupType.arithmetic_symbol">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arithmetic_symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.arithmetic_symbol" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arithmetic_symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.arithmetic_symbol" title="Link to this definition">#</a></dt>
 <dd><p>Symbol for arithmetic crystal class.</p>
 <p>See <a class="github reference external" href="https://github.com/spglib/moyo/blob/main/moyo/src/data/arithmetic_crystal_class.rs">spglib/moyo</a>
 for string values.</p>
@@ -836,7 +850,7 @@ for string values.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.SpaceGroupType.geometric_crystal_class">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geometric_crystal_class</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.geometric_crystal_class" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geometric_crystal_class</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.geometric_crystal_class" title="Link to this definition">#</a></dt>
 <dd><p>Geometric crystal class.</p>
 <p>See <a class="github reference external" href="https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs">spglib/moyo</a>
 for string values.</p>
@@ -844,7 +858,7 @@ for string values.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.SpaceGroupType.crystal_system">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crystal_system</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.crystal_system" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crystal_system</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.crystal_system" title="Link to this definition">#</a></dt>
 <dd><p>Crystal system.</p>
 <p>See <a class="github reference external" href="https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs">spglib/moyo</a>
 for string values.</p>
@@ -852,7 +866,7 @@ for string values.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.SpaceGroupType.bravais_class">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bravais_class</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.bravais_class" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bravais_class</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.bravais_class" title="Link to this definition">#</a></dt>
 <dd><p>Bravais class.</p>
 <p>See <a class="github reference external" href="https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs">spglib/moyo</a>
 for string values.</p>
@@ -860,7 +874,7 @@ for string values.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.SpaceGroupType.lattice_system">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lattice_system</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.lattice_system" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lattice_system</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.lattice_system" title="Link to this definition">#</a></dt>
 <dd><p>Lattice system.</p>
 <p>See <a class="github reference external" href="https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs">spglib/moyo</a>
 for string values.</p>
@@ -868,7 +882,7 @@ for string values.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.SpaceGroupType.crystal_family">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crystal_family</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.crystal_family" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crystal_family</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.SpaceGroupType.crystal_family" title="Link to this definition">#</a></dt>
 <dd><p>Crystal family.</p>
 <p>See <a class="github reference external" href="https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs">spglib/moyo</a>
 for string values.</p>
@@ -878,29 +892,29 @@ for string values.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="moyopy._moyopy.operations_from_number">
-<span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">operations_from_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#moyopy._moyopy.Setting" title="moyopy._moyopy.Setting"><span class="pre">Setting</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../_base/index.html#moyopy._base.Operations" title="moyopy._base.Operations"><span class="pre">moyopy._base.Operations</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#operations_from_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.operations_from_number" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">operations_from_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#moyopy._moyopy.Setting" title="moyopy._moyopy.Setting"><span class="pre">Setting</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../_base/index.html#moyopy._base.Operations" title="moyopy._base.Operations"><span class="pre">moyopy._base.Operations</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#operations_from_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.operations_from_number" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">MoyoCollinearMagneticDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">magnetic_cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../_base/index.html#moyopy._base.CollinearMagneticCell" title="moyopy._base.CollinearMagneticCell"><span class="pre">moyopy._base.CollinearMagneticCell</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symprec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mag_symprec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_axial</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_dataset.html#MoyoCollinearMagneticDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">MoyoCollinearMagneticDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">magnetic_cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../_base/index.html#moyopy._base.CollinearMagneticCell" title="moyopy._base.CollinearMagneticCell"><span class="pre">moyopy._base.CollinearMagneticCell</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">symprec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mag_symprec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_axial</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_dataset.html#MoyoCollinearMagneticDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset" title="Link to this definition">#</a></dt>
 <dd><p>A dataset containing magnetic symmetry information of the input collinear magnetic
 structure.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.uni_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uni_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.uni_number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uni_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.uni_number" title="Link to this definition">#</a></dt>
 <dd><p>UNI number for magnetic space-group type.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.magnetic_operations">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">magnetic_operations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.MagneticOperations" title="moyopy._base.MagneticOperations"><span class="pre">moyopy._base.MagneticOperations</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.magnetic_operations" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">magnetic_operations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.MagneticOperations" title="moyopy._base.MagneticOperations"><span class="pre">moyopy._base.MagneticOperations</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.magnetic_operations" title="Link to this definition">#</a></dt>
 <dd><p>Magnetic symmetry operations in the input cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.orbits">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">orbits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.orbits" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">orbits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.orbits" title="Link to this definition">#</a></dt>
 <dd><p>The <a href="#id1"><span class="problematic" id="id2">`</span></a>i`th atom in the input magnetic cell is equivalent to the <a href="#id3"><span class="problematic" id="id4">`</span></a>orbits[i]`th atom
 in the <strong>input</strong> magnetic cell. For example, orbits=[0, 0, 2, 2, 2, 2] means
 the first two atoms are equivalent and the last four atoms are equivalent to each other.</p>
@@ -908,53 +922,53 @@ the first two atoms are equivalent and the last four atoms are equivalent to eac
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.std_mag_cell">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_mag_cell</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.CollinearMagneticCell" title="moyopy._base.CollinearMagneticCell"><span class="pre">moyopy._base.CollinearMagneticCell</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.std_mag_cell" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_mag_cell</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.CollinearMagneticCell" title="moyopy._base.CollinearMagneticCell"><span class="pre">moyopy._base.CollinearMagneticCell</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.std_mag_cell" title="Link to this definition">#</a></dt>
 <dd><p>Standardized magnetic cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.std_linear">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.std_linear" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.std_linear" title="Link to this definition">#</a></dt>
 <dd><p>Linear part of transformation from the input magnetic cell to the standardized
 magnetic cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.std_origin_shift">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.std_origin_shift" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.std_origin_shift" title="Link to this definition">#</a></dt>
 <dd><p>Origin shift of transformation from the input magnetic cell to the standardized
 magnetic cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.std_rotation_matrix">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_rotation_matrix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.std_rotation_matrix" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_rotation_matrix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.std_rotation_matrix" title="Link to this definition">#</a></dt>
 <dd><p>Rigid rotation.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.prim_std_mag_cell">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_mag_cell</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.CollinearMagneticCell" title="moyopy._base.CollinearMagneticCell"><span class="pre">moyopy._base.CollinearMagneticCell</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.prim_std_mag_cell" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_mag_cell</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.CollinearMagneticCell" title="moyopy._base.CollinearMagneticCell"><span class="pre">moyopy._base.CollinearMagneticCell</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.prim_std_mag_cell" title="Link to this definition">#</a></dt>
 <dd><p>Primitive standardized magnetic cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.prim_std_linear">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.prim_std_linear" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.prim_std_linear" title="Link to this definition">#</a></dt>
 <dd><p>Linear part of transformation from the input magnetic cell to the primitive
 standardized magnetic cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.prim_std_origin_shift">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.prim_std_origin_shift" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.prim_std_origin_shift" title="Link to this definition">#</a></dt>
 <dd><p>Origin shift of transformation from the input magnetic cell to the primitive
 standardized magnetic cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.mapping_std_prim">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mapping_std_prim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.mapping_std_prim" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mapping_std_prim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.mapping_std_prim" title="Link to this definition">#</a></dt>
 <dd><p>Mapping sites in the input magnetic cell to those in the primitive standardized magnetic
 cell. The <a href="#id5"><span class="problematic" id="id6">`</span></a>i`th atom in the input magnetic cell is mapped to the <a href="#id7"><span class="problematic" id="id8">`</span></a>mapping_to_std_prim[i]`th
 atom in the primitive standardized magnetic cell.</p>
@@ -962,19 +976,19 @@ atom in the primitive standardized magnetic cell.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.symprec">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">symprec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.symprec" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">symprec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.symprec" title="Link to this definition">#</a></dt>
 <dd><p>Actually used <cite>symprec</cite> in iterative symmetry search.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.angle_tolerance">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">angle_tolerance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.angle_tolerance" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">angle_tolerance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.angle_tolerance" title="Link to this definition">#</a></dt>
 <dd><p>Actually used <cite>angle_tolerance</cite> in iterative symmetry search.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.mag_symprec">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mag_symprec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.mag_symprec" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mag_symprec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.mag_symprec" title="Link to this definition">#</a></dt>
 <dd><p>Actually used <cite>mag_symprec</cite> in iterative symmetry search.</p>
 </dd></dl>
 
@@ -982,29 +996,29 @@ atom in the primitive standardized magnetic cell.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">MoyoDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../_base/index.html#moyopy._base.Cell" title="moyopy._base.Cell"><span class="pre">moyopy._base.Cell</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symprec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../_data/index.html#moyopy._data.Setting" title="moyopy._data.Setting"><span class="pre">moyopy._data.Setting</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_dataset.html#MoyoDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.MoyoDataset" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">MoyoDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../_base/index.html#moyopy._base.Cell" title="moyopy._base.Cell"><span class="pre">moyopy._base.Cell</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">symprec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../_data/index.html#moyopy._data.Setting" title="moyopy._data.Setting"><span class="pre">moyopy._data.Setting</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_dataset.html#MoyoDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.MoyoDataset" title="Link to this definition">#</a></dt>
 <dd><p>A dataset containing symmetry information of the input crystal structure.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.number" title="Link to this definition">#</a></dt>
 <dd><p>Space group number.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.hall_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hall_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.hall_number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hall_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.hall_number" title="Link to this definition">#</a></dt>
 <dd><p>Hall symbol number.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.operations">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">operations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.Operations" title="moyopy._base.Operations"><span class="pre">moyopy._base.Operations</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.operations" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">operations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.Operations" title="moyopy._base.Operations"><span class="pre">moyopy._base.Operations</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.operations" title="Link to this definition">#</a></dt>
 <dd><p>Symmetry operations in the input cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.orbits">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">orbits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.orbits" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">orbits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.orbits" title="Link to this definition">#</a></dt>
 <dd><p>Spglib’s <cite>crystallographic_orbits</cite> not <cite>equivalent_atoms</cite>.</p>
 <p>The <a href="#id9"><span class="problematic" id="id10">`</span></a>i`th atom in the input cell is equivalent to the <a href="#id11"><span class="problematic" id="id12">`</span></a>orbits[i]`th atom in the <strong>input</strong>
 cell. For example, orbits=[0, 0, 2, 2, 2, 2] means the first two atoms are equivalent
@@ -1013,69 +1027,69 @@ and the last four atoms are equivalent to each other.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.wyckoffs">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wyckoffs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.wyckoffs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">wyckoffs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.wyckoffs" title="Link to this definition">#</a></dt>
 <dd><p>Wyckoff letters for each site in the input cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.site_symmetry_symbols">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">site_symmetry_symbols</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.site_symmetry_symbols" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">site_symmetry_symbols</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.site_symmetry_symbols" title="Link to this definition">#</a></dt>
 <dd><p>Site symmetry symbols for each site in the input cell.</p>
 <p>The orientation of the site symmetry is w.r.t. the standardized cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.std_cell">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_cell</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.Cell" title="moyopy._base.Cell"><span class="pre">moyopy._base.Cell</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.std_cell" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_cell</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.Cell" title="moyopy._base.Cell"><span class="pre">moyopy._base.Cell</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.std_cell" title="Link to this definition">#</a></dt>
 <dd><p>Standardized cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.std_linear">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.std_linear" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.std_linear" title="Link to this definition">#</a></dt>
 <dd><p>Linear part of transformation from the input cell to the standardized cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.std_origin_shift">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.std_origin_shift" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.std_origin_shift" title="Link to this definition">#</a></dt>
 <dd><p>Origin shift of transformation from the input cell to the standardized cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.std_rotation_matrix">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_rotation_matrix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.std_rotation_matrix" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_rotation_matrix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.std_rotation_matrix" title="Link to this definition">#</a></dt>
 <dd><p>Rigid rotation.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.pearson_symbol">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pearson_symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.pearson_symbol" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pearson_symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.pearson_symbol" title="Link to this definition">#</a></dt>
 <dd><p>Pearson symbol for standardized cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.prim_std_cell">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_cell</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.Cell" title="moyopy._base.Cell"><span class="pre">moyopy._base.Cell</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.prim_std_cell" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_cell</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.Cell" title="moyopy._base.Cell"><span class="pre">moyopy._base.Cell</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.prim_std_cell" title="Link to this definition">#</a></dt>
 <dd><p>Primitive standardized cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.prim_std_linear">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.prim_std_linear" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.prim_std_linear" title="Link to this definition">#</a></dt>
 <dd><p>Linear part of transformation from the input cell to the primitive standardized cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.prim_std_origin_shift">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.prim_std_origin_shift" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.prim_std_origin_shift" title="Link to this definition">#</a></dt>
 <dd><p>Origin shift of transformation from the input cell to the primitive standardized
 cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.mapping_std_prim">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mapping_std_prim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.mapping_std_prim" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mapping_std_prim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.mapping_std_prim" title="Link to this definition">#</a></dt>
 <dd><p>Mapping sites in the input cell to those in the primitive standardized cell.</p>
 <p>The <a href="#id13"><span class="problematic" id="id14">`</span></a>i`th atom in the input cell is mapped to the <a href="#id15"><span class="problematic" id="id16">`</span></a>mapping_to_std_prim[i]`th atom in the
 primitive standardized cell.</p>
@@ -1083,13 +1097,13 @@ primitive standardized cell.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.symprec">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">symprec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.symprec" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">symprec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.symprec" title="Link to this definition">#</a></dt>
 <dd><p>Actually used <cite>symprec</cite> in iterative symmetry search.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.angle_tolerance">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">angle_tolerance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.angle_tolerance" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">angle_tolerance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.angle_tolerance" title="Link to this definition">#</a></dt>
 <dd><p>Actually used <cite>angle_tolerance</cite> in iterative symmetry search.</p>
 </dd></dl>
 
@@ -1097,24 +1111,24 @@ primitive standardized cell.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">MoyoNonCollinearMagneticDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">magnetic_cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../_base/index.html#moyopy._base.NonCollinearMagneticCell" title="moyopy._base.NonCollinearMagneticCell"><span class="pre">moyopy._base.NonCollinearMagneticCell</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">symprec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mag_symprec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_axial</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_dataset.html#MoyoNonCollinearMagneticDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._moyopy.</span></span><span class="sig-name descname"><span class="pre">MoyoNonCollinearMagneticDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">magnetic_cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../_base/index.html#moyopy._base.NonCollinearMagneticCell" title="moyopy._base.NonCollinearMagneticCell"><span class="pre">moyopy._base.NonCollinearMagneticCell</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">symprec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle_tolerance</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mag_symprec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_axial</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_dataset.html#MoyoNonCollinearMagneticDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset" title="Link to this definition">#</a></dt>
 <dd><p>A dataset containing magnetic symmetry information of the input non-collinear magnetic
 structure.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.uni_number">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uni_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.uni_number" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uni_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.uni_number" title="Link to this definition">#</a></dt>
 <dd><p>UNI number for magnetic space-group type.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.magnetic_operations">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">magnetic_operations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.MagneticOperations" title="moyopy._base.MagneticOperations"><span class="pre">moyopy._base.MagneticOperations</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.magnetic_operations" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">magnetic_operations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.MagneticOperations" title="moyopy._base.MagneticOperations"><span class="pre">moyopy._base.MagneticOperations</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.magnetic_operations" title="Link to this definition">#</a></dt>
 <dd><p>Magnetic symmetry operations in the input cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.orbits">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">orbits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.orbits" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">orbits</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.orbits" title="Link to this definition">#</a></dt>
 <dd><p>The <a href="#id17"><span class="problematic" id="id18">`</span></a>i`th atom in the input magnetic cell is equivalent to the <a href="#id19"><span class="problematic" id="id20">`</span></a>orbits[i]`th atom
 in the <strong>input</strong> magnetic cell. For example, orbits=[0, 0, 2, 2, 2, 2] means
 the first two atoms are equivalent and the last four atoms are equivalent to each other.</p>
@@ -1122,53 +1136,53 @@ the first two atoms are equivalent and the last four atoms are equivalent to eac
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_mag_cell">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_mag_cell</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.NonCollinearMagneticCell" title="moyopy._base.NonCollinearMagneticCell"><span class="pre">moyopy._base.NonCollinearMagneticCell</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_mag_cell" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_mag_cell</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.NonCollinearMagneticCell" title="moyopy._base.NonCollinearMagneticCell"><span class="pre">moyopy._base.NonCollinearMagneticCell</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_mag_cell" title="Link to this definition">#</a></dt>
 <dd><p>Standardized magnetic cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_linear">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_linear" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_linear" title="Link to this definition">#</a></dt>
 <dd><p>Linear part of transformation from the input magnetic cell to the standardized
 magnetic cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_origin_shift">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_origin_shift" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_origin_shift" title="Link to this definition">#</a></dt>
 <dd><p>Origin shift of transformation from the input magnetic cell to the standardized
 magnetic cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_rotation_matrix">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_rotation_matrix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_rotation_matrix" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">std_rotation_matrix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_rotation_matrix" title="Link to this definition">#</a></dt>
 <dd><p>Rigid rotation.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.prim_std_mag_cell">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_mag_cell</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.NonCollinearMagneticCell" title="moyopy._base.NonCollinearMagneticCell"><span class="pre">moyopy._base.NonCollinearMagneticCell</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.prim_std_mag_cell" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_mag_cell</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.NonCollinearMagneticCell" title="moyopy._base.NonCollinearMagneticCell"><span class="pre">moyopy._base.NonCollinearMagneticCell</span></a></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.prim_std_mag_cell" title="Link to this definition">#</a></dt>
 <dd><p>Primitive standardized magnetic cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.prim_std_linear">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.prim_std_linear" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.prim_std_linear" title="Link to this definition">#</a></dt>
 <dd><p>Linear part of transformation from the input magnetic cell to the primitive
 standardized magnetic cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.prim_std_origin_shift">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.prim_std_origin_shift" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_std_origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.prim_std_origin_shift" title="Link to this definition">#</a></dt>
 <dd><p>Origin shift of transformation from the input magnetic cell to the primitive
 standardized magnetic cell.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.mapping_std_prim">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mapping_std_prim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.mapping_std_prim" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mapping_std_prim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.mapping_std_prim" title="Link to this definition">#</a></dt>
 <dd><p>Mapping sites in the input magnetic cell to those in the primitive standardized magnetic
 cell. The <a href="#id21"><span class="problematic" id="id22">`</span></a>i`th atom in the input magnetic cell is mapped to the <a href="#id23"><span class="problematic" id="id24">`</span></a>mapping_to_std_prim[i]`th
 atom in the primitive standardized magnetic cell.</p>
@@ -1176,19 +1190,19 @@ atom in the primitive standardized magnetic cell.</p>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.symprec">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">symprec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.symprec" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">symprec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.symprec" title="Link to this definition">#</a></dt>
 <dd><p>Actually used <cite>symprec</cite> in iterative symmetry search.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.angle_tolerance">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">angle_tolerance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.angle_tolerance" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">angle_tolerance</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.angle_tolerance" title="Link to this definition">#</a></dt>
 <dd><p>Actually used <cite>angle_tolerance</cite> in iterative symmetry search.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.mag_symprec">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mag_symprec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.mag_symprec" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mag_symprec</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.mag_symprec" title="Link to this definition">#</a></dt>
 <dd><p>Actually used <cite>mag_symprec</cite> in iterative symmetry search.</p>
 </dd></dl>
 
@@ -1238,8 +1252,7 @@ atom in the primitive standardized magnetic cell.</p>
             
             
               
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
-                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
   <div class="sidebar-secondary-item">
@@ -1434,8 +1447,8 @@ By Author name not set
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>
