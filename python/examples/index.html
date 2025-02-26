@@ -396,6 +396,21 @@ When we need a secondary symmetry information such as Hermann-Mauguin symbol for
 <span class="c1"># -&gt; PySpaceGroupType { number: 15, hm_short: &quot;C 2/c&quot;, hm_full: &quot;C 1 2/c 1&quot;, arithmetic_number: 8, arithmetic_symbol: &quot;2/mC&quot;, geometric_crystal_class: &quot;2/m&quot;, crystal_system: &quot;Monoclinic&quot;, bravais_class: &quot;mC&quot;, lattice_system: &quot;Monoclinic&quot;, crystal_family: &quot;Monoclinic&quot; }</span>
 </pre></div>
 </div>
+<p>You can reverse-lookup an ITA space group number from a Hermann-Mauguin symbol by looping over <a class="reference internal" href="../autoapi/moyopy/index.html#moyopy.SpaceGroupType" title="moyopy.SpaceGroupType"><code class="xref py py-class docutils literal notranslate"><span class="pre">moyopy.SpaceGroupType</span></code></a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># ruff: noqa: E501</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">moyopy</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpaceGroupType</span>
+
+<span class="n">map_hm_short_to_number</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># SpaceGroupType(number).hm_short is separated by a space like &quot;F m -3 m&quot;</span>
+    <span class="n">SpaceGroupType</span><span class="p">(</span><span class="n">number</span><span class="p">)</span><span class="o">.</span><span class="n">hm_short</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">):</span> <span class="n">number</span>
+    <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">230</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">map_hm_short_to_number</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Fm-3m&quot;</span><span class="p">))</span>  <span class="c1"># -&gt; 225</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">map_hm_short_to_number</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;P6_3/m&quot;</span><span class="p">))</span>  <span class="c1"># -&gt; 176</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">map_hm_short_to_number</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Fmmm&quot;</span><span class="p">))</span>  <span class="c1"># -&gt; 69</span>
+</pre></div>
+</div>
 </section>
 </section>
 

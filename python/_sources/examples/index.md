@@ -16,3 +16,8 @@ You can access the space-group classification information using {py:class}`moyop
 
 ```{literalinclude} ../../examples/space_group_type.py
 ```
+
+You can reverse-lookup an ITA space group number from a Hermann-Mauguin symbol by looping over {py:class}`moyopy.SpaceGroupType`.
+
+```{literalinclude} ../../examples/hm_to_number.py
+```
