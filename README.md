@@ -14,8 +14,8 @@ A fast and robust crystal symmetry finder, written in Rust.
     <figcaption><a href="bench/mp/analysis.ipynb">Several times faster symmetry detection than Spglib for Materials Project dataset</a></figcaption>
 </figure>
 
-- Rust support available via [crates.io](https://crates.io/crates/moyo)
-- Python support available via [PyPI](https://pypi.org/project/moyopy/)
+- Rust support available via [crates.io](https://crates.io/crates/moyo): [Docs](https://docs.rs/moyo/latest/moyo/)
+- Python support available via [PyPI](https://pypi.org/project/moyopy/): [Docs](https://spglib.github.io/moyo/python/)
 
 ## Interfaces
 
