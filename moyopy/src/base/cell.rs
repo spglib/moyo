@@ -1,15 +1,15 @@
 use nalgebra::Vector3;
 use pyo3::exceptions::PyValueError;
-use pyo3::prelude::*;
 use pyo3::types::PyType;
-use serde::de::{Deserialize, Deserializer};
-use serde::ser::{Serialize, Serializer};
+use pyo3::{prelude::*, IntoPyObjectExt};
+use pythonize::{depythonize, pythonize};
+use serde::{Deserialize, Serialize};
 use serde_json;
 
 use moyo::base::{Cell, Lattice};
 
 // Unfortunately, "PyCell" is already reversed by pyo3...
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[pyclass(name = "Cell", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyStructure(Cell);
@@ -59,8 +59,22 @@ impl PyStructure {
         self.0.num_atoms()
     }
 
-    pub fn serialize_json(&self) -> PyResult<String> {
-        serde_json::to_string(self).map_err(|e| PyValueError::new_err(e.to_string()))
+    // ------------------------------------------------------------------------
+    // Special methods
+    // ------------------------------------------------------------------------
+    fn __repr__(&self) -> String {
+        self.serialize_json()
+    }
+
+    fn __str__(&self) -> String {
+        self.__repr__()
+    }
+
+    // ------------------------------------------------------------------------
+    // Serialization
+    // ------------------------------------------------------------------------
+    pub fn serialize_json(&self) -> String {
+        serde_json::to_string(&self.0).expect("Serialization should not fail")
     }
 
     #[classmethod]
@@ -68,17 +82,20 @@ impl PyStructure {
         serde_json::from_str(s).map_err(|e| PyValueError::new_err(e.to_string()))
     }
 
-    fn __repr__(&self) -> String {
-        format!(
-            "Cell(basis={:?}, positions={:?}, numbers={:?})",
-            self.basis(),
-            self.positions(),
-            self.numbers()
-        )
+    pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
+        Python::with_gil(|py| {
+            let obj = pythonize(py, &self.0).expect("Python object conversion should not fail");
+            obj.into_py_any(py)
+        })
     }
 
-    fn __str__(&self) -> String {
-        self.__repr__()
+    #[classmethod]
+    pub fn from_dict(_cls: &Bound<'_, PyType>, obj: &Bound<'_, PyAny>) -> PyResult<Self> {
+        Python::with_gil(|_| {
+            depythonize::<Self>(obj).map_err(|e| {
+                PyErr::new::<PyValueError, _>(format!("Deserialization failed: {}", e))
+            })
+        })
     }
 }
 
@@ -91,24 +108,6 @@ impl From<PyStructure> for Cell {
 impl From<Cell> for PyStructure {
     fn from(cell: Cell) -> Self {
         PyStructure(cell)
-    }
-}
-
-impl Serialize for PyStructure {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        Cell::from(self.clone()).serialize(serializer)
-    }
-}
-
-impl<'de> Deserialize<'de> for PyStructure {
-    fn deserialize<D>(deserializer: D) -> Result<PyStructure, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        Cell::deserialize(deserializer).map(PyStructure::from)
     }
 }
 

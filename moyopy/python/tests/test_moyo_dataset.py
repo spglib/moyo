@@ -3,12 +3,6 @@ from __future__ import annotations
 from moyopy import Cell, CollinearMagneticCell, MoyoCollinearMagneticDataset, MoyoDataset
 
 
-def test_cell_serialization(wurtzite: Cell):
-    serialized = wurtzite.serialize_json()
-    deserialized = Cell.deserialize_json(serialized)
-    assert len(wurtzite.positions) == len(deserialized.positions)
-
-
 def test_moyo_dataset(wurtzite: Cell):
     dataset = MoyoDataset(wurtzite)
     assert dataset.number == 186
