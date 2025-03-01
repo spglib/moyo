@@ -24,6 +24,14 @@ def test_moyo_dataset_serialization(wurtzite: Cell):
     assert deserialized.std_cell.num_atoms == dataset.std_cell.num_atoms
 
 
+def test_moyo_dataset_py_obj_serialization(wurtzite: Cell):
+    dataset = MoyoDataset(wurtzite)
+    deserialized = dataset.as_dict()
+    serialized = MoyoDataset.from_dict(deserialized)
+    assert serialized.number == dataset.number
+    assert serialized.std_cell.num_atoms == dataset.std_cell.num_atoms
+
+
 def test_moyo_dataset_repr(wurtzite: Cell):
     dataset = MoyoDataset(wurtzite)
     dataset_str = str(dataset)
