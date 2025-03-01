@@ -50,7 +50,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          uv pip install --system --no-index --find-links dist moyopy
+          uv pip install --system --find-links dist moyopy
           uv pip install --system moyopy[interface]
           find moyopy/examples -name "*.py" | xargs -I {} python {}
 
@@ -86,7 +86,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          uv pip install --system --no-index --find-links dist moyopy
+          uv pip install --system --find-links dist moyopy
           uv pip install --system moyopy[testing]
           pytest -v
       # TODO: too long to build...
@@ -253,7 +253,7 @@ jobs:
       - name: Install
         run: |
           set -e
-          uv pip install --system --no-index --find-links dist moyopy
+          uv pip install --system --find-links dist moyopy
           uv pip install --system moyopy[testing,docs]
       - name: Build
         run: |
