@@ -95,7 +95,9 @@ use crate::base::{
     AngleTolerance, Cell, MagneticCell, MagneticMoment, MagneticOperations, MoyoError, Operations,
     OriginShift, RotationMagneticMomentAction,
 };
-use crate::data::{arithmetic_crystal_class_entry, HallNumber, Number, Setting, UNINumber};
+use crate::data::{
+    arithmetic_crystal_class_entry, hall_symbol_entry, HallNumber, Number, Setting, UNINumber,
+};
 use crate::identify::{MagneticSpaceGroup, SpaceGroup};
 use crate::search::{
     iterative_magnetic_symmetry_search, iterative_symmetry_search,
@@ -103,10 +105,10 @@ use crate::search::{
 };
 use crate::symmetrize::{orbits_in_cell, StandardizedCell, StandardizedMagneticCell};
 
-use data::hall_symbol_entry;
 use nalgebra::Matrix3;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 /// A dataset containing symmetry information of the input crystal structure.
 pub struct MoyoDataset {
     // ------------------------------------------------------------------------
@@ -271,7 +273,7 @@ impl MoyoDataset {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct MoyoMagneticDataset<M: MagneticMoment> {
     // ------------------------------------------------------------------------
     // Magnetic space-group type

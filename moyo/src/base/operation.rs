@@ -3,6 +3,7 @@ use std::fmt;
 use std::ops::Mul;
 
 use nalgebra::base::{Matrix3, Vector3};
+use serde::{Deserialize, Serialize};
 
 use super::lattice::Lattice;
 
@@ -14,7 +15,7 @@ pub type Translation = Vector3<f64>;
 /// Time reversal operation
 pub type TimeReversal = bool;
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct Operation {
     pub rotation: Rotation,
     pub translation: Translation,
@@ -91,7 +92,7 @@ impl Mul for Operation {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Deserialize, Serialize)]
 pub struct MagneticOperation {
     pub operation: Operation,
     pub time_reversal: TimeReversal,

@@ -1,4 +1,7 @@
+use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
+use pyo3::types::PyType;
+use serde::{Deserialize, Serialize};
 
 use moyo::base::AngleTolerance;
 use moyo::data::Setting;
@@ -7,7 +10,7 @@ use moyo::MoyoDataset;
 use crate::base::{PyMoyoError, PyOperations, PyStructure};
 use crate::data::PySetting;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[pyclass(name = "MoyoDataset", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyMoyoDataset(MoyoDataset);
@@ -161,5 +164,17 @@ impl PyMoyoDataset {
             self.0.wyckoffs,
             self.0.site_symmetry_symbols
         )
+    }
+
+    // ------------------------------------------------------------------------
+    // Serialization
+    // ------------------------------------------------------------------------
+    pub fn serialize_json(&self) -> PyResult<String> {
+        serde_json::to_string(&self.0).map_err(|e| PyValueError::new_err(e.to_string()))
+    }
+
+    #[classmethod]
+    pub fn deserialize_json(_cls: &Bound<'_, PyType>, s: &str) -> PyResult<Self> {
+        serde_json::from_str(s).map_err(|e| PyValueError::new_err(e.to_string()))
     }
 }

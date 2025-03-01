@@ -27,6 +27,9 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Mathematics",
     "Topic :: Scientific/Engineering :: Physics",
 ]
+dependencies = [
+    "typing-extensions",
+]
 
 [project.optional-dependencies]
 interface = [

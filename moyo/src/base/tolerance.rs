@@ -1,4 +1,5 @@
 use log::debug;
+use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
 use super::error::MoyoError;
@@ -7,7 +8,7 @@ pub const EPS: f64 = 1e-8;
 
 const INITIAL_SYMMETRY_SEARCH_STRIDE: f64 = 2.0;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Deserialize, Serialize)]
 /// Tolerance for angle in comparing basis vectors in symmetry search.
 pub enum AngleTolerance {
     /// Tolerance in radian.
