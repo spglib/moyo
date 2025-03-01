@@ -1,3 +1,7 @@
+from typing import Any
+
+from typing_extensions import Self
+
 from moyopy._base import (
     Cell,
     CollinearMagneticCell,
@@ -101,6 +105,17 @@ class MoyoDataset:
     @property
     def angle_tolerance(self) -> float | None:
         """Actually used `angle_tolerance` in iterative symmetry search."""
+    # Serialization and deserialization
+    def serialize_json(self) -> str:
+        """Serialize the dataset to a JSON string."""
+    @classmethod
+    def deserialize_json(cls, json_str: str) -> Self:
+        """Deserialize the dataset from a JSON string."""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert the dataset to a dictionary."""
+    @classmethod
+    def from_dict(cls, obj: dict[str, Any]) -> Self:
+        """Create a dataset from a dictionary."""
 
 class MoyoCollinearMagneticDataset:
     """A dataset containing magnetic symmetry information of the input collinear magnetic
@@ -186,6 +201,17 @@ class MoyoCollinearMagneticDataset:
     @property
     def mag_symprec(self) -> float | None:
         """Actually used `mag_symprec` in iterative symmetry search."""
+    # Serialization and deserialization
+    def serialize_json(self) -> str:
+        """Serialize the dataset to a JSON string."""
+    @classmethod
+    def deserialize_json(cls, json_str: str) -> Self:
+        """Deserialize the dataset from a JSON string."""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert the dataset to a dictionary."""
+    @classmethod
+    def from_dict(cls, obj: dict[str, Any]) -> Self:
+        """Create a dataset from a dictionary."""
 
 class MoyoNonCollinearMagneticDataset:
     """A dataset containing magnetic symmetry information of the input non-collinear magnetic
@@ -271,3 +297,14 @@ class MoyoNonCollinearMagneticDataset:
     @property
     def mag_symprec(self) -> float | None:
         """Actually used `mag_symprec` in iterative symmetry search."""
+    # Serialization and deserialization
+    def serialize_json(self) -> str:
+        """Serialize the dataset to a JSON string."""
+    @classmethod
+    def deserialize_json(cls, json_str: str) -> Self:
+        """Deserialize the dataset from a JSON string."""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert the dataset to a dictionary."""
+    @classmethod
+    def from_dict(cls, obj: dict[str, Any]) -> Self:
+        """Create a dataset from a dictionary."""

@@ -1,3 +1,5 @@
+from typing import Any
+
 class Cell:
     def __init__(
         self,
@@ -13,9 +15,17 @@ class Cell:
     def numbers(self) -> list[int]: ...
     @property
     def num_atoms(self) -> int: ...
-    def serialize_json(self) -> str: ...
+    # Serialization and deserialization
+    def serialize_json(self) -> str:
+        """Serialize the cell to a JSON string"""
     @classmethod
-    def deserialize_json(cls, json_str: str) -> Cell: ...
+    def deserialize_json(cls, json_str: str) -> Cell:
+        """Deserialize a JSON string to a Cell object"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert the cell to a dictionary"""
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Cell:
+        """Create a cell from a dictionary"""
 
 class CollinearMagneticCell:
     def __init__(
@@ -35,9 +45,17 @@ class CollinearMagneticCell:
     def magnetic_moments(self) -> list[float]: ...
     @property
     def num_atoms(self) -> int: ...
-    def serialize_json(self) -> str: ...
+    # Serialization and deserialization
+    def serialize_json(self) -> str:
+        """Serialize the cell to a JSON string"""
     @classmethod
-    def deserialize_json(cls, json_str: str) -> Cell: ...
+    def deserialize_json(cls, json_str: str) -> Cell:
+        """Deserialize a JSON string to a Cell object"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert the cell to a dictionary"""
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Cell:
+        """Create a cell from a dictionary"""
 
 class NonCollinearMagneticCell:
     def __init__(
@@ -57,9 +75,17 @@ class NonCollinearMagneticCell:
     def magnetic_moments(self) -> list[list[float]]: ...
     @property
     def num_atoms(self) -> int: ...
-    def serialize_json(self) -> str: ...
+    # Serialization and deserialization
+    def serialize_json(self) -> str:
+        """Serialize the cell to a JSON string"""
     @classmethod
-    def deserialize_json(cls, json_str: str) -> Cell: ...
+    def deserialize_json(cls, json_str: str) -> Cell:
+        """Deserialize a JSON string to a Cell object"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert the cell to a dictionary"""
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Cell:
+        """Create a cell from a dictionary"""
 
 class Operations:
     @property

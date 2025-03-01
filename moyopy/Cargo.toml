@@ -23,6 +23,8 @@ serde_json.workspace = true
 approx.workspace = true
 log.workspace = true
 pyo3-log = "0.12"
+pythonize = "0.23"
+
 
 [dependencies.pyo3]
 version = "0.23"

@@ -10,10 +10,20 @@ def test_moyo_dataset(wurtzite: Cell):
     assert dataset.pearson_symbol == "hP4"
 
 
-def test_serialization(wurtzite: Cell):
-    serialized = wurtzite.serialize_json()
-    deserialized = Cell.deserialize_json(serialized)
-    assert len(wurtzite.positions) == len(deserialized.positions)
+def test_moyo_dataset_serialization(wurtzite: Cell):
+    dataset = MoyoDataset(wurtzite)
+    serialized = dataset.serialize_json()
+    deserialized = MoyoDataset.deserialize_json(serialized)
+    assert deserialized.number == dataset.number
+    assert deserialized.std_cell.num_atoms == dataset.std_cell.num_atoms
+
+
+def test_moyo_dataset_py_obj_serialization(wurtzite: Cell):
+    dataset = MoyoDataset(wurtzite)
+    deserialized = dataset.as_dict()
+    serialized = MoyoDataset.from_dict(deserialized)
+    assert serialized.number == dataset.number
+    assert serialized.std_cell.num_atoms == dataset.std_cell.num_atoms
 
 
 def test_moyo_dataset_repr(wurtzite: Cell):

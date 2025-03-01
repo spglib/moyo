@@ -29,3 +29,14 @@ assert dataset.hall_number == 480
 
 hall_symbol_entry = moyopy.HallSymbolEntry(hall_number=dataset.hall_number)
 assert hall_symbol_entry.hm_short == "P 6_3 m c"
+
+# MoyoDataset can be serialized to Python dictionary
+dataset_as_dict = dataset.as_dict()
+dataset2 = moyopy.MoyoDataset.from_dict(dataset_as_dict)
+assert dataset2.number == dataset.number
+
+# MoyoDataset can be serialized to JSON string
+dataset_as_json = dataset.serialize_json()
+assert isinstance(dataset_as_json, str)
+dataset3 = moyopy.MoyoDataset.deserialize_json(dataset_as_json)
+assert dataset3.number == dataset.number
