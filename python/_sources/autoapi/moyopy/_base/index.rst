@@ -43,9 +43,29 @@ Module Contents
 
    .. py:method:: serialize_json() -> str
 
+      Serialize the cell to a JSON string
+
+
 
    .. py:method:: deserialize_json(json_str: str) -> Cell
       :classmethod:
+
+
+      Deserialize a JSON string to a Cell object
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert the cell to a dictionary
+
+
+
+   .. py:method:: from_dict(data: dict[str, Any]) -> Cell
+      :classmethod:
+
+
+      Create a cell from a dictionary
 
 
 
@@ -78,9 +98,29 @@ Module Contents
 
    .. py:method:: serialize_json() -> str
 
+      Serialize the cell to a JSON string
+
+
 
    .. py:method:: deserialize_json(json_str: str) -> Cell
       :classmethod:
+
+
+      Deserialize a JSON string to a Cell object
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert the cell to a dictionary
+
+
+
+   .. py:method:: from_dict(data: dict[str, Any]) -> Cell
+      :classmethod:
+
+
+      Create a cell from a dictionary
 
 
 
@@ -113,9 +153,29 @@ Module Contents
 
    .. py:method:: serialize_json() -> str
 
+      Serialize the cell to a JSON string
+
+
 
    .. py:method:: deserialize_json(json_str: str) -> Cell
       :classmethod:
+
+
+      Deserialize a JSON string to a Cell object
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert the cell to a dictionary
+
+
+
+   .. py:method:: from_dict(data: dict[str, Any]) -> Cell
+      :classmethod:
+
+
+      Create a cell from a dictionary
 
 
 

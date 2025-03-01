@@ -151,6 +151,34 @@ Module Contents
       Actually used `angle_tolerance` in iterative symmetry search.
 
 
+   .. py:method:: serialize_json() -> str
+
+      Serialize the dataset to a JSON string.
+
+
+
+   .. py:method:: deserialize_json(json_str: str) -> typing_extensions.Self
+      :classmethod:
+
+
+      Deserialize the dataset from a JSON string.
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert the dataset to a dictionary.
+
+
+
+   .. py:method:: from_dict(obj: dict[str, Any]) -> typing_extensions.Self
+      :classmethod:
+
+
+      Create a dataset from a dictionary.
+
+
+
 .. py:class:: MoyoCollinearMagneticDataset(magnetic_cell: moyopy._base.CollinearMagneticCell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, mag_symprec: float | None = None, is_axial: bool = False)
 
    A dataset containing magnetic symmetry information of the input collinear magnetic
@@ -263,6 +291,34 @@ Module Contents
       Actually used `mag_symprec` in iterative symmetry search.
 
 
+   .. py:method:: serialize_json() -> str
+
+      Serialize the dataset to a JSON string.
+
+
+
+   .. py:method:: deserialize_json(json_str: str) -> typing_extensions.Self
+      :classmethod:
+
+
+      Deserialize the dataset from a JSON string.
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert the dataset to a dictionary.
+
+
+
+   .. py:method:: from_dict(obj: dict[str, Any]) -> typing_extensions.Self
+      :classmethod:
+
+
+      Create a dataset from a dictionary.
+
+
+
 .. py:class:: MoyoNonCollinearMagneticDataset(magnetic_cell: moyopy._base.NonCollinearMagneticCell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, mag_symprec: float | None = None, is_axial: bool = True)
 
    A dataset containing magnetic symmetry information of the input non-collinear magnetic
@@ -373,5 +429,33 @@ Module Contents
 
 
       Actually used `mag_symprec` in iterative symmetry search.
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize the dataset to a JSON string.
+
+
+
+   .. py:method:: deserialize_json(json_str: str) -> typing_extensions.Self
+      :classmethod:
+
+
+      Deserialize the dataset from a JSON string.
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert the dataset to a dictionary.
+
+
+
+   .. py:method:: from_dict(obj: dict[str, Any]) -> typing_extensions.Self
+      :classmethod:
+
+
+      Create a dataset from a dictionary.
+
 
 

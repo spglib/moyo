@@ -379,6 +379,17 @@ When we need a secondary symmetry information such as Hermann-Mauguin symbol for
 
 <span class="n">hall_symbol_entry</span> <span class="o">=</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">HallSymbolEntry</span><span class="p">(</span><span class="n">hall_number</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">hall_number</span><span class="p">)</span>
 <span class="k">assert</span> <span class="n">hall_symbol_entry</span><span class="o">.</span><span class="n">hm_short</span> <span class="o">==</span> <span class="s2">&quot;P 6_3 m c&quot;</span>
+
+<span class="c1"># MoyoDataset can be serialized to Python dictionary</span>
+<span class="n">dataset_as_dict</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span>
+<span class="n">dataset2</span> <span class="o">=</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">MoyoDataset</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">dataset_as_dict</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">dataset2</span><span class="o">.</span><span class="n">number</span> <span class="o">==</span> <span class="n">dataset</span><span class="o">.</span><span class="n">number</span>
+
+<span class="c1"># MoyoDataset can be serialized to JSON string</span>
+<span class="n">dataset_as_json</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">serialize_json</span><span class="p">()</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dataset_as_json</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+<span class="n">dataset3</span> <span class="o">=</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">MoyoDataset</span><span class="o">.</span><span class="n">deserialize_json</span><span class="p">(</span><span class="n">dataset_as_json</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">dataset3</span><span class="o">.</span><span class="n">number</span> <span class="o">==</span> <span class="n">dataset</span><span class="o">.</span><span class="n">number</span>
 </pre></div>
 </div>
 </section>
