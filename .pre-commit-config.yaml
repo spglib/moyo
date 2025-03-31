@@ -73,3 +73,12 @@ repos:
       - id: ruff
         args: [ "--fix", "--show-fixes", "--config", "moyopy/pyproject.toml"]
         types_or: [python, pyi]
+  - repo: local
+    hooks:
+      - id: clear-notebook-output
+        name: Clear Jupyter Notebook Outputs
+        entry: jupyter nbconvert --clear-output --inplace
+        language: python
+        additional_dependencies: [jupyter]
+        types: [jupyter]
+        files: \.ipynb$
