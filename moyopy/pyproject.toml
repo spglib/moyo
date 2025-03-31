@@ -55,6 +55,7 @@ docs = [
 dev = [
     "moyopy[testing]",
     "moyopy[docs]",
+    "nbconvert",
 ]
 
 [tool.maturin]
