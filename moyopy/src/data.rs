@@ -15,10 +15,11 @@ use moyo::base::{MoyoError, Operation};
 use moyo::data::{hall_symbol_entry, HallSymbol, Setting};
 
 #[pyfunction]
-#[pyo3(signature = (number, *, setting=None))]
+#[pyo3(signature = (number, *, setting=None, primitive=false))]
 pub fn operations_from_number(
     number: i32,
     setting: Option<PySetting>,
+    primitive: bool,
 ) -> Result<PyOperations, PyMoyoError> {
     let setting = if let Some(setting) = setting {
         setting
@@ -37,17 +38,23 @@ pub fn operations_from_number(
     let hs = HallSymbol::new(entry.hall_symbol).ok_or(MoyoError::HallSymbolParsingError)?;
 
     let mut operations = vec![];
+    if primitive {
+        for operation in hs.primitive_traverse().into_iter() {
+            operations.push(operation)
+        }
+    } else {
+        let coset = hs.traverse();
 
-    let coset = hs.traverse();
-
-    let lattice_points = hs.centering.lattice_points();
-    for t1 in lattice_points.iter() {
-        for operation2 in coset.iter() {
-            // (E, t1) (r2, t2) = (r2, t1 + t2)
-            let t12 = (t1 + operation2.translation).map(|e| e % 1.);
-            operations.push(Operation::new(operation2.rotation, t12));
+        let lattice_points = hs.centering.lattice_points();
+        for t1 in lattice_points.iter() {
+            for operation2 in coset.iter() {
+                // (E, t1) (r2, t2) = (r2, t1 + t2)
+                let t12 = (t1 + operation2.translation).map(|e| e % 1.);
+                operations.push(Operation::new(operation2.rotation, t12));
+            }
         }
     }
+
     Ok(PyOperations::from(operations))
 }
 
@@ -82,7 +89,7 @@ mod tests {
     fn test_operations_from_number() {
         {
             // C2/c
-            let operations = operations_from_number(15, None).unwrap();
+            let operations = operations_from_number(15, None, false).unwrap();
             let operations = Operations::from(operations);
             let x = 0.1234;
             let y = 0.5678;
@@ -96,7 +103,7 @@ mod tests {
         }
         {
             // Pm-3m
-            let operations = operations_from_number(221, None).unwrap();
+            let operations = operations_from_number(221, None, false).unwrap();
             let operations = Operations::from(operations);
             let x = 0.1234;
             let y = 0.5678;
@@ -119,7 +126,7 @@ mod tests {
         }
         {
             // Im-3m
-            let operations = operations_from_number(229, None).unwrap();
+            let operations = operations_from_number(229, None, false).unwrap();
             let operations = Operations::from(operations);
             let x = 0.1234;
             let y = 0.5678;
@@ -139,7 +146,7 @@ mod tests {
         }
         {
             // Ia-3d
-            let operations = operations_from_number(230, None).unwrap();
+            let operations = operations_from_number(230, None, false).unwrap();
             let operations = Operations::from(operations);
             let x = 0.1234;
             let y = 0.5678;
@@ -153,6 +160,11 @@ mod tests {
             assert!(unique_sites(&vector![x, 0.0, 0.25], &operations).len() == 48);
             assert!(unique_sites(&vector![0.125, y, 0.25 - y], &operations).len() == 48);
             assert!(unique_sites(&vector![x, y, z], &operations).len() == 96);
+        }
+        {
+            // primitive=true
+            let prim_operations = operations_from_number(230, None, true).unwrap();
+            assert!(prim_operations.num_operations() == 48);
         }
     }
 }

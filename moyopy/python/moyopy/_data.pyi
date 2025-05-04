@@ -126,4 +126,6 @@ class MagneticSpaceGroupType:
     def construct_type(self) -> int:
         """Construct type of magnetic space group from 1 to 4."""
 
-def operations_from_number(number: int, *, setting: Setting | None = None) -> Operations: ...
+def operations_from_number(
+    number: int, *, setting: Setting | None = None, primitive: bool = False
+) -> Operations: ...
