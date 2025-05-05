@@ -2,9 +2,9 @@ use pyo3::prelude::*;
 
 use crate::base::PyMoyoError;
 use moyo::base::MoyoError;
-use moyo::data::{
-    hall_symbol_entry, ArithmeticNumber, Centering, HallNumber, HallSymbolEntry, Number,
-};
+use moyo::data::{hall_symbol_entry, ArithmeticNumber, HallNumber, HallSymbolEntry, Number};
+
+use super::centering::PyCentering;
 
 #[derive(Debug, Clone)]
 #[pyclass(name = "HallSymbolEntry", frozen)]
@@ -69,22 +69,5 @@ impl From<PyHallSymbolEntry> for HallSymbolEntry {
 impl From<HallSymbolEntry> for PyHallSymbolEntry {
     fn from(hall_symbol_entry: HallSymbolEntry) -> Self {
         Self(hall_symbol_entry)
-    }
-}
-
-#[derive(Debug, Clone)]
-#[pyclass(name = "Centering", frozen)]
-#[pyo3(module = "moyopy")]
-pub struct PyCentering(pub Centering);
-
-impl From<PyCentering> for Centering {
-    fn from(centering: PyCentering) -> Self {
-        centering.0
-    }
-}
-
-impl From<Centering> for PyCentering {
-    fn from(centering: Centering) -> Self {
-        Self(centering)
     }
 }

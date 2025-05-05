@@ -21,9 +21,15 @@ def _unique_sites_in_cell(position, operations: Operations) -> np.ndarray:
 
 
 def test_operations_from_number():
+    # Test with default primitive=False
     operations = operations_from_number(number=230)  # Ia-3d
     num_operations = 48 * 2
     assert operations.num_operations == num_operations
     assert len(operations) == num_operations
 
     assert len(_unique_sites_in_cell([1 / 8, 1 / 8, 1 / 8], operations)) == 16
+
+    # Test with primitive=True
+    prim_operations = operations_from_number(number=230, primitive=True)  # Ia-3d
+    assert prim_operations.num_operations == 48
+    assert len(prim_operations) == 48

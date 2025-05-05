@@ -13,7 +13,16 @@ class Setting:
     def hall_number(cls, hall_number: int) -> Setting:
         """Specific Hall number from 1 to 530."""
 
-class Centering: ...
+class Centering:
+    @property
+    def order(self) -> int:
+        """Order of the centering."""
+    @property
+    def linear(self) -> list[list[int]]:
+        """Transformation matrix."""
+    @property
+    def lattice_points(self) -> list[list[float]]:
+        """Unique lattice points."""
 
 class HallSymbolEntry:
     """An entry containing space-group information for a specified hall_number."""
@@ -126,4 +135,6 @@ class MagneticSpaceGroupType:
     def construct_type(self) -> int:
         """Construct type of magnetic space group from 1 to 4."""
 
-def operations_from_number(number: int, *, setting: Setting | None = None) -> Operations: ...
+def operations_from_number(
+    number: int, *, setting: Setting | None = None, primitive: bool = False
+) -> Operations: ...
