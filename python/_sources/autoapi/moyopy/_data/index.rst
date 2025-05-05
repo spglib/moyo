@@ -59,6 +59,27 @@ Module Contents
 
 .. py:class:: Centering
 
+   .. py:property:: order
+      :type: int
+
+
+      Order of the centering.
+
+
+   .. py:property:: linear
+      :type: list[list[int]]
+
+
+      Transformation matrix.
+
+
+   .. py:property:: lattice_points
+      :type: list[list[float]]
+
+
+      Unique lattice points.
+
+
 .. py:class:: HallSymbolEntry(hall_number: int)
 
    An entry containing space-group information for a specified hall_number.
@@ -260,5 +281,5 @@ Module Contents
       Construct type of magnetic space group from 1 to 4.
 
 
-.. py:function:: operations_from_number(number: int, *, setting: Setting | None = None) -> moyopy._base.Operations
+.. py:function:: operations_from_number(number: int, *, setting: Setting | None = None, primitive: bool = False) -> moyopy._base.Operations
 

@@ -336,7 +336,12 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting.hall_number"><code class="docutils literal notranslate"><span class="pre">Setting.hall_number()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering"><code class="docutils literal notranslate"><span class="pre">Centering</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering"><code class="docutils literal notranslate"><span class="pre">Centering</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.order"><code class="docutils literal notranslate"><span class="pre">Centering.order</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.linear"><code class="docutils literal notranslate"><span class="pre">Centering.linear</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.lattice_points"><code class="docutils literal notranslate"><span class="pre">Centering.lattice_points</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.hall_number"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.hall_number</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.number"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.number</span></code></a></li>
@@ -450,7 +455,25 @@ and origin choice 2 for centrosymmetric space groups.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._data.Centering">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">Centering</span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Centering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Centering" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.Centering.order">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">order</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#Centering.order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Centering.order" title="Link to this definition">#</a></dt>
+<dd><p>Order of the centering.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.Centering.linear">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#Centering.linear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Centering.linear" title="Link to this definition">#</a></dt>
+<dd><p>Transformation matrix.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.Centering.lattice_points">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lattice_points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#Centering.lattice_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Centering.lattice_points" title="Link to this definition">#</a></dt>
+<dd><p>Unique lattice points.</p>
+</dd></dl>
+
+</dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="moyopy._data.HallSymbolEntry">
@@ -628,7 +651,7 @@ for string values.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="moyopy._data.operations_from_number">
-<span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">operations_from_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#moyopy._data.Setting" title="moyopy._data.Setting"><span class="pre">Setting</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../_base/index.html#moyopy._base.Operations" title="moyopy._base.Operations"><span class="pre">moyopy._base.Operations</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#operations_from_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.operations_from_number" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">operations_from_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#moyopy._data.Setting" title="moyopy._data.Setting"><span class="pre">Setting</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primitive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../_base/index.html#moyopy._base.Operations" title="moyopy._base.Operations"><span class="pre">moyopy._base.Operations</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#operations_from_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.operations_from_number" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </section>
@@ -688,7 +711,12 @@ for string values.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting.hall_number"><code class="docutils literal notranslate"><span class="pre">Setting.hall_number()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering"><code class="docutils literal notranslate"><span class="pre">Centering</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering"><code class="docutils literal notranslate"><span class="pre">Centering</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.order"><code class="docutils literal notranslate"><span class="pre">Centering.order</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.linear"><code class="docutils literal notranslate"><span class="pre">Centering.linear</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.lattice_points"><code class="docutils literal notranslate"><span class="pre">Centering.lattice_points</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.hall_number"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.hall_number</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.number"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.number</span></code></a></li>
