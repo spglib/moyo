@@ -2,7 +2,7 @@ use std::ops::Mul;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct Permutation {
-    mapping: Vec<usize>,
+    pub mapping: Vec<usize>,
 }
 
 impl Permutation {
