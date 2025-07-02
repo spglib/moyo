@@ -19,11 +19,11 @@ pub use operation::{
 };
 pub use permutation::Permutation;
 pub use tolerance::AngleTolerance;
-pub use transformation::{Linear, OriginShift};
+pub use transformation::{Linear, OriginShift, Transformation};
 
 pub(super) use cell::orbits_from_permutations;
 pub(super) use operation::project_rotations;
 #[allow(unused_imports)]
 pub(super) use operation::traverse;
 pub(super) use tolerance::{MagneticSymmetryTolerances, SymmetryTolerances, ToleranceHandler, EPS};
-pub(super) use transformation::{Transformation, UnimodularLinear, UnimodularTransformation};
+pub(super) use transformation::{UnimodularLinear, UnimodularTransformation};
