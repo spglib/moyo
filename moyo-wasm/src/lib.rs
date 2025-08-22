@@ -59,6 +59,8 @@ pub struct MoyoDataset {
     pub angle_tolerance: AngleTolerance,
 }
 
+/// Flatten a nalgebra Matrix3<f64> into 9 f64 values in COLUMN-MAJOR order.
+/// Explicit indices are used to avoid row/column confusion (nalgebra stores column-wise).
 fn mat3_to_arr9_col_major(m: &Matrix3<f64>) -> [f64; 9] {
     [
         m[(0, 0)],
@@ -73,6 +75,8 @@ fn mat3_to_arr9_col_major(m: &Matrix3<f64>) -> [f64; 9] {
     ]
 }
 
+/// Flatten a nalgebra Matrix3<i32> into 9 f64 values in COLUMN-MAJOR order.
+/// Explicit indices are used to avoid row/column confusion (nalgebra stores column-wise).
 fn mat3i_to_arr9_col_major(m: &nalgebra::Matrix3<i32>) -> [f64; 9] {
     [
         m[(0, 0)] as f64,
