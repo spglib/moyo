@@ -1,34 +1,36 @@
-# moyo-wasm
+# `moyo-wasm`
 
 WASM bindings for the Rust crystal symmetry library `moyo`, for use in web apps.
 
 ## Usage (Vite/Svelte)
 
-Install from a local path or registry:
+Install from a registry or local path:
 
 ```bash
 pnpm add moyo-wasm
-# or from this repo during development
+# or from cloned repo during development
 pnpm add file:/path/to/moyo/moyo-wasm/pkg
 ```
 
 Initialize and analyze a structure:
 
 ```ts
-import init, { analyze_simple_cell } from 'moyo-wasm'
+import init, { analyze_cell, type MoyoDataset } from 'moyo-wasm'
 import wasm_url from 'moyo-wasm/moyo_wasm_bg.wasm?url'
 
 await init(wasm_url)
 
-const result = analyze_simple_cell(basis, positions, numbers, 1e-4, 'Standard')
+// Build a JSON cell (row-major lattice matrix; fractional positions; atomic numbers)
+const cell = {
+  lattice: { basis: [m00, m01, m02, m10, m11, m12, m20, m21, m22] },
+  positions: [[fx, fy, fz], ...],
+  numbers: [int, ...],
+}
+const result = analyze_cell(JSON.stringify(cell), 1e-4, 'Standard') as MoyoDataset
 console.log(result.number)
 ```
 
-- basis: Float64Array length 9 (row-major 3x3)
-- positions: Float64Array length 3N (fractional coords)
-- numbers: Int32Array length N (atomic numbers)
-
-Alternatively pass a JSON cell to `analyze_cell(json, symprec, setting)`.
+- The package exports TypeScript types generated from Rust (e.g. `MoyoDataset`).
 
 ## Building
 
@@ -36,8 +38,8 @@ Alternatively pass a JSON cell to `analyze_cell(json, symprec, setting)`.
 wasm-pack build moyo-wasm --target web --release
 ```
 
-The output package is in `moyo-wasm/pkg`.
+The package code ready for publishing is in `moyo-wasm/pkg`.
 
 ## Publish
 
-This crate is designed to be published as an npm package with CI when a Git tag is created in the Rust monorepo.
+This crate is published as an [NPM package](https://www.npmjs.com/package/moyo-wasm) with CI when a new `git` tag is pushed to the Rust monorepo.

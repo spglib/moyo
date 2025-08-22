@@ -2,11 +2,34 @@
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
-use moyo::base::{AngleTolerance as InternalAngleTolerance, Cell, Position};
+use moyo::base::{AngleTolerance as InternalAngleTolerance, Cell};
 use moyo::data::Setting;
 use moyo::MoyoDataset as InternalMoyoDataset;
-use nalgebra::{Matrix3, Vector3};
 use serde::{Deserialize, Serialize};
+
+// Generic array conversion helpers
+fn to_array9<T: Copy + Into<f64>>(slice: &[T]) -> [f64; 9] {
+    core::array::from_fn(|i| slice[i].into())
+}
+
+fn to_array3<T: Copy + Into<f64>>(slice: &[T]) -> [f64; 3] {
+    [slice[0].into(), slice[1].into(), slice[2].into()]
+}
+
+fn parse_setting(setting: &str) -> Setting {
+    if setting.to_lowercase() == "spglib" {
+        Setting::Spglib
+    } else {
+        Setting::Standard
+    }
+}
+
+fn convert_angle_tolerance(tol: InternalAngleTolerance) -> AngleTolerance {
+    match tol {
+        InternalAngleTolerance::Radian(x) => AngleTolerance::Radian(x),
+        InternalAngleTolerance::Default => AngleTolerance::Default,
+    }
+}
 
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
@@ -59,110 +82,49 @@ pub struct MoyoDataset {
     pub angle_tolerance: AngleTolerance,
 }
 
-/// Flatten a nalgebra Matrix3<f64> into 9 f64 values in COLUMN-MAJOR order.
-/// Explicit indices are used to avoid row/column confusion (nalgebra stores column-wise).
-fn mat3_to_arr9_col_major(m: &Matrix3<f64>) -> [f64; 9] {
-    [
-        m[(0, 0)],
-        m[(1, 0)],
-        m[(2, 0)],
-        m[(0, 1)],
-        m[(1, 1)],
-        m[(2, 1)],
-        m[(0, 2)],
-        m[(1, 2)],
-        m[(2, 2)],
-    ]
-}
-
-/// Flatten a nalgebra Matrix3<i32> into 9 f64 values in COLUMN-MAJOR order.
-/// Explicit indices are used to avoid row/column confusion (nalgebra stores column-wise).
-fn mat3i_to_arr9_col_major(m: &nalgebra::Matrix3<i32>) -> [f64; 9] {
-    [
-        m[(0, 0)] as f64,
-        m[(1, 0)] as f64,
-        m[(2, 0)] as f64,
-        m[(0, 1)] as f64,
-        m[(1, 1)] as f64,
-        m[(2, 1)] as f64,
-        m[(0, 2)] as f64,
-        m[(1, 2)] as f64,
-        m[(2, 2)] as f64,
-    ]
-}
-
-fn vec3_to_arr3(v: &Vector3<f64>) -> [f64; 3] {
-    [v[0], v[1], v[2]]
-}
-
-fn positions_to_vec3(ps: &[Position]) -> Vec<[f64; 3]> {
-    ps.iter().map(|p| [p[0], p[1], p[2]]).collect()
-}
-
-fn lattice_to_dto(lattice: &moyo::base::Lattice) -> Lattice {
-    Lattice {
-        basis: mat3_to_arr9_col_major(&lattice.basis),
-    }
-}
+// Inline conversions; keep file short and explicit
 
 impl From<&moyo::base::Operation> for MoyoOperation {
     fn from(op: &moyo::base::Operation) -> Self {
-        MoyoOperation {
-            rotation: mat3i_to_arr9_col_major(&op.rotation),
-            translation: vec3_to_arr3(&op.translation),
+        Self {
+            rotation: to_array9(op.rotation.as_slice()),
+            translation: to_array3(op.translation.as_slice()),
         }
     }
 }
 
 impl From<InternalMoyoDataset> for MoyoDataset {
     fn from(ds: InternalMoyoDataset) -> Self {
-        let std_cell = MoyoCell {
-            lattice: lattice_to_dto(&ds.std_cell.lattice),
-            positions: positions_to_vec3(&ds.std_cell.positions),
-            numbers: ds.std_cell.numbers.clone(),
+        let create_cell = |cell: &moyo::base::Cell| MoyoCell {
+            lattice: Lattice {
+                basis: to_array9(cell.lattice.basis.as_slice()),
+            },
+            positions: cell
+                .positions
+                .iter()
+                .map(|p| to_array3(p.as_slice()))
+                .collect(),
+            numbers: cell.numbers.clone(),
         };
-        let prim_std_cell = MoyoCell {
-            lattice: lattice_to_dto(&ds.prim_std_cell.lattice),
-            positions: positions_to_vec3(&ds.prim_std_cell.positions),
-            numbers: ds.prim_std_cell.numbers.clone(),
-        };
-        let operations: Vec<MoyoOperation> = ds
-            .operations
-            .iter()
-            .map(|op| MoyoOperation::from(op))
-            .collect();
-        let angle_tolerance = match ds.angle_tolerance {
-            InternalAngleTolerance::Radian(x) => AngleTolerance::Radian(x),
-            InternalAngleTolerance::Default => AngleTolerance::Default,
-        };
-        let wyckoffs = ds.wyckoffs.iter().map(|c| c.to_string()).collect();
 
-        MoyoDataset {
+        Self {
             number: ds.number,
             hall_number: ds.hall_number,
-            operations,
+            operations: ds.operations.iter().map(MoyoOperation::from).collect(),
             orbits: ds.orbits,
-            wyckoffs,
+            wyckoffs: ds.wyckoffs.iter().map(|c| c.to_string()).collect(),
             site_symmetry_symbols: ds.site_symmetry_symbols,
-            std_cell,
-            std_linear: mat3_to_arr9_col_major(&ds.std_linear),
-            std_origin_shift: [
-                ds.std_origin_shift[0],
-                ds.std_origin_shift[1],
-                ds.std_origin_shift[2],
-            ],
-            std_rotation_matrix: mat3_to_arr9_col_major(&ds.std_rotation_matrix),
+            std_cell: create_cell(&ds.std_cell),
+            std_linear: to_array9(ds.std_linear.as_slice()),
+            std_origin_shift: to_array3(ds.std_origin_shift.as_slice()),
+            std_rotation_matrix: to_array9(ds.std_rotation_matrix.as_slice()),
             pearson_symbol: ds.pearson_symbol,
-            prim_std_cell,
-            prim_std_linear: mat3_to_arr9_col_major(&ds.prim_std_linear),
-            prim_std_origin_shift: [
-                ds.prim_std_origin_shift[0],
-                ds.prim_std_origin_shift[1],
-                ds.prim_std_origin_shift[2],
-            ],
+            prim_std_cell: create_cell(&ds.prim_std_cell),
+            prim_std_linear: to_array9(ds.prim_std_linear.as_slice()),
+            prim_std_origin_shift: to_array3(ds.prim_std_origin_shift.as_slice()),
             mapping_std_prim: ds.mapping_std_prim,
             symprec: ds.symprec,
-            angle_tolerance,
+            angle_tolerance: convert_angle_tolerance(ds.angle_tolerance),
         }
     }
 }
@@ -173,11 +135,7 @@ pub fn analyze_cell(cell_json: &str, symprec: f64, setting: &str) -> Result<Moyo
     let cell: Cell = serde_json::from_str(cell_json)
         .map_err(|err| JsValue::from_str(&format!("failed to parse cell json: {}", err)))?;
 
-    let setting = match setting {
-        "Standard" | "standard" | "std" => Setting::Standard,
-        "Spglib" | "spglib" => Setting::Spglib,
-        _ => Setting::Standard,
-    };
+    let setting = parse_setting(setting);
 
     let dataset =
         InternalMoyoDataset::new(&cell, symprec, InternalAngleTolerance::Default, setting)
