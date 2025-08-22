@@ -65,6 +65,7 @@ pub enum AngleTolerance {
 pub struct MoyoDataset {
     pub number: i32,
     pub hall_number: i32,
+    pub hm_symbol: String,
     pub operations: Vec<MoyoOperation>,
     pub orbits: Vec<usize>,
     pub wyckoffs: Vec<String>,
@@ -110,6 +111,7 @@ impl From<InternalMoyoDataset> for MoyoDataset {
         Self {
             number: ds.number,
             hall_number: ds.hall_number,
+            hm_symbol: ds.hm_symbol,
             operations: ds.operations.iter().map(MoyoOperation::from).collect(),
             orbits: ds.orbits,
             wyckoffs: ds.wyckoffs.iter().map(|c| c.to_string()).collect(),

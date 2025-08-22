@@ -2,7 +2,7 @@
 
 WASM bindings for the Rust crystal symmetry library `moyo`, for use in web apps.
 
-## Usage (Vite/Svelte)
+## Usage
 
 Install from a registry or local path:
 
@@ -27,10 +27,14 @@ const cell = {
   numbers: [int, ...],
 }
 const result = analyze_cell(JSON.stringify(cell), 1e-4, 'Standard') as MoyoDataset
-console.log(result.number)
+console.log(`Space group: ${result.number} (${result.hm_symbol})`)
+console.log(`Hall number: ${result.hall_number}`)
+console.log(`Pearson: ${result.pearson_symbol}`)
+console.log(`# operations: ${result.operations.length}`)
+console.log(`Wyckoffs: ${result.wyckoffs.join(', ')}`)
 ```
 
-- The package exports TypeScript types generated from Rust (e.g. `MoyoDataset`).
+The package exports TypeScript types generated from Rust (e.g. `MoyoDataset`).
 
 ## Building
 
