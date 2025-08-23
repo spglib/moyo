@@ -44,6 +44,16 @@ wasm-pack build moyo-wasm --target web --release
 
 The package code ready for publishing is in `moyo-wasm/pkg`.
 
+## Testing
+
+```bash
+cd moyo-wasm
+# Install dependencies
+npm install
+# Run tests
+npm test
+```
+
 ## Publish
 
 This crate is published as an [NPM package](https://www.npmjs.com/package/moyo-wasm) with CI when a new `git` tag is pushed to the Rust monorepo.

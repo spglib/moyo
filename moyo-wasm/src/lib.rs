@@ -134,8 +134,51 @@ impl From<InternalMoyoDataset> for MoyoDataset {
 /// Return a strongly-typed DTO; wasm-bindgen + tsify will emit .d.ts based on these Rust types
 #[wasm_bindgen]
 pub fn analyze_cell(cell_json: &str, symprec: f64, setting: &str) -> Result<MoyoDataset, JsValue> {
-    let cell: Cell = serde_json::from_str(cell_json)
-        .map_err(|err| JsValue::from_str(&format!("failed to parse cell json: {}", err)))?;
+    // First, check if the input is valid JSON at all
+    let json_value: serde_json::Value = serde_json::from_str(cell_json)
+        .map_err(|err| JsValue::from_str(&format!("Input is not valid JSON: {}", err)))?;
+
+    // Validate required fields exist
+    if let Some(obj) = json_value.as_object() {
+        if !obj.contains_key("lattice") {
+            return Err(JsValue::from_str(
+                "Missing required field 'lattice' in JSON",
+            ));
+        }
+        if !obj.contains_key("positions") {
+            return Err(JsValue::from_str(
+                "Missing required field 'positions' in JSON",
+            ));
+        }
+        if !obj.contains_key("numbers") {
+            return Err(JsValue::from_str(
+                "Missing required field 'numbers' in JSON",
+            ));
+        }
+
+        // Check lattice structure
+        if let Some(lattice) = obj.get("lattice") {
+            if let Some(lattice_obj) = lattice.as_object() {
+                if !lattice_obj.contains_key("basis") {
+                    return Err(JsValue::from_str(
+                        "Missing required field 'lattice.basis' in JSON",
+                    ));
+                }
+            } else {
+                return Err(JsValue::from_str("Field 'lattice' must be an object"));
+            }
+        }
+    } else {
+        return Err(JsValue::from_str("Input must be a JSON object"));
+    }
+
+    // Now, try to deserialize into a Cell
+    let cell: Cell = serde_json::from_value(json_value).map_err(|err| {
+        JsValue::from_str(&format!(
+            "JSON does not match expected Cell structure: {}",
+            err
+        ))
+    })?;
 
     let setting = parse_setting(setting);
 

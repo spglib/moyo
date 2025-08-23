@@ -14,17 +14,30 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
           registry-url: https://registry.npmjs.org
+
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
+
       - name: Install wasm-pack
         run: cargo install wasm-pack
+
       - name: Build wasm package
         run: wasm-pack build moyo-wasm --target web --release
+
+      - name: Install test dependencies
+        working-directory: moyo-wasm
+        run: npm install
+
+      - name: Run tests
+        working-directory: moyo-wasm
+        run: npm test
+
       - name: Publish to npm
         working-directory: moyo-wasm/pkg
         env:
