@@ -118,6 +118,8 @@ pub struct MoyoDataset {
     pub number: Number,
     /// Hall symbol number.
     pub hall_number: HallNumber,
+    /// Hermann-Mauguin symbol in short notation (e.g., "Fd-3m" for space group 227).
+    pub hm_symbol: String,
     // ------------------------------------------------------------------------
     // Symmetry operations in the input cell
     // ------------------------------------------------------------------------
@@ -241,6 +243,7 @@ impl MoyoDataset {
             // Space-group type
             number: space_group.number,
             hall_number: space_group.hall_number,
+            hm_symbol: hall_symbol.hm_short.to_string(),
             // Symmetry operations in the input cell
             operations,
             // Standardized cell

@@ -1,0 +1,17 @@
+[package]
+name = "moyo-wasm"
+description = "WebAssembly bindings for moyo crystal symmetry analysis"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+moyo = { path = "../moyo" }
+wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tsify = { version = "0.4", features = ["js"] }
