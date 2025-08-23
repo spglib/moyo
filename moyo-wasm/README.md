@@ -15,18 +15,18 @@ pnpm add file:/path/to/moyo/moyo-wasm/pkg
 Initialize and analyze a structure:
 
 ```ts
-import init, { analyze_cell, type MoyoDataset } from 'moyo-wasm'
+import init, { analyze_cell, type MoyoDataset, type MoyoCell } from 'moyo-wasm'
 import wasm_url from 'moyo-wasm/moyo_wasm_bg.wasm?url'
 
 await init(wasm_url)
 
 // Build a JSON cell (row-major lattice matrix; fractional positions; atomic numbers)
-const cell = {
+const cell: MoyoCell = {
   lattice: { basis: [m00, m01, m02, m10, m11, m12, m20, m21, m22] },
   positions: [[fx, fy, fz], ...],
   numbers: [int, ...],
 }
-const result = analyze_cell(JSON.stringify(cell), 1e-4, 'Standard') as MoyoDataset
+const result: MoyoDataset = analyze_cell(JSON.stringify(cell), 1e-4, 'Standard')
 console.log(`Space group: ${result.number} (${result.hm_symbol})`)
 console.log(`Hall number: ${result.hall_number}`)
 console.log(`Pearson: ${result.pearson_symbol}`)

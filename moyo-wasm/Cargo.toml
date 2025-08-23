@@ -1,9 +1,9 @@
 [package]
 name = "moyo-wasm"
+description = "WebAssembly bindings for moyo crystal symmetry analysis"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "WebAssembly bindings for moyo crystal symmetry analysis"
 repository.workspace = true
 
 [lib]
