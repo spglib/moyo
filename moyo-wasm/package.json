@@ -1,8 +1,7 @@
 {
-  "name": "@spglib/moyo-wasm",
   "scripts": {
     "test": "vitest",
-    "build": "wasm-pack build --target web --release"
+    "build": "wasm-pack build --target web --release --scope spglib"
   },
   "devDependencies": {
     "vitest": "^3.2.4"
