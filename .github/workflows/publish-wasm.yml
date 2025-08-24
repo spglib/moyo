@@ -18,6 +18,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
+          registry-url: "https://registry.npmjs.org"
 
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -32,10 +33,7 @@ jobs:
 
       - name: Run tests
         working-directory: moyo-wasm
-        run: npm test
-
-      - name: Build wasm package
-        run: npm build
+        run: npm test # this also builds the wasm package to be published in next step
 
       - name: Publish to npm
         working-directory: moyo-wasm/pkg
