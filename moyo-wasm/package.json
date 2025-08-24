@@ -1,7 +1,5 @@
 {
-  "name": "moyo-wasm",
-  "version": "0.1.0",
-  "type": "module",
+  "name": "@spglib/moyo-wasm",
   "scripts": {
     "test": "vitest",
     "build": "wasm-pack build --target web --release"
