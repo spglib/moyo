@@ -356,7 +356,6 @@ target/
 .ipynb_checkpoints/
 lcov.info
 
-*.json
 !**/assets/*.json
 .env
 *.png
