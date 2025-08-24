@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "pretest": "npm run build",
     "test": "vitest",
     "build": "wasm-pack build --target web --release --scope spglib"
   },
