@@ -332,6 +332,7 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy.interface.MoyoAdapter.get_structure"><code class="docutils literal notranslate"><span class="pre">MoyoAdapter.get_structure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy.interface.MoyoAdapter.get_atoms"><code class="docutils literal notranslate"><span class="pre">MoyoAdapter.get_atoms()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy.interface.MoyoAdapter.from_structure"><code class="docutils literal notranslate"><span class="pre">MoyoAdapter.from_structure()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy.interface.MoyoAdapter.from_disordered_structure"><code class="docutils literal notranslate"><span class="pre">MoyoAdapter.from_disordered_structure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy.interface.MoyoAdapter.from_atoms"><code class="docutils literal notranslate"><span class="pre">MoyoAdapter.from_atoms()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy.interface.MoyoAdapter.from_py_obj"><code class="docutils literal notranslate"><span class="pre">MoyoAdapter.from_py_obj()</span></code></a></li>
 </ul>
@@ -369,8 +370,26 @@ document.write(`
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy.interface.</span></span><span class="sig-name descname"><span class="pre">MoyoAdapter</span></span><a class="reference internal" href="../../../_modules/moyopy/interface.html#MoyoAdapter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy.interface.MoyoAdapter" title="Link to this definition">#</a></dt>
 <dd><dl class="py method">
 <dt class="sig sig-object py" id="moyopy.interface.MoyoAdapter.get_structure">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../index.html#moyopy.Cell" title="moyopy.Cell"><span class="pre">moyopy.Cell</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pymatgen.core.Structure</span></span></span><a class="reference internal" href="../../../_modules/moyopy/interface.html#MoyoAdapter.get_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy.interface.MoyoAdapter.get_structure" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cell</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../index.html#moyopy.Cell" title="moyopy.Cell"><span class="pre">moyopy.Cell</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">unique_species_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pymatgen.core.Composition</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">pymatgen.core.Structure</span></span></span><a class="reference internal" href="../../../_modules/moyopy/interface.html#MoyoAdapter.get_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy.interface.MoyoAdapter.get_structure" title="Link to this definition">#</a></dt>
+<dd><p>Convert a Moyo Cell to a pymatgen Structure.</p>
+<p>If the Cell was created from a disordered Structure, the unique_species_mapping should be
+provided to reconstruct the original species.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cell</strong> (<a class="reference internal" href="../index.html#moyopy.Cell" title="moyopy.Cell"><em>moyopy.Cell</em></a>) – The Moyo Cell to convert.</p></li>
+<li><p><strong>unique_species_mapping</strong> (<em>dict</em><em>[</em><em>int</em><em>, </em><em>Composition</em><em>] </em><em>| </em><em>None</em>) – A mapping from integer indices used in the Moyo Cell to the original pymatgen
+SpeciesLike objects. If None, assumes the Cell was created from an ordered Structure.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>structure</strong> – The converted pymatgen Structure object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Structure</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="moyopy.interface.MoyoAdapter.get_atoms">
@@ -381,6 +400,25 @@ document.write(`
 <dt class="sig sig-object py" id="moyopy.interface.MoyoAdapter.from_structure">
 <em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pymatgen.core.Structure</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../index.html#moyopy.Cell" title="moyopy.Cell"><span class="pre">moyopy.Cell</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/interface.html#MoyoAdapter.from_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy.interface.MoyoAdapter.from_structure" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy.interface.MoyoAdapter.from_disordered_structure">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_disordered_structure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">structure</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pymatgen.core.Structure</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../index.html#moyopy.Cell" title="moyopy.Cell"><span class="pre">moyopy.Cell</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">pymatgen.core.Composition</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/moyopy/interface.html#MoyoAdapter.from_disordered_structure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy.interface.MoyoAdapter.from_disordered_structure" title="Link to this definition">#</a></dt>
+<dd><p>Convert a disordered pymatgen Structure to a Moyo Cell.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>structure</strong> (<em>Structure</em>) – A pymatgen Structure object, which may contain disordered sites.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>cell</strong> (<em>moyopy.Cell</em>) – The converted Moyo Cell object.</p></li>
+<li><p><strong>unique_species_mapping</strong> (<em>dict[int, Composition]</em>) – A mapping from integer indices used in the Moyo Cell to the original pymatgen
+SpeciesLike objects.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="moyopy.interface.MoyoAdapter.from_atoms">
@@ -451,6 +489,7 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy.interface.MoyoAdapter.get_structure"><code class="docutils literal notranslate"><span class="pre">MoyoAdapter.get_structure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy.interface.MoyoAdapter.get_atoms"><code class="docutils literal notranslate"><span class="pre">MoyoAdapter.get_atoms()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy.interface.MoyoAdapter.from_structure"><code class="docutils literal notranslate"><span class="pre">MoyoAdapter.from_structure()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy.interface.MoyoAdapter.from_disordered_structure"><code class="docutils literal notranslate"><span class="pre">MoyoAdapter.from_disordered_structure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy.interface.MoyoAdapter.from_atoms"><code class="docutils literal notranslate"><span class="pre">MoyoAdapter.from_atoms()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy.interface.MoyoAdapter.from_py_obj"><code class="docutils literal notranslate"><span class="pre">MoyoAdapter.from_py_obj()</span></code></a></li>
 </ul>
