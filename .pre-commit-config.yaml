@@ -6,7 +6,7 @@ default_language_version:
 fail_fast: false
 
 ci:
-  skip: [cargo-fmt, cargo-deny, cargo-check, cargo-clippy]
+  skip: [cargo-fmt, cargo-deny, cargo-check, cargo-clippy, sub-pre-commit]
 
 repos:
   # Misc
@@ -33,7 +33,8 @@ repos:
     hooks:
       - id: check-github-workflows
   - repo: https://github.com/crate-ci/typos
-    rev: v1
+    # TODO: v1.35.7 is not released yet https://github.com/crate-ci/typos/issues/1369
+    rev: v1.35.6
     hooks:
       - id: typos
   # Rust
