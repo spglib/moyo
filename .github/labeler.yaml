@@ -1,0 +1,21 @@
+moyo-core:
+- changed-files:
+  - any-glob-to-all-files:
+    - moyo/**
+    - Cargo.toml
+    - Cargo.lock
+
+moyopy:
+- changed-files:
+  - any-glob-to-all-files:
+    - moyopy/**
+
+moyo-wasm:
+- changed-files:
+  - any-glob-to-all-files:
+    - moyo-wasm/**
+
+ci:
+- changed-files:
+  - any-glob-to-all-files:
+    - .github/**

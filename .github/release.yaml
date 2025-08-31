@@ -8,15 +8,24 @@ changelog:
       labels:
         - Semver-Minor
         - enhancement
-    - title: ⚠️ Deprecation
+    - title: ⚙️ moyo-core
       labels:
-        - deprecation
+        - moyo-core
+    - title: 🐍 moyopy
+      labels:
+        - moyopy
+    - title: 🧩 moyo-wasm
+      labels:
+        - moyo-wasm
     - title: 🐞 Bug fixes
       labels:
         - bug
     - title: 📔 Documentation
       labels:
         - documentation
-    - title: Other changes
+    - title: 🤖 CI
+      labels:
+        - ci
+    - title: 🧹 Other changes
       labels:
         - '*'
