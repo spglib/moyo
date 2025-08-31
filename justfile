@@ -45,7 +45,8 @@ py-build:
 
 [group('python')]
 py-install: py-build
-    python -m pip install -e "moyopy[dev]"
+    source moyopy/.venv/bin/activate
+    uv sync --all-extras
 
 [group('python')]
 py-test:

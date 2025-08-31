@@ -19,6 +19,7 @@ repos:
       - id: check-toml
       - id: check-json
       - id: check-added-large-files
+        exclude: ^moyopy/uv.lock
       - id: check-merge-conflict
       - id: detect-private-key
   - repo: https://github.com/executablebooks/mdformat
@@ -65,14 +66,6 @@ repos:
         types: [rust]
         stages: [manual]  # because it's slow
   # Python
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.10
-    hooks:
-      - id: ruff-format
-        args: ["--config", "moyopy/pyproject.toml"]
-      - id: ruff
-        args: [ "--fix", "--show-fixes", "--config", "moyopy/pyproject.toml"]
-        types_or: [python, pyi]
   - repo: local
     hooks:
       - id: clear-notebook-output
@@ -82,3 +75,12 @@ repos:
         additional_dependencies: [jupyter]
         types: [jupyter]
         files: \.ipynb$
+  # sub-pre-commit
+  - repo: https://github.com/ddanier/sub-pre-commit.git
+    rev: v4.3.0  # MUST match your pre-commit version
+    hooks:
+      - id: sub-pre-commit
+        alias: moyopy
+        name: "pre-commit for moyopy/"
+        args: ['-p', 'moyopy']
+        files: "^moyopy/.*"

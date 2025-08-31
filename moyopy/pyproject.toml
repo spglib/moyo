@@ -39,7 +39,7 @@ interface = [
 ]
 testing = [
     "pytest",
-    "pre-commit",
+    "pre-commit==4.3.0",
     "numpy",
 ]
 docs = [
@@ -57,6 +57,9 @@ dev = [
     "moyopy[interface]",
     "nbconvert",
 ]
+
+[dependency-group]
+dev = ["moyopy[dev]"]
 
 [tool.maturin]
 python-source = "python"
