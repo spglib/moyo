@@ -58,7 +58,7 @@ dev = [
     "nbconvert",
 ]
 
-[dependency-group]
+[dependency-groups]
 dev = ["moyopy[dev]"]
 
 [tool.maturin]
