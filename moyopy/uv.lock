@@ -1482,6 +1482,11 @@ testing = [
     { name = "pytest" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "moyopy", extra = ["dev"] },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "ase", marker = "extra == 'interface'", specifier = ">=3.23" },
@@ -1504,6 +1509,9 @@ requires-dist = [
     { name = "typing-extensions" },
 ]
 provides-extras = ["interface", "testing", "docs", "dev"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "moyopy", extras = ["dev"] }]
 
 [[package]]
 name = "mpmath"
