@@ -87,7 +87,7 @@ jobs:
         run: |
           set -e
           uv pip install --system --find-links dist moyopy
-          uv pip install --system moyopy[testing]
+          uv pip install --system moyopy[testing,interface]
           pytest -v
       # TODO: too long to build...
       # - name: pytest

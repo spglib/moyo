@@ -38,7 +38,6 @@ interface = [
     "ase>=3.23",
 ]
 testing = [
-    "moyopy[interface]",
     "pytest",
     "pre-commit",
     "numpy",
@@ -55,6 +54,7 @@ docs = [
 dev = [
     "moyopy[testing]",
     "moyopy[docs]",
+    "moyopy[interface]",
     "nbconvert",
 ]
 
