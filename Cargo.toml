@@ -8,7 +8,7 @@ resolver = "2"
 authors = ["Kohei Shinohara <kshinohara0508@gmail.com>"]
 description = "Library for Crystal Symmetry in Rust"
 edition = "2021"
-version = "0.4.5"
+version = "0.4.6"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/spglib/moyo"
 
