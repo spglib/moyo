@@ -19,7 +19,7 @@ use crate::data::{
 use crate::dataset::{
     PyMoyoCollinearMagneticDataset, PyMoyoDataset, PyMoyoNonCollinearMagneticDataset,
 };
-use crate::identify::PyPointGroup;
+use crate::identify::{PyPointGroup, PySpaceGroup};
 
 // https://github.com/pydantic/pydantic-core/blob/main/src/lib.rs
 fn moyopy_version() -> &'static str {
@@ -71,6 +71,7 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // identify
     m.add_class::<PyPointGroup>()?;
+    m.add_class::<PySpaceGroup>()?;
 
     Ok(())
 }
