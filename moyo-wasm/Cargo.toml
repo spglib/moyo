@@ -6,6 +6,9 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[package.metadata.release]
+release = false
+
 [lib]
 crate-type = ["cdylib"]
 
