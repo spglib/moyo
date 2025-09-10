@@ -14,6 +14,7 @@ Classes
    moyopy._data.HallSymbolEntry
    moyopy._data.SpaceGroupType
    moyopy._data.MagneticSpaceGroupType
+   moyopy._data.ArithmeticCrystalClass
 
 
 Functions
@@ -279,6 +280,39 @@ Module Contents
 
 
       Construct type of magnetic space group from 1 to 4.
+
+
+.. py:class:: ArithmeticCrystalClass(arithmetic_number: int)
+
+   Arithmetic crystal class information.
+
+
+   .. py:property:: arithmetic_number
+      :type: int
+
+
+      Number for arithmetic crystal classes (1 - 73).
+
+
+   .. py:property:: arithmetic_symbol
+      :type: str
+
+
+      Symbol for arithmetic crystal class.
+
+
+   .. py:property:: geometric_crystal_class
+      :type: str
+
+
+      Geometric crystal class.
+
+
+   .. py:property:: bravais_class
+      :type: str
+
+
+      Bravais class.
 
 
 .. py:function:: operations_from_number(number: int, *, setting: Setting | None = None, primitive: bool = False) -> moyopy._base.Operations

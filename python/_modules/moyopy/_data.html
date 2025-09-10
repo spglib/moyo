@@ -157,6 +157,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_base/index.html">moyopy._base</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_data/index.html">moyopy._data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_dataset/index.html">moyopy._dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_identify/index.html">moyopy._identify</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_moyopy/index.html">moyopy._moyopy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/interface/index.html">moyopy.interface</a></li>
 </ul>
@@ -283,6 +284,10 @@ document.write(`
   <h1>Source code for moyopy._data</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span><span class="w"> </span><span class="nn">moyopy._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Operations</span>
 
+<span class="c1">###############################################################################</span>
+<span class="c1"># Hall symbol data</span>
+<span class="c1">###############################################################################</span>
+
 <div class="viewcode-block" id="Setting">
 <a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.Setting">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Setting</span><span class="p">:</span>
@@ -385,6 +390,10 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Centering.&quot;&quot;&quot;</span></div>
 </div>
 
+
+<span class="c1">###############################################################################</span>
+<span class="c1"># Group data</span>
+<span class="c1">###############################################################################</span>
 
 <div class="viewcode-block" id="SpaceGroupType">
 <a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.SpaceGroupType">[docs]</a>
@@ -522,6 +531,41 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct type of magnetic space group from 1 to 4.&quot;&quot;&quot;</span></div>
 </div>
 
+
+<div class="viewcode-block" id="ArithmeticCrystalClass">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.ArithmeticCrystalClass">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ArithmeticCrystalClass</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Arithmetic crystal class information.&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arithmetic_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span> <span class="o">...</span>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ArithmeticCrystalClass.arithmetic_number">
+<a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.ArithmeticCrystalClass.arithmetic_number">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">arithmetic_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number for arithmetic crystal classes (1 - 73).&quot;&quot;&quot;</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ArithmeticCrystalClass.arithmetic_symbol">
+<a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.ArithmeticCrystalClass.arithmetic_symbol">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">arithmetic_symbol</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Symbol for arithmetic crystal class.&quot;&quot;&quot;</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ArithmeticCrystalClass.geometric_crystal_class">
+<a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.ArithmeticCrystalClass.geometric_crystal_class">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">geometric_crystal_class</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Geometric crystal class.&quot;&quot;&quot;</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="ArithmeticCrystalClass.bravais_class">
+<a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.ArithmeticCrystalClass.bravais_class">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">bravais_class</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Bravais class.&quot;&quot;&quot;</span></div>
+</div>
+
+
+<span class="c1">###############################################################################</span>
+<span class="c1"># Misc</span>
+<span class="c1">###############################################################################</span>
 
 <div class="viewcode-block" id="operations_from_number">
 <a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.operations_from_number">[docs]</a>

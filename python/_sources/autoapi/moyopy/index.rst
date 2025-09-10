@@ -13,6 +13,7 @@ Submodules
    /autoapi/moyopy/_base/index
    /autoapi/moyopy/_data/index
    /autoapi/moyopy/_dataset/index
+   /autoapi/moyopy/_identify/index
    /autoapi/moyopy/_moyopy/index
    /autoapi/moyopy/interface/index
 
@@ -39,9 +40,11 @@ Classes
    moyopy.HallSymbolEntry
    moyopy.SpaceGroupType
    moyopy.MagneticSpaceGroupType
+   moyopy.ArithmeticCrystalClass
    moyopy.MoyoDataset
    moyopy.MoyoCollinearMagneticDataset
    moyopy.MoyoNonCollinearMagneticDataset
+   moyopy.PointGroup
 
 
 Functions
@@ -489,6 +492,39 @@ Package Contents
       Construct type of magnetic space group from 1 to 4.
 
 
+.. py:class:: ArithmeticCrystalClass(arithmetic_number: int)
+
+   Arithmetic crystal class information.
+
+
+   .. py:property:: arithmetic_number
+      :type: int
+
+
+      Number for arithmetic crystal classes (1 - 73).
+
+
+   .. py:property:: arithmetic_symbol
+      :type: str
+
+
+      Symbol for arithmetic crystal class.
+
+
+   .. py:property:: geometric_crystal_class
+      :type: str
+
+
+      Geometric crystal class.
+
+
+   .. py:property:: bravais_class
+      :type: str
+
+
+      Bravais class.
+
+
 .. py:function:: operations_from_number(number: int, *, setting: Setting | None = None, primitive: bool = False) -> moyopy._base.Operations
 
 .. py:class:: MoyoDataset(cell: moyopy._base.Cell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, setting: moyopy._data.Setting | None = None)
@@ -930,6 +966,18 @@ Package Contents
 
 
       Create a dataset from a dictionary.
+
+
+
+.. py:class:: PointGroup(prim_rotations: list[list[int]], *, basis: list[list[float]] | None = None)
+
+   .. py:property:: arithmetic_number
+      :type: int
+
+
+
+   .. py:property:: prim_trans_mat
+      :type: list[list[int]]
 
 
 

@@ -21,6 +21,7 @@ Classes
    moyopy._moyopy.CollinearMagneticCell
    moyopy._moyopy.NonCollinearMagneticCell
    moyopy._moyopy.Operations
+   moyopy._moyopy.ArithmeticCrystalClass
    moyopy._moyopy.Centering
    moyopy._moyopy.HallSymbolEntry
    moyopy._moyopy.MagneticSpaceGroupType
@@ -29,6 +30,7 @@ Classes
    moyopy._moyopy.MoyoCollinearMagneticDataset
    moyopy._moyopy.MoyoDataset
    moyopy._moyopy.MoyoNonCollinearMagneticDataset
+   moyopy._moyopy.PointGroup
 
 
 Functions
@@ -220,6 +222,39 @@ Module Contents
 
 
    .. py:method:: __len__() -> int
+
+
+.. py:class:: ArithmeticCrystalClass(arithmetic_number: int)
+
+   Arithmetic crystal class information.
+
+
+   .. py:property:: arithmetic_number
+      :type: int
+
+
+      Number for arithmetic crystal classes (1 - 73).
+
+
+   .. py:property:: arithmetic_symbol
+      :type: str
+
+
+      Symbol for arithmetic crystal class.
+
+
+   .. py:property:: geometric_crystal_class
+      :type: str
+
+
+      Geometric crystal class.
+
+
+   .. py:property:: bravais_class
+      :type: str
+
+
+      Bravais class.
 
 
 .. py:class:: Centering
@@ -917,6 +952,18 @@ Module Contents
 
 
       Create a dataset from a dictionary.
+
+
+
+.. py:class:: PointGroup(prim_rotations: list[list[int]], *, basis: list[list[float]] | None = None)
+
+   .. py:property:: arithmetic_number
+      :type: int
+
+
+
+   .. py:property:: prim_trans_mat
+      :type: list[list[int]]
 
 
 

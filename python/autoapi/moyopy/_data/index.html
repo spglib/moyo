@@ -158,6 +158,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../_base/index.html">moyopy._base</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">moyopy._data</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../_dataset/index.html">moyopy._dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../_identify/index.html">moyopy._identify</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../_moyopy/index.html">moyopy._moyopy</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../interface/index.html">moyopy.interface</a></li>
 </ul>
@@ -375,6 +376,13 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.construct_type"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.construct_type</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.arithmetic_number"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.arithmetic_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.arithmetic_symbol"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.arithmetic_symbol</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.geometric_crystal_class"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.geometric_crystal_class</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.bravais_class"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.bravais_class</span></code></a></li>
+</ul>
+</li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.operations_from_number"><code class="docutils literal notranslate"><span class="pre">operations_from_number()</span></code></a></li>
 </ul>
 </li>
@@ -409,6 +417,9 @@ document.write(`
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#moyopy._data.MagneticSpaceGroupType" title="moyopy._data.MagneticSpaceGroupType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MagneticSpaceGroupType</span></code></a></p></td>
 <td><p>Magnetic space-group type information.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#moyopy._data.ArithmeticCrystalClass" title="moyopy._data.ArithmeticCrystalClass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArithmeticCrystalClass</span></code></a></p></td>
+<td><p>Arithmetic crystal class information.</p></td>
 </tr>
 </tbody>
 </table>
@@ -649,6 +660,36 @@ for string values.</p>
 
 </dd></dl>
 
+<dl class="py class">
+<dt class="sig sig-object py" id="moyopy._data.ArithmeticCrystalClass">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">ArithmeticCrystalClass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arithmetic_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_data.html#ArithmeticCrystalClass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.ArithmeticCrystalClass" title="Link to this definition">#</a></dt>
+<dd><p>Arithmetic crystal class information.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.ArithmeticCrystalClass.arithmetic_number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arithmetic_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#ArithmeticCrystalClass.arithmetic_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.ArithmeticCrystalClass.arithmetic_number" title="Link to this definition">#</a></dt>
+<dd><p>Number for arithmetic crystal classes (1 - 73).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.ArithmeticCrystalClass.arithmetic_symbol">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arithmetic_symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#ArithmeticCrystalClass.arithmetic_symbol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.ArithmeticCrystalClass.arithmetic_symbol" title="Link to this definition">#</a></dt>
+<dd><p>Symbol for arithmetic crystal class.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.ArithmeticCrystalClass.geometric_crystal_class">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geometric_crystal_class</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#ArithmeticCrystalClass.geometric_crystal_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.ArithmeticCrystalClass.geometric_crystal_class" title="Link to this definition">#</a></dt>
+<dd><p>Geometric crystal class.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.ArithmeticCrystalClass.bravais_class">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bravais_class</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#ArithmeticCrystalClass.bravais_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.ArithmeticCrystalClass.bravais_class" title="Link to this definition">#</a></dt>
+<dd><p>Bravais class.</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="moyopy._data.operations_from_number">
 <span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">operations_from_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#moyopy._data.Setting" title="moyopy._data.Setting"><span class="pre">Setting</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primitive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../_base/index.html#moyopy._base.Operations" title="moyopy._base.Operations"><span class="pre">moyopy._base.Operations</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#operations_from_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.operations_from_number" title="Link to this definition">#</a></dt>
@@ -748,6 +789,13 @@ for string values.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.og_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.og_number</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.number</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.construct_type"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.construct_type</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.arithmetic_number"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.arithmetic_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.arithmetic_symbol"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.arithmetic_symbol</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.geometric_crystal_class"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.geometric_crystal_class</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.bravais_class"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.bravais_class</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.operations_from_number"><code class="docutils literal notranslate"><span class="pre">operations_from_number()</span></code></a></li>
