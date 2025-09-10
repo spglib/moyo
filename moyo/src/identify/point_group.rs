@@ -70,7 +70,7 @@ impl PointGroup {
         let reduced_point_group = Self::new(&reduced_prim_rotations)?;
         Ok(PointGroup {
             arithmetic_number: reduced_point_group.arithmetic_number,
-            prim_trans_mat: reduced_trans_mat * reduced_point_group.prim_trans_mat,
+            prim_trans_mat: reduced_point_group.prim_trans_mat * reduced_trans_mat,
         })
     }
 }

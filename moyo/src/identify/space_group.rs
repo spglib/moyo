@@ -5,7 +5,7 @@ use nalgebra::{Dyn, Matrix3, OMatrix, OVector, Vector3, U3};
 
 use super::point_group::PointGroup;
 use crate::base::{
-    project_rotations, MoyoError, Operations, OriginShift, UnimodularLinear,
+    project_rotations, Lattice, MoyoError, Operations, OriginShift, UnimodularLinear,
     UnimodularTransformation,
 };
 use crate::data::{
@@ -14,7 +14,7 @@ use crate::data::{
 };
 use crate::math::SNF;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SpaceGroup {
     pub number: Number,
     pub hall_number: HallNumber,
@@ -68,6 +68,24 @@ impl SpaceGroup {
         }
 
         Err(MoyoError::SpaceGroupTypeIdentificationError)
+    }
+
+    pub fn from_lattice(
+        lattice: &Lattice,
+        prim_operations: &Operations,
+        setting: Setting,
+        epsilon: f64,
+    ) -> Result<Self, MoyoError> {
+        let (_, reduced_trans_mat) = lattice.minkowski_reduce()?;
+        let to_reduced = UnimodularTransformation::from_linear(reduced_trans_mat);
+        let reduced_prim_operations = to_reduced.transform_operations(prim_operations);
+
+        let reduced_space_group = Self::new(&reduced_prim_operations, setting, epsilon)?;
+        Ok(SpaceGroup {
+            number: reduced_space_group.number,
+            hall_number: reduced_space_group.hall_number,
+            transformation: reduced_space_group.transformation * to_reduced,
+        })
     }
 
     pub fn from_hall_number_and_transformation(
