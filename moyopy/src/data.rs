@@ -1,9 +1,11 @@
+mod arithmetic_crystal_class;
 mod centering;
 mod hall_symbol;
 mod magnetic_space_group_type;
 mod setting;
 mod space_group_type;
 
+pub use arithmetic_crystal_class::PyArithmeticCrystalClass;
 pub use centering::PyCentering;
 pub use hall_symbol::PyHallSymbolEntry;
 pub use magnetic_space_group_type::PyMagneticSpaceGroupType;

@@ -13,8 +13,8 @@ use crate::base::{
     PyOperations, PyStructure,
 };
 use crate::data::{
-    operations_from_number, PyCentering, PyHallSymbolEntry, PyMagneticSpaceGroupType, PySetting,
-    PySpaceGroupType,
+    operations_from_number, PyArithmeticCrystalClass, PyCentering, PyHallSymbolEntry,
+    PyMagneticSpaceGroupType, PySetting, PySpaceGroupType,
 };
 use crate::dataset::{
     PyMoyoCollinearMagneticDataset, PyMoyoDataset, PyMoyoNonCollinearMagneticDataset,
@@ -58,12 +58,15 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyOperations>()?;
     m.add_class::<PyMagneticOperations>()?;
 
-    // data
-    m.add_class::<PyHallSymbolEntry>()?;
+    // data: Hall symbol data
     m.add_class::<PySetting>()?;
     m.add_class::<PyCentering>()?;
+    m.add_class::<PyHallSymbolEntry>()?;
+    // data: Group data
     m.add_class::<PySpaceGroupType>()?;
     m.add_class::<PyMagneticSpaceGroupType>()?;
+    m.add_class::<PyArithmeticCrystalClass>()?;
+    // data: Misc
     m.add_wrapped(wrap_pyfunction!(operations_from_number))?;
 
     // identify

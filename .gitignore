@@ -372,3 +372,5 @@ debug.py
 
 # TODO: write implementation note
 docs/
+
+package-lock.json

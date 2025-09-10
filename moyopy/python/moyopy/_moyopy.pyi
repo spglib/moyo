@@ -5,6 +5,7 @@ from moyopy._base import (  # noqa: F401
     Operations,
 )
 from moyopy._data import (
+    ArithmeticCrystalClass,
     Centering,
     HallSymbolEntry,
     MagneticSpaceGroupType,
@@ -33,6 +34,7 @@ __all__ = [
     "HallSymbolEntry",
     "SpaceGroupType",
     "MagneticSpaceGroupType",
+    "ArithmeticCrystalClass",
     "operations_from_number",
     # dataset
     "MoyoDataset",

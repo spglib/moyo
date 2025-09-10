@@ -1,5 +1,9 @@
 from moyopy._base import Operations
 
+###############################################################################
+# Hall symbol data
+###############################################################################
+
 class Setting:
     """Preference for the setting of the space group."""
     @classmethod
@@ -51,6 +55,10 @@ class HallSymbolEntry:
     @property
     def centering(self) -> Centering:
         """Centering."""
+
+###############################################################################
+# Group data
+###############################################################################
 
 class SpaceGroupType:
     """Space-group type information."""
@@ -134,6 +142,26 @@ class MagneticSpaceGroupType:
     @property
     def construct_type(self) -> int:
         """Construct type of magnetic space group from 1 to 4."""
+
+class ArithmeticCrystalClass:
+    """Arithmetic crystal class information."""
+    def __init__(self, arithmetic_number: int): ...
+    @property
+    def arithmetic_number(self) -> int:
+        """Number for arithmetic crystal classes (1 - 73)."""
+    @property
+    def arithmetic_symbol(self) -> str:
+        """Symbol for arithmetic crystal class."""
+    @property
+    def geometric_crystal_class(self) -> str:
+        """Geometric crystal class."""
+    @property
+    def bravais_class(self) -> str:
+        """Bravais class."""
+
+###############################################################################
+# Misc
+###############################################################################
 
 def operations_from_number(
     number: int, *, setting: Setting | None = None, primitive: bool = False
