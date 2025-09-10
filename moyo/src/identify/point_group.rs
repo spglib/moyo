@@ -3,9 +3,13 @@ use std::cmp::Ordering;
 use itertools::Itertools;
 use log::debug;
 use nalgebra::Matrix3;
+use serde::{Deserialize, Serialize};
 
 use super::rotation_type::{identify_rotation_type, RotationType};
-use crate::base::{MoyoError, Rotations, UnimodularLinear};
+use crate::base::{
+    project_rotations, Lattice, MoyoError, Operation, Rotations, Translation, UnimodularLinear,
+    UnimodularTransformation,
+};
 use crate::data::{
     iter_arithmetic_crystal_entry, ArithmeticNumber, Centering, CrystalSystem,
     GeometricCrystalClass, PointGroupRepresentative,
@@ -13,7 +17,7 @@ use crate::data::{
 use crate::math::sylvester3;
 
 /// Crystallographic point group with group-type information
-#[derive(Debug)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct PointGroup {
     pub arithmetic_number: ArithmeticNumber,
     /// Transformation matrix to the representative for `arithmetic_number` in the primitive basis
@@ -21,7 +25,7 @@ pub struct PointGroup {
 }
 
 impl PointGroup {
-    /// Identify the arithmetic crystal class from the given rotations and transformation matrix into the representative
+    /// Given rotations, identify the arithmetic crystal class and transformation matrix into the representative
     /// Assume the rotations are given in the (reduced) primitive basis
     pub fn new(prim_rotations: &Rotations) -> Result<Self, MoyoError> {
         let rotation_types = prim_rotations.iter().map(identify_rotation_type).collect();
@@ -49,6 +53,25 @@ impl PointGroup {
             ),
             _ => match_with_point_group(prim_rotations, &rotation_types, geometric_crystal_class),
         }
+    }
+
+    /// Given lattice and rotations, identify the arithmetic crystal class and transformation matrix into the representative
+    pub fn from_lattice(lattice: &Lattice, prim_rotations: &Rotations) -> Result<Self, MoyoError> {
+        let (_, reduced_trans_mat) = lattice.minkowski_reduce()?;
+        let reduced_prim_operations = UnimodularTransformation::from_linear(reduced_trans_mat)
+            .transform_operations(
+                &prim_rotations
+                    .iter()
+                    .map(|r| Operation::new(*r, Translation::zeros()))
+                    .collect::<Vec<_>>(),
+            );
+        let reduced_prim_rotations = project_rotations(&reduced_prim_operations);
+
+        let reduced_point_group = Self::new(&reduced_prim_rotations)?;
+        Ok(PointGroup {
+            arithmetic_number: reduced_point_group.arithmetic_number,
+            prim_trans_mat: reduced_trans_mat * reduced_point_group.prim_trans_mat,
+        })
     }
 }
 

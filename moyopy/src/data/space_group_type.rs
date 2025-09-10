@@ -1,10 +1,12 @@
-use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
+use moyo::base::MoyoError;
 use moyo::data::{
     arithmetic_crystal_class_entry, hall_symbol_entry, ArithmeticNumber, CrystalFamily,
     CrystalSystem, LatticeSystem, Number, Setting,
 };
+
+use crate::base::PyMoyoError;
 
 #[derive(Debug, Clone)]
 #[pyclass(name = "SpaceGroupType", frozen)]
@@ -47,10 +49,10 @@ pub struct PySpaceGroupType {
 #[pymethods]
 impl PySpaceGroupType {
     #[new]
-    pub fn new(number: Number) -> Result<Self, PyErr> {
+    pub fn new(number: Number) -> Result<Self, PyMoyoError> {
         let ita_hall_number = Setting::Standard
             .hall_number(number)
-            .ok_or(PyValueError::new_err(format!("Unknown number: {}", number)))?;
+            .ok_or(MoyoError::UnknownNumberError)?;
         let ita_hall_symbol = hall_symbol_entry(ita_hall_number).unwrap();
 
         let arithmetic_number = ita_hall_symbol.arithmetic_number;

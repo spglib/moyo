@@ -5,6 +5,7 @@ from moyopy._base import (  # noqa: F401
     Operations,
 )
 from moyopy._data import (
+    ArithmeticCrystalClass,
     Centering,
     HallSymbolEntry,
     MagneticSpaceGroupType,
@@ -17,6 +18,7 @@ from moyopy._dataset import (
     MoyoDataset,
     MoyoNonCollinearMagneticDataset,
 )  # noqa: F401
+from moyopy._identify import PointGroup  # noqa: F401
 
 __version__: str
 
@@ -32,11 +34,14 @@ __all__ = [
     "HallSymbolEntry",
     "SpaceGroupType",
     "MagneticSpaceGroupType",
+    "ArithmeticCrystalClass",
     "operations_from_number",
     # dataset
     "MoyoDataset",
     "MoyoCollinearMagneticDataset",
     "MoyoNonCollinearMagneticDataset",
+    # identify
+    "PointGroup",
     # lib
     "__version__",
 ]

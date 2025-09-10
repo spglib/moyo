@@ -5,7 +5,7 @@
 
 The core implementation of moyo in Rust
 
-- Crates.io: https://docs.rs/moyo/latest/moyo/
+- Crates.io: https://crates.io/crates/moyo
 - Document: https://docs.rs/moyo/latest/moyo/
 
 ## Module dependency

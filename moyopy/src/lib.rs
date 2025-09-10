@@ -1,21 +1,25 @@
 use pyo3::prelude::*;
 use std::sync::OnceLock;
 
+mod utils;
+
 pub mod base;
 pub mod data;
 pub mod dataset;
+pub mod identify;
 
 use crate::base::{
     PyCollinearMagneticCell, PyMagneticOperations, PyMoyoError, PyNonCollinearMagneticCell,
     PyOperations, PyStructure,
 };
 use crate::data::{
-    operations_from_number, PyCentering, PyHallSymbolEntry, PyMagneticSpaceGroupType, PySetting,
-    PySpaceGroupType,
+    operations_from_number, PyArithmeticCrystalClass, PyCentering, PyHallSymbolEntry,
+    PyMagneticSpaceGroupType, PySetting, PySpaceGroupType,
 };
 use crate::dataset::{
     PyMoyoCollinearMagneticDataset, PyMoyoDataset, PyMoyoNonCollinearMagneticDataset,
 };
+use crate::identify::PyPointGroup;
 
 // https://github.com/pydantic/pydantic-core/blob/main/src/lib.rs
 fn moyopy_version() -> &'static str {
@@ -54,13 +58,19 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyOperations>()?;
     m.add_class::<PyMagneticOperations>()?;
 
-    // data
-    m.add_class::<PyHallSymbolEntry>()?;
+    // data: Hall symbol data
     m.add_class::<PySetting>()?;
     m.add_class::<PyCentering>()?;
+    m.add_class::<PyHallSymbolEntry>()?;
+    // data: Group data
     m.add_class::<PySpaceGroupType>()?;
     m.add_class::<PyMagneticSpaceGroupType>()?;
+    m.add_class::<PyArithmeticCrystalClass>()?;
+    // data: Misc
     m.add_wrapped(wrap_pyfunction!(operations_from_number))?;
+
+    // identify
+    m.add_class::<PyPointGroup>()?;
 
     Ok(())
 }

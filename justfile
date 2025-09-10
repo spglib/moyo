@@ -44,9 +44,8 @@ py-build:
     maturin develop --release --manifest-path moyopy/Cargo.toml
 
 [group('python')]
-py-install: py-build
-    source moyopy/.venv/bin/activate
-    uv sync --all-extras
+py-install:
+    uv sync --all-extras --directory moyopy
 
 [group('python')]
 py-test:
