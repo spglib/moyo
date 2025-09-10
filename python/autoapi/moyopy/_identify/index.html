@@ -335,6 +335,13 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup.prim_trans_mat"><code class="docutils literal notranslate"><span class="pre">PointGroup.prim_trans_mat</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup"><code class="docutils literal notranslate"><span class="pre">SpaceGroup</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.number"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.hall_number"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.hall_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.linear"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.linear</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.origin_shift"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.origin_shift</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -357,6 +364,9 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="#moyopy._identify.PointGroup" title="moyopy._identify.PointGroup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PointGroup</span></code></a></p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#moyopy._identify.SpaceGroup" title="moyopy._identify.SpaceGroup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpaceGroup</span></code></a></p></td>
+<td><p></p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -374,6 +384,31 @@ document.write(`
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._identify.PointGroup.prim_trans_mat">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_trans_mat</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="reference internal" href="../../../_modules/moyopy/_identify.html#PointGroup.prim_trans_mat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.PointGroup.prim_trans_mat" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="moyopy._identify.SpaceGroup">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._identify.</span></span><span class="sig-name descname"><span class="pre">SpaceGroup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prim_rotations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prim_translations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">basis</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../_data/index.html#moyopy._data.Setting" title="moyopy._data.Setting"><span class="pre">moyopy._data.Setting</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0001</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_identify.html#SpaceGroup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.SpaceGroup" title="Link to this definition">#</a></dt>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="moyopy._identify.SpaceGroup.number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_identify.html#SpaceGroup.number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.SpaceGroup.number" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._identify.SpaceGroup.hall_number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hall_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_identify.html#SpaceGroup.hall_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.SpaceGroup.hall_number" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._identify.SpaceGroup.linear">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="reference internal" href="../../../_modules/moyopy/_identify.html#SpaceGroup.linear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.SpaceGroup.linear" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._identify.SpaceGroup.origin_shift">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="reference internal" href="../../../_modules/moyopy/_identify.html#SpaceGroup.origin_shift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.SpaceGroup.origin_shift" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -431,6 +466,13 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup"><code class="docutils literal notranslate"><span class="pre">PointGroup</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup.arithmetic_number"><code class="docutils literal notranslate"><span class="pre">PointGroup.arithmetic_number</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup.prim_trans_mat"><code class="docutils literal notranslate"><span class="pre">PointGroup.prim_trans_mat</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup"><code class="docutils literal notranslate"><span class="pre">SpaceGroup</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.number"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.hall_number"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.hall_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.linear"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.linear</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.origin_shift"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.origin_shift</span></code></a></li>
 </ul>
 </li>
 </ul>

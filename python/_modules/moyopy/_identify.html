@@ -282,9 +282,11 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for moyopy._identify</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">moyopy._data</span><span class="w"> </span><span class="kn">import</span> <span class="n">Setting</span>
+
 <div class="viewcode-block" id="PointGroup">
 <a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._identify.PointGroup">[docs]</a>
-<span></span><span class="k">class</span><span class="w"> </span><span class="nc">PointGroup</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PointGroup</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">prim_rotations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="o">*</span><span class="p">,</span> <span class="n">basis</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">):</span> <span class="o">...</span>
@@ -297,6 +299,40 @@ document.write(`
 <div class="viewcode-block" id="PointGroup.prim_trans_mat">
 <a class="viewcode-back" href="../../autoapi/moyopy/_identify/index.html#moyopy._identify.PointGroup.prim_trans_mat">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prim_trans_mat</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span> <span class="o">...</span></div>
+</div>
+
+
+<div class="viewcode-block" id="SpaceGroup">
+<a class="viewcode-back" href="../../autoapi/moyopy/_identify/index.html#moyopy._identify.SpaceGroup">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SpaceGroup</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">prim_rotations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+        <span class="n">prim_translations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">basis</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">setting</span><span class="p">:</span> <span class="n">Setting</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">epsilon</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
+    <span class="p">):</span> <span class="o">...</span>
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SpaceGroup.number">
+<a class="viewcode-back" href="../../autoapi/moyopy/_identify/index.html#moyopy._identify.SpaceGroup.number">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SpaceGroup.hall_number">
+<a class="viewcode-back" href="../../autoapi/moyopy/_identify/index.html#moyopy._identify.SpaceGroup.hall_number">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">hall_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SpaceGroup.linear">
+<a class="viewcode-back" href="../../autoapi/moyopy/_identify/index.html#moyopy._identify.SpaceGroup.linear">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">linear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span> <span class="o">...</span></div>
+
+    <span class="nd">@property</span>
+<div class="viewcode-block" id="SpaceGroup.origin_shift">
+<a class="viewcode-back" href="../../autoapi/moyopy/_identify/index.html#moyopy._identify.SpaceGroup.origin_shift">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">origin_shift</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span> <span class="o">...</span></div>
 </div>
 
 </pre></div>
