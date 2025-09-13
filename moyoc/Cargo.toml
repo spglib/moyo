@@ -21,7 +21,3 @@ serde.workspace = true
 serde_json.workspace = true
 approx.workspace = true
 log.workspace = true
-safer-ffi = { version = "0.1", features = ["alloc"] }
-
-[features]
-generate-headers = ["safer-ffi/headers"]

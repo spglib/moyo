@@ -26,7 +26,8 @@ impl From<&Lattice> for MoyoLattice {
 #[repr(C)]
 pub struct MoyoCell {
     lattice: MoyoLattice,
-    positions: *const [f64; 3],
+    /// 3*num_atoms array of fractional coordinates, [x1, y1, z1, x2, y2, z2, ...]
+    positions: *const f64,
     numbers: *const i32,
     num_atoms: i32,
 }
@@ -35,17 +36,18 @@ impl From<&Cell> for MoyoCell {
     fn from(cell: &Cell) -> Self {
         let num_atoms = cell.num_atoms() as i32;
         let lattice = &cell.lattice;
+        let positions = cell
+            .positions
+            .iter()
+            .flat_map(|pos| [pos[0], pos[1], pos[2]])
+            .collect::<Vec<_>>();
+        let positions_ptr = positions.leak().as_ptr();
+        let numbers_ptr = cell.numbers.clone().leak().as_ptr();
+
         MoyoCell {
             lattice: lattice.into(),
-            positions: {
-                let positions = cell
-                    .positions
-                    .iter()
-                    .map(|pos| [pos[0], pos[1], pos[2]])
-                    .collect::<Vec<_>>();
-                positions.as_ptr()
-            },
-            numbers: cell.numbers.as_ptr(),
+            positions: positions_ptr,
+            numbers: numbers_ptr,
             num_atoms,
         }
     }
