@@ -2,6 +2,8 @@ use pyo3::prelude::*;
 
 use moyo::data::Centering;
 
+use crate::utils::{to_3_slice, to_3x3_slice};
+
 #[derive(Debug, Clone)]
 #[pyclass(name = "Centering", frozen)]
 #[pyo3(module = "moyopy")]
@@ -16,17 +18,12 @@ impl PyCentering {
 
     #[getter]
     pub fn linear(&self) -> [[i32; 3]; 3] {
-        // Since nalgebra stores matrices in column-major order, we need to transpose them
-        *self.0.linear().transpose().as_ref()
+        to_3x3_slice(&self.0.linear())
     }
 
     #[getter]
     pub fn lattice_points(&self) -> Vec<[f64; 3]> {
-        self.0
-            .lattice_points()
-            .iter()
-            .map(|x| *x.as_ref())
-            .collect()
+        self.0.lattice_points().iter().map(to_3_slice).collect()
     }
 }
 

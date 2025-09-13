@@ -10,6 +10,7 @@ use moyo::MoyoDataset;
 
 use crate::base::{PyMoyoError, PyOperations, PyStructure};
 use crate::data::PySetting;
+use crate::utils::{to_3_slice, to_3x3_slice};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[pyclass(name = "MoyoDataset", frozen)]
@@ -91,19 +92,17 @@ impl PyMoyoDataset {
 
     #[getter]
     pub fn std_linear(&self) -> [[f64; 3]; 3] {
-        // Since nalgebra stores matrices in column-major order, we need to transpose them
-        self.0.std_linear.transpose().into()
+        to_3x3_slice(&self.0.std_linear)
     }
 
     #[getter]
     pub fn std_origin_shift(&self) -> [f64; 3] {
-        self.0.std_origin_shift.into()
+        to_3_slice(&self.0.std_origin_shift)
     }
 
     #[getter]
     pub fn std_rotation_matrix(&self) -> [[f64; 3]; 3] {
-        // Since nalgebra stores matrices in column-major order, we need to transpose them
-        self.0.std_rotation_matrix.transpose().into()
+        to_3x3_slice(&self.0.std_rotation_matrix)
     }
 
     #[getter]
@@ -121,13 +120,12 @@ impl PyMoyoDataset {
 
     #[getter]
     pub fn prim_std_linear(&self) -> [[f64; 3]; 3] {
-        // Since nalgebra stores matrices in column-major order, we need to transpose them
-        self.0.prim_std_linear.transpose().into()
+        to_3x3_slice(&self.0.prim_std_linear)
     }
 
     #[getter]
     pub fn prim_std_origin_shift(&self) -> [f64; 3] {
-        self.0.prim_std_origin_shift.into()
+        to_3_slice(&self.0.prim_std_origin_shift)
     }
 
     #[getter]
