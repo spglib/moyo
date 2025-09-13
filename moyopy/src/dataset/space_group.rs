@@ -6,11 +6,11 @@ use serde::{Deserialize, Serialize};
 
 use moyo::base::AngleTolerance;
 use moyo::data::Setting;
+use moyo::utils::{to_3_slice, to_3x3_slice};
 use moyo::MoyoDataset;
 
 use crate::base::{PyMoyoError, PyOperations, PyStructure};
 use crate::data::PySetting;
-use crate::utils::{to_3_slice, to_3x3_slice};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[pyclass(name = "MoyoDataset", frozen)]

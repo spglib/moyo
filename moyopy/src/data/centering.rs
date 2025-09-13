@@ -1,8 +1,7 @@
 use pyo3::prelude::*;
 
 use moyo::data::Centering;
-
-use crate::utils::{to_3_slice, to_3x3_slice};
+use moyo::utils::{to_3_slice, to_3x3_slice};
 
 #[derive(Debug, Clone)]
 #[pyclass(name = "Centering", frozen)]

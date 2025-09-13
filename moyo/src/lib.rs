@@ -88,6 +88,7 @@ pub mod data;
 pub mod identify;
 pub mod math;
 pub mod search; // Public for benchmarking
+pub mod utils;
 
 mod symmetrize;
 

@@ -3,10 +3,10 @@ use pyo3::prelude::*;
 use moyo::base::{Lattice, Operation};
 use moyo::data::{ArithmeticNumber, HallNumber, Number, Setting};
 use moyo::identify::{PointGroup, SpaceGroup};
+use moyo::utils::{to_3_slice, to_3x3_slice, to_matrix3, to_vector3};
 
 use crate::base::PyMoyoError;
 use crate::data::PySetting;
-use crate::utils::{to_3_slice, to_3x3_slice, to_matrix3, to_vector3};
 
 #[derive(Debug, Clone)]
 #[pyclass(name = "PointGroup", frozen)]
