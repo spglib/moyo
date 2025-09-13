@@ -1,4 +1,3 @@
-use nalgebra::Vector3;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyType;
 use pyo3::{prelude::*, IntoPyObjectExt};
@@ -7,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 
 use moyo::base::{Cell, Lattice};
+
+use crate::utils::{to_3_slice, to_3x3_slice, to_vector3};
 
 // Unfortunately, "PyCell" is already reversed by pyo3...
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -30,10 +31,7 @@ impl PyStructure {
         }
 
         let lattice = Lattice::from_basis(basis);
-        let positions = positions
-            .iter()
-            .map(|x| Vector3::new(x[0], x[1], x[2]))
-            .collect::<Vec<_>>();
+        let positions = positions.iter().map(|x| to_vector3(x)).collect::<Vec<_>>();
         let cell = Cell::new(lattice, positions, numbers);
 
         Ok(Self(cell))
@@ -41,12 +39,13 @@ impl PyStructure {
 
     #[getter]
     pub fn basis(&self) -> [[f64; 3]; 3] {
-        *self.0.lattice.basis.as_ref()
+        // Transpose column-major basis
+        to_3x3_slice(&self.0.lattice.basis.transpose())
     }
 
     #[getter]
     pub fn positions(&self) -> Vec<[f64; 3]> {
-        self.0.positions.iter().map(|x| [x.x, x.y, x.z]).collect()
+        self.0.positions.iter().map(|x| to_3_slice(x)).collect()
     }
 
     #[getter]

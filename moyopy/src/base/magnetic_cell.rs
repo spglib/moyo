@@ -1,4 +1,3 @@
-use nalgebra::Vector3;
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyType;
 use pyo3::{prelude::*, IntoPyObjectExt};
@@ -7,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 
 use moyo::base::{Collinear, Lattice, MagneticCell, NonCollinear};
+
+use crate::utils::{to_3_slice, to_3x3_slice, to_vector3};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 enum MagneticCellEnum {
@@ -48,10 +49,7 @@ impl PyCollinearMagneticCell {
         }
 
         let lattice = Lattice::from_basis(basis);
-        let positions = positions
-            .iter()
-            .map(|x| Vector3::new(x[0], x[1], x[2]))
-            .collect::<Vec<_>>();
+        let positions = positions.iter().map(|x| to_vector3(x)).collect::<Vec<_>>();
         let magnetic_moments = magnetic_moments.iter().map(|m| Collinear(*m)).collect();
         let magnetic_cell = MagneticCell::new(lattice, positions, numbers, magnetic_moments);
 
@@ -60,7 +58,8 @@ impl PyCollinearMagneticCell {
 
     #[getter]
     pub fn basis(&self) -> [[f64; 3]; 3] {
-        *self.0.cell.lattice.basis.as_ref()
+        // Transpose column-major basis
+        to_3x3_slice(&self.0.cell.lattice.basis.transpose())
     }
 
     #[getter]
@@ -69,7 +68,7 @@ impl PyCollinearMagneticCell {
             .cell
             .positions
             .iter()
-            .map(|x| [x.x, x.y, x.z])
+            .map(|x| to_3_slice(x))
             .collect()
     }
 
@@ -167,13 +166,10 @@ impl PyNonCollinearMagneticCell {
         }
 
         let lattice = Lattice::from_basis(basis);
-        let positions = positions
-            .iter()
-            .map(|x| Vector3::new(x[0], x[1], x[2]))
-            .collect::<Vec<_>>();
+        let positions = positions.iter().map(|x| to_vector3(x)).collect::<Vec<_>>();
         let magnetic_moments = magnetic_moments
             .iter()
-            .map(|m| NonCollinear(Vector3::new(m[0], m[1], m[2])))
+            .map(|m| NonCollinear(to_vector3(m)))
             .collect();
         let magnetic_cell = MagneticCell::new(lattice, positions, numbers, magnetic_moments);
 
@@ -182,7 +178,8 @@ impl PyNonCollinearMagneticCell {
 
     #[getter]
     pub fn basis(&self) -> [[f64; 3]; 3] {
-        *self.0.cell.lattice.basis.as_ref()
+        // Transpose column-major basis
+        to_3x3_slice(&self.0.cell.lattice.basis.transpose())
     }
 
     #[getter]
@@ -191,7 +188,7 @@ impl PyNonCollinearMagneticCell {
             .cell
             .positions
             .iter()
-            .map(|x| [x.x, x.y, x.z])
+            .map(|x| to_3_slice(x))
             .collect()
     }
 
@@ -205,7 +202,7 @@ impl PyNonCollinearMagneticCell {
         self.0
             .magnetic_moments
             .iter()
-            .map(|m| [m.0[0], m.0[1], m.0[2]])
+            .map(|m| to_3_slice(&m.0))
             .collect()
     }
 

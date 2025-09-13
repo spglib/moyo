@@ -2,6 +2,8 @@ use pyo3::prelude::*;
 
 use moyo::base::{MagneticOperations, Operations};
 
+use crate::utils::{to_3_slice, to_3x3_slice};
+
 #[derive(Debug)]
 #[pyclass(name = "Operations", frozen)]
 #[pyo3(module = "moyopy")]
@@ -11,16 +13,12 @@ pub struct PyOperations(Operations);
 impl PyOperations {
     #[getter]
     pub fn rotations(&self) -> Vec<[[i32; 3]; 3]> {
-        // Since nalgebra stores matrices in column-major order, we need to transpose them
-        self.0
-            .iter()
-            .map(|x| *x.rotation.transpose().as_ref())
-            .collect()
+        self.0.iter().map(|x| to_3x3_slice(&x.rotation)).collect()
     }
 
     #[getter]
     pub fn translations(&self) -> Vec<[f64; 3]> {
-        self.0.iter().map(|x| *x.translation.as_ref()).collect()
+        self.0.iter().map(|x| to_3_slice(&x.translation)).collect()
     }
 
     #[getter]
@@ -54,10 +52,9 @@ pub struct PyMagneticOperations(MagneticOperations);
 impl PyMagneticOperations {
     #[getter]
     pub fn rotations(&self) -> Vec<[[i32; 3]; 3]> {
-        // Since nalgebra stores matrices in column-major order, we need to transpose them
         self.0
             .iter()
-            .map(|x| *x.operation.rotation.transpose().as_ref())
+            .map(|x| to_3x3_slice(&x.operation.rotation))
             .collect()
     }
 
@@ -65,7 +62,7 @@ impl PyMagneticOperations {
     pub fn translations(&self) -> Vec<[f64; 3]> {
         self.0
             .iter()
-            .map(|x| *x.operation.translation.as_ref())
+            .map(|x| to_3_slice(&x.operation.translation))
             .collect()
     }
 
