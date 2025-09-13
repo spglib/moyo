@@ -6,8 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 
 use moyo::base::{Cell, Lattice};
-
-use crate::utils::{to_3_slice, to_3x3_slice, to_vector3};
+use moyo::utils::{to_3_slice, to_3x3_slice, to_vector3};
 
 // Unfortunately, "PyCell" is already reversed by pyo3...
 #[derive(Debug, Clone, Serialize, Deserialize)]

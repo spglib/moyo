@@ -4,13 +4,13 @@ use pyo3::{prelude::*, IntoPyObjectExt};
 use pythonize::{depythonize, pythonize};
 
 use moyo::base::{AngleTolerance, Collinear, NonCollinear, RotationMagneticMomentAction};
+use moyo::utils::{to_3_slice, to_3x3_slice};
 use moyo::MoyoMagneticDataset;
 use serde::{Deserialize, Serialize};
 
 use crate::base::{
     PyCollinearMagneticCell, PyMagneticOperations, PyMoyoError, PyNonCollinearMagneticCell,
 };
-use crate::utils::{to_3_slice, to_3x3_slice};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[pyclass(name = "MoyoCollinearMagneticDataset", frozen)]

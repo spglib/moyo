@@ -1,8 +1,6 @@
 use pyo3::prelude::*;
 use std::sync::OnceLock;
 
-mod utils;
-
 pub mod base;
 pub mod data;
 pub mod dataset;
