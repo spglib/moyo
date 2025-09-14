@@ -5,6 +5,52 @@
 
 #include "moyoc.h"
 
+void show_cell(const MoyoCell *cell) {
+    printf("Basis:\n");
+    printf("a: %f %f %f\n", cell->basis[0][0], cell->basis[0][1], cell->basis[0][2]);
+    printf("b: %f %f %f\n", cell->basis[1][0], cell->basis[1][1], cell->basis[1][2]);
+    printf("c: %f %f %f\n", cell->basis[2][0], cell->basis[2][1], cell->basis[2][2]);
+
+    printf("Positions:\n");
+    for (int i = 0; i < cell->num_atoms; i++) {
+        for (int j = 0; j < 3; j++) {
+            printf("%f ", cell->positions[i][j]);
+        }
+        printf("\n");
+    }
+
+    printf("Atomic numbers:\n");
+    for (int i = 0; i < cell->num_atoms; i++) {
+        printf("%d ", cell->numbers[i]);
+    }
+    printf("\n");
+}
+
+void show_operations(const MoyoOperations *operations) {
+    for (int i = 0; i < (int)operations->num_operations; i++) {
+        printf("Operation %d\n", i);
+        for (int a = 0; a < 3; a++) {
+            for (int b = 0; b < 3; b++) {
+                printf("%2d ", operations->rotations[i][a][b]);
+            }
+            printf("\n");
+        }
+        for (int a = 0; a < 3; a++) {
+            printf("%.2f ", operations->translations[i][a]);
+        }
+        printf("\n");
+    }
+}
+
+void show_matrix3f(const double matrix[3][3]) {
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            printf("%f ", matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
+
 int main(void) {
     // hcp
     double a = 3.17;
@@ -42,19 +88,7 @@ int main(void) {
 
     // Symmetry operations in the input cell
     printf("dataset->operations:\n");
-    for (int i = 0; i < (int)dataset->operations.num_operations; i++) {
-        printf("Operation %d\n", i);
-        for (int a = 0; a < 3; a++) {
-            for (int b = 0; b < 3; b++) {
-                printf("%2d ", dataset->operations.rotations[i][a][b]);
-            }
-            printf("\n");
-        }
-        for (int a = 0; a < 3; a++) {
-            printf("%.2f ", dataset->operations.translations[i][a]);
-        }
-        printf("\n");
-    }
+    show_operations(&dataset->operations);
     assert(dataset->operations.num_operations == 24);
 
     // Site symmetry
@@ -79,6 +113,22 @@ int main(void) {
     printf("\n");
     assert(strcmp(dataset->site_symmetry_symbols[0], "-6m2") == 0);
     assert(strcmp(dataset->site_symmetry_symbols[1], "-6m2") == 0);
+
+    // Standardized cell
+    printf("dataset->std_cell:\n");
+    show_cell(&dataset->std_cell);
+    assert(dataset->std_cell.num_atoms == 2);
+    printf("dataset->std_linear:\n");
+    show_matrix3f(dataset->std_linear);
+    printf("dataset->std_origin_shift:\n");
+    for (int i = 0; i < 3; i++) {
+        printf("%f ", dataset->std_origin_shift[i]);
+    }
+    printf("\n");
+    printf("dataset->std_rotation_matrix:\n");
+    show_matrix3f(dataset->std_rotation_matrix);
+    printf("dataset->pearson_symbol: %s\n", dataset->pearson_symbol);
+    assert(strcmp(dataset->pearson_symbol, "hP2") == 0);
 
     free_moyo_dataset(dataset);
 

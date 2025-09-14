@@ -1,6 +1,7 @@
 use moyo::base::{Cell, Lattice};
 use moyo::utils::{to_3_slice, to_3x3_slice, to_vector3};
 
+#[derive(Debug, Clone)]
 #[repr(C)]
 pub struct MoyoCell {
     /// Row-wise basis vectors
