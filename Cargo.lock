@@ -678,6 +678,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "moyoc"
+version = "0.4.6"
+dependencies = [
+ "approx",
+ "log",
+ "moyo",
+ "nalgebra",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "moyopy"
 version = "0.4.6"
 dependencies = [

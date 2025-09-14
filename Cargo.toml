@@ -1,6 +1,11 @@
 [workspace]
 
-members = ["moyo", "moyo-wasm", "moyopy"]
+members = [
+    "moyo",
+    "moyo-wasm",
+    "moyopy",
+    "moyoc",
+]
 
 resolver = "2"
 
