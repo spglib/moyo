@@ -15,6 +15,5 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           name: moyo ${{ github.ref_name }}
-          draft: true
           prerelease: ${{ contains(github.ref, 'rc') }}
           generate_release_notes: true

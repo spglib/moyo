@@ -1,0 +1,11 @@
+rust:
+  - 'moyo/**'
+  - '.github/workflows/rw-rust-*.yaml'
+  - Cargo.toml
+  - Cargo.lock
+python:
+  - 'moyopy/**'
+  - '.github/workflows/rw-python-*.yaml'
+c:
+  - 'moyoc/**'
+  - '.github/workflows/rw-c-*.yaml'

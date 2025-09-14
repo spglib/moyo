@@ -1,16 +1,8 @@
 name: C binding CI
 
 on:
-  push:
-    branches: [main]
-    tags:
-      - '*'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'moyoc/**'
-      - '.github/workflows/ci-c.yaml'
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -29,6 +21,7 @@ jobs:
           set -e
           cd moyoc && make tests
 
+  # TODO:
   build:
     strategy:
       fail-fast: false

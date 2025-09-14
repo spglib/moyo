@@ -1,19 +1,8 @@
 name: Rust implementation CI
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-    paths:
-      - 'moyoc/**'
-      - '.github/workflows/ci-rust.yaml'
-      - Cargo.toml
-      - Cargo.lock
   workflow_dispatch:
-
-env:
-  PYTHON_VERSION: "3.11"
+  workflow_call:
 
 jobs:
   test:
@@ -32,6 +21,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: lcov.info
         fail_ci_if_error: false
+
   pass:
     name: ✅ Pass ci-rust
     needs: [test]
