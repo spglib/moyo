@@ -51,18 +51,25 @@ pub struct MoyoDataset {
     pub std_rotation_matrix: [[f64; 3]; 3],
     /// Pearson symbol for standardized cell
     pub pearson_symbol: *const c_char,
-    // // ------------------------------------------------------------------------
-    // // Primitive standardized cell
-    // // ------------------------------------------------------------------------
-    // pub prim_std_cell: Cell,
-    // pub prim_std_linear: Matrix3<f64>,
-    // pub prim_std_origin_shift: OriginShift,
-    // pub mapping_std_prim: Vec<usize>,
-    // // ------------------------------------------------------------------------
-    // // Final parameters
-    // // ------------------------------------------------------------------------
-    // pub symprec: f64,
-    // pub angle_tolerance: AngleTolerance,
+    // ------------------------------------------------------------------------
+    // Primitive standardized cell
+    // ------------------------------------------------------------------------
+    /// Primitive standardized cell
+    pub prim_std_cell: MoyoCell,
+    /// Linear part of transformation from the input cell to the primitive standardized cell.
+    pub prim_std_linear: [[f64; 3]; 3],
+    /// Origin shift of transformation from the input cell to the primitive standardized cell.
+    pub prim_std_origin_shift: [f64; 3],
+    /// Mapping sites in the input cell to those in the primitive standardized cell.
+    /// The `i`th atom in the input cell is mapped to the `mapping_to_std_prim[i]`th atom in the primitive standardized cell.
+    pub mapping_std_prim: *const usize,
+    // ------------------------------------------------------------------------
+    // Final parameters
+    // ------------------------------------------------------------------------
+    /// Actually used `symprec` in iterative symmetry search.
+    pub symprec: f64,
+    /// Actually used `angle_tolerance` in iterative symmetry search.
+    pub angle_tolerance: f64,
 }
 
 impl From<Dataset> for MoyoDataset {
@@ -86,6 +93,14 @@ impl From<Dataset> for MoyoDataset {
         // Standardized cell
         let pearson_symbol = CString::new(dataset.pearson_symbol).expect("CString::new failed");
 
+        // Final parameters
+        let angle_tolerance =
+            if let AngleTolerance::Radian(angle_tolerance) = dataset.angle_tolerance {
+                angle_tolerance
+            } else {
+                -1.0
+            };
+
         Self {
             // Identification
             number: dataset.number,
@@ -103,6 +118,14 @@ impl From<Dataset> for MoyoDataset {
             std_origin_shift: to_3_slice(&dataset.std_origin_shift),
             std_rotation_matrix: to_3x3_slice(&dataset.std_rotation_matrix),
             pearson_symbol: pearson_symbol.into_raw(),
+            // Primitive standardized cell
+            prim_std_cell: (&dataset.prim_std_cell).into(),
+            prim_std_linear: to_3x3_slice(&dataset.prim_std_linear),
+            prim_std_origin_shift: to_3_slice(&dataset.prim_std_origin_shift),
+            mapping_std_prim: dataset.mapping_std_prim.leak().as_ptr(),
+            // Final parameters
+            symprec: dataset.symprec,
+            angle_tolerance,
         }
     }
 }
@@ -204,5 +227,15 @@ pub extern "C" fn free_moyo_dataset(dataset: *mut MoyoDataset) {
         if !dataset.pearson_symbol.is_null() {
             drop(CString::from_raw(dataset.pearson_symbol as *mut c_char));
         }
+
+        // Primitive standardized cell
+        if !dataset.mapping_std_prim.is_null() {
+            let _ = Vec::from_raw_parts(
+                dataset.mapping_std_prim as *mut usize,
+                dataset.prim_std_cell.num_atoms as usize,
+                dataset.prim_std_cell.num_atoms as usize,
+            );
+        }
+        free_moyo_cell(dataset.prim_std_cell);
     }
 }

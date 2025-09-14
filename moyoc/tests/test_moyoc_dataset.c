@@ -130,6 +130,28 @@ int main(void) {
     printf("dataset->pearson_symbol: %s\n", dataset->pearson_symbol);
     assert(strcmp(dataset->pearson_symbol, "hP2") == 0);
 
+    // Primitive standardized cell
+    printf("dataset->prim_std_cell:\n");
+    show_cell(&dataset->prim_std_cell);
+    printf("dataset->prim_std_linear:\n");
+    show_matrix3f(dataset->prim_std_linear);
+    printf("dataset->prim_std_origin_shift:\n");
+    for (int i = 0; i < 3; i++) {
+        printf("%f ", dataset->prim_std_origin_shift[i]);
+    }
+    printf("\n");
+    printf("dataset->mapping_std_prim:\n");
+    for (int i = 0; i < num_atoms; i++) {
+        printf("%lu ", dataset->mapping_std_prim[i]);
+    }
+    printf("\n");
+    assert(dataset->mapping_std_prim[0] == 0);
+    assert(dataset->mapping_std_prim[1] == 1);
+
+    // Final parameters
+    printf("dataset->symprec: %f\n", dataset->symprec);
+    printf("dataset->angle_tolerance: %f\n", dataset->angle_tolerance);
+
     free_moyo_dataset(dataset);
 
     return 0;
