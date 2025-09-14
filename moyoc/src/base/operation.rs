@@ -1,6 +1,7 @@
 use moyo::base::{Operation, Operations};
 use moyo::utils::{to_3_slice, to_3x3_slice, to_matrix3, to_vector3};
 
+#[derive(Debug, Clone)]
 #[repr(C)]
 pub struct MoyoOperations {
     pub rotations: *const [[i32; 3]; 3],

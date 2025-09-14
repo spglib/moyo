@@ -1,3 +1,3 @@
 mod setting;
 
-pub use setting::MoyocSetting;
+pub use setting::MoyoSetting;

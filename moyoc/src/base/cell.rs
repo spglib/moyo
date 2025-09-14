@@ -4,11 +4,10 @@ use moyo::utils::{to_3_slice, to_3x3_slice, to_vector3};
 #[repr(C)]
 pub struct MoyoCell {
     /// Row-wise basis vectors
-    basis: [[f64; 3]; 3],
-    /// 3*num_atoms array of fractional coordinates, [x1, y1, z1, x2, y2, z2, ...]
-    positions: *const [f64; 3],
-    numbers: *const i32,
-    num_atoms: i32,
+    pub basis: [[f64; 3]; 3],
+    pub positions: *const [f64; 3],
+    pub numbers: *const i32,
+    pub num_atoms: i32,
 }
 
 impl From<&Cell> for MoyoCell {

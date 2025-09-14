@@ -1,26 +1,23 @@
-use nalgebra::vector;
-use safer_ffi;
-use safer_ffi::prelude::*;
+use moyo::base::{AngleTolerance, Cell};
+use moyo::data::Setting;
+use moyo::MoyoDataset as Dataset;
 
-use moyo::base::{AngleTolerance, Cell, Lattice};
-use moyo::MoyoDataset;
+use crate::base::MoyoCell;
+use crate::data::MoyoSetting;
 
-use crate::base::MoyocOperation;
-use crate::data::MoyocSetting;
-
-#[derive_ReprC]
+#[derive(Debug, Clone)]
 #[repr(C)]
-#[derive(Debug)]
-pub struct MoyocDataset {
+pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     // Identification
     // ------------------------------------------------------------------------
     pub number: i32,
     pub hall_number: i32,
+    // pub hm_symbol: String,
     // ------------------------------------------------------------------------
     // Symmetry operations in the input cell
     // ------------------------------------------------------------------------
-    pub operations: safer_ffi::Vec<MoyocOperation>,
+    // pub operations: MoyoOperations,
     // // ------------------------------------------------------------------------
     // // Site symmetry
     // // ------------------------------------------------------------------------
@@ -49,53 +46,62 @@ pub struct MoyocDataset {
     // pub angle_tolerance: AngleTolerance,
 }
 
-#[ffi_export]
-pub fn moyoc_dataset(
+impl From<Dataset> for MoyoDataset {
+    fn from(dataset: Dataset) -> Self {
+        Self {
+            number: dataset.number,
+            hall_number: dataset.hall_number,
+        }
+    }
+}
+
+#[no_mangle]
+/// Create a dataset from the given cell.
+/// hall_number: -1 means None
+pub extern "C" fn moyo_dataset(
     basis: *const [[f64; 3]; 3],
     positions: *const [f64; 3],
     numbers: *const i32,
     num_atoms: i32,
     symprec: f64,
     angle_tolerance: f64,
-    setting: MoyocSetting,
-) -> *const MoyocDataset {
-    let basis = unsafe { &*basis };
-    let lattice = Lattice::from_basis(*basis);
-    let positions = unsafe {
-        std::slice::from_raw_parts(positions, num_atoms as usize)
-            .iter()
-            .map(|&pos| vector![pos[0], pos[1], pos[2]])
-            .collect::<Vec<_>>()
+    setting: MoyoSetting,
+    hall_number: i32,
+) -> *mut MoyoDataset {
+    let cell = MoyoCell {
+        basis: unsafe { *basis },
+        positions,
+        numbers,
+        num_atoms,
     };
-    let numbers = unsafe {
-        std::slice::from_raw_parts(numbers, num_atoms as usize)
-            .iter()
-            .map(|&number| number)
-            .collect::<Vec<_>>()
-    };
-    let cell = Cell::new(lattice, positions, numbers);
+    let cell: Cell = (&cell).into();
 
     let angle_tolerance = if angle_tolerance < 0.0 {
         AngleTolerance::Default
     } else {
         AngleTolerance::Radian(angle_tolerance)
     };
+    let setting = match setting {
+        MoyoSetting::HallNumber => {
+            if hall_number <= 0 {
+                return std::ptr::null_mut();
+            }
+            Setting::HallNumber(hall_number)
+        }
+        MoyoSetting::Spglib => Setting::Spglib,
+        MoyoSetting::Standard => Setting::Standard,
+    };
 
-    if let Ok(dataset) = MoyoDataset::new(&cell, symprec, angle_tolerance, setting.into()) {
-        let dataset = MoyocDataset {
-            // Identification
-            number: dataset.number,
-            hall_number: dataset.hall_number,
-            // Symmetry operations in the input cell
-            operations: dataset
-                .operations
-                .into_iter()
-                .map(|ops| ops.into())
-                .collect::<Vec<_>>()
-                .into(),
-        };
-        return Box::into_raw(Box::new(dataset));
-    } else {
-        return std::ptr::null();
-    }
+    let dataset = Dataset::new(&cell, symprec, angle_tolerance, setting);
+    let dataset_ptr = match dataset {
+        Ok(dataset) => {
+            let moyoc_dataset: MoyoDataset = dataset.into();
+            Box::into_raw(Box::new(moyoc_dataset))
+        }
+        Err(_) => std::ptr::null_mut(),
+    };
+    dataset_ptr
 }
+
+#[no_mangle]
+pub extern "C" fn free_moyo_dataset(dataset: *mut MoyoDataset) {}

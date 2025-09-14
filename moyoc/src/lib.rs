@@ -3,6 +3,5 @@
 extern crate approx;
 
 pub mod base;
-
-// pub mod data;
-// pub mod dataset;
+pub mod data;
+pub mod dataset;
