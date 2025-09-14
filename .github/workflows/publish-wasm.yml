@@ -25,7 +25,7 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
-        run: cargo install wasm-pack
+        uses: taiki-e/install-action@wasm-pack
 
       - name: Install test dependencies
         working-directory: moyo-wasm
