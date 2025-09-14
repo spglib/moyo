@@ -1,4 +1,5 @@
 mod cell;
 mod operation;
 
-pub use operation::MoyocOperation;
+pub use cell::MoyoCell;
+pub use operation::MoyoOperations;

@@ -23,7 +23,7 @@ libmoyoc.%: $(SRCS) Cargo.toml
 	cp ../target/release/libmoyoc.$(LIB_EXTENSION) .
 
 moyoc.h: $(SRCS) cbindgen.toml
-	cargo test generate_headers --features generate-headers
+	cbindgen --config cbindgen.toml --crate moyoc --output moyoc.h
 
 .PHONY: build
 build: $(TARGETS)

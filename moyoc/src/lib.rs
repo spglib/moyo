@@ -1,11 +1,8 @@
-pub mod base;
-pub mod data;
-pub mod dataset;
+#[allow(unused_imports)]
+#[macro_use]
+extern crate approx;
 
-#[::safer_ffi::cfg_headers]
-#[test]
-pub fn generate_headers() -> ::std::io::Result<()> {
-    ::safer_ffi::headers::builder()
-        .to_file("moyoc.h")?
-        .generate()
-}
+pub mod base;
+
+// pub mod data;
+// pub mod dataset;

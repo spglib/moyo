@@ -22,6 +22,7 @@ impl Lattice {
         }
     }
 
+    /// Create a new lattice from 3 row basis vectors
     pub fn from_basis(basis: [[f64; 3]; 3]) -> Self {
         Self::new(OMatrix::from_rows(&[
             RowVector3::from(basis[0]),
