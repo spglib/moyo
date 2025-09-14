@@ -85,3 +85,8 @@ repos:
         name: "pre-commit for moyopy/"
         args: ['-p', 'moyopy']
         files: "^moyopy/.*"
+      - id: sub-pre-commit
+        alias: moyoc
+        name: "pre-commit for moyoc/"
+        args: ['-p', 'moyoc']
+        files: "^moyoc/.*"

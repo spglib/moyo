@@ -1,0 +1,8 @@
+repos:
+  - repo: local
+    hooks:
+      - id: cbindgen
+        name: cbindgen
+        entry: bash -c 'cbindgen --config cbindgen.toml --crate moyoc --output moyoc.h'
+        language: system
+        pass_filenames: false
