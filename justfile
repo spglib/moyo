@@ -67,7 +67,7 @@ c-build:
 [group('c')]
 [working-directory: 'moyoc']
 c-test:
-    make test
+    make tests
 
 [group('c')]
 [working-directory: 'moyoc']

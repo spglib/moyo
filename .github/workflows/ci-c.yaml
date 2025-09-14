@@ -1,0 +1,83 @@
+name: C binding CI
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - '*'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'moyoc/**'
+      - '.github/workflows/ci-c.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - uses: cargo-bins/cargo-binstall@main
+      - name: Install cbindgen
+        run: cargo binstall cbindgen --locked --no-confirm
+      - name: Run tests
+        run: |
+          set -e
+          cd moyoc && make tests
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: macos-latest
+            target: aarch64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: cargo-bins/cargo-binstall@main
+      - name: Install cbindgen
+        run: cargo binstall cbindgen --locked --no-confirm
+      - name: Install cross linker
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: gcc-aarch64-linux-gnu
+          version: 1.0
+      - name: Build and package
+        shell: bash
+        run: |
+          if [ "${{ matrix.target }}" = "aarch64-unknown-linux-gnu" ]; then
+            export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
+          fi
+          cd moyoc && make dist TARGET_TRIPLE=${{ matrix.target }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: moyoc-${{ matrix.target }}
+          path: moyoc/dist/moyoc-*-${{ matrix.target }}.*
+          if-no-files-found: error
+
+  pass:
+    name: ✅ Pass ci-c
+    needs: [test, build]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check all CI jobs
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
+    if: always()

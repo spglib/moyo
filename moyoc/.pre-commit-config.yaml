@@ -3,6 +3,6 @@ repos:
     hooks:
       - id: cbindgen
         name: cbindgen
-        entry: bash -c 'cbindgen --config cbindgen.toml --crate moyoc --output moyoc.h'
+        entry: bash -c 'make moyoc.h'
         language: system
         pass_filenames: false

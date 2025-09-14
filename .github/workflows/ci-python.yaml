@@ -3,20 +3,22 @@
 #
 #    maturin generate-ci github
 #
-name: Test Python implementation
+name: Python Binding CI
 
 on:
   push:
-    branches: [develop, main]
+    branches: [main]
     tags:
       - '*'
   pull_request:
-    branches: [develop, main]
+    branches: [main]
+    paths:
+      - 'moyopy/**'
+      - '.github/workflows/ci-python.yaml'
   workflow_dispatch:
 
 permissions:
   contents: read
-  packages: write  # for uraimo/run-on-arch-action to cache docker images
 
 env:
   PYTHON_VERSION: "3.11"
@@ -139,7 +141,6 @@ jobs:
       #     set -e
       #     uv pip install --system --link-mode symlink --find-links dist --force-reinstall -e moyopy[dev]
       #     cd moyopy && pytest -v
-
 
   macos:
     runs-on: macos-latest
