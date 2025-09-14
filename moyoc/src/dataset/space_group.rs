@@ -5,7 +5,7 @@ use moyo::base::{AngleTolerance, Cell};
 use moyo::data::Setting;
 use moyo::MoyoDataset as Dataset;
 
-use crate::base::MoyoCell;
+use crate::base::{free_moyo_operations, MoyoCell, MoyoOperations};
 use crate::data::MoyoSetting;
 
 #[derive(Debug, Clone)]
@@ -23,7 +23,8 @@ pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     // Symmetry operations in the input cell
     // ------------------------------------------------------------------------
-    // pub operations: MoyoOperations,
+    /// Symmetry operations in the input cell.
+    pub operations: MoyoOperations,
     // // ------------------------------------------------------------------------
     // // Site symmetry
     // // ------------------------------------------------------------------------
@@ -60,6 +61,8 @@ impl From<Dataset> for MoyoDataset {
             number: dataset.number,
             hall_number: dataset.hall_number,
             hm_symbol: hm_symbol.into_raw(),
+            // Symmetry operations in the input cell
+            operations: (&dataset.operations).into(),
         }
     }
 }
@@ -122,5 +125,6 @@ pub extern "C" fn free_moyo_dataset(dataset: *mut MoyoDataset) {
         if !dataset.hm_symbol.is_null() {
             drop(CString::from_raw(dataset.hm_symbol as *mut c_char));
         }
+        free_moyo_operations(dataset.operations);
     }
 }

@@ -53,17 +53,17 @@ impl From<&MoyoOperations> for Operations {
 }
 
 #[no_mangle]
-pub extern "C" fn free_moyo_operations(ops: MoyoOperations) {
+pub extern "C" fn free_moyo_operations(operations: MoyoOperations) {
     unsafe {
         let _ = Vec::from_raw_parts(
-            ops.rotations as *mut [[i32; 3]; 3],
-            ops.num_operations as usize,
-            ops.num_operations as usize,
+            operations.rotations as *mut [[i32; 3]; 3],
+            operations.num_operations as usize,
+            operations.num_operations as usize,
         );
         let _ = Vec::from_raw_parts(
-            ops.translations as *mut [f64; 3],
-            ops.num_operations as usize,
-            ops.num_operations as usize,
+            operations.translations as *mut [f64; 3],
+            operations.num_operations as usize,
+            operations.num_operations as usize,
         );
     }
 }

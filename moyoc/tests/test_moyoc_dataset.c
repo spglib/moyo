@@ -30,32 +30,31 @@ int main(void) {
         &basis, positions, numbers, num_atoms,
         symprec, angle_tolerance, setting, hall_number
     );
+    assert(dataset != NULL);
 
+    // Identification
     printf("dataset->number: %d\n", dataset->number);
     printf("dataset->hall_number: %d\n", dataset->hall_number);
     printf("dataset->hm_symbol: %s\n", dataset->hm_symbol);
-    // for (int i = 0; i < dataset->operations.len; i++) {
-    //     printf("operation %d\n", i);
-    //     MoyocOperation_t operation = *(dataset->operations.ptr + i);
-    //     for (int j = 0; j < 3; j++) {
-    //         printf("  ");
-    //         for (int k = 0; k < 3; k++) {
-    //             printf("%d ", operation.rotation.idx[j].idx[k]);
-    //         }
-    //         printf("\n");
-    //     }
-    //     printf("  ");
-    //     for (int j = 0; j < 3; j++) {
-    //         printf("%f ", operation.translation.idx[j]);
-    //     }
-    //     printf("\n");
-    // }
-
-    assert(dataset != NULL);
     assert(dataset->number == 194);
     assert(dataset->hall_number == 488);
     assert(strcmp(dataset->hm_symbol, "P 6_3/m m c") == 0);
-    // assert(dataset->operations.len == 24);
+
+    // Symmetry operations in the input cell
+    for (int i = 0; i < (int)dataset->operations.num_operations; i++) {
+        printf("Operation %d\n", i);
+        for (int a = 0; a < 3; a++) {
+            for (int b = 0; b < 3; b++) {
+                printf("%2d ", dataset->operations.rotations[i][a][b]);
+            }
+            printf("\n");
+        }
+        for (int a = 0; a < 3; a++) {
+            printf("%.2f ", dataset->operations.translations[i][a]);
+        }
+        printf("\n");
+    }
+    assert(dataset->operations.num_operations == 24);
 
     free_moyo_dataset(dataset);
 

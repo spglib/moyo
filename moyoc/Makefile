@@ -29,7 +29,7 @@ moyoc.h: $(SRCS) cbindgen.toml
 build: $(TARGETS)
 
 tests/%.out: tests/%.c $(TARGETS)
-	$(CC) $< -std=c11 -Wall -Wextra -I. -L../target/release -lmoyoc -fsanitize=address -fno-omit-frame-pointer -O2 -g -o $@
+	$(CC) $< -std=c11 -Wall -Wextra -I. -L../target/release -lmoyoc -fsanitize=address -fno-omit-frame-pointer -O2 -o $@
 
 .PHONY: test
 test: build $(TEST_EXECUTABLES)
