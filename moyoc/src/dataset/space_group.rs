@@ -25,12 +25,18 @@ pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     /// Symmetry operations in the input cell.
     pub operations: MoyoOperations,
-    // // ------------------------------------------------------------------------
-    // // Site symmetry
-    // // ------------------------------------------------------------------------
-    // pub orbits: Vec<usize>,
-    // pub wyckoffs: Vec<char>,
-    // pub site_symmetry_symbols: Vec<String>,
+    // ------------------------------------------------------------------------
+    // Site symmetry
+    // ------------------------------------------------------------------------
+    /// Spglib's `crystallographic_orbits` not `equivalent_atoms`
+    /// The `i`th atom in the input cell is equivalent to the `orbits[i]`th atom in the **input** cell.
+    /// For example, orbits=[0, 0, 2, 2, 2, 2] means the first two atoms are equivalent and the last four atoms are equivalent to each other.
+    pub orbits: *const usize,
+    /// Wyckoff letters for each site in the input cell.
+    pub wyckoffs: *const c_char,
+    /// Site symmetry symbols for each site in the input cell.
+    /// The orientation of the site symmetry is w.r.t. the standardized cell.
+    pub site_symmetry_symbols: *const *const c_char,
     // // ------------------------------------------------------------------------
     // // Standardized cell
     // // ------------------------------------------------------------------------
@@ -55,7 +61,22 @@ pub struct MoyoDataset {
 
 impl From<Dataset> for MoyoDataset {
     fn from(dataset: Dataset) -> Self {
+        // Identification
         let hm_symbol = CString::new(dataset.hm_symbol).expect("CString::new failed");
+
+        // Site symmetry
+        let wyckoffs = CString::new(dataset.wyckoffs.into_iter().collect::<String>())
+            .expect("CString::new failed");
+        let site_symmetry_symbols_cstring = dataset
+            .site_symmetry_symbols
+            .iter()
+            .map(|s| CString::new(s.as_str()).expect("CString::new failed"))
+            .collect::<Vec<_>>();
+        let mut site_symmetry_symbols_ptr = Vec::with_capacity(site_symmetry_symbols_cstring.len());
+        for s in site_symmetry_symbols_cstring {
+            site_symmetry_symbols_ptr.push(s.into_raw() as *const c_char);
+        }
+
         Self {
             // Identification
             number: dataset.number,
@@ -63,6 +84,10 @@ impl From<Dataset> for MoyoDataset {
             hm_symbol: hm_symbol.into_raw(),
             // Symmetry operations in the input cell
             operations: (&dataset.operations).into(),
+            // Site symmetry
+            orbits: dataset.orbits.leak().as_ptr(),
+            wyckoffs: wyckoffs.into_raw(),
+            site_symmetry_symbols: site_symmetry_symbols_ptr.leak().as_ptr(),
         }
     }
 }

@@ -41,6 +41,7 @@ int main(void) {
     assert(strcmp(dataset->hm_symbol, "P 6_3/m m c") == 0);
 
     // Symmetry operations in the input cell
+    printf("dataset->operations:\n");
     for (int i = 0; i < (int)dataset->operations.num_operations; i++) {
         printf("Operation %d\n", i);
         for (int a = 0; a < 3; a++) {
@@ -55,6 +56,29 @@ int main(void) {
         printf("\n");
     }
     assert(dataset->operations.num_operations == 24);
+
+    // Site symmetry
+    printf("dataset->orbits:\n");
+    for (int i = 0; i < num_atoms; i++) {
+        printf("%lu ", dataset->orbits[i]);
+    }
+    printf("\n");
+    assert(dataset->orbits[0] == 0);
+    assert(dataset->orbits[1] == 0);
+    printf("dataset->wyckoffs:\n");
+    for (int i = 0; i < num_atoms; i++) {
+        printf("%c ", dataset->wyckoffs[i]);
+    }
+    printf("\n");
+    assert(dataset->wyckoffs[0] == 'c');
+    assert(dataset->wyckoffs[1] == 'c');
+    printf("dataset->site_symmetry_symbols:\n");
+    for (int i = 0; i < num_atoms; i++) {
+        printf("%s ", dataset->site_symmetry_symbols[i]);
+    }
+    printf("\n");
+    assert(strcmp(dataset->site_symmetry_symbols[0], "-6m2") == 0);
+    assert(strcmp(dataset->site_symmetry_symbols[1], "-6m2") == 0);
 
     free_moyo_dataset(dataset);
 
