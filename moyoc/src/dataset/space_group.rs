@@ -1,3 +1,6 @@
+use core::ffi::c_char;
+use std::ffi::CString;
+
 use moyo::base::{AngleTolerance, Cell};
 use moyo::data::Setting;
 use moyo::MoyoDataset as Dataset;
@@ -11,9 +14,12 @@ pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     // Identification
     // ------------------------------------------------------------------------
+    /// Space group number.
     pub number: i32,
+    /// Hall symbol number.
     pub hall_number: i32,
-    // pub hm_symbol: String,
+    /// Hermann-Mauguin symbol in short notation (e.g., "Fd-3m" for space group 227).
+    pub hm_symbol: *const c_char,
     // ------------------------------------------------------------------------
     // Symmetry operations in the input cell
     // ------------------------------------------------------------------------
@@ -48,9 +54,12 @@ pub struct MoyoDataset {
 
 impl From<Dataset> for MoyoDataset {
     fn from(dataset: Dataset) -> Self {
+        let hm_symbol = CString::new(dataset.hm_symbol).expect("CString::new failed");
         Self {
+            // Identification
             number: dataset.number,
             hall_number: dataset.hall_number,
+            hm_symbol: hm_symbol.into_raw(),
         }
     }
 }
@@ -104,4 +113,14 @@ pub extern "C" fn moyo_dataset(
 }
 
 #[no_mangle]
-pub extern "C" fn free_moyo_dataset(dataset: *mut MoyoDataset) {}
+pub extern "C" fn free_moyo_dataset(dataset: *mut MoyoDataset) {
+    if dataset.is_null() {
+        return;
+    }
+    unsafe {
+        let dataset = Box::from_raw(dataset);
+        if !dataset.hm_symbol.is_null() {
+            drop(CString::from_raw(dataset.hm_symbol as *mut c_char));
+        }
+    }
+}

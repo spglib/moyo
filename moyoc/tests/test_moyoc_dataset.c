@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
+#include <string.h>
 
 #include "moyoc.h"
 
@@ -32,6 +33,7 @@ int main(void) {
 
     printf("dataset->number: %d\n", dataset->number);
     printf("dataset->hall_number: %d\n", dataset->hall_number);
+    printf("dataset->hm_symbol: %s\n", dataset->hm_symbol);
     // for (int i = 0; i < dataset->operations.len; i++) {
     //     printf("operation %d\n", i);
     //     MoyocOperation_t operation = *(dataset->operations.ptr + i);
@@ -52,6 +54,7 @@ int main(void) {
     assert(dataset != NULL);
     assert(dataset->number == 194);
     assert(dataset->hall_number == 488);
+    assert(strcmp(dataset->hm_symbol, "P 6_3/m m c") == 0);
     // assert(dataset->operations.len == 24);
 
     free_moyo_dataset(dataset);
