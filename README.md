@@ -20,17 +20,17 @@ A fast and robust crystal symmetry finder, written in Rust.
 ## Interfaces
 
 - [Rust](moyo/README.md): core implementation
-- [Python](moyopy/README.md)
+- [Python](moyopy/README.md): Python binding
+- [C](moyoc/README.md): C binding
 
 ## Dev
 
 ```shell
-cargo install cargo-release cargo-edit cargo-deny
+cargo install cargo-release cargo-edit cargo-deny cargo-semver-checks
 ```
 
 ### How to release
 
-1. `cargo install cargo-release cargo-edit cargo-semver-checks`
 1. `cargo semver-checks` to lint a new release
 1. `cargo set-version --bump patch` for patch version increment
 1. Write change log and git-commit

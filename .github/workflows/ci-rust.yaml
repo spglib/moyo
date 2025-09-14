@@ -1,10 +1,15 @@
-name: Test Rust implementation
+name: Rust implementation CI
 
 on:
   push:
-    branches: [develop, main]
+    branches: [main]
   pull_request:
-    branches: [develop, main]
+    branches: [main]
+    paths:
+      - 'moyoc/**'
+      - '.github/workflows/ci-rust.yaml'
+      - Cargo.toml
+      - Cargo.lock
   workflow_dispatch:
 
 env:
@@ -15,9 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
     - uses: Swatinem/rust-cache@v2
     - name: Install cargo-llvm-cov
       uses: taiki-e/install-action@cargo-llvm-cov

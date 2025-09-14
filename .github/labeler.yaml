@@ -10,6 +10,11 @@ moyopy:
   - any-glob-to-all-files:
     - moyopy/**
 
+moyoc:
+- changed-files:
+  - any-glob-to-all-files:
+    - moyoc/**
+
 moyo-wasm:
 - changed-files:
   - any-glob-to-all-files:
