@@ -51,3 +51,30 @@ jobs:
           name: moyoc-${{ matrix.target }}
           path: moyoc/dist/moyoc-*-${{ matrix.target }}.*
           if-no-files-found: error
+
+  merge-artifacts:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact/merge@v4
+        with:
+          name: artifacts
+          pattern: moyoc-*
+
+  release:
+    if: ${{ ! inputs.dry_run }}
+    needs: [merge-artifacts]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: artifacts
+          path: artifacts
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: moyoc ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref, 'rc') }}
+          files: artifacts/moyoc-*
+          fail_on_unmatched_files: true
