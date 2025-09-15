@@ -1,0 +1,100 @@
+name: Python Release CI
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      dry_run:
+        description: 'If true, release wheels'
+        required: true
+        type: boolean
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  wheel:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            system: linux
+            target: x86_64
+          - os: ubuntu-latest
+            system: linux
+            target: aarch64
+          - os: macos-latest
+            system: darwin
+            target: x86_64
+          - os: macos-latest
+            system: darwin
+            target: aarch64
+          - os: windows-latest
+            system: windows
+            target: x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist --manifest-path moyopy/Cargo.toml
+          sccache: 'true'
+          manylinux: auto
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: pypi-${{ matrix.target }}-${{ matrix.system }}
+          path: dist
+
+  sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist --manifest-path moyopy/Cargo.toml
+      - name: Upload sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: pypi-sdist
+          path: dist
+
+  release:
+    if: ${{ ! inputs.dry_run }}
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [wheel, sdist]
+    environment: release
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: pypi-*
+          merge-multiple: true
+          path: dist
+      - name: Publish package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          attestations: false
+          verbose: true
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          attestations: false
+          verbose: true
