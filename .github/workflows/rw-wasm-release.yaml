@@ -5,7 +5,7 @@ on:
   workflow_call:
     inputs:
       dry_run:
-        description: 'If true, release binaries'
+        description: 'If true, perform a dry run without publishing'
         required: true
         type: boolean
 
