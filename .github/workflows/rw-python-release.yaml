@@ -5,7 +5,7 @@ on:
   workflow_call:
     inputs:
       dry_run:
-        description: 'If true, release wheels'
+        description: 'If true, perform a dry run without releasing'
         required: true
         type: boolean
 
