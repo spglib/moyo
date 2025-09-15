@@ -14,8 +14,6 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.ref }}
       - uses: softprops/action-gh-release@v2
         with:
           name: moyo ${{ github.ref_name }}
