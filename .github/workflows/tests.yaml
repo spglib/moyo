@@ -42,6 +42,7 @@ jobs:
 
   pass:
     if: always()
+    name: ✅ Pass tests
     needs: [rust, python, c]
     runs-on: ubuntu-latest
     steps:
