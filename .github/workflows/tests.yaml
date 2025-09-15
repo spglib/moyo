@@ -39,3 +39,15 @@ jobs:
     needs: path-filter
     if: ${{ needs.path-filter.outputs.c == 'true' }}
     uses: ./.github/workflows/rw-c-tests.yaml
+
+  pass:
+    if: always()
+    needs: [rust, python, c]
+    runs-on: ubuntu-latest
+    steps:
+      - if: needs.rust.result == 'failure'
+        run: exit 1
+      - if: needs.python.result == 'failure'
+        run: exit 1
+      - if: needs.c.result == 'failure'
+        run: exit 1
