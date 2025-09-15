@@ -1,10 +1,13 @@
 name: Publish moyo-wasm to npm
 
 on:
-  push:
-    tags:
-      - v*
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      dry_run:
+        description: 'If true, perform a dry run without publishing'
+        required: true
+        type: boolean
 
 jobs:
   build-and-publish:
@@ -25,7 +28,7 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
-        run: cargo install wasm-pack
+        uses: taiki-e/install-action@wasm-pack
 
       - name: Install test dependencies
         working-directory: moyo-wasm

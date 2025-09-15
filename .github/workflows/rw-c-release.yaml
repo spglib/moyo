@@ -1,34 +1,15 @@
-name: C binding CI
+name: C Release CI
 
 on:
-  push:
-    branches: [main]
-    tags:
-      - '*'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'moyoc/**'
-      - '.github/workflows/ci-c.yaml'
   workflow_dispatch:
-
-permissions:
-  contents: read
+  workflow_call:
+    inputs:
+      dry_run:
+        description: 'If true, perform a dry run without releasing'
+        required: true
+        type: boolean
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: Swatinem/rust-cache@v2
-      - uses: cargo-bins/cargo-binstall@main
-      - name: Install cbindgen
-        run: cargo binstall cbindgen --locked --no-confirm
-      - name: Run tests
-        run: |
-          set -e
-          cd moyoc && make tests
-
   build:
     strategy:
       fail-fast: false
@@ -70,14 +51,3 @@ jobs:
           name: moyoc-${{ matrix.target }}
           path: moyoc/dist/moyoc-*-${{ matrix.target }}.*
           if-no-files-found: error
-
-  pass:
-    name: ✅ Pass ci-c
-    needs: [test, build]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check all CI jobs
-        uses: re-actors/alls-green@release/v1
-        with:
-          jobs: ${{ toJSON(needs) }}
-    if: always()

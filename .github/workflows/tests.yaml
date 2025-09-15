@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  path-filter:
+    runs-on: ubuntu-latest
+    outputs:
+      rust: ${{ steps.filter.outputs.rust }}
+      python: ${{ steps.filter.outputs.python }}
+      c: ${{ steps.filter.outputs.c }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Filter paths
+        id: filter
+        uses: dorny/paths-filter@v2
+        with:
+          filters: .github/filters.yaml
+
+  rust:
+    needs: path-filter
+    if: ${{ needs.path-filter.outputs.rust == 'true' }}
+    uses: ./.github/workflows/rw-rust-tests.yaml
+
+  python:
+    needs: path-filter
+    if: ${{ needs.path-filter.outputs.python == 'true' }}
+    uses: ./.github/workflows/rw-python-tests.yaml
+    permissions:
+      id-token: write
+      contents: write
+
+  c:
+    needs: path-filter
+    if: ${{ needs.path-filter.outputs.c == 'true' }}
+    uses: ./.github/workflows/rw-c-tests.yaml

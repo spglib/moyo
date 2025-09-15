@@ -1,0 +1,15 @@
+rust:
+  # All Rust packages in the workspace
+  - 'moyo/**'
+  - '.github/workflows/rw-rust-*.yaml'
+  - '**/Cargo.toml'
+  - '**/*.rs'
+python:
+  - 'moyopy/**'
+  - '.github/workflows/rw-python-*.yaml'
+c:
+  - 'moyoc/**'
+  - '.github/workflows/rw-c-*.yaml'
+wasm:
+  - 'moyo-wasm/**'
+  - '.github/workflows/rw-wasm-*.yaml'
