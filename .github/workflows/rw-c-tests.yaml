@@ -20,14 +20,3 @@ jobs:
         run: |
           set -e
           cd moyoc && make tests
-
-  pass:
-    name: ✅ Pass ci-c
-    needs: [test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check all CI jobs
-        uses: re-actors/alls-green@release/v1
-        with:
-          jobs: ${{ toJSON(needs) }}
-    if: always()
