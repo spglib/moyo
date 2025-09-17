@@ -72,9 +72,8 @@ jobs:
         with:
           name: artifacts
           path: artifacts
-      - uses: softprops/action-gh-release@v2
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
         with:
-          name: moyoc ${{ github.ref_name }}
-          prerelease: ${{ contains(github.ref, 'rc') }}
           files: artifacts/moyoc-*
           fail_on_unmatched_files: true
