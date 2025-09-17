@@ -22,6 +22,7 @@ A fast and robust crystal symmetry finder, written in Rust.
 - [Rust](moyo/README.md): core implementation
 - [Python](moyopy/README.md): Python binding
 - [C](moyoc/README.md): C binding
+- [JavaScript](moyo-wasm/README.md): JavaScript and WebAssembly binding
 
 ## Dev
 
