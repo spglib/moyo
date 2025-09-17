@@ -7,8 +7,8 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 include(FetchContent)
 FetchContent_Declare(
     moyoc
-    URL      https://github.com/spglib/moyo/releases/download/v0.4.7/moyoc-0.4.7-aarch64-apple-darwin.tar.gz
-    URL_HASH SHA256=c792df87fabf620ca5e473fb6db99d345656da94031426292173a589a089d72f
+    URL      https://github.com/spglib/moyo/releases/download/v0.4.8/moyoc-0.4.8-aarch64-apple-darwin.tar.gz
+    URL_HASH SHA256=2eccd32ec7f4c33088b2d0d2c18731d3b920a1a57948948a4b97b0bdabedbd8f
 )
 FetchContent_MakeAvailable(moyoc)
 
