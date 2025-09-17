@@ -19,18 +19,19 @@
       "matchManagers": ["npm"]
     },
     {
+      "description": "Automerge patch updates",
       "matchUpdateTypes": ["patch"],
       "automerge": true,
       "platformAutomerge": true
     }
   ],
-  "pre-commit": {
-    "enabled": true
-  },
+  "pre-commit": { "enabled": true },
+  "lockFileMaintenance": { "enabled": true },
   "separateMultipleMajor": true,
   "extends": [
     "config:recommended",
     "schedule:weekly",
-    ":semanticCommitTypeAll(chore)"
+    ":semanticCommitTypeAll(chore)",
+    ":label(renovate)"
   ]
 }
