@@ -23,6 +23,8 @@ jobs:
   python:
     name: Python Release
     uses: ./.github/workflows/rw-python-release.yaml
+    permissions:
+      id-token: write
     with:
       dry_run: ${{ ! startsWith(github.ref, 'refs/tags/') }}
 
