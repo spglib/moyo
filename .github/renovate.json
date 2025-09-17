@@ -1,12 +1,36 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "dependencyDashboard": true,
+  "packageRules": [
+    {
+      "groupName": "CI and devDependencies",
+      "matchManagers": ["github-actions", "pre-commit"]
+    },
+    {
+      "groupName": "cargo",
+      "matchManagers": ["cargo"]
+    },
+    {
+      "groupName": "python",
+      "matchManagers": ["pep621"]
+    },
+    {
+      "groupName": "wasm",
+      "matchManagers": ["npm"]
+    },
+    {
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "platformAutomerge": true
+    }
+  ],
   "pre-commit": {
     "enabled": true
   },
   "separateMultipleMajor": true,
   "extends": [
     "config:recommended",
-    "schedule:weekly"
+    "schedule:weekly",
+    ":semanticCommitTypeAll(chore)"
   ]
 }
