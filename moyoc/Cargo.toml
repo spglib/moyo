@@ -15,7 +15,7 @@ name = "moyoc"
 crate-type = ["cdylib"]
 
 [dependencies]
-moyo = { path = "../moyo", version = "0.4.7" }
+moyo = { path = "../moyo", version = "0.4.8" }
 nalgebra.workspace = true
 serde.workspace = true
 serde_json.workspace = true
