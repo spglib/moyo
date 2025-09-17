@@ -25,6 +25,7 @@ jobs:
   python:
     name: Python Release
     uses: ./.github/workflows/rw-python-release.yaml
+    secrets: inherit
     with:
       dry_run: ${{ ! startsWith(github.ref, 'refs/tags/') }}
 
@@ -37,5 +38,6 @@ jobs:
   wasm:
     name: WASM Release
     uses: ./.github/workflows/rw-wasm-release.yaml
+    secrets: inherit
     with:
       dry_run: ${{ ! startsWith(github.ref, 'refs/tags/') }}
