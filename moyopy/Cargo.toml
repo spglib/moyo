@@ -22,10 +22,10 @@ serde.workspace = true
 serde_json.workspace = true
 approx.workspace = true
 log.workspace = true
-pyo3-log = "0.12"
-pythonize = "0.24"
+pyo3-log = "0.13"
+pythonize = "0.26"
 
 
 [dependencies.pyo3]
-version = "0.24"
+version = "0.26"
 features = ["abi3-py39"]
