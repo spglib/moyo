@@ -43,7 +43,7 @@ impl From<&MoyoOperations> for Operations {
         };
         rotations
             .into_iter()
-            .zip(translations.into_iter())
+            .zip(translations)
             .map(|(r, t)| Operation {
                 rotation: r,
                 translation: t,
@@ -57,13 +57,13 @@ pub extern "C" fn free_moyo_operations(operations: MoyoOperations) {
     unsafe {
         let _ = Vec::from_raw_parts(
             operations.rotations as *mut [[i32; 3]; 3],
-            operations.num_operations as usize,
-            operations.num_operations as usize,
+            operations.num_operations,
+            operations.num_operations,
         );
         let _ = Vec::from_raw_parts(
             operations.translations as *mut [f64; 3],
-            operations.num_operations as usize,
-            operations.num_operations as usize,
+            operations.num_operations,
+            operations.num_operations,
         );
     }
 }

@@ -159,7 +159,7 @@ fn match_with_point_group(
             rotation_types.to_vec(),
             other_prim_generators,
         ) {
-            if let Some(prim_trans_mat) = iter_unimodular_trans_mat(trans_mat_basis).nth(0) {
+            if let Some(prim_trans_mat) = iter_unimodular_trans_mat(trans_mat_basis).next() {
                 return Ok(PointGroup {
                     arithmetic_number: entry.arithmetic_number,
                     prim_trans_mat,
@@ -286,9 +286,9 @@ pub fn iter_unimodular_trans_mat(
         .map(|_| -1..=1)
         .multi_cartesian_product();
     let iter_multi_2 = (0..trans_mat_basis.len())
-        .map(|_| -2..=2)
+        .map(|_| -2_i32..=2_i32)
         .multi_cartesian_product()
-        .filter(|comb| comb.iter().any(|&e| (e as i32).abs() == 2));
+        .filter(|comb| comb.iter().any(|&e| e.abs() == 2));
 
     iter_multi_1.chain(iter_multi_2).filter_map(move |comb| {
         // prim_trans_mat: self -> DB(primitive)

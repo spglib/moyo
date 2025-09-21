@@ -21,10 +21,7 @@ impl PyPointGroup {
         prim_rotations: Vec<[[i32; 3]; 3]>,
         basis: Option<[[f64; 3]; 3]>,
     ) -> Result<Self, PyMoyoError> {
-        let prim_rotations = prim_rotations
-            .iter()
-            .map(|x| to_matrix3(x))
-            .collect::<Vec<_>>();
+        let prim_rotations = prim_rotations.iter().map(to_matrix3).collect::<Vec<_>>();
         let point_group = if let Some(basis) = basis {
             let lattice = Lattice::from_basis(basis);
             PointGroup::from_lattice(&lattice, &prim_rotations)?

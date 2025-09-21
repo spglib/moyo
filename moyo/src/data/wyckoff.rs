@@ -119,7 +119,7 @@ pub fn iter_wyckoff_positions(
         .filter(move |wp| wp.hall_number == hall_number && wp.multiplicity == multiplicity)
 }
 
-const WYCKOFF_DATABASE: [WyckoffPosition; 3467] = [
+static WYCKOFF_DATABASE: [WyckoffPosition; 3467] = [
     WyckoffPosition::new(1, 1, 'a', "1", "x,y,z"),
     WyckoffPosition::new(2, 2, 'i', "1", "x,y,z"),
     WyckoffPosition::new(2, 1, 'h', "-1", "1/2,1/2,1/2"),

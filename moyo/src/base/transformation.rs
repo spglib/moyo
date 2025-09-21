@@ -112,12 +112,9 @@ impl UnimodularTransformation {
         Cell::new(new_lattice, new_positions, cell.numbers.clone())
     }
 
-    pub fn transform_magnetic_moments<M: MagneticMoment>(
-        &self,
-        magnetic_moments: &Vec<M>,
-    ) -> Vec<M> {
+    pub fn transform_magnetic_moments<M: MagneticMoment>(&self, magnetic_moments: &[M]) -> Vec<M> {
         // Magnetic moments are not transformed
-        magnetic_moments.clone()
+        magnetic_moments.to_owned()
     }
 
     pub fn transform_magnetic_cell<M: MagneticMoment>(

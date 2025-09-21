@@ -48,7 +48,7 @@ impl PyCollinearMagneticCell {
         }
 
         let lattice = Lattice::from_basis(basis);
-        let positions = positions.iter().map(|x| to_vector3(x)).collect::<Vec<_>>();
+        let positions = positions.iter().map(to_vector3).collect::<Vec<_>>();
         let magnetic_moments = magnetic_moments.iter().map(|m| Collinear(*m)).collect();
         let magnetic_cell = MagneticCell::new(lattice, positions, numbers, magnetic_moments);
 
@@ -63,12 +63,7 @@ impl PyCollinearMagneticCell {
 
     #[getter]
     pub fn positions(&self) -> Vec<[f64; 3]> {
-        self.0
-            .cell
-            .positions
-            .iter()
-            .map(|x| to_3_slice(x))
-            .collect()
+        self.0.cell.positions.iter().map(to_3_slice).collect()
     }
 
     #[getter]
@@ -110,7 +105,7 @@ impl PyCollinearMagneticCell {
     }
 
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let obj = pythonize(py, &self.0).expect("Python object conversion should not fail");
             obj.into_py_any(py)
         })
@@ -118,7 +113,7 @@ impl PyCollinearMagneticCell {
 
     #[classmethod]
     pub fn from_dict(_cls: &Bound<'_, PyType>, obj: &Bound<'_, PyAny>) -> PyResult<Self> {
-        Python::with_gil(|_| {
+        Python::attach(|_| {
             depythonize::<Self>(obj).map_err(|e| {
                 PyErr::new::<PyValueError, _>(format!("Deserialization failed: {}", e))
             })
@@ -165,7 +160,7 @@ impl PyNonCollinearMagneticCell {
         }
 
         let lattice = Lattice::from_basis(basis);
-        let positions = positions.iter().map(|x| to_vector3(x)).collect::<Vec<_>>();
+        let positions = positions.iter().map(to_vector3).collect::<Vec<_>>();
         let magnetic_moments = magnetic_moments
             .iter()
             .map(|m| NonCollinear(to_vector3(m)))
@@ -183,12 +178,7 @@ impl PyNonCollinearMagneticCell {
 
     #[getter]
     pub fn positions(&self) -> Vec<[f64; 3]> {
-        self.0
-            .cell
-            .positions
-            .iter()
-            .map(|x| to_3_slice(x))
-            .collect()
+        self.0.cell.positions.iter().map(to_3_slice).collect()
     }
 
     #[getter]
@@ -234,7 +224,7 @@ impl PyNonCollinearMagneticCell {
     }
 
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let obj = pythonize(py, &self.0).expect("Python object conversion should not fail");
             obj.into_py_any(py)
         })
@@ -242,7 +232,7 @@ impl PyNonCollinearMagneticCell {
 
     #[classmethod]
     pub fn from_dict(_cls: &Bound<'_, PyType>, obj: &Bound<'_, PyAny>) -> PyResult<Self> {
-        Python::with_gil(|_| {
+        Python::attach(|_| {
             depythonize::<Self>(obj).map_err(|e| {
                 PyErr::new::<PyValueError, _>(format!("Deserialization failed: {}", e))
             })

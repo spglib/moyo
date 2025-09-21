@@ -242,11 +242,10 @@ impl MagneticHallSymbol {
 
 /// Tokenize string by whitespaces
 fn tokenize(hall_symbol: &str) -> Vec<&str> {
-    let tokens = hall_symbol
+    hall_symbol
         .split_whitespace()
         .filter(|s| !s.is_empty())
-        .collect();
-    tokens
+        .collect()
 }
 
 #[allow(clippy::type_complexity)]

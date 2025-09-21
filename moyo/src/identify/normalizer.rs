@@ -3,10 +3,10 @@ use super::rotation_type::identify_rotation_type;
 use super::space_group::match_origin_shift;
 use crate::base::{Operations, UnimodularTransformation, project_rotations};
 
+///
 /// Return integral normalizer of the point group representative up to its centralizer.
-
+///
 /// Integral normalizers for all arithmetic point groups up to their centralizers.
-
 /// Generate integral normalizer of the given space group up to its centralizer.
 /// Because the factor group of the integral normalizer by the centralizer is isomorphic to a finite permutation group, the output is guaranteed to be finite.
 pub fn integral_normalizer(
