@@ -8,6 +8,7 @@
     },
     {
       "groupName": "cargo",
+      "matchJsonata": ["isBreaking != true"],
       "matchManagers": ["cargo"]
     },
     {
@@ -16,6 +17,7 @@
     },
     {
       "groupName": "wasm",
+      "matchJsonata": ["isBreaking != true"],
       "matchManagers": ["npm"]
     },
     {
