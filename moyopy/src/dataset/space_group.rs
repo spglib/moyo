@@ -1,13 +1,13 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyType;
-use pyo3::{prelude::*, IntoPyObjectExt};
+use pyo3::{IntoPyObjectExt, prelude::*};
 use pythonize::{depythonize, pythonize};
 use serde::{Deserialize, Serialize};
 
+use moyo::MoyoDataset;
 use moyo::base::AngleTolerance;
 use moyo::data::Setting;
 use moyo::utils::{to_3_slice, to_3x3_slice};
-use moyo::MoyoDataset;
 
 use crate::base::{PyMoyoError, PyOperations, PyStructure};
 use crate::data::PySetting;

@@ -1,6 +1,6 @@
 use super::hall_symbol_database::HallNumber;
 use super::magnetic_space_group::{
-    get_magnetic_space_group_type, ConstructType, UNINumber, NUM_MAGNETIC_SPACE_GROUP_TYPES,
+    ConstructType, NUM_MAGNETIC_SPACE_GROUP_TYPES, UNINumber, get_magnetic_space_group_type,
 };
 use super::setting::Setting;
 

@@ -6,10 +6,10 @@ use crate::base::{
     MagneticCell, MagneticMoment, MoyoError, Operations, Permutation, RotationMagneticMomentAction,
     Transformation, UnimodularTransformation,
 };
-use crate::data::{get_magnetic_space_group_type, ConstructType};
+use crate::data::{ConstructType, get_magnetic_space_group_type};
 use crate::identify::{
-    family_space_group_from_magnetic_space_group,
-    primitive_maximal_space_subgroup_from_magnetic_space_group, MagneticSpaceGroup,
+    MagneticSpaceGroup, family_space_group_from_magnetic_space_group,
+    primitive_maximal_space_subgroup_from_magnetic_space_group,
 };
 use crate::search::{PrimitiveMagneticCell, PrimitiveMagneticSymmetrySearch};
 

@@ -43,7 +43,7 @@ impl From<&MoyoCell> for Cell {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn free_moyo_cell(cell: MoyoCell) {
     unsafe {
         let _ = Vec::from_raw_parts(

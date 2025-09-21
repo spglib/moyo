@@ -2,7 +2,7 @@ use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
 use moyo::data::{
-    get_magnetic_space_group_type, ConstructType, MagneticSpaceGroupType, Number, UNINumber,
+    ConstructType, MagneticSpaceGroupType, Number, UNINumber, get_magnetic_space_group_type,
 };
 
 #[derive(Debug, Clone)]

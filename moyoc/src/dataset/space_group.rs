@@ -1,12 +1,12 @@
 use core::ffi::c_char;
 use std::ffi::CString;
 
+use moyo::MoyoDataset as Dataset;
 use moyo::base::{AngleTolerance, Cell};
 use moyo::data::Setting;
 use moyo::utils::{to_3_slice, to_3x3_slice};
-use moyo::MoyoDataset as Dataset;
 
-use crate::base::{free_moyo_cell, free_moyo_operations, MoyoCell, MoyoOperations};
+use crate::base::{MoyoCell, MoyoOperations, free_moyo_cell, free_moyo_operations};
 use crate::data::MoyoSetting;
 
 #[derive(Debug, Clone)]
@@ -130,7 +130,7 @@ impl From<Dataset> for MoyoDataset {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 /// Create a dataset from the given cell.
 /// hall_number: -1 means None
 pub extern "C" fn moyo_dataset(
@@ -178,7 +178,7 @@ pub extern "C" fn moyo_dataset(
     dataset_ptr
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn free_moyo_dataset(dataset: *mut MoyoDataset) {
     if dataset.is_null() {
         return;

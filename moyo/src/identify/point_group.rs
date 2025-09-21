@@ -5,14 +5,14 @@ use log::debug;
 use nalgebra::Matrix3;
 use serde::{Deserialize, Serialize};
 
-use super::rotation_type::{identify_rotation_type, RotationType};
+use super::rotation_type::{RotationType, identify_rotation_type};
 use crate::base::{
-    project_rotations, Lattice, MoyoError, Operation, Rotations, Translation, UnimodularLinear,
-    UnimodularTransformation,
+    Lattice, MoyoError, Operation, Rotations, Translation, UnimodularLinear,
+    UnimodularTransformation, project_rotations,
 };
 use crate::data::{
-    iter_arithmetic_crystal_entry, ArithmeticNumber, Centering, CrystalSystem,
-    GeometricCrystalClass, PointGroupRepresentative,
+    ArithmeticNumber, Centering, CrystalSystem, GeometricCrystalClass, PointGroupRepresentative,
+    iter_arithmetic_crystal_entry,
 };
 use crate::math::sylvester3;
 
@@ -297,11 +297,7 @@ pub fn iter_unimodular_trans_mat(
             prim_trans_mat += comb[i] * matrix;
         }
         let det = prim_trans_mat.map(|e| e as f64).determinant().round() as i32;
-        if det == 1 {
-            Some(prim_trans_mat)
-        } else {
-            None
-        }
+        if det == 1 { Some(prim_trans_mat) } else { None }
     })
 }
 

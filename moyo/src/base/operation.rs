@@ -176,7 +176,7 @@ mod tests {
     use test_log::test;
 
     use super::*;
-    use crate::base::{lattice::Lattice, Operation};
+    use crate::base::{Operation, lattice::Lattice};
 
     #[test]
     fn test_cartesian_rotations() {

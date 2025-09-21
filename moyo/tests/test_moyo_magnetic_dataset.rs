@@ -1,13 +1,13 @@
 #[macro_use]
 extern crate approx;
 
-use nalgebra::{matrix, vector, Matrix3};
+use nalgebra::{Matrix3, matrix, vector};
 use test_log::test;
 
+use moyo::MoyoMagneticDataset;
 use moyo::base::{
     AngleTolerance, Collinear, Lattice, MagneticCell, MagneticMoment, RotationMagneticMomentAction,
 };
-use moyo::MoyoMagneticDataset;
 
 /// Sanity-check MoyoMagneticDataset
 fn assert_magnetic_dataset<M: MagneticMoment>(

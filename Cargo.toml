@@ -12,7 +12,7 @@ resolver = "2"
 [workspace.package]
 authors = ["Kohei Shinohara <kshinohara0508@gmail.com>"]
 description = "Library for Crystal Symmetry in Rust"
-edition = "2021"
+edition = "2024"
 version = "0.4.8"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/spglib/moyo"

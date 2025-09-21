@@ -231,8 +231,8 @@ mod tests {
     use crate::base::{Cell, Lattice, Permutation, Rotation, Translation};
 
     use super::{
-        pivot_site_indices, solve_correspondence, solve_correspondence_naive,
-        symmetrize_translation_from_permutation, PeriodicKdTree,
+        PeriodicKdTree, pivot_site_indices, solve_correspondence, solve_correspondence_naive,
+        symmetrize_translation_from_permutation,
     };
 
     #[test]

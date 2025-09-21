@@ -108,10 +108,10 @@ where
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::{matrix, SMatrix};
+    use nalgebra::{SMatrix, matrix};
+    use rand::SeedableRng;
     use rand::prelude::*;
     use rand::rngs::StdRng;
-    use rand::SeedableRng;
 
     use super::SNF;
 

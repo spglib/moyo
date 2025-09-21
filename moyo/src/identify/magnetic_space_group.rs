@@ -5,14 +5,14 @@ use log::debug;
 use super::normalizer::integral_normalizer;
 use super::point_group::{iter_trans_mat_basis, iter_unimodular_trans_mat};
 use super::rotation_type::identify_rotation_type;
-use super::space_group::{match_origin_shift, SpaceGroup};
+use super::space_group::{SpaceGroup, match_origin_shift};
 use crate::base::{
-    project_rotations, MagneticOperations, MoyoError, Operation, Operations, Rotation, Translation,
-    UnimodularTransformation,
+    MagneticOperations, MoyoError, Operation, Operations, Rotation, Translation,
+    UnimodularTransformation, project_rotations,
 };
 use crate::data::{
-    get_magnetic_space_group_type, hall_symbol_entry, magnetic_hall_symbol_entry, uni_number_range,
     ConstructType, HallSymbol, MagneticHallSymbol, MagneticHallSymbolEntry, Setting, UNINumber,
+    get_magnetic_space_group_type, hall_symbol_entry, magnetic_hall_symbol_entry, uni_number_range,
 };
 
 #[derive(Debug)]
@@ -358,7 +358,7 @@ mod tests {
 
     use super::*;
     use crate::data::{
-        magnetic_hall_symbol_entry, MagneticHallSymbol, NUM_MAGNETIC_SPACE_GROUP_TYPES,
+        MagneticHallSymbol, NUM_MAGNETIC_SPACE_GROUP_TYPES, magnetic_hall_symbol_entry,
     };
 
     fn get_prim_mag_operations(uni_number: UNINumber) -> MagneticOperations {

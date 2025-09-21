@@ -1,4 +1,4 @@
-use nalgebra::{matrix, Matrix3};
+use nalgebra::{Matrix3, matrix};
 
 use super::cycle_checker::CycleChecker;
 
@@ -390,11 +390,11 @@ fn sign(x: f64) -> i32 {
 #[cfg(test)]
 mod tests {
     use nalgebra::Matrix3;
+    use rand::SeedableRng;
     use rand::prelude::*;
     use rand::rngs::StdRng;
-    use rand::SeedableRng;
 
-    use super::{is_niggli_reduced, matrix, niggli_reduce, sign, NiggliParameters, EPS};
+    use super::{EPS, NiggliParameters, is_niggli_reduced, matrix, niggli_reduce, sign};
 
     #[test]
     fn test_sign() {

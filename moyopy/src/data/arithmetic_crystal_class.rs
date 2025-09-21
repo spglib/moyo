@@ -2,7 +2,7 @@ use pyo3::prelude::*;
 
 use crate::base::PyMoyoError;
 use moyo::base::MoyoError;
-use moyo::data::{arithmetic_crystal_class_entry, ArithmeticNumber};
+use moyo::data::{ArithmeticNumber, arithmetic_crystal_class_entry};
 
 #[derive(Debug, Clone)]
 #[pyclass(name = "ArithmeticCrystalClass", frozen)]

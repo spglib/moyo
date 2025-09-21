@@ -1,11 +1,11 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyType;
-use pyo3::{prelude::*, IntoPyObjectExt};
+use pyo3::{IntoPyObjectExt, prelude::*};
 use pythonize::{depythonize, pythonize};
 
+use moyo::MoyoMagneticDataset;
 use moyo::base::{AngleTolerance, Collinear, NonCollinear, RotationMagneticMomentAction};
 use moyo::utils::{to_3_slice, to_3x3_slice};
-use moyo::MoyoMagneticDataset;
 use serde::{Deserialize, Serialize};
 
 use crate::base::{

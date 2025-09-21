@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 
 use log::debug;
-use nalgebra::{Dyn, Matrix3, OMatrix, OVector, Vector3, U3};
+use nalgebra::{Dyn, Matrix3, OMatrix, OVector, U3, Vector3};
 
 use super::point_group::PointGroup;
 use crate::base::{
-    project_rotations, Lattice, MoyoError, Operations, OriginShift, UnimodularLinear,
-    UnimodularTransformation,
+    Lattice, MoyoError, Operations, OriginShift, UnimodularLinear, UnimodularTransformation,
+    project_rotations,
 };
 use crate::data::{
-    arithmetic_crystal_class_entry, hall_symbol_entry, ArithmeticNumber, GeometricCrystalClass,
-    HallNumber, HallSymbol, Number, PointGroupRepresentative, Setting,
+    ArithmeticNumber, GeometricCrystalClass, HallNumber, HallSymbol, Number,
+    PointGroupRepresentative, Setting, arithmetic_crystal_class_entry, hall_symbol_entry,
 };
 use crate::math::SNF;
 
@@ -276,14 +276,14 @@ pub fn solve_mod1(
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::{matrix, vector, Dyn, OMatrix, OVector, RowVector3, U3};
+    use nalgebra::{Dyn, OMatrix, OVector, RowVector3, U3, matrix, vector};
     use rstest::rstest;
     use std::collections::HashMap;
 
-    use crate::base::{UnimodularTransformation, EPS};
-    use crate::data::{hall_symbol_entry, HallSymbol, Setting};
+    use crate::base::{EPS, UnimodularTransformation};
+    use crate::data::{HallSymbol, Setting, hall_symbol_entry};
 
-    use super::{correction_transformation_matrices, solve_mod1, SpaceGroup};
+    use super::{SpaceGroup, correction_transformation_matrices, solve_mod1};
 
     #[test]
     fn test_solve_mod1() {

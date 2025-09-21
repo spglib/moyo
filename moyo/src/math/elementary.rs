@@ -45,7 +45,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::{matrix, U3};
+    use nalgebra::{U3, matrix};
 
     use super::{adding_column_matrix, changing_column_sign_matrix, swapping_column_matrix};
 

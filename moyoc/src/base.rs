@@ -1,5 +1,5 @@
 mod cell;
 mod operation;
 
-pub use cell::{free_moyo_cell, MoyoCell};
-pub use operation::{free_moyo_operations, MoyoOperations};
+pub use cell::{MoyoCell, free_moyo_cell};
+pub use operation::{MoyoOperations, free_moyo_operations};

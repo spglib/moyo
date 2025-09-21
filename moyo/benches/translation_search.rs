@@ -1,9 +1,9 @@
-use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
 
 use nalgebra::{matrix, vector};
 
 use moyo::base::{Cell, Lattice, Position};
-use moyo::search::{solve_correspondence, solve_correspondence_naive, PeriodicKdTree};
+use moyo::search::{PeriodicKdTree, solve_correspondence, solve_correspondence_naive};
 
 /// O(num_atoms^3)
 fn naive(reduced_cell: &Cell) {

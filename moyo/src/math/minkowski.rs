@@ -1,7 +1,7 @@
 use itertools::Itertools;
 use nalgebra::allocator::Allocator;
 use nalgebra::{
-    DMatrix, DVector, DefaultAllocator, Dim, DimName, Matrix3, OMatrix, OVector, Vector3, U3,
+    DMatrix, DVector, DefaultAllocator, Dim, DimName, Matrix3, OMatrix, OVector, U3, Vector3,
 };
 
 use super::cycle_checker::CycleChecker;
@@ -150,9 +150,9 @@ pub fn is_minkowski_reduced(basis: &Matrix3<f64>) -> bool {
 #[cfg(test)]
 mod tests {
     use nalgebra::{Matrix3, Vector3};
+    use rand::SeedableRng;
     use rand::prelude::*;
     use rand::rngs::StdRng;
-    use rand::SeedableRng;
 
     use super::{is_minkowski_reduced, minkowski_reduce};
 

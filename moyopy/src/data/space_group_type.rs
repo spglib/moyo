@@ -2,8 +2,8 @@ use pyo3::prelude::*;
 
 use moyo::base::MoyoError;
 use moyo::data::{
-    arithmetic_crystal_class_entry, hall_symbol_entry, ArithmeticNumber, CrystalFamily,
-    CrystalSystem, LatticeSystem, Number, Setting,
+    ArithmeticNumber, CrystalFamily, CrystalSystem, LatticeSystem, Number, Setting,
+    arithmetic_crystal_class_entry, hall_symbol_entry,
 };
 
 use crate::base::PyMoyoError;

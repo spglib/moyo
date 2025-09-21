@@ -2,7 +2,7 @@ use pyo3::prelude::*;
 
 use crate::base::PyMoyoError;
 use moyo::base::MoyoError;
-use moyo::data::{hall_symbol_entry, ArithmeticNumber, HallNumber, HallSymbolEntry, Number};
+use moyo::data::{ArithmeticNumber, HallNumber, HallSymbolEntry, Number, hall_symbol_entry};
 
 use super::centering::PyCentering;
 
