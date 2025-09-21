@@ -28,7 +28,7 @@ jobs:
     - uses: Swatinem/rust-cache@v2
     - uses: EmbarkStudios/cargo-deny-action@v1
       with:
-        rust-version: 1.83.0
+        rust-version: 1.85.0  # edition 2024
 
   pass:
     name: ✅ Pass checks
