@@ -58,7 +58,7 @@ pub fn hall_symbol_entry(hall_number: HallNumber) -> Option<HallSymbolEntry> {
         .cloned()
 }
 
-const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
+static HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
     HallSymbolEntry::new(1, 1, 1, "", "P 1", "P 1", "P 1", Centering::P),
     HallSymbolEntry::new(2, 2, 2, "", "-P 1", "P -1", "P -1", Centering::P),
     HallSymbolEntry::new(3, 3, 3, "b", "P 2y", "P 2", "P 1 2 1", Centering::P),

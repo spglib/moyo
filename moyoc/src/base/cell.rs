@@ -39,7 +39,7 @@ impl From<&MoyoCell> for Cell {
         };
         let numbers =
             unsafe { std::slice::from_raw_parts(cell.numbers, cell.num_atoms as usize).to_vec() };
-        Cell::new(lattice.into(), positions, numbers)
+        Cell::new(lattice, positions, numbers)
     }
 }
 

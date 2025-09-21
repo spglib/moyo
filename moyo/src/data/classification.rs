@@ -47,6 +47,7 @@ pub enum GeometricCrystalClass {
     Oh, // m-3m
 }
 
+#[allow(clippy::to_string_trait_impl)]
 impl ToString for GeometricCrystalClass {
     fn to_string(&self) -> String {
         match self {
@@ -201,6 +202,7 @@ impl CrystalSystem {
     }
 }
 
+#[allow(clippy::to_string_trait_impl)]
 impl ToString for CrystalSystem {
     fn to_string(&self) -> String {
         match self {
@@ -245,6 +247,7 @@ pub enum BravaisClass {
     cI,
 }
 
+#[allow(clippy::to_string_trait_impl)]
 impl ToString for BravaisClass {
     fn to_string(&self) -> String {
         match self {
@@ -301,6 +304,7 @@ impl LatticeSystem {
     }
 }
 
+#[allow(clippy::to_string_trait_impl)]
 impl ToString for LatticeSystem {
     fn to_string(&self) -> String {
         match self {
@@ -355,6 +359,7 @@ impl CrystalFamily {
     }
 }
 
+#[allow(clippy::to_string_trait_impl)]
 impl ToString for CrystalFamily {
     fn to_string(&self) -> String {
         match self {

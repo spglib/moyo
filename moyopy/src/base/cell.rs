@@ -30,7 +30,7 @@ impl PyStructure {
         }
 
         let lattice = Lattice::from_basis(basis);
-        let positions = positions.iter().map(|x| to_vector3(x)).collect::<Vec<_>>();
+        let positions = positions.iter().map(to_vector3).collect::<Vec<_>>();
         let cell = Cell::new(lattice, positions, numbers);
 
         Ok(Self(cell))
@@ -44,7 +44,7 @@ impl PyStructure {
 
     #[getter]
     pub fn positions(&self) -> Vec<[f64; 3]> {
-        self.0.positions.iter().map(|x| to_3_slice(x)).collect()
+        self.0.positions.iter().map(to_3_slice).collect()
     }
 
     #[getter]
@@ -81,7 +81,7 @@ impl PyStructure {
     }
 
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let obj = pythonize(py, &self.0).expect("Python object conversion should not fail");
             obj.into_py_any(py)
         })
@@ -89,7 +89,7 @@ impl PyStructure {
 
     #[classmethod]
     pub fn from_dict(_cls: &Bound<'_, PyType>, obj: &Bound<'_, PyAny>) -> PyResult<Self> {
-        Python::with_gil(|_| {
+        Python::attach(|_| {
             depythonize::<Self>(obj).map_err(|e| {
                 PyErr::new::<PyValueError, _>(format!("Deserialization failed: {}", e))
             })

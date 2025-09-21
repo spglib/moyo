@@ -176,7 +176,7 @@ impl PyMoyoCollinearMagneticDataset {
     }
 
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let obj = pythonize(py, &self.0).expect("Python object conversion should not fail");
             obj.into_py_any(py)
         })
@@ -184,7 +184,7 @@ impl PyMoyoCollinearMagneticDataset {
 
     #[classmethod]
     pub fn from_dict(_cls: &Bound<'_, PyType>, obj: &Bound<'_, PyAny>) -> PyResult<Self> {
-        Python::with_gil(|_| {
+        Python::attach(|_| {
             depythonize::<Self>(obj).map_err(|e| {
                 PyErr::new::<PyValueError, _>(format!("Deserialization failed: {}", e))
             })
@@ -356,7 +356,7 @@ impl PyMoyoNonCollinearMagneticDataset {
     }
 
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
-        Python::with_gil(|py| {
+        Python::attach(|py| {
             let obj = pythonize(py, &self.0).expect("Python object conversion should not fail");
             obj.into_py_any(py)
         })
@@ -364,7 +364,7 @@ impl PyMoyoNonCollinearMagneticDataset {
 
     #[classmethod]
     pub fn from_dict(_cls: &Bound<'_, PyType>, obj: &Bound<'_, PyAny>) -> PyResult<Self> {
-        Python::with_gil(|_| {
+        Python::attach(|_| {
             depythonize::<Self>(obj).map_err(|e| {
                 PyErr::new::<PyValueError, _>(format!("Deserialization failed: {}", e))
             })

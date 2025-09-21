@@ -107,10 +107,10 @@ impl<M: MagneticMoment> StandardizedMagneticCell<M> {
     ) -> Result<Self, MoyoError> {
         // Symmetrize magnetic moments by magnetic space group
         let prim_std_magnetic_moments = Self::symmetrize_magnetic_moments(
-            &prim_std_magnetic_moments_tmp,
-            &cart_rotations,
-            &time_reversals,
-            &permutations,
+            prim_std_magnetic_moments_tmp,
+            cart_rotations,
+            time_reversals,
+            permutations,
             action,
         );
         let prim_std_mag_cell =
@@ -193,7 +193,7 @@ impl<M: MagneticMoment> StandardizedMagneticCell<M> {
                     time_reversals.iter()
                 ) {
                     let magmom = magnetic_moments[inv_perm.apply(i)].act_magnetic_operation(
-                        &cart_rotation,
+                        cart_rotation,
                         *time_reversal,
                         action,
                     );

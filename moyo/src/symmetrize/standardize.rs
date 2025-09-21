@@ -141,13 +141,13 @@ impl StandardizedCell {
             _ => (space_group.transformation.clone(), entry.centering.linear()),
         };
 
-        let prim_std_cell_tmp = prim_transformation.transform_cell(&prim_cell);
+        let prim_std_cell_tmp = prim_transformation.transform_cell(prim_cell);
 
         // Symmetrize positions of prim_std_cell by refined symmetry operations
         // Reorder permutations because prim_std_operations may have different order from symmetry_search.operations!
         let mut permutation_mapping = HashMap::new();
         let prim_rotations =
-            project_rotations(&prim_transformation.transform_operations(&prim_operations));
+            project_rotations(&prim_transformation.transform_operations(prim_operations));
         for (prim_rotation, permutation) in prim_rotations.iter().zip(prim_permutations.iter()) {
             permutation_mapping.insert(*prim_rotation, permutation.clone());
         }
@@ -170,7 +170,7 @@ impl StandardizedCell {
 
         // To (conventional) standardized cell
         let (std_cell, site_mapping) =
-            Transformation::from_linear(conv_trans_linear.clone()).transform_cell(&prim_std_cell);
+            Transformation::from_linear(conv_trans_linear).transform_cell(&prim_std_cell);
 
         // Symmetrize lattice
         let (_, rotation_matrix) =
@@ -294,20 +294,10 @@ fn standardize_triclinic_cell(lattice: &Lattice) -> UnimodularTransformation {
 
 static UNIMODULAR3_RANGE1: Lazy<Vec<UnimodularTransformation>> = Lazy::new(|| {
     (0..9)
-        .map(|_| -1..=1)
+        .map(|_| -1_i32..=1_i32)
         .multi_cartesian_product()
         .filter_map(|v| {
-            let mat = Matrix3::new(
-                v[0] as i32,
-                v[1] as i32,
-                v[2] as i32,
-                v[3] as i32,
-                v[4] as i32,
-                v[5] as i32,
-                v[6] as i32,
-                v[7] as i32,
-                v[8] as i32,
-            );
+            let mat = Matrix3::new(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]);
             let det = mat.map(|e| e as f64).determinant().round() as i32;
             if det == 1 {
                 Some(UnimodularTransformation::from_linear(mat))
@@ -364,14 +354,13 @@ fn standardize_monoclinic_conv_cell(
         candidate_conv_transformations.push((skewness, centering.linear() * trans_corr.linear));
     }
 
-    let refined_linear_std_prim_to_conv = candidate_conv_transformations
+    candidate_conv_transformations
         .into_iter()
         .min_by(|(skewness_lhs, _), (skewness_rhs, _)| {
             skewness_lhs.partial_cmp(skewness_rhs).unwrap()
         })
         .unwrap()
-        .1;
-    refined_linear_std_prim_to_conv
+        .1
 }
 
 fn assign_wyckoff_position(
@@ -395,9 +384,8 @@ fn assign_wyckoff_position(
         let snf = SNF::new(&space.linear);
 
         let iter_multi_1 = iproduct!(-1..=1, -1..=1, -1..=1);
-        let iter_multi_2 = iproduct!(-2..=2, -2..=2, -2..=2).filter(|&(n1, n2, n3)| {
-            (n1 as i32).abs() == 2 || (n2 as i32).abs() == 2 || (n3 as i32).abs() == 2
-        });
+        let iter_multi_2 = iproduct!(-2_i32..=2_i32, -2_i32..=2_i32, -2_i32..=2_i32)
+            .filter(|&(n1, n2, n3)| n1.abs() == 2 || n2.abs() == 2 || n3.abs() == 2);
 
         for offset in iter_multi_1.chain(iter_multi_2) {
             let offset = Vector3::new(offset.0 as f64, offset.1 as f64, offset.2 as f64);

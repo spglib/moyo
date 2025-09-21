@@ -168,14 +168,13 @@ pub extern "C" fn moyo_dataset(
     };
 
     let dataset = Dataset::new(&cell, symprec, angle_tolerance, setting);
-    let dataset_ptr = match dataset {
+    match dataset {
         Ok(dataset) => {
             let moyoc_dataset: MoyoDataset = dataset.into();
             Box::into_raw(Box::new(moyoc_dataset))
         }
         Err(_) => std::ptr::null_mut(),
-    };
-    dataset_ptr
+    }
 }
 
 #[unsafe(no_mangle)]

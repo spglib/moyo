@@ -56,7 +56,7 @@ impl MagneticSpaceGroup {
             }
 
             let entry = magnetic_hall_symbol_entry(uni_number).unwrap();
-            let mhs = MagneticHallSymbol::new(&entry.magnetic_hall_symbol)
+            let mhs = MagneticHallSymbol::new(entry.magnetic_hall_symbol)
                 .ok_or(MoyoError::MagneticSpaceGroupTypeIdentificationError)?;
             let db_prim_mag_operations = mhs.primitive_traverse();
             let (db_ref_prim_operations, db_ref_prim_generators) =
@@ -95,13 +95,7 @@ impl MagneticSpaceGroup {
                     let identity = Rotation::identity();
                     let original_anti_translation = prim_mag_operations
                         .iter()
-                        .filter_map(|mops| {
-                            if (mops.operation.rotation == identity) && mops.time_reversal {
-                                Some(mops)
-                            } else {
-                                None
-                            }
-                        })
+                        .filter(|mops| (mops.operation.rotation == identity) && mops.time_reversal)
                         .nth(0)
                         .unwrap();
                     let src_translation = std_ref_spg
@@ -112,13 +106,7 @@ impl MagneticSpaceGroup {
                     // TODO: refactor filtering anti-translation
                     let dst_translation = db_prim_mag_operations
                         .iter()
-                        .filter_map(|mops| {
-                            if (mops.operation.rotation == identity) && mops.time_reversal {
-                                Some(mops)
-                            } else {
-                                None
-                            }
-                        })
+                        .filter(|mops| (mops.operation.rotation == identity) && mops.time_reversal)
                         .nth(0)
                         .unwrap()
                         .operation
@@ -132,7 +120,7 @@ impl MagneticSpaceGroup {
                     ) {
                         let new_transformation = std_ref_spg.transformation.clone() * corr_trans;
                         let new_prim_mag_operations =
-                            new_transformation.transform_magnetic_operations(&prim_mag_operations);
+                            new_transformation.transform_magnetic_operations(prim_mag_operations);
                         if Self::match_prim_mag_operations(
                             &new_prim_mag_operations,
                             &db_prim_mag_operations,
@@ -174,14 +162,14 @@ impl MagneticSpaceGroup {
         let mut hm_translation = HashMap::new();
         for mops1 in prim_mag_operations1 {
             hm_translation.insert(
-                (mops1.operation.rotation.clone(), mops1.time_reversal),
+                (mops1.operation.rotation, mops1.time_reversal),
                 mops1.operation.translation,
             );
         }
 
         for mops2 in prim_mag_operations2 {
             if let Some(translation1) =
-                hm_translation.get(&(mops2.operation.rotation.clone(), mops2.time_reversal))
+                hm_translation.get(&(mops2.operation.rotation, mops2.time_reversal))
             {
                 let diff = mops2.operation.translation - translation1;
                 if !diff.iter().all(|e| (e - e.round()).abs() < epsilon) {
@@ -285,7 +273,7 @@ pub fn family_space_group_from_magnetic_space_group(
         }
 
         fsg.push(mops.operation.clone());
-        hm_translation.insert(mops.operation.rotation.clone(), mops.operation.translation);
+        hm_translation.insert(mops.operation.rotation, mops.operation.translation);
         contained[i] = true;
     }
     (fsg, is_type2, contained)
@@ -295,7 +283,7 @@ pub fn family_space_group_from_magnetic_space_group(
 /// This function assumes the magnetic Hall symbol is extended from the Hall symbol in the standard setting.
 fn db_reference_space_group_primitive(entry: &MagneticHallSymbolEntry) -> (Operations, Operations) {
     let ref_hall_entry = hall_symbol_entry(entry.reference_hall_number()).unwrap();
-    let ref_hall_symbol = HallSymbol::new(&ref_hall_entry.hall_symbol).unwrap();
+    let ref_hall_symbol = HallSymbol::new(ref_hall_entry.hall_symbol).unwrap();
     let ref_prim_operations = ref_hall_symbol.primitive_traverse();
     let identity = Rotation::identity();
 
