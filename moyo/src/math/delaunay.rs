@@ -1,4 +1,4 @@
-use nalgebra::{vector, Matrix3, Vector3, U3};
+use nalgebra::{Matrix3, U3, Vector3, vector};
 
 use super::cycle_checker::CycleChecker;
 use super::elementary::{adding_column_matrix, changing_column_sign_matrix};
@@ -91,10 +91,10 @@ fn superbase(basis: &Matrix3<f64>) -> Vec<Vector3<f64>> {
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::{vector, Matrix3};
+    use nalgebra::{Matrix3, vector};
+    use rand::SeedableRng;
     use rand::prelude::*;
     use rand::rngs::StdRng;
-    use rand::SeedableRng;
 
     use super::delaunay_reduce;
 

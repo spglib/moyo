@@ -97,14 +97,14 @@ use crate::base::{
     OriginShift, RotationMagneticMomentAction,
 };
 use crate::data::{
-    arithmetic_crystal_class_entry, hall_symbol_entry, HallNumber, Number, Setting, UNINumber,
+    HallNumber, Number, Setting, UNINumber, arithmetic_crystal_class_entry, hall_symbol_entry,
 };
 use crate::identify::{MagneticSpaceGroup, SpaceGroup};
 use crate::search::{
     iterative_magnetic_symmetry_search, iterative_symmetry_search,
     magnetic_operations_in_magnetic_cell, operations_in_cell,
 };
-use crate::symmetrize::{orbits_in_cell, StandardizedCell, StandardizedMagneticCell};
+use crate::symmetrize::{StandardizedCell, StandardizedMagneticCell, orbits_in_cell};
 
 use nalgebra::Matrix3;
 use serde::{Deserialize, Serialize};

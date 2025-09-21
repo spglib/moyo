@@ -73,9 +73,9 @@ pub fn orbits_from_permutations(num_atoms: usize, permutations: &[Permutation]) 
 mod tests {
     use std::panic;
 
-    use nalgebra::{vector, Matrix3};
+    use nalgebra::{Matrix3, vector};
 
-    use super::{orbits_from_permutations, Cell};
+    use super::{Cell, orbits_from_permutations};
     use crate::base::lattice::Lattice;
     use crate::base::permutation::Permutation;
 

@@ -98,7 +98,7 @@ allow = [
     "MIT",
     "Apache-2.0",
     "Apache-2.0 WITH LLVM-exception",
-    "BSD-3-Clause",
+    # "BSD-3-Clause",
     "Unicode-3.0",
 ]
 # The confidence threshold for detecting a license from license text.
@@ -112,7 +112,7 @@ exceptions = [
     # Each entry is the crate and version constraint, and its specific allow
     # list
     #{ allow = ["Zlib"], name = "adler32", version = "*" },
-    { allow = ["Unlicense"], name="init_with", version="*" },
+    # { allow = ["Unlicense"], name="init_with", version="*" },
 ]
 
 # Some crates don't have (easily) machine readable licensing information,

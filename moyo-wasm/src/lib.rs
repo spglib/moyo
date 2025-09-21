@@ -2,9 +2,9 @@
 use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
+use moyo::MoyoDataset as InternalMoyoDataset;
 use moyo::base::{AngleTolerance as InternalAngleTolerance, Cell};
 use moyo::data::Setting;
-use moyo::MoyoDataset as InternalMoyoDataset;
 use serde::{Deserialize, Serialize};
 
 // Generic array conversion helpers

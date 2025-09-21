@@ -1,15 +1,15 @@
 #[macro_use]
 extern crate approx;
 
-use nalgebra::{matrix, vector, Matrix3, Vector3};
+use nalgebra::{Matrix3, Vector3, matrix, vector};
 use serde_json;
 use std::fs;
 use std::path::Path;
 use test_log::test;
 
+use moyo::MoyoDataset;
 use moyo::base::{AngleTolerance, Cell, Lattice, Permutation, Rotation, Translation};
 use moyo::data::Setting;
-use moyo::MoyoDataset;
 
 /// Sanity-check MoyoDataset
 fn assert_dataset(

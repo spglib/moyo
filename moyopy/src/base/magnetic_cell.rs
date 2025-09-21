@@ -1,6 +1,6 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::types::PyType;
-use pyo3::{prelude::*, IntoPyObjectExt};
+use pyo3::{IntoPyObjectExt, prelude::*};
 use pythonize::{depythonize, pythonize};
 use serde::{Deserialize, Serialize};
 use serde_json;

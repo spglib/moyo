@@ -16,7 +16,7 @@ use pyo3::prelude::*;
 
 use super::base::{PyMoyoError, PyOperations};
 use moyo::base::{MoyoError, Operation};
-use moyo::data::{hall_symbol_entry, HallSymbol, Setting};
+use moyo::data::{HallSymbol, Setting, hall_symbol_entry};
 
 #[pyfunction]
 #[pyo3(signature = (number, *, setting=None, primitive=false))]

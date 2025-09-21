@@ -1,17 +1,17 @@
-use itertools::{iproduct, Itertools};
+use itertools::{Itertools, iproduct};
 use log::debug;
 use nalgebra::linalg::{Cholesky, QR};
-use nalgebra::{vector, Matrix3, Vector3};
+use nalgebra::{Matrix3, Vector3, vector};
 use once_cell::sync::Lazy;
 use std::collections::HashMap;
 
 use crate::base::{
-    orbits_from_permutations, project_rotations, Cell, Lattice, Linear, MoyoError, Operations,
-    Permutation, Position, Rotations, Transformation, UnimodularTransformation, EPS,
+    Cell, EPS, Lattice, Linear, MoyoError, Operations, Permutation, Position, Rotations,
+    Transformation, UnimodularTransformation, orbits_from_permutations, project_rotations,
 };
 use crate::data::{
-    arithmetic_crystal_class_entry, hall_symbol_entry, iter_wyckoff_positions, Centering,
-    HallNumber, HallSymbol, LatticeSystem, WyckoffPosition, WyckoffPositionSpace,
+    Centering, HallNumber, HallSymbol, LatticeSystem, WyckoffPosition, WyckoffPositionSpace,
+    arithmetic_crystal_class_entry, hall_symbol_entry, iter_wyckoff_positions,
 };
 use crate::identify::SpaceGroup;
 use crate::math::SNF;
@@ -488,7 +488,7 @@ mod tests {
     use nalgebra::matrix;
 
     use super::symmetrize_lattice;
-    use crate::base::{traverse, Lattice};
+    use crate::base::{Lattice, traverse};
     use crate::data::{GeometricCrystalClass, PointGroupRepresentative};
 
     #[test]

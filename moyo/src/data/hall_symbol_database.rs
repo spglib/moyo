@@ -4346,7 +4346,7 @@ const HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
 
 #[cfg(test)]
 mod tests {
-    use super::{HallSymbolEntry, HALL_SYMBOL_DATABASE};
+    use super::{HALL_SYMBOL_DATABASE, HallSymbolEntry};
     use crate::data::hall_symbol::HallSymbol;
 
     fn iter_hall_symbol_entry() -> impl Iterator<Item = &'static HallSymbolEntry> {

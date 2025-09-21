@@ -52,7 +52,7 @@ impl From<&MoyoOperations> for Operations {
     }
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn free_moyo_operations(operations: MoyoOperations) {
     unsafe {
         let _ = Vec::from_raw_parts(

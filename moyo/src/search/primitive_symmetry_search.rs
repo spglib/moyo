@@ -5,17 +5,17 @@ use log::debug;
 use nalgebra::{Matrix3, Vector3};
 
 use super::{
+    PrimitiveCell,
     primitive_cell::PrimitiveMagneticCell,
     solve::{
-        pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
-        PeriodicKdTree,
+        PeriodicKdTree, pivot_site_indices, solve_correspondence,
+        symmetrize_translation_from_permutation,
     },
-    PrimitiveCell,
 };
 use crate::base::{
-    traverse, AngleTolerance, Cell, Lattice, MagneticCell, MagneticMoment, MagneticOperation,
+    AngleTolerance, Cell, EPS, Lattice, MagneticCell, MagneticMoment, MagneticOperation,
     MagneticOperations, MoyoError, Operation, Operations, Permutation, Rotation,
-    RotationMagneticMomentAction, Rotations, Transformation, EPS,
+    RotationMagneticMomentAction, Rotations, Transformation, traverse,
 };
 
 #[derive(Debug)]
@@ -127,12 +127,16 @@ impl PrimitiveSymmetrySearch {
             }
         }
         if operations.len() != operations_and_permutations.len() {
-            debug!("Found operations do not form a group. Consider reducing symprec and angle_tolerance.");
+            debug!(
+                "Found operations do not form a group. Consider reducing symprec and angle_tolerance."
+            );
             return Err(MoyoError::TooLargeToleranceError);
         }
 
         if !Self::check_closure(&operations, &primitive_cell.lattice, rough_symprec) {
-            debug!("Some centering translations are missing. Consider reducing symprec and angle_tolerance.");
+            debug!(
+                "Some centering translations are missing. Consider reducing symprec and angle_tolerance."
+            );
             return Err(MoyoError::TooLargeToleranceError);
         }
 
@@ -242,7 +246,9 @@ impl PrimitiveMagneticSymmetrySearch {
             &primitive_magnetic_cell.cell.lattice,
             symprec,
         ) {
-            debug!("Some centering translations are missing. Consider reducing symprec and angle_tolerance.");
+            debug!(
+                "Some centering translations are missing. Consider reducing symprec and angle_tolerance."
+            );
             return Err(MoyoError::TooLargeToleranceError);
         }
 
@@ -409,13 +415,17 @@ fn search_bravais_group(
 
     // 48 for Oh
     if rotations.is_empty() || (48 % rotations.len() != 0) {
-        debug!("Found automorphisms for the lattice do not form a group. Consider reducing symprec and angle_tolerance.");
+        debug!(
+            "Found automorphisms for the lattice do not form a group. Consider reducing symprec and angle_tolerance."
+        );
         return Err(MoyoError::TooLargeToleranceError);
     }
 
     let complemented_rotations = traverse(&rotations);
     if complemented_rotations.len() != rotations.len() {
-        debug!("Found automorphisms for the lattice do not form a group. Consider reducing symprec and angle_tolerance.");
+        debug!(
+            "Found automorphisms for the lattice do not form a group. Consider reducing symprec and angle_tolerance."
+        );
         return Err(MoyoError::TooLargeToleranceError);
     }
     debug!("Order of Bravais group: {}", complemented_rotations.len());
@@ -454,10 +464,10 @@ fn compare_nondiagonal_matrix_tensor_element(
 mod tests {
     use std::vec;
 
-    use nalgebra::{matrix, Matrix3, Vector3};
+    use nalgebra::{Matrix3, Vector3, matrix};
     use test_log::test;
 
-    use super::{search_bravais_group, PrimitiveMagneticSymmetrySearch};
+    use super::{PrimitiveMagneticSymmetrySearch, search_bravais_group};
     use crate::base::{
         AngleTolerance, Collinear, Lattice, MagneticCell, NonCollinear,
         RotationMagneticMomentAction,

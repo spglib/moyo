@@ -25,7 +25,9 @@ pub enum MoyoError {
     #[error("Bravais group search failed")]
     BravaisGroupSearchError,
     // Identification errors
-    #[error("Geometric crystal class identification failed. Given rotations might not form a group or contain duplicates.")]
+    #[error(
+        "Geometric crystal class identification failed. Given rotations might not form a group or contain duplicates."
+    )]
     GeometricCrystalClassIdentificationError,
     #[error("Arithmetic crystal class identification failed")]
     ArithmeticCrystalClassIdentificationError,

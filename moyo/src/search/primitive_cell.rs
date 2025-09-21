@@ -1,15 +1,15 @@
 use std::collections::BTreeMap;
 
 use log::debug;
-use nalgebra::{Dyn, Matrix3, OMatrix, Vector3, U3};
+use nalgebra::{Dyn, Matrix3, OMatrix, U3, Vector3};
 
 use super::solve::{
-    pivot_site_indices, solve_correspondence, symmetrize_translation_from_permutation,
-    PeriodicKdTree,
+    PeriodicKdTree, pivot_site_indices, solve_correspondence,
+    symmetrize_translation_from_permutation,
 };
 use crate::base::{
-    orbits_from_permutations, Cell, Linear, MagneticCell, MagneticMoment, MoyoError, Permutation,
-    Position, Rotation, Transformation, Translation, UnimodularTransformation, EPS,
+    Cell, EPS, Linear, MagneticCell, MagneticMoment, MoyoError, Permutation, Position, Rotation,
+    Transformation, Translation, UnimodularTransformation, orbits_from_permutations,
 };
 use crate::math::HNF;
 
@@ -93,7 +93,11 @@ impl PrimitiveCell {
         // Check number of translations
         let size = translations.len() as i32;
         if (size == 0) || (reduced_cell.num_atoms() % (size as usize) != 0) {
-            debug!("Failed to properly find translations: {} translations in {} atoms. Consider increasing symprec.", size, reduced_cell.num_atoms());
+            debug!(
+                "Failed to properly find translations: {} translations in {} atoms. Consider increasing symprec.",
+                size,
+                reduced_cell.num_atoms()
+            );
             return Err(MoyoError::TooSmallToleranceError);
         }
         debug!("Found {} pure translations", size);
@@ -104,7 +108,9 @@ impl PrimitiveCell {
         {
             trans_mat
         } else {
-            debug!("Failed to find a transformation matrix for a primitive cell. Consider increasing symprec.");
+            debug!(
+                "Failed to find a transformation matrix for a primitive cell. Consider increasing symprec."
+            );
             return Err(MoyoError::TooSmallToleranceError);
         };
 
@@ -192,7 +198,11 @@ impl<M: MagneticMoment> PrimitiveMagneticCell<M> {
         // Check number of translations
         let size = translations.len() as i32;
         if (size == 0) || (magnetic_cell.cell.num_atoms() % (size as usize) != 0) {
-            debug!("Failed to properly find translations: {} translations in {} atoms. Consider increasing symprec.", size, magnetic_cell.cell.num_atoms());
+            debug!(
+                "Failed to properly find translations: {} translations in {} atoms. Consider increasing symprec.",
+                size,
+                magnetic_cell.cell.num_atoms()
+            );
             return Err(MoyoError::TooSmallToleranceError);
         }
         debug!("Found {} pure translations", size);
@@ -204,7 +214,9 @@ impl<M: MagneticMoment> PrimitiveMagneticCell<M> {
         {
             trans_mat
         } else {
-            debug!("Failed to find a transformation matrix for a primitive cell. Consider increasing symprec.");
+            debug!(
+                "Failed to find a transformation matrix for a primitive cell. Consider increasing symprec."
+            );
             return Err(MoyoError::TooSmallToleranceError);
         };
 
@@ -343,15 +355,15 @@ fn site_mapping_from_orbits(orbits: &[usize]) -> Vec<usize> {
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::{matrix, Matrix3, Vector3};
+    use nalgebra::{Matrix3, Vector3, matrix};
 
     use crate::base::{
         Cell, Collinear, Lattice, MagneticCell, MagneticMoment, Transformation, Translation,
     };
 
     use super::{
-        site_mapping_from_orbits, transformation_matrix_from_translations, PrimitiveCell,
-        PrimitiveMagneticCell,
+        PrimitiveCell, PrimitiveMagneticCell, site_mapping_from_orbits,
+        transformation_matrix_from_translations,
     };
 
     #[test]

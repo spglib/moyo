@@ -24,7 +24,7 @@ thiserror = "2.0"
 union-find = "0.4"
 strum = "0.27"
 strum_macros = "0.27"
-kiddo = "5.0.3"
+kiddo = "5.2.1"
 once_cell = "1.21.3"
 
 [dev-dependencies]

@@ -11,8 +11,8 @@ use crate::base::{
     PyOperations, PyStructure,
 };
 use crate::data::{
-    operations_from_number, PyArithmeticCrystalClass, PyCentering, PyHallSymbolEntry,
-    PyMagneticSpaceGroupType, PySetting, PySpaceGroupType,
+    PyArithmeticCrystalClass, PyCentering, PyHallSymbolEntry, PyMagneticSpaceGroupType, PySetting,
+    PySpaceGroupType, operations_from_number,
 };
 use crate::dataset::{
     PyMoyoCollinearMagneticDataset, PyMoyoDataset, PyMoyoNonCollinearMagneticDataset,
