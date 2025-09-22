@@ -7,6 +7,10 @@
       "matchManagers": ["github-actions", "pre-commit"]
     },
     {
+      "matchDepNames": ["python"],
+      "enabled": false
+    },
+    {
       "groupName": "pyo3 ecosystem",
       "matchManagers": ["cargo"],
       "matchPackageNames": ["pyo3", "pyo3-log", "pythonize"]
