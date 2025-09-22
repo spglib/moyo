@@ -34,7 +34,7 @@ repos:
       - id: check-github-workflows
   - repo: https://github.com/crate-ci/typos
     # TODO: v1.35.7 is not released yet https://github.com/crate-ci/typos/issues/1369
-    rev: v1.36.2
+    rev: v1
     hooks:
       - id: typos
   # Rust
@@ -79,7 +79,7 @@ repos:
   # sub-pre-commit
   # TODO: Replace with official release after https://github.com/ddanier/sub-pre-commit/pull/4 is merged
   - repo: https://github.com/lan496/sub-pre-commit.git
-    rev: 6e21156da453424e9b9c70c0e85e1debe58ea1bf  # pre-commit v4.3.0 compatible
+    rev: e228c7d519d1467c202f5ccbf7b4298c48f8abb2  # pre-commit v4.3.0 compatible
     hooks:
       - id: sub-pre-commit
         alias: moyopy
