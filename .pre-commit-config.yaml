@@ -29,12 +29,12 @@ repos:
         additional_dependencies:
           - mdformat-gfm
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.33.3
+    rev: 0.34.0
     hooks:
       - id: check-github-workflows
   - repo: https://github.com/crate-ci/typos
     # TODO: v1.35.7 is not released yet https://github.com/crate-ci/typos/issues/1369
-    rev: v1.35.6
+    rev: v1.36.2
     hooks:
       - id: typos
   # Rust
