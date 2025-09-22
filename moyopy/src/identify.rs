@@ -1,8 +1,9 @@
+use itertools::izip;
 use pyo3::prelude::*;
 
-use moyo::base::{Lattice, Operation};
-use moyo::data::{ArithmeticNumber, HallNumber, Number, Setting};
-use moyo::identify::{PointGroup, SpaceGroup};
+use moyo::base::{Lattice, MagneticOperation, Operation};
+use moyo::data::{ArithmeticNumber, HallNumber, Number, Setting, UNINumber};
+use moyo::identify::{MagneticSpaceGroup, PointGroup, SpaceGroup};
 use moyo::utils::{to_3_slice, to_3x3_slice, to_matrix3, to_vector3};
 
 use crate::base::PyMoyoError;
@@ -122,5 +123,67 @@ impl From<PySpaceGroup> for SpaceGroup {
 impl From<SpaceGroup> for PySpaceGroup {
     fn from(space_group: SpaceGroup) -> Self {
         PySpaceGroup(space_group)
+    }
+}
+
+#[derive(Debug, Clone)]
+#[pyclass(name = "MagneticSpaceGroup", frozen)]
+#[pyo3(module = "moyopy")]
+pub struct PyMagneticSpaceGroup(MagneticSpaceGroup);
+
+#[pymethods]
+impl PyMagneticSpaceGroup {
+    #[new]
+    #[pyo3(signature = (prim_rotations, prim_translations, prim_time_reversals, *, basis=None, epsilon=1e-4))]
+    pub fn new(
+        prim_rotations: Vec<[[i32; 3]; 3]>,
+        prim_translations: Vec<[f64; 3]>,
+        prim_time_reversals: Vec<bool>,
+        basis: Option<[[f64; 3]; 3]>,
+        epsilon: f64,
+    ) -> Result<Self, PyMoyoError> {
+        let prim_mag_operations = izip!(
+            prim_rotations.iter(),
+            prim_translations.iter(),
+            prim_time_reversals.iter(),
+        )
+        .map(|(rot, trans, tr)| MagneticOperation::new(to_matrix3(rot), to_vector3(trans), *tr))
+        .collect::<Vec<_>>();
+
+        let magnetic_space_group = if let Some(basis) = basis {
+            let lattice = Lattice::from_basis(basis);
+            MagneticSpaceGroup::from_lattice(&lattice, &prim_mag_operations, epsilon)?
+        } else {
+            MagneticSpaceGroup::new(&prim_mag_operations, epsilon)?
+        };
+
+        Ok(Self(magnetic_space_group))
+    }
+
+    #[getter]
+    pub fn uni_number(&self) -> UNINumber {
+        self.0.uni_number
+    }
+
+    #[getter]
+    pub fn linear(&self) -> [[i32; 3]; 3] {
+        to_3x3_slice(&self.0.transformation.linear)
+    }
+
+    #[getter]
+    pub fn origin_shift(&self) -> [f64; 3] {
+        to_3_slice(&self.0.transformation.origin_shift)
+    }
+}
+
+impl From<PyMagneticSpaceGroup> for MagneticSpaceGroup {
+    fn from(magnetic_space_group: PyMagneticSpaceGroup) -> Self {
+        magnetic_space_group.0
+    }
+}
+
+impl From<MagneticSpaceGroup> for PyMagneticSpaceGroup {
+    fn from(magnetic_space_group: MagneticSpaceGroup) -> Self {
+        PyMagneticSpaceGroup(magnetic_space_group)
     }
 }

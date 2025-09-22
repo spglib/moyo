@@ -18,7 +18,7 @@ from moyopy._dataset import (
     MoyoDataset,
     MoyoNonCollinearMagneticDataset,
 )  # noqa: F401
-from moyopy._identify import PointGroup, SpaceGroup  # noqa: F401
+from moyopy._identify import MagneticSpaceGroup, PointGroup, SpaceGroup  # noqa: F401
 
 __version__: str
 
@@ -43,6 +43,7 @@ __all__ = [
     # identify
     "PointGroup",
     "SpaceGroup",
+    "MagneticSpaceGroup",
     # lib
     "__version__",
 ]

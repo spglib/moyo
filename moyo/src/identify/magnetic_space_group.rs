@@ -7,7 +7,7 @@ use super::point_group::{iter_trans_mat_basis, iter_unimodular_trans_mat};
 use super::rotation_type::identify_rotation_type;
 use super::space_group::{SpaceGroup, match_origin_shift};
 use crate::base::{
-    MagneticOperations, MoyoError, Operation, Operations, Rotation, Translation,
+    Lattice, MagneticOperations, MoyoError, Operation, Operations, Rotation, Translation,
     UnimodularTransformation, project_rotations,
 };
 use crate::data::{
@@ -15,7 +15,7 @@ use crate::data::{
     get_magnetic_space_group_type, hall_symbol_entry, magnetic_hall_symbol_entry, uni_number_range,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MagneticSpaceGroup {
     pub uni_number: UNINumber,
     /// Transformation to the representative for `uni_number` in primitive
@@ -137,6 +137,23 @@ impl MagneticSpaceGroup {
             }
         }
         Err(MoyoError::MagneticSpaceGroupTypeIdentificationError)
+    }
+
+    pub fn from_lattice(
+        lattice: &Lattice,
+        prim_mag_operations: &MagneticOperations,
+        epsilon: f64,
+    ) -> Result<Self, MoyoError> {
+        let (_, reduced_trans_mat) = lattice.minkowski_reduce()?;
+        let to_reduced = UnimodularTransformation::from_linear(reduced_trans_mat);
+        let reduced_prim_mag_operations =
+            to_reduced.transform_magnetic_operations(prim_mag_operations);
+
+        let reduced_magnetic_space_group = Self::new(&reduced_prim_mag_operations, epsilon)?;
+        Ok(Self {
+            uni_number: reduced_magnetic_space_group.uni_number,
+            transformation: reduced_magnetic_space_group.transformation * to_reduced,
+        })
     }
 
     pub fn reference_space_group(&self) -> SpaceGroup {

@@ -31,3 +31,7 @@ def test_identify_space_group(number: int):
         prim_rotations=operations.rotations, prim_translations=operations.translations
     )
     assert space_group.number == number
+
+
+def test_identify_magnetic_space_group(uni_number: int):
+    assert False
