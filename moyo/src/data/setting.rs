@@ -1,6 +1,8 @@
+use serde::Serialize;
+
 use super::hall_symbol_database::{HallNumber, Number};
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Serialize)]
 /// Preference for the setting of the space group.
 pub enum Setting {
     /// Specific Hall number from 1 to 530

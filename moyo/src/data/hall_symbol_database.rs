@@ -1,3 +1,5 @@
+use serde::Serialize;
+
 use super::arithmetic_crystal_class::ArithmeticNumber;
 use super::centering::Centering;
 
@@ -6,7 +8,7 @@ pub type Number = i32;
 /// Number for Hall symbols (1 - 530)
 pub type HallNumber = i32;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 /// An entry containing space-group information for a specified hall_number.
 pub struct HallSymbolEntry {
     /// Number for Hall symbols (1 - 530)

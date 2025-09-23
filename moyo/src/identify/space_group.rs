@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use log::debug;
 use nalgebra::{Dyn, Matrix3, OMatrix, OVector, U3, Vector3};
+use serde::Serialize;
 
 use super::point_group::PointGroup;
 use crate::base::{
@@ -14,7 +15,7 @@ use crate::data::{
 };
 use crate::math::SNF;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct SpaceGroup {
     pub number: Number,
     pub hall_number: HallNumber,

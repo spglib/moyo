@@ -1,9 +1,10 @@
 use nalgebra::{Matrix3, Vector3};
+use serde::Serialize;
 use strum_macros::EnumIter;
 
 use crate::base::{Linear, Translation};
 
-#[derive(Debug, Copy, Clone, PartialEq, EnumIter)]
+#[derive(Debug, Copy, Clone, PartialEq, EnumIter, Serialize)]
 pub enum Centering {
     P, // Primitive
     A, // A-face centered

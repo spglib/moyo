@@ -1,4 +1,7 @@
-use pyo3::prelude::*;
+use pyo3::{IntoPyObjectExt, prelude::*};
+use pythonize::pythonize;
+use serde::Serialize;
+use serde_json;
 
 use moyo::base::MoyoError;
 use moyo::data::{
@@ -8,7 +11,7 @@ use moyo::data::{
 
 use crate::base::PyMoyoError;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "SpaceGroupType", frozen)]
 pub struct PySpaceGroupType {
     // Space group type
@@ -82,11 +85,28 @@ impl PySpaceGroupType {
         })
     }
 
+    // ------------------------------------------------------------------------
+    // Special methods
+    // ------------------------------------------------------------------------
     fn __repr__(&self) -> String {
-        format!("SpaceGroupType({})", self.number)
+        self.serialize_json()
     }
 
     fn __str__(&self) -> String {
-        format!("{:?}", self)
+        self.__repr__()
+    }
+
+    // ------------------------------------------------------------------------
+    // Serialization
+    // ------------------------------------------------------------------------
+    pub fn serialize_json(&self) -> String {
+        serde_json::to_string(&self).expect("Serialization should not fail")
+    }
+
+    pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
+        Python::attach(|py| {
+            let obj = pythonize(py, &self).expect("Python object conversion should not fail");
+            obj.into_py_any(py)
+        })
     }
 }
