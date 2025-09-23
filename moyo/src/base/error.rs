@@ -53,4 +53,6 @@ pub enum MoyoError {
     UnknownNumberError,
     #[error("Unknown arithmetic_number")]
     UnknownArithmeticNumberError,
+    #[error("Unknown uni_number")]
+    UnknownUNINumberError,
 }

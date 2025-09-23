@@ -12,7 +12,7 @@ use crate::base::{
 };
 use crate::data::{
     PyArithmeticCrystalClass, PyCentering, PyHallSymbolEntry, PyMagneticSpaceGroupType, PySetting,
-    PySpaceGroupType, operations_from_number,
+    PySpaceGroupType, magnetic_operations_from_uni_number, operations_from_number,
 };
 use crate::dataset::{
     PyMoyoCollinearMagneticDataset, PyMoyoDataset, PyMoyoNonCollinearMagneticDataset,
@@ -66,6 +66,7 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyArithmeticCrystalClass>()?;
     // data: Misc
     m.add_wrapped(wrap_pyfunction!(operations_from_number))?;
+    m.add_wrapped(wrap_pyfunction!(magnetic_operations_from_uni_number))?;
 
     // identify
     m.add_class::<PyPointGroup>()?;

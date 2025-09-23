@@ -14,14 +14,17 @@ pub use space_group_type::PySpaceGroupType;
 
 use pyo3::prelude::*;
 
-use super::base::{PyMoyoError, PyOperations};
-use moyo::base::{MoyoError, Operation};
-use moyo::data::{HallSymbol, Setting, hall_symbol_entry};
+use super::base::{PyMagneticOperations, PyMoyoError, PyOperations};
+use moyo::base::{MagneticOperation, MoyoError, Operation};
+use moyo::data::{
+    HallSymbol, MagneticHallSymbol, Number, Setting, UNINumber, hall_symbol_entry,
+    magnetic_hall_symbol_entry,
+};
 
 #[pyfunction]
 #[pyo3(signature = (number, *, setting=None, primitive=false))]
 pub fn operations_from_number(
-    number: i32,
+    number: Number,
     setting: Option<PySetting>,
     primitive: bool,
 ) -> Result<PyOperations, PyMoyoError> {
@@ -38,7 +41,7 @@ pub fn operations_from_number(
             .get((number - 1) as usize)
             .ok_or(MoyoError::UnknownNumberError)?,
     };
-    let entry = hall_symbol_entry(hall_number).unwrap();
+    let entry = hall_symbol_entry(hall_number).ok_or(MoyoError::UnknownHallNumberError)?;
     let hs = HallSymbol::new(entry.hall_symbol).ok_or(MoyoError::HallSymbolParsingError)?;
 
     let mut operations = vec![];
@@ -62,11 +65,46 @@ pub fn operations_from_number(
     Ok(PyOperations::from(operations))
 }
 
+#[pyfunction]
+#[pyo3(signature = (uni_number, *, primitive=false))]
+pub fn magnetic_operations_from_uni_number(
+    uni_number: UNINumber,
+    primitive: bool,
+) -> Result<PyMagneticOperations, PyMoyoError> {
+    let entry = magnetic_hall_symbol_entry(uni_number).ok_or(MoyoError::UnknownUNINumberError)?;
+    let mhs = MagneticHallSymbol::new(entry.magnetic_hall_symbol)
+        .ok_or(MoyoError::HallSymbolParsingError)?;
+
+    let mut magnetic_operations = vec![];
+    if primitive {
+        for mops in mhs.primitive_traverse().into_iter() {
+            magnetic_operations.push(mops)
+        }
+    } else {
+        let coset = mhs.traverse();
+
+        let lattice_points = mhs.centering.lattice_points();
+        for t1 in lattice_points.iter() {
+            for mops2 in coset.iter() {
+                // (E, t1) (r2, t2) = (r2, t1 + t2)
+                let t12 = (t1 + mops2.operation.translation).map(|e| e % 1.);
+                magnetic_operations.push(MagneticOperation::new(
+                    mops2.operation.rotation,
+                    t12,
+                    mops2.time_reversal,
+                ));
+            }
+        }
+    }
+
+    Ok(PyMagneticOperations::from(magnetic_operations))
+}
+
 #[cfg(test)]
 mod tests {
     use nalgebra::vector;
 
-    use super::operations_from_number;
+    use super::*;
     use moyo::base::{Operations, Position};
 
     fn unique_sites(position: &Position, operations: &Operations) -> Vec<Position> {
@@ -169,6 +207,18 @@ mod tests {
             // primitive=true
             let prim_operations = operations_from_number(230, None, true).unwrap();
             assert!(prim_operations.num_operations() == 48);
+        }
+    }
+
+    #[test]
+    fn test_magnetic_operations_from_uni_number() {
+        {
+            // UNI: R31'_c[R3] (1242), BNS: R_I3 (146.12)
+            let magnetic_operations = magnetic_operations_from_uni_number(1242, false).unwrap();
+            assert_eq!(magnetic_operations.num_operations(), 18);
+            let primitive_magnetic_operations =
+                magnetic_operations_from_uni_number(1242, true).unwrap();
+            assert_eq!(primitive_magnetic_operations.num_operations(), 6);
         }
     }
 }

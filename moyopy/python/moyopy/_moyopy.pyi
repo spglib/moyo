@@ -11,6 +11,7 @@ from moyopy._data import (
     MagneticSpaceGroupType,
     Setting,
     SpaceGroupType,
+    magnetic_operations_from_uni_number,
     operations_from_number,
 )  # noqa: F401
 from moyopy._dataset import (
@@ -36,6 +37,7 @@ __all__ = [
     "MagneticSpaceGroupType",
     "ArithmeticCrystalClass",
     "operations_from_number",
+    "magnetic_operations_from_uni_number",
     # dataset
     "MoyoDataset",
     "MoyoCollinearMagneticDataset",
