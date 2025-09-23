@@ -153,7 +153,7 @@ Module Contents
 
    .. py:method:: serialize_json() -> str
 
-      Serialize the dataset to a JSON string.
+      Serialize an object to a JSON string.
 
 
 
@@ -161,13 +161,13 @@ Module Contents
       :classmethod:
 
 
-      Deserialize the dataset from a JSON string.
+      Deserialize an object from a JSON string.
 
 
 
    .. py:method:: as_dict() -> dict[str, Any]
 
-      Convert the dataset to a dictionary.
+      Convert an object to a dictionary.
 
 
 
@@ -175,7 +175,7 @@ Module Contents
       :classmethod:
 
 
-      Create a dataset from a dictionary.
+      Create an object from a dictionary.
 
 
 
@@ -293,7 +293,7 @@ Module Contents
 
    .. py:method:: serialize_json() -> str
 
-      Serialize the dataset to a JSON string.
+      Serialize an object to a JSON string.
 
 
 
@@ -301,13 +301,13 @@ Module Contents
       :classmethod:
 
 
-      Deserialize the dataset from a JSON string.
+      Deserialize an object from a JSON string.
 
 
 
    .. py:method:: as_dict() -> dict[str, Any]
 
-      Convert the dataset to a dictionary.
+      Convert an object to a dictionary.
 
 
 
@@ -315,7 +315,7 @@ Module Contents
       :classmethod:
 
 
-      Create a dataset from a dictionary.
+      Create an object from a dictionary.
 
 
 
@@ -433,7 +433,7 @@ Module Contents
 
    .. py:method:: serialize_json() -> str
 
-      Serialize the dataset to a JSON string.
+      Serialize an object to a JSON string.
 
 
 
@@ -441,13 +441,13 @@ Module Contents
       :classmethod:
 
 
-      Deserialize the dataset from a JSON string.
+      Deserialize an object from a JSON string.
 
 
 
    .. py:method:: as_dict() -> dict[str, Any]
 
-      Convert the dataset to a dictionary.
+      Convert an object to a dictionary.
 
 
 
@@ -455,7 +455,7 @@ Module Contents
       :classmethod:
 
 
-      Create a dataset from a dictionary.
+      Create an object from a dictionary.
 
 
 

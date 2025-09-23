@@ -282,7 +282,9 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for moyopy._data</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">moyopy._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">MagneticOperations</span><span class="p">,</span> <span class="n">Operations</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">moyopy._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">MagneticOperations</span><span class="p">,</span> <span class="n">Operations</span>
 
 <span class="c1">###############################################################################</span>
 <span class="c1"># Hall symbol data</span>
@@ -310,6 +312,17 @@ document.write(`
 <a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.Setting.hall_number">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">hall_number</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">hall_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Setting</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Specific Hall number from 1 to 530.&quot;&quot;&quot;</span></div>
+
+    <span class="c1"># Serialization</span>
+<div class="viewcode-block" id="Setting.serialize_json">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.Setting.serialize_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serialize_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serialize an object to a JSON string&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="Setting.as_dict">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.Setting.as_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert an object to a dictionary&quot;&quot;&quot;</span></div>
 </div>
 
 
@@ -333,6 +346,17 @@ document.write(`
 <a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.Centering.lattice_points">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">lattice_points</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Unique lattice points.&quot;&quot;&quot;</span></div>
+
+    <span class="c1"># Serialization</span>
+<div class="viewcode-block" id="Centering.serialize_json">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.Centering.serialize_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serialize_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serialize an object to a JSON string&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="Centering.as_dict">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.Centering.as_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert an object to a dictionary&quot;&quot;&quot;</span></div>
 </div>
 
 
@@ -388,6 +412,17 @@ document.write(`
 <a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.HallSymbolEntry.centering">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">centering</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Centering</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Centering.&quot;&quot;&quot;</span></div>
+
+    <span class="c1"># Serialization</span>
+<div class="viewcode-block" id="HallSymbolEntry.serialize_json">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.HallSymbolEntry.serialize_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serialize_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serialize an object to a JSON string&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="HallSymbolEntry.as_dict">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.HallSymbolEntry.as_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert an object to a dictionary&quot;&quot;&quot;</span></div>
 </div>
 
 
@@ -486,6 +521,17 @@ document.write(`
 <span class="sd">        See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs</span>
 <span class="sd">        for string values.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div>
+
+    <span class="c1"># Serialization</span>
+<div class="viewcode-block" id="SpaceGroupType.serialize_json">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.SpaceGroupType.serialize_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serialize_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serialize an object to a JSON string&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="SpaceGroupType.as_dict">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.SpaceGroupType.as_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert an object to a dictionary&quot;&quot;&quot;</span></div>
 </div>
 
 
@@ -529,6 +575,17 @@ document.write(`
 <a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.MagneticSpaceGroupType.construct_type">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">construct_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct type of magnetic space group from 1 to 4.&quot;&quot;&quot;</span></div>
+
+    <span class="c1"># Serialization</span>
+<div class="viewcode-block" id="MagneticSpaceGroupType.serialize_json">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.MagneticSpaceGroupType.serialize_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serialize_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serialize an object to a JSON string&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="MagneticSpaceGroupType.as_dict">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.MagneticSpaceGroupType.as_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert an object to a dictionary&quot;&quot;&quot;</span></div>
 </div>
 
 
@@ -560,6 +617,17 @@ document.write(`
 <a class="viewcode-back" href="../../autoapi/moyopy/_data/index.html#moyopy._data.ArithmeticCrystalClass.bravais_class">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">bravais_class</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Bravais class.&quot;&quot;&quot;</span></div>
+
+    <span class="c1"># Serialization</span>
+<div class="viewcode-block" id="ArithmeticCrystalClass.serialize_json">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.ArithmeticCrystalClass.serialize_json">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">serialize_json</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Serialize an object to a JSON string&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="ArithmeticCrystalClass.as_dict">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.ArithmeticCrystalClass.as_dict">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert an object to a dictionary&quot;&quot;&quot;</span></div>
 </div>
 
 

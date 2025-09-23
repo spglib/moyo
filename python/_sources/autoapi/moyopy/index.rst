@@ -85,7 +85,7 @@ Package Contents
 
    .. py:method:: serialize_json() -> str
 
-      Serialize the cell to a JSON string
+      Serialize an object to a JSON string
 
 
 
@@ -93,13 +93,13 @@ Package Contents
       :classmethod:
 
 
-      Deserialize a JSON string to a Cell object
+      Deserialize a JSON string to an object
 
 
 
    .. py:method:: as_dict() -> dict[str, Any]
 
-      Convert the cell to a dictionary
+      Convert an object to a dictionary
 
 
 
@@ -107,7 +107,7 @@ Package Contents
       :classmethod:
 
 
-      Create a cell from a dictionary
+      Create an object from a dictionary
 
 
 
@@ -140,29 +140,29 @@ Package Contents
 
    .. py:method:: serialize_json() -> str
 
-      Serialize the cell to a JSON string
+      Serialize an object to a JSON string
 
 
 
-   .. py:method:: deserialize_json(json_str: str) -> Cell
+   .. py:method:: deserialize_json(json_str: str) -> CollinearMagneticCell
       :classmethod:
 
 
-      Deserialize a JSON string to a Cell object
+      Deserialize a JSON string to an object
 
 
 
    .. py:method:: as_dict() -> dict[str, Any]
 
-      Convert the cell to a dictionary
+      Convert an object to a dictionary
 
 
 
-   .. py:method:: from_dict(data: dict[str, Any]) -> Cell
+   .. py:method:: from_dict(data: dict[str, Any]) -> CollinearMagneticCell
       :classmethod:
 
 
-      Create a cell from a dictionary
+      Create an object from a dictionary
 
 
 
@@ -195,29 +195,29 @@ Package Contents
 
    .. py:method:: serialize_json() -> str
 
-      Serialize the cell to a JSON string
+      Serialize an object to a JSON string
 
 
 
-   .. py:method:: deserialize_json(json_str: str) -> Cell
+   .. py:method:: deserialize_json(json_str: str) -> NonCollinearMagneticCell
       :classmethod:
 
 
-      Deserialize a JSON string to a Cell object
+      Deserialize a JSON string to an object
 
 
 
    .. py:method:: as_dict() -> dict[str, Any]
 
-      Convert the cell to a dictionary
+      Convert an object to a dictionary
 
 
 
-   .. py:method:: from_dict(data: dict[str, Any]) -> Cell
+   .. py:method:: from_dict(data: dict[str, Any]) -> NonCollinearMagneticCell
       :classmethod:
 
 
-      Create a cell from a dictionary
+      Create an object from a dictionary
 
 
 
@@ -239,6 +239,34 @@ Package Contents
 
 
    .. py:method:: __len__() -> int
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: deserialize_json(json_str: str) -> Operations
+      :classmethod:
+
+
+      Deserialize a JSON string to an object
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
+
+
+   .. py:method:: from_dict(data: dict[str, Any]) -> Operations
+      :classmethod:
+
+
+      Create an object from a dictionary
+
 
 
 .. py:class:: Setting
@@ -271,6 +299,18 @@ Package Contents
 
 
 
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
+
+
 .. py:class:: Centering
 
    .. py:property:: order
@@ -292,6 +332,18 @@ Package Contents
 
 
       Unique lattice points.
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
 
 
 .. py:class:: HallSymbolEntry(hall_number: int)
@@ -353,6 +405,18 @@ Package Contents
 
 
       Centering.
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
 
 
 .. py:class:: SpaceGroupType(number: int)
@@ -448,6 +512,18 @@ Package Contents
       for string values.
 
 
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
+
+
 .. py:class:: MagneticSpaceGroupType(uni_number: int)
 
    Magnetic space-group type information.
@@ -495,6 +571,18 @@ Package Contents
       Construct type of magnetic space group from 1 to 4.
 
 
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
+
+
 .. py:class:: ArithmeticCrystalClass(arithmetic_number: int)
 
    Arithmetic crystal class information.
@@ -526,6 +614,18 @@ Package Contents
 
 
       Bravais class.
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
 
 
 .. py:function:: operations_from_number(number: int, *, setting: Setting | None = None, primitive: bool = False) -> moyopy._base.Operations
@@ -668,7 +768,7 @@ Package Contents
 
    .. py:method:: serialize_json() -> str
 
-      Serialize the dataset to a JSON string.
+      Serialize an object to a JSON string.
 
 
 
@@ -676,13 +776,13 @@ Package Contents
       :classmethod:
 
 
-      Deserialize the dataset from a JSON string.
+      Deserialize an object from a JSON string.
 
 
 
    .. py:method:: as_dict() -> dict[str, Any]
 
-      Convert the dataset to a dictionary.
+      Convert an object to a dictionary.
 
 
 
@@ -690,7 +790,7 @@ Package Contents
       :classmethod:
 
 
-      Create a dataset from a dictionary.
+      Create an object from a dictionary.
 
 
 
@@ -808,7 +908,7 @@ Package Contents
 
    .. py:method:: serialize_json() -> str
 
-      Serialize the dataset to a JSON string.
+      Serialize an object to a JSON string.
 
 
 
@@ -816,13 +916,13 @@ Package Contents
       :classmethod:
 
 
-      Deserialize the dataset from a JSON string.
+      Deserialize an object from a JSON string.
 
 
 
    .. py:method:: as_dict() -> dict[str, Any]
 
-      Convert the dataset to a dictionary.
+      Convert an object to a dictionary.
 
 
 
@@ -830,7 +930,7 @@ Package Contents
       :classmethod:
 
 
-      Create a dataset from a dictionary.
+      Create an object from a dictionary.
 
 
 
@@ -948,7 +1048,7 @@ Package Contents
 
    .. py:method:: serialize_json() -> str
 
-      Serialize the dataset to a JSON string.
+      Serialize an object to a JSON string.
 
 
 
@@ -956,13 +1056,13 @@ Package Contents
       :classmethod:
 
 
-      Deserialize the dataset from a JSON string.
+      Deserialize an object from a JSON string.
 
 
 
    .. py:method:: as_dict() -> dict[str, Any]
 
-      Convert the dataset to a dictionary.
+      Convert an object to a dictionary.
 
 
 
@@ -970,7 +1070,7 @@ Package Contents
       :classmethod:
 
 
-      Create a dataset from a dictionary.
+      Create an object from a dictionary.
 
 
 
@@ -983,6 +1083,18 @@ Package Contents
 
    .. py:property:: prim_trans_mat
       :type: list[list[int]]
+
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
 
 
 
@@ -1008,6 +1120,18 @@ Package Contents
 
 
 
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
+
+
 .. py:class:: MagneticSpaceGroup(prim_rotations: list[list[int]], prim_translations: list[list[float]], prim_time_reversals: list[bool], *, basis: list[list[float]] | None = None, epsilon: float = 0.0001)
 
    .. py:property:: uni_number
@@ -1022,6 +1146,18 @@ Package Contents
 
    .. py:property:: origin_shift
       :type: list[float]
+
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
 
 
 

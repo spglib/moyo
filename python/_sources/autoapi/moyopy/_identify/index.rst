@@ -29,6 +29,18 @@ Module Contents
 
 
 
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
+
+
 .. py:class:: SpaceGroup(prim_rotations: list[list[int]], prim_translations: list[list[float]], *, basis: list[list[float]] | None = None, setting: moyopy._data.Setting | None = None, epsilon: float = 0.0001)
 
    .. py:property:: number
@@ -51,6 +63,18 @@ Module Contents
 
 
 
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
+
+
 .. py:class:: MagneticSpaceGroup(prim_rotations: list[list[int]], prim_translations: list[list[float]], prim_time_reversals: list[bool], *, basis: list[list[float]] | None = None, epsilon: float = 0.0001)
 
    .. py:property:: uni_number
@@ -65,6 +89,18 @@ Module Contents
 
    .. py:property:: origin_shift
       :type: list[float]
+
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
 
 
 

@@ -333,6 +333,8 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup"><code class="docutils literal notranslate"><span class="pre">PointGroup</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup.arithmetic_number"><code class="docutils literal notranslate"><span class="pre">PointGroup.arithmetic_number</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup.prim_trans_mat"><code class="docutils literal notranslate"><span class="pre">PointGroup.prim_trans_mat</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup.serialize_json"><code class="docutils literal notranslate"><span class="pre">PointGroup.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup.as_dict"><code class="docutils literal notranslate"><span class="pre">PointGroup.as_dict()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup"><code class="docutils literal notranslate"><span class="pre">SpaceGroup</span></code></a><ul class="visible nav section-nav flex-column">
@@ -340,12 +342,16 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.hall_number"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.hall_number</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.linear"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.linear</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.origin_shift"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.origin_shift</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.serialize_json"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.as_dict"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.as_dict()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.MagneticSpaceGroup"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.MagneticSpaceGroup.uni_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup.uni_number</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.MagneticSpaceGroup.linear"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup.linear</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.MagneticSpaceGroup.origin_shift"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup.origin_shift</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.MagneticSpaceGroup.serialize_json"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.MagneticSpaceGroup.as_dict"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup.as_dict()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -395,6 +401,18 @@ document.write(`
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prim_trans_mat</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="reference internal" href="../../../_modules/moyopy/_identify.html#PointGroup.prim_trans_mat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.PointGroup.prim_trans_mat" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._identify.PointGroup.serialize_json">
+<span class="sig-name descname"><span class="pre">serialize_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/moyopy/_identify.html#PointGroup.serialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.PointGroup.serialize_json" title="Link to this definition">#</a></dt>
+<dd><p>Serialize an object to a JSON string</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._identify.PointGroup.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/moyopy/_identify.html#PointGroup.as_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.PointGroup.as_dict" title="Link to this definition">#</a></dt>
+<dd><p>Convert an object to a dictionary</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -420,6 +438,18 @@ document.write(`
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="reference internal" href="../../../_modules/moyopy/_identify.html#SpaceGroup.origin_shift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.SpaceGroup.origin_shift" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._identify.SpaceGroup.serialize_json">
+<span class="sig-name descname"><span class="pre">serialize_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/moyopy/_identify.html#SpaceGroup.serialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.SpaceGroup.serialize_json" title="Link to this definition">#</a></dt>
+<dd><p>Serialize an object to a JSON string</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._identify.SpaceGroup.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/moyopy/_identify.html#SpaceGroup.as_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.SpaceGroup.as_dict" title="Link to this definition">#</a></dt>
+<dd><p>Convert an object to a dictionary</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -439,6 +469,18 @@ document.write(`
 <dt class="sig sig-object py" id="moyopy._identify.MagneticSpaceGroup.origin_shift">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">origin_shift</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></em><a class="reference internal" href="../../../_modules/moyopy/_identify.html#MagneticSpaceGroup.origin_shift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.MagneticSpaceGroup.origin_shift" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._identify.MagneticSpaceGroup.serialize_json">
+<span class="sig-name descname"><span class="pre">serialize_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/moyopy/_identify.html#MagneticSpaceGroup.serialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.MagneticSpaceGroup.serialize_json" title="Link to this definition">#</a></dt>
+<dd><p>Serialize an object to a JSON string</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._identify.MagneticSpaceGroup.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/moyopy/_identify.html#MagneticSpaceGroup.as_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._identify.MagneticSpaceGroup.as_dict" title="Link to this definition">#</a></dt>
+<dd><p>Convert an object to a dictionary</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -495,6 +537,8 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup"><code class="docutils literal notranslate"><span class="pre">PointGroup</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup.arithmetic_number"><code class="docutils literal notranslate"><span class="pre">PointGroup.arithmetic_number</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup.prim_trans_mat"><code class="docutils literal notranslate"><span class="pre">PointGroup.prim_trans_mat</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup.serialize_json"><code class="docutils literal notranslate"><span class="pre">PointGroup.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.PointGroup.as_dict"><code class="docutils literal notranslate"><span class="pre">PointGroup.as_dict()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup"><code class="docutils literal notranslate"><span class="pre">SpaceGroup</span></code></a><ul class="visible nav section-nav flex-column">
@@ -502,12 +546,16 @@ document.write(`
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.hall_number"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.hall_number</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.linear"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.linear</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.origin_shift"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.origin_shift</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.serialize_json"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.SpaceGroup.as_dict"><code class="docutils literal notranslate"><span class="pre">SpaceGroup.as_dict()</span></code></a></li>
 </ul>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.MagneticSpaceGroup"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.MagneticSpaceGroup.uni_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup.uni_number</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.MagneticSpaceGroup.linear"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup.linear</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.MagneticSpaceGroup.origin_shift"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup.origin_shift</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.MagneticSpaceGroup.serialize_json"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._identify.MagneticSpaceGroup.as_dict"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup.as_dict()</span></code></a></li>
 </ul>
 </li>
 </ul>

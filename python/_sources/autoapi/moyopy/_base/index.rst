@@ -43,7 +43,7 @@ Module Contents
 
    .. py:method:: serialize_json() -> str
 
-      Serialize the cell to a JSON string
+      Serialize an object to a JSON string
 
 
 
@@ -51,13 +51,13 @@ Module Contents
       :classmethod:
 
 
-      Deserialize a JSON string to a Cell object
+      Deserialize a JSON string to an object
 
 
 
    .. py:method:: as_dict() -> dict[str, Any]
 
-      Convert the cell to a dictionary
+      Convert an object to a dictionary
 
 
 
@@ -65,7 +65,7 @@ Module Contents
       :classmethod:
 
 
-      Create a cell from a dictionary
+      Create an object from a dictionary
 
 
 
@@ -98,29 +98,29 @@ Module Contents
 
    .. py:method:: serialize_json() -> str
 
-      Serialize the cell to a JSON string
+      Serialize an object to a JSON string
 
 
 
-   .. py:method:: deserialize_json(json_str: str) -> Cell
+   .. py:method:: deserialize_json(json_str: str) -> CollinearMagneticCell
       :classmethod:
 
 
-      Deserialize a JSON string to a Cell object
+      Deserialize a JSON string to an object
 
 
 
    .. py:method:: as_dict() -> dict[str, Any]
 
-      Convert the cell to a dictionary
+      Convert an object to a dictionary
 
 
 
-   .. py:method:: from_dict(data: dict[str, Any]) -> Cell
+   .. py:method:: from_dict(data: dict[str, Any]) -> CollinearMagneticCell
       :classmethod:
 
 
-      Create a cell from a dictionary
+      Create an object from a dictionary
 
 
 
@@ -153,29 +153,29 @@ Module Contents
 
    .. py:method:: serialize_json() -> str
 
-      Serialize the cell to a JSON string
+      Serialize an object to a JSON string
 
 
 
-   .. py:method:: deserialize_json(json_str: str) -> Cell
+   .. py:method:: deserialize_json(json_str: str) -> NonCollinearMagneticCell
       :classmethod:
 
 
-      Deserialize a JSON string to a Cell object
+      Deserialize a JSON string to an object
 
 
 
    .. py:method:: as_dict() -> dict[str, Any]
 
-      Convert the cell to a dictionary
+      Convert an object to a dictionary
 
 
 
-   .. py:method:: from_dict(data: dict[str, Any]) -> Cell
+   .. py:method:: from_dict(data: dict[str, Any]) -> NonCollinearMagneticCell
       :classmethod:
 
 
-      Create a cell from a dictionary
+      Create an object from a dictionary
 
 
 
@@ -197,6 +197,34 @@ Module Contents
 
 
    .. py:method:: __len__() -> int
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: deserialize_json(json_str: str) -> Operations
+      :classmethod:
+
+
+      Deserialize a JSON string to an object
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
+
+
+   .. py:method:: from_dict(data: dict[str, Any]) -> Operations
+      :classmethod:
+
+
+      Create an object from a dictionary
+
 
 
 .. py:class:: MagneticOperations
@@ -222,5 +250,33 @@ Module Contents
 
 
    .. py:method:: __len__() -> int
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: deserialize_json(json_str: str) -> MagneticOperations
+      :classmethod:
+
+
+      Deserialize a JSON string to an object
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
+
+
+   .. py:method:: from_dict(data: dict[str, Any]) -> MagneticOperations
+      :classmethod:
+
+
+      Create an object from a dictionary
+
 
 

@@ -59,6 +59,18 @@ Module Contents
 
 
 
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
+
+
 .. py:class:: Centering
 
    .. py:property:: order
@@ -80,6 +92,18 @@ Module Contents
 
 
       Unique lattice points.
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
 
 
 .. py:class:: HallSymbolEntry(hall_number: int)
@@ -141,6 +165,18 @@ Module Contents
 
 
       Centering.
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
 
 
 .. py:class:: SpaceGroupType(number: int)
@@ -236,6 +272,18 @@ Module Contents
       for string values.
 
 
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
+
+
 .. py:class:: MagneticSpaceGroupType(uni_number: int)
 
    Magnetic space-group type information.
@@ -283,6 +331,18 @@ Module Contents
       Construct type of magnetic space group from 1 to 4.
 
 
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
+
+
 .. py:class:: ArithmeticCrystalClass(arithmetic_number: int)
 
    Arithmetic crystal class information.
@@ -314,6 +374,18 @@ Module Contents
 
 
       Bravais class.
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
+
 
 
 .. py:function:: operations_from_number(number: int, *, setting: Setting | None = None, primitive: bool = False) -> moyopy._base.Operations
