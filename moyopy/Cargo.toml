@@ -22,6 +22,7 @@ serde.workspace = true
 serde_json.workspace = true
 approx.workspace = true
 log.workspace = true
+itertools.workspace = true
 pyo3-log = "0.13"
 pythonize = "0.26"
 

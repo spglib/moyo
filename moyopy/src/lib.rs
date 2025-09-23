@@ -12,12 +12,12 @@ use crate::base::{
 };
 use crate::data::{
     PyArithmeticCrystalClass, PyCentering, PyHallSymbolEntry, PyMagneticSpaceGroupType, PySetting,
-    PySpaceGroupType, operations_from_number,
+    PySpaceGroupType, magnetic_operations_from_uni_number, operations_from_number,
 };
 use crate::dataset::{
     PyMoyoCollinearMagneticDataset, PyMoyoDataset, PyMoyoNonCollinearMagneticDataset,
 };
-use crate::identify::{PyPointGroup, PySpaceGroup};
+use crate::identify::{PyMagneticSpaceGroup, PyPointGroup, PySpaceGroup};
 
 // https://github.com/pydantic/pydantic-core/blob/main/src/lib.rs
 fn moyopy_version() -> &'static str {
@@ -66,10 +66,12 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyArithmeticCrystalClass>()?;
     // data: Misc
     m.add_wrapped(wrap_pyfunction!(operations_from_number))?;
+    m.add_wrapped(wrap_pyfunction!(magnetic_operations_from_uni_number))?;
 
     // identify
     m.add_class::<PyPointGroup>()?;
     m.add_class::<PySpaceGroup>()?;
+    m.add_class::<PyMagneticSpaceGroup>()?;
 
     Ok(())
 }

@@ -1,4 +1,4 @@
-from moyopy._base import Operations
+from moyopy._base import MagneticOperations, Operations
 
 ###############################################################################
 # Hall symbol data
@@ -166,3 +166,6 @@ class ArithmeticCrystalClass:
 def operations_from_number(
     number: int, *, setting: Setting | None = None, primitive: bool = False
 ) -> Operations: ...
+def magnetic_operations_from_uni_number(
+    uni_number: int, *, primitive: bool = False
+) -> MagneticOperations: ...

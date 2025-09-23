@@ -27,3 +27,20 @@ class SpaceGroup:
     def linear(self) -> list[list[int]]: ...
     @property
     def origin_shift(self) -> list[float]: ...
+
+class MagneticSpaceGroup:
+    def __init__(
+        self,
+        prim_rotations: list[list[int]],
+        prim_translations: list[list[float]],
+        prim_time_reversals: list[bool],
+        *,
+        basis: list[list[float]] | None = None,
+        epsilon: float = 1e-4,
+    ): ...
+    @property
+    def uni_number(self) -> int: ...
+    @property
+    def linear(self) -> list[list[int]]: ...
+    @property
+    def origin_shift(self) -> list[float]: ...

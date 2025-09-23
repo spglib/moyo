@@ -782,6 +782,7 @@ name = "moyopy"
 version = "0.4.8"
 dependencies = [
  "approx",
+ "itertools 0.14.0",
  "log",
  "moyo",
  "nalgebra",
