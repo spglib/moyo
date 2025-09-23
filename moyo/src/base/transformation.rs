@@ -2,6 +2,7 @@ use std::ops::Mul;
 
 use itertools::iproduct;
 use nalgebra::base::{Matrix3, Vector3};
+use serde::Serialize;
 
 use super::cell::Cell;
 use super::lattice::Lattice;
@@ -15,7 +16,7 @@ pub type Linear = Matrix3<i32>;
 pub type OriginShift = Vector3<f64>;
 
 /// Represent change of origin and basis for an affine space
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct UnimodularTransformation {
     pub linear: UnimodularLinear,
     pub origin_shift: OriginShift,

@@ -17,15 +17,15 @@ class Cell:
     def num_atoms(self) -> int: ...
     # Serialization and deserialization
     def serialize_json(self) -> str:
-        """Serialize the cell to a JSON string"""
+        """Serialize an object to a JSON string"""
     @classmethod
     def deserialize_json(cls, json_str: str) -> Cell:
-        """Deserialize a JSON string to a Cell object"""
+        """Deserialize a JSON string to an object"""
     def as_dict(self) -> dict[str, Any]:
-        """Convert the cell to a dictionary"""
+        """Convert an object to a dictionary"""
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Cell:
-        """Create a cell from a dictionary"""
+        """Create an object from a dictionary"""
 
 class CollinearMagneticCell:
     def __init__(
@@ -47,15 +47,15 @@ class CollinearMagneticCell:
     def num_atoms(self) -> int: ...
     # Serialization and deserialization
     def serialize_json(self) -> str:
-        """Serialize the cell to a JSON string"""
+        """Serialize an object to a JSON string"""
     @classmethod
-    def deserialize_json(cls, json_str: str) -> Cell:
-        """Deserialize a JSON string to a Cell object"""
+    def deserialize_json(cls, json_str: str) -> CollinearMagneticCell:
+        """Deserialize a JSON string to an object"""
     def as_dict(self) -> dict[str, Any]:
-        """Convert the cell to a dictionary"""
+        """Convert an object to a dictionary"""
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Cell:
-        """Create a cell from a dictionary"""
+    def from_dict(cls, data: dict[str, Any]) -> CollinearMagneticCell:
+        """Create an object from a dictionary"""
 
 class NonCollinearMagneticCell:
     def __init__(
@@ -77,15 +77,15 @@ class NonCollinearMagneticCell:
     def num_atoms(self) -> int: ...
     # Serialization and deserialization
     def serialize_json(self) -> str:
-        """Serialize the cell to a JSON string"""
+        """Serialize an object to a JSON string"""
     @classmethod
-    def deserialize_json(cls, json_str: str) -> Cell:
-        """Deserialize a JSON string to a Cell object"""
+    def deserialize_json(cls, json_str: str) -> NonCollinearMagneticCell:
+        """Deserialize a JSON string to an object"""
     def as_dict(self) -> dict[str, Any]:
-        """Convert the cell to a dictionary"""
+        """Convert an object to a dictionary"""
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> Cell:
-        """Create a cell from a dictionary"""
+    def from_dict(cls, data: dict[str, Any]) -> NonCollinearMagneticCell:
+        """Create an object from a dictionary"""
 
 class Operations:
     @property
@@ -95,6 +95,17 @@ class Operations:
     @property
     def num_operations(self) -> int: ...
     def __len__(self) -> int: ...
+    # Serialization and deserialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    @classmethod
+    def deserialize_json(cls, json_str: str) -> Operations:
+        """Deserialize a JSON string to an object"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> Operations:
+        """Create an object from a dictionary"""
 
 class MagneticOperations:
     @property
@@ -106,3 +117,14 @@ class MagneticOperations:
     @property
     def num_operations(self) -> int: ...
     def __len__(self) -> int: ...
+    # Serialization and deserialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    @classmethod
+    def deserialize_json(cls, json_str: str) -> MagneticOperations:
+        """Deserialize a JSON string to an object"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> MagneticOperations:
+        """Create an object from a dictionary"""

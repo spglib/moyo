@@ -1,4 +1,7 @@
-use pyo3::prelude::*;
+use pyo3::{IntoPyObjectExt, prelude::*};
+use pythonize::pythonize;
+use serde::Serialize;
+use serde_json;
 
 use crate::base::PyMoyoError;
 use moyo::base::MoyoError;
@@ -6,7 +9,7 @@ use moyo::data::{ArithmeticNumber, HallNumber, HallSymbolEntry, Number, hall_sym
 
 use super::centering::PyCentering;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "HallSymbolEntry", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyHallSymbolEntry(pub HallSymbolEntry);
@@ -57,6 +60,31 @@ impl PyHallSymbolEntry {
     #[getter]
     pub fn centering(&self) -> PyCentering {
         self.0.centering.into()
+    }
+
+    // ------------------------------------------------------------------------
+    // Special methods
+    // ------------------------------------------------------------------------
+    fn __repr__(&self) -> String {
+        self.serialize_json()
+    }
+
+    fn __str__(&self) -> String {
+        self.__repr__()
+    }
+
+    // ------------------------------------------------------------------------
+    // Serialization
+    // ------------------------------------------------------------------------
+    pub fn serialize_json(&self) -> String {
+        serde_json::to_string(&self).expect("Serialization should not fail")
+    }
+
+    pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
+        Python::attach(|py| {
+            let obj = pythonize(py, &self).expect("Python object conversion should not fail");
+            obj.into_py_any(py)
+        })
     }
 }
 

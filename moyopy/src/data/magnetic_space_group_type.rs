@@ -1,11 +1,14 @@
 use pyo3::exceptions::PyValueError;
-use pyo3::prelude::*;
+use pyo3::{IntoPyObjectExt, prelude::*};
+use pythonize::pythonize;
+use serde::Serialize;
+use serde_json;
 
 use moyo::data::{
     ConstructType, MagneticSpaceGroupType, Number, UNINumber, get_magnetic_space_group_type,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "MagneticSpaceGroupType", frozen)]
 pub struct PyMagneticSpaceGroupType(MagneticSpaceGroupType);
 
@@ -52,5 +55,30 @@ impl PyMagneticSpaceGroupType {
             ConstructType::Type3 => 3,
             ConstructType::Type4 => 4,
         }
+    }
+
+    // ------------------------------------------------------------------------
+    // Special methods
+    // ------------------------------------------------------------------------
+    fn __repr__(&self) -> String {
+        self.serialize_json()
+    }
+
+    fn __str__(&self) -> String {
+        self.__repr__()
+    }
+
+    // ------------------------------------------------------------------------
+    // Serialization
+    // ------------------------------------------------------------------------
+    pub fn serialize_json(&self) -> String {
+        serde_json::to_string(&self).expect("Serialization should not fail")
+    }
+
+    pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
+        Python::attach(|py| {
+            let obj = pythonize(py, &self).expect("Python object conversion should not fail");
+            obj.into_py_any(py)
+        })
     }
 }

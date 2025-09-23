@@ -1,5 +1,8 @@
 use itertools::izip;
-use pyo3::prelude::*;
+use pyo3::{IntoPyObjectExt, prelude::*};
+use pythonize::pythonize;
+use serde::Serialize;
+use serde_json;
 
 use moyo::base::{Lattice, MagneticOperation, Operation};
 use moyo::data::{ArithmeticNumber, HallNumber, Number, Setting, UNINumber};
@@ -9,7 +12,7 @@ use moyo::utils::{to_3_slice, to_3x3_slice, to_matrix3, to_vector3};
 use crate::base::PyMoyoError;
 use crate::data::PySetting;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "PointGroup", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyPointGroup(PointGroup);
@@ -42,6 +45,31 @@ impl PyPointGroup {
     pub fn prim_trans_mat(&self) -> [[i32; 3]; 3] {
         to_3x3_slice(&self.0.prim_trans_mat)
     }
+
+    // ------------------------------------------------------------------------
+    // Special methods
+    // ------------------------------------------------------------------------
+    fn __repr__(&self) -> String {
+        self.serialize_json()
+    }
+
+    fn __str__(&self) -> String {
+        self.__repr__()
+    }
+
+    // ------------------------------------------------------------------------
+    // Serialization
+    // ------------------------------------------------------------------------
+    pub fn serialize_json(&self) -> String {
+        serde_json::to_string(&self).expect("Serialization should not fail")
+    }
+
+    pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
+        Python::attach(|py| {
+            let obj = pythonize(py, &self).expect("Python object conversion should not fail");
+            obj.into_py_any(py)
+        })
+    }
 }
 
 impl From<PyPointGroup> for PointGroup {
@@ -56,7 +84,7 @@ impl From<PointGroup> for PyPointGroup {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "SpaceGroup", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PySpaceGroup(SpaceGroup);
@@ -112,6 +140,31 @@ impl PySpaceGroup {
     pub fn origin_shift(&self) -> [f64; 3] {
         to_3_slice(&self.0.transformation.origin_shift)
     }
+
+    // ------------------------------------------------------------------------
+    // Special methods
+    // ------------------------------------------------------------------------
+    fn __repr__(&self) -> String {
+        self.serialize_json()
+    }
+
+    fn __str__(&self) -> String {
+        self.__repr__()
+    }
+
+    // ------------------------------------------------------------------------
+    // Serialization
+    // ------------------------------------------------------------------------
+    pub fn serialize_json(&self) -> String {
+        serde_json::to_string(&self).expect("Serialization should not fail")
+    }
+
+    pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
+        Python::attach(|py| {
+            let obj = pythonize(py, &self).expect("Python object conversion should not fail");
+            obj.into_py_any(py)
+        })
+    }
 }
 
 impl From<PySpaceGroup> for SpaceGroup {
@@ -126,7 +179,7 @@ impl From<SpaceGroup> for PySpaceGroup {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "MagneticSpaceGroup", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyMagneticSpaceGroup(MagneticSpaceGroup);
@@ -173,6 +226,31 @@ impl PyMagneticSpaceGroup {
     #[getter]
     pub fn origin_shift(&self) -> [f64; 3] {
         to_3_slice(&self.0.transformation.origin_shift)
+    }
+
+    // ------------------------------------------------------------------------
+    // Special methods
+    // ------------------------------------------------------------------------
+    fn __repr__(&self) -> String {
+        self.serialize_json()
+    }
+
+    fn __str__(&self) -> String {
+        self.__repr__()
+    }
+
+    // ------------------------------------------------------------------------
+    // Serialization
+    // ------------------------------------------------------------------------
+    pub fn serialize_json(&self) -> String {
+        serde_json::to_string(&self).expect("Serialization should not fail")
+    }
+
+    pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
+        Python::attach(|py| {
+            let obj = pythonize(py, &self).expect("Python object conversion should not fail");
+            obj.into_py_any(py)
+        })
     }
 }
 

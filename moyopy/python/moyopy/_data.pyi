@@ -1,3 +1,5 @@
+from typing import Any
+
 from moyopy._base import MagneticOperations, Operations
 
 ###############################################################################
@@ -16,6 +18,11 @@ class Setting:
     @classmethod
     def hall_number(cls, hall_number: int) -> Setting:
         """Specific Hall number from 1 to 530."""
+    # Serialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
 
 class Centering:
     @property
@@ -27,6 +34,11 @@ class Centering:
     @property
     def lattice_points(self) -> list[list[float]]:
         """Unique lattice points."""
+    # Serialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
 
 class HallSymbolEntry:
     """An entry containing space-group information for a specified hall_number."""
@@ -55,6 +67,11 @@ class HallSymbolEntry:
     @property
     def centering(self) -> Centering:
         """Centering."""
+    # Serialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
 
 ###############################################################################
 # Group data
@@ -120,6 +137,11 @@ class SpaceGroupType:
         See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs
         for string values.
         """
+    # Serialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
 
 class MagneticSpaceGroupType:
     """Magnetic space-group type information."""
@@ -142,6 +164,11 @@ class MagneticSpaceGroupType:
     @property
     def construct_type(self) -> int:
         """Construct type of magnetic space group from 1 to 4."""
+    # Serialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
 
 class ArithmeticCrystalClass:
     """Arithmetic crystal class information."""
@@ -158,6 +185,11 @@ class ArithmeticCrystalClass:
     @property
     def bravais_class(self) -> str:
         """Bravais class."""
+    # Serialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
 
 ###############################################################################
 # Misc

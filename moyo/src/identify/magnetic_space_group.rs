@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use log::debug;
+use serde::Serialize;
 
 use super::normalizer::integral_normalizer;
 use super::point_group::{iter_trans_mat_basis, iter_unimodular_trans_mat};
@@ -15,7 +16,7 @@ use crate::data::{
     get_magnetic_space_group_type, hall_symbol_entry, magnetic_hall_symbol_entry, uni_number_range,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct MagneticSpaceGroup {
     pub uni_number: UNINumber,
     /// Transformation to the representative for `uni_number` in primitive
