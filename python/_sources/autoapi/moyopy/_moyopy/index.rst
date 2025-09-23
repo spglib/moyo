@@ -30,6 +30,7 @@ Classes
    moyopy._moyopy.MoyoCollinearMagneticDataset
    moyopy._moyopy.MoyoDataset
    moyopy._moyopy.MoyoNonCollinearMagneticDataset
+   moyopy._moyopy.MagneticSpaceGroup
    moyopy._moyopy.PointGroup
    moyopy._moyopy.SpaceGroup
 
@@ -39,6 +40,7 @@ Functions
 
 .. autoapisummary::
 
+   moyopy._moyopy.magnetic_operations_from_uni_number
    moyopy._moyopy.operations_from_number
 
 
@@ -512,6 +514,8 @@ Module Contents
       for string values.
 
 
+.. py:function:: magnetic_operations_from_uni_number(uni_number: int, *, primitive: bool = False) -> moyopy._base.MagneticOperations
+
 .. py:function:: operations_from_number(number: int, *, setting: Setting | None = None, primitive: bool = False) -> moyopy._base.Operations
 
 .. py:class:: MoyoCollinearMagneticDataset(magnetic_cell: moyopy._base.CollinearMagneticCell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, mag_symprec: float | None = None, is_axial: bool = False)
@@ -953,6 +957,23 @@ Module Contents
 
 
       Create a dataset from a dictionary.
+
+
+
+.. py:class:: MagneticSpaceGroup(prim_rotations: list[list[int]], prim_translations: list[list[float]], prim_time_reversals: list[bool], *, basis: list[list[float]] | None = None, epsilon: float = 0.0001)
+
+   .. py:property:: uni_number
+      :type: int
+
+
+
+   .. py:property:: linear
+      :type: list[list[int]]
+
+
+
+   .. py:property:: origin_shift
+      :type: list[float]
 
 
 

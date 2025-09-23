@@ -23,6 +23,7 @@ Functions
 .. autoapisummary::
 
    moyopy._data.operations_from_number
+   moyopy._data.magnetic_operations_from_uni_number
 
 
 Module Contents
@@ -316,4 +317,6 @@ Module Contents
 
 
 .. py:function:: operations_from_number(number: int, *, setting: Setting | None = None, primitive: bool = False) -> moyopy._base.Operations
+
+.. py:function:: magnetic_operations_from_uni_number(uni_number: int, *, primitive: bool = False) -> moyopy._base.MagneticOperations
 

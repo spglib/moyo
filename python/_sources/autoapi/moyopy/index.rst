@@ -46,6 +46,7 @@ Classes
    moyopy.MoyoNonCollinearMagneticDataset
    moyopy.PointGroup
    moyopy.SpaceGroup
+   moyopy.MagneticSpaceGroup
 
 
 Functions
@@ -54,6 +55,7 @@ Functions
 .. autoapisummary::
 
    moyopy.operations_from_number
+   moyopy.magnetic_operations_from_uni_number
 
 
 Package Contents
@@ -528,6 +530,8 @@ Package Contents
 
 .. py:function:: operations_from_number(number: int, *, setting: Setting | None = None, primitive: bool = False) -> moyopy._base.Operations
 
+.. py:function:: magnetic_operations_from_uni_number(uni_number: int, *, primitive: bool = False) -> moyopy._base.MagneticOperations
+
 .. py:class:: MoyoDataset(cell: moyopy._base.Cell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, setting: moyopy._data.Setting | None = None)
 
    A dataset containing symmetry information of the input crystal structure.
@@ -990,6 +994,23 @@ Package Contents
 
 
    .. py:property:: hall_number
+      :type: int
+
+
+
+   .. py:property:: linear
+      :type: list[list[int]]
+
+
+
+   .. py:property:: origin_shift
+      :type: list[float]
+
+
+
+.. py:class:: MagneticSpaceGroup(prim_rotations: list[list[int]], prim_translations: list[list[float]], prim_time_reversals: list[bool], *, basis: list[list[float]] | None = None, epsilon: float = 0.0001)
+
+   .. py:property:: uni_number
       :type: int
 
 

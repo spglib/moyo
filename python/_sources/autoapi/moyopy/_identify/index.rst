@@ -11,6 +11,7 @@ Classes
 
    moyopy._identify.PointGroup
    moyopy._identify.SpaceGroup
+   moyopy._identify.MagneticSpaceGroup
 
 
 Module Contents
@@ -36,6 +37,23 @@ Module Contents
 
 
    .. py:property:: hall_number
+      :type: int
+
+
+
+   .. py:property:: linear
+      :type: list[list[int]]
+
+
+
+   .. py:property:: origin_shift
+      :type: list[float]
+
+
+
+.. py:class:: MagneticSpaceGroup(prim_rotations: list[list[int]], prim_translations: list[list[float]], prim_time_reversals: list[bool], *, basis: list[list[float]] | None = None, epsilon: float = 0.0001)
+
+   .. py:property:: uni_number
       :type: int
 
 

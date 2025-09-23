@@ -282,7 +282,7 @@ document.write(`
                 <article class="bd-article">
                   
   <h1>Source code for moyopy._data</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">moyopy._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">Operations</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">moyopy._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">MagneticOperations</span><span class="p">,</span> <span class="n">Operations</span>
 
 <span class="c1">###############################################################################</span>
 <span class="c1"># Hall symbol data</span>
@@ -572,6 +572,12 @@ document.write(`
 <span class="k">def</span><span class="w"> </span><span class="nf">operations_from_number</span><span class="p">(</span>
     <span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">setting</span><span class="p">:</span> <span class="n">Setting</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">primitive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Operations</span><span class="p">:</span> <span class="o">...</span></div>
+
+<div class="viewcode-block" id="magnetic_operations_from_uni_number">
+<a class="viewcode-back" href="../../autoapi/moyopy/index.html#moyopy._data.magnetic_operations_from_uni_number">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">magnetic_operations_from_uni_number</span><span class="p">(</span>
+    <span class="n">uni_number</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">primitive</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MagneticOperations</span><span class="p">:</span> <span class="o">...</span></div>
 
 </pre></div>
 
