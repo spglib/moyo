@@ -15,7 +15,7 @@ jobs:
       python: ${{ steps.filter.outputs.python }}
       c: ${{ steps.filter.outputs.c }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Filter paths
         id: filter
         uses: dorny/paths-filter@v2

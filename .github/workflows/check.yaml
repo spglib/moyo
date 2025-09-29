@@ -13,7 +13,7 @@ jobs:
     env:
       SKIP: cbindgen
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
@@ -24,7 +24,7 @@ jobs:
   cargo-deny:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - uses: Swatinem/rust-cache@v2
     - uses: EmbarkStudios/cargo-deny-action@v1
       with:
