@@ -17,4 +17,4 @@ moyo = { path = "../moyo" }
 wasm-bindgen = { version = "0.2", features = ["serde-serialize"] }
 serde = { workspace = true }
 serde_json = { workspace = true }
-tsify = { version = "0.4", features = ["js"] }
+tsify = { version = "0.5", features = ["js"] }
