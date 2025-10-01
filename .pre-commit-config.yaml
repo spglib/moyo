@@ -77,9 +77,8 @@ repos:
         types: [jupyter]
         files: \.ipynb$
   # sub-pre-commit
-  # TODO: Replace with official release after https://github.com/ddanier/sub-pre-commit/pull/4 is merged
-  - repo: https://github.com/lan496/sub-pre-commit.git
-    rev: 6e21156da453424e9b9c70c0e85e1debe58ea1bf  # pre-commit v4.3.0 compatible
+  - repo: https://github.com/ddanier/sub-pre-commit.git
+    rev: v4.3.0-2
     hooks:
       - id: sub-pre-commit
         alias: moyopy
