@@ -176,6 +176,8 @@ class MoyoNonCollinearMagneticAdapter:
         basis = structure.lattice.matrix.tolist()
         positions = structure.frac_coords.tolist()
         numbers = [site.specie.Z for site in structure]
+        if "magmom" not in structure.site_properties:
+            raise ValueError("Structure must have non-collinear magnetic moments in site_properties['magmom']")
         magnetic_moments_arr = np.array(structure.site_properties["magmom"])
 
         if magnetic_moments_arr.shape != (len(structure), 3):
