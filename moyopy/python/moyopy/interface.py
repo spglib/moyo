@@ -4,6 +4,7 @@ from warnings import warn
 
 try:
     import ase
+    import numpy as np
     from pymatgen.core import Composition, Element, Structure
     from pymatgen.io.ase import MSONAtoms
 except ImportError:
@@ -15,7 +16,7 @@ import moyopy
 class MoyoAdapter:
     @staticmethod
     def get_structure(
-        cell: moyopy.Cell, unique_species_mapping: dict[int, Composition] | None = None
+        cell: moyopy.Cell, *, unique_species_mapping: dict[int, Composition] | None = None
     ) -> Structure:
         """Convert a Moyo Cell to a pymatgen Structure.
 
@@ -35,10 +36,7 @@ class MoyoAdapter:
         structure : Structure
             The converted pymatgen Structure object.
         """
-        if unique_species_mapping:
-            species = [unique_species_mapping[number] for number in cell.numbers]
-        else:
-            species = [Element.from_Z(number) for number in cell.numbers]
+        species = _species_from_numbers(cell.numbers, unique_species_mapping)
         return Structure(lattice=cell.basis, species=species, coords=cell.positions)
 
     @staticmethod
@@ -53,6 +51,7 @@ class MoyoAdapter:
 
     @staticmethod
     def from_structure(structure: Structure) -> moyopy.Cell:
+        """Convert a pymatgen Structure to a Moyo Cell."""
         if not structure.is_ordered:
             raise ValueError("Structure must be ordered. Use from_disordered_structure instead.")
 
@@ -88,12 +87,7 @@ class MoyoAdapter:
         if structure.is_ordered:
             warn("Structure is ordered. Consider using from_structure.")
 
-        unique_species = {}
-        for site in structure:
-            key = site.species
-            if key not in unique_species:
-                unique_species[key] = len(unique_species)
-        unique_species_mapping = {i: species for i, species in enumerate(unique_species)}
+        unique_species, unique_species_mapping = _get_unique_species_and_mapping(structure)
 
         basis = structure.lattice.matrix.tolist()
         positions = structure.frac_coords.tolist()
@@ -135,3 +129,129 @@ class MoyoAdapter:
         else:
             cls_name = type(struct).__name__
             raise TypeError(f"Expected Structure, Atoms, or MSONAtoms, got {cls_name}")
+
+
+class MoyoNonCollinearMagneticAdapter:
+    @staticmethod
+    def get_structure(
+        magnetic_cell: moyopy.NonCollinearMagneticCell,
+        *,
+        unique_species_mapping: dict[int, Composition] | None = None,
+    ) -> Structure:
+        """Convert a Moyo NonCollinearMagneticCell to a pymatgen Structure.
+
+        If the NonCollinearMagneticCell was created from a disordered Structure, the
+        unique_species_mapping should be provided to reconstruct the original species.
+
+        Parameters
+        ----------
+        magnetic_cell : moyopy.NonCollinearMagneticCell
+            The Moyo NonCollinearMagneticCell to convert.
+        unique_species_mapping : dict[int, Composition] | None
+            A mapping from integer indices used in the Moyo NonCollinearMagneticCell to the
+            original pymatgen SpeciesLike objects. If None, assumes the NonCollinearMagneticCell
+            was created from an ordered Structure.
+
+        Returns
+        -------
+        structure : Structure
+            The converted pymatgen Structure object with magnetic moments in
+            site_properties['magmom'].
+        """
+        species = _species_from_numbers(magnetic_cell.numbers, unique_species_mapping)
+        return Structure(
+            lattice=magnetic_cell.basis,
+            species=species,
+            coords=magnetic_cell.positions,
+            site_properties={"magmom": magnetic_cell.magnetic_moments},
+        )
+
+    @staticmethod
+    def from_structure(structure: Structure) -> moyopy.NonCollinearMagneticCell:
+        """Convert a pymatgen Structure with non-collinear magnetic moments to a Moyo
+        NonCollinearMagneticCell."""
+        if not structure.is_ordered:
+            raise ValueError("Structure must be ordered. Use from_disordered_structure instead.")
+
+        basis = structure.lattice.matrix.tolist()
+        positions = structure.frac_coords.tolist()
+        numbers = [site.specie.Z for site in structure]
+        magnetic_moments_arr = np.array(structure.site_properties["magmom"])
+
+        if magnetic_moments_arr.shape != (len(structure), 3):
+            raise ValueError(
+                "Structure must have non-collinear magnetic moments in site_properties['magmom']"
+            )
+
+        return moyopy.NonCollinearMagneticCell(
+            basis=basis,
+            positions=positions,
+            numbers=numbers,
+            magnetic_moments=magnetic_moments_arr.tolist(),
+        )
+
+    @staticmethod
+    def from_disordered_structure(
+        structure: Structure,
+    ) -> tuple[moyopy.NonCollinearMagneticCell, dict[int, Composition]]:
+        """Convert a disordered pymatgen Structure with non-collinear magnetic moments to a Moyo
+        NonCollinearMagneticCell.
+
+        Parameters
+        ----------
+        structure : Structure
+            A pymatgen Structure object, which may contain disordered sites. Must have
+            non-collinear magnetic moments in site_properties['magmom'].
+
+        Returns
+        -------
+        magnetic_cell : moyopy.NonCollinearMagneticCell
+            The converted Moyo NonCollinearMagneticCell object.
+        unique_species_mapping : dict[int, Composition]
+            A mapping from integer indices used in the Moyo NonCollinearMagneticCell to the
+            original pymatgen SpeciesLike objects.
+        """
+        if structure.is_ordered:
+            warn("Structure is ordered. Consider using from_structure.")
+
+        unique_species, unique_species_mapping = _get_unique_species_and_mapping(structure)
+
+        basis = structure.lattice.matrix.tolist()
+        positions = structure.frac_coords.tolist()
+        numbers = [unique_species[site.species] for site in structure]
+        magnetic_moments_arr = np.array(structure.site_properties["magmom"])
+
+        if magnetic_moments_arr.shape != (len(structure), 3):
+            raise ValueError(
+                "Structure must have non-collinear magnetic moments in site_properties['magmom']"
+            )
+
+        magnetic_cell = moyopy.NonCollinearMagneticCell(
+            basis=basis,
+            positions=positions,
+            numbers=numbers,
+            magnetic_moments=magnetic_moments_arr.tolist(),
+        )
+        return magnetic_cell, unique_species_mapping
+
+
+def _species_from_numbers(
+    numbers: list[int], unique_species_mapping: dict[int, Composition] | None = None
+) -> list[Composition]:
+    if unique_species_mapping:
+        species = [unique_species_mapping[number] for number in numbers]
+    else:
+        species = [Element.from_Z(number) for number in numbers]
+    return species
+
+
+def _get_unique_species_and_mapping(
+    structure: Structure,
+) -> tuple[dict[Composition, int], dict[int, Composition]]:
+    unique_species = {}
+    for site in structure:
+        key = site.species
+        if key not in unique_species:
+            unique_species[key] = len(unique_species)
+    unique_species_mapping = {i: species for i, species in enumerate(unique_species)}
+    return unique_species, unique_species_mapping
