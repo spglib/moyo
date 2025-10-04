@@ -182,7 +182,8 @@ class MoyoNonCollinearMagneticAdapter:
 
         if magnetic_moments_arr.shape != (len(structure), 3):
             raise ValueError(
-                "Structure must have non-collinear magnetic moments in site_properties['magmom']"
+                f"Structure must have non-collinear magnetic moments in site_properties['magmom']. "
+                f"Expected shape: ({len(structure)}, 3), actual shape: {magnetic_moments_arr.shape}."
             )
 
         return moyopy.NonCollinearMagneticCell(
