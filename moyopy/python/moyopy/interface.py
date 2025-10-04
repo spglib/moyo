@@ -177,13 +177,15 @@ class MoyoNonCollinearMagneticAdapter:
         positions = structure.frac_coords.tolist()
         numbers = [site.specie.Z for site in structure]
         if "magmom" not in structure.site_properties:
-            raise ValueError("Structure must have non-collinear magnetic moments in site_properties['magmom']")
+            raise ValueError(
+                "Structure must have non-collinear magnetic moments in site_properties['magmom']"
+            )
         magnetic_moments_arr = np.array(structure.site_properties["magmom"])
 
         if magnetic_moments_arr.shape != (len(structure), 3):
             raise ValueError(
-                f"Structure must have non-collinear magnetic moments in site_properties['magmom']. "
-                f"Expected shape: ({len(structure)}, 3), actual shape: {magnetic_moments_arr.shape}."
+                f"Structure must have non-collinear magnetic moments. "
+                f"Expected: ({len(structure)}, 3), actual: {magnetic_moments_arr.shape}."
             )
 
         return moyopy.NonCollinearMagneticCell(
@@ -230,7 +232,7 @@ class MoyoNonCollinearMagneticAdapter:
 
         if magnetic_moments_arr.shape != (len(structure), 3):
             raise ValueError(
-                f"Structure must have non-collinear magnetic moments in site_properties['magmom']. "
+                "Structure must have non-collinear magnetic moments in site_properties['magmom']. "
                 f"Expected shape: ({len(structure)}, 3), got: {magnetic_moments_arr.shape}."
             )
 
