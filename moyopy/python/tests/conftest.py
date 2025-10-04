@@ -2,7 +2,7 @@ from math import sqrt
 
 import pytest
 
-from moyopy import Cell, CollinearMagneticCell
+from moyopy import Cell, CollinearMagneticCell, NonCollinearMagneticCell
 
 
 @pytest.fixture
@@ -48,8 +48,39 @@ def rutile_type3() -> CollinearMagneticCell:
         [0.2, 0.8, 0.5],
         [0.8, 0.2, 0.5],
     ]
-    numbers = [0, 0, 1, 1, 1, 1]
+    numbers = [2, 2, 1, 1, 1, 1]
     magnetic_moments = [0.7, -0.7, 0.0, 0.0, 0.0, 0.0]
 
     magnetic_cell = CollinearMagneticCell(basis, positions, numbers, magnetic_moments)
+    return magnetic_cell
+
+
+@pytest.fixture
+def rutile_type3_noncollinear() -> NonCollinearMagneticCell:
+    basis = [
+        [1.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0],
+        [0.0, 0.0, 1.0],
+    ]
+    positions = [
+        # Ti (2a)
+        [0.0, 0.0, 0.0],
+        [0.5, 0.5, 0.5],
+        # O (4f)
+        [0.3, 0.3, 0.0],
+        [0.7, 0.7, 0.0],
+        [0.2, 0.8, 0.5],
+        [0.8, 0.2, 0.5],
+    ]
+    numbers = [2, 2, 1, 1, 1, 1]
+    magnetic_moments = [
+        [0.7, 0.0, 0.0],
+        [-0.7, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0],
+    ]
+
+    magnetic_cell = NonCollinearMagneticCell(basis, positions, numbers, magnetic_moments)
     return magnetic_cell
