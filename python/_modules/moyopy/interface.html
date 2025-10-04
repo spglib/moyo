@@ -288,6 +288,7 @@ document.write(`
 
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">ase</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">pymatgen.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">Composition</span><span class="p">,</span> <span class="n">Element</span><span class="p">,</span> <span class="n">Structure</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">pymatgen.io.ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">MSONAtoms</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -303,7 +304,7 @@ document.write(`
 <div class="viewcode-block" id="MoyoAdapter.get_structure">
 <a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoAdapter.get_structure">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_structure</span><span class="p">(</span>
-        <span class="n">cell</span><span class="p">:</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">Cell</span><span class="p">,</span> <span class="n">unique_species_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Composition</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">cell</span><span class="p">:</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">Cell</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">unique_species_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Composition</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Structure</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a Moyo Cell to a pymatgen Structure.</span>
 
@@ -323,10 +324,7 @@ document.write(`
 <span class="sd">        structure : Structure</span>
 <span class="sd">            The converted pymatgen Structure object.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">unique_species_mapping</span><span class="p">:</span>
-            <span class="n">species</span> <span class="o">=</span> <span class="p">[</span><span class="n">unique_species_mapping</span><span class="p">[</span><span class="n">number</span><span class="p">]</span> <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">cell</span><span class="o">.</span><span class="n">numbers</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">species</span> <span class="o">=</span> <span class="p">[</span><span class="n">Element</span><span class="o">.</span><span class="n">from_Z</span><span class="p">(</span><span class="n">number</span><span class="p">)</span> <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">cell</span><span class="o">.</span><span class="n">numbers</span><span class="p">]</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="n">_species_from_numbers</span><span class="p">(</span><span class="n">cell</span><span class="o">.</span><span class="n">numbers</span><span class="p">,</span> <span class="n">unique_species_mapping</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Structure</span><span class="p">(</span><span class="n">lattice</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span> <span class="n">species</span><span class="o">=</span><span class="n">species</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">positions</span><span class="p">)</span></div>
 
 
@@ -347,6 +345,7 @@ document.write(`
 <div class="viewcode-block" id="MoyoAdapter.from_structure">
 <a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoAdapter.from_structure">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_structure</span><span class="p">(</span><span class="n">structure</span><span class="p">:</span> <span class="n">Structure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">Cell</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a pymatgen Structure to a Moyo Cell.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">structure</span><span class="o">.</span><span class="n">is_ordered</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Structure must be ordered. Use from_disordered_structure instead.&quot;</span><span class="p">)</span>
 
@@ -385,12 +384,7 @@ document.write(`
         <span class="k">if</span> <span class="n">structure</span><span class="o">.</span><span class="n">is_ordered</span><span class="p">:</span>
             <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Structure is ordered. Consider using from_structure.&quot;</span><span class="p">)</span>
 
-        <span class="n">unique_species</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">structure</span><span class="p">:</span>
-            <span class="n">key</span> <span class="o">=</span> <span class="n">site</span><span class="o">.</span><span class="n">species</span>
-            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unique_species</span><span class="p">:</span>
-                <span class="n">unique_species</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_species</span><span class="p">)</span>
-        <span class="n">unique_species_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">species</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">species</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_species</span><span class="p">)}</span>
+        <span class="n">unique_species</span><span class="p">,</span> <span class="n">unique_species_mapping</span> <span class="o">=</span> <span class="n">_get_unique_species_and_mapping</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span>
 
         <span class="n">basis</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         <span class="n">positions</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">frac_coords</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -439,6 +433,160 @@ document.write(`
             <span class="n">cls_name</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">struct</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Expected Structure, Atoms, or MSONAtoms, got </span><span class="si">{</span><span class="n">cls_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 </div>
+
+
+
+<div class="viewcode-block" id="MoyoNonCollinearMagneticAdapter">
+<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoNonCollinearMagneticAdapter">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MoyoNonCollinearMagneticAdapter</span><span class="p">:</span>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="MoyoNonCollinearMagneticAdapter.get_structure">
+<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.get_structure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_structure</span><span class="p">(</span>
+        <span class="n">magnetic_cell</span><span class="p">:</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">NonCollinearMagneticCell</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">unique_species_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Composition</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Structure</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a Moyo NonCollinearMagneticCell to a pymatgen Structure.</span>
+
+<span class="sd">        If the NonCollinearMagneticCell was created from a disordered Structure, the</span>
+<span class="sd">        unique_species_mapping should be provided to reconstruct the original species.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        magnetic_cell : moyopy.NonCollinearMagneticCell</span>
+<span class="sd">            The Moyo NonCollinearMagneticCell to convert.</span>
+<span class="sd">        unique_species_mapping : dict[int, Composition] | None</span>
+<span class="sd">            A mapping from integer indices used in the Moyo NonCollinearMagneticCell to the</span>
+<span class="sd">            original pymatgen SpeciesLike objects. If None, assumes the NonCollinearMagneticCell</span>
+<span class="sd">            was created from an ordered Structure.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        structure : Structure</span>
+<span class="sd">            The converted pymatgen Structure object with magnetic moments in</span>
+<span class="sd">            site_properties[&#39;magmom&#39;].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="n">_species_from_numbers</span><span class="p">(</span><span class="n">magnetic_cell</span><span class="o">.</span><span class="n">numbers</span><span class="p">,</span> <span class="n">unique_species_mapping</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Structure</span><span class="p">(</span>
+            <span class="n">lattice</span><span class="o">=</span><span class="n">magnetic_cell</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span>
+            <span class="n">species</span><span class="o">=</span><span class="n">species</span><span class="p">,</span>
+            <span class="n">coords</span><span class="o">=</span><span class="n">magnetic_cell</span><span class="o">.</span><span class="n">positions</span><span class="p">,</span>
+            <span class="n">site_properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;magmom&quot;</span><span class="p">:</span> <span class="n">magnetic_cell</span><span class="o">.</span><span class="n">magnetic_moments</span><span class="p">},</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="MoyoNonCollinearMagneticAdapter.from_structure">
+<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.from_structure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_structure</span><span class="p">(</span><span class="n">structure</span><span class="p">:</span> <span class="n">Structure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">NonCollinearMagneticCell</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a pymatgen Structure with non-collinear magnetic moments to a Moyo</span>
+<span class="sd">        NonCollinearMagneticCell.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">structure</span><span class="o">.</span><span class="n">is_ordered</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Structure must be ordered. Use from_disordered_structure instead.&quot;</span><span class="p">)</span>
+
+        <span class="n">basis</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">frac_coords</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">numbers</span> <span class="o">=</span> <span class="p">[</span><span class="n">site</span><span class="o">.</span><span class="n">specie</span><span class="o">.</span><span class="n">Z</span> <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">structure</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;magmom&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">structure</span><span class="o">.</span><span class="n">site_properties</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Structure must have non-collinear magnetic moments in site_properties[&#39;magmom&#39;]&quot;</span>
+            <span class="p">)</span>
+        <span class="n">magnetic_moments_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">site_properties</span><span class="p">[</span><span class="s2">&quot;magmom&quot;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">magnetic_moments_arr</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">structure</span><span class="p">),</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Structure must have non-collinear magnetic moments. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected: (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span><span class="si">}</span><span class="s2">, 3), actual: </span><span class="si">{</span><span class="n">magnetic_moments_arr</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">NonCollinearMagneticCell</span><span class="p">(</span>
+            <span class="n">basis</span><span class="o">=</span><span class="n">basis</span><span class="p">,</span>
+            <span class="n">positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
+            <span class="n">numbers</span><span class="o">=</span><span class="n">numbers</span><span class="p">,</span>
+            <span class="n">magnetic_moments</span><span class="o">=</span><span class="n">magnetic_moments_arr</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="p">)</span></div>
+
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="MoyoNonCollinearMagneticAdapter.from_disordered_structure">
+<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.from_disordered_structure">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_disordered_structure</span><span class="p">(</span>
+        <span class="n">structure</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">moyopy</span><span class="o">.</span><span class="n">NonCollinearMagneticCell</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Composition</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a disordered pymatgen Structure with non-collinear magnetic moments to a Moyo</span>
+<span class="sd">        NonCollinearMagneticCell.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        structure : Structure</span>
+<span class="sd">            A pymatgen Structure object, which may contain disordered sites. Must have</span>
+<span class="sd">            non-collinear magnetic moments in site_properties[&#39;magmom&#39;].</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        magnetic_cell : moyopy.NonCollinearMagneticCell</span>
+<span class="sd">            The converted Moyo NonCollinearMagneticCell object.</span>
+<span class="sd">        unique_species_mapping : dict[int, Composition]</span>
+<span class="sd">            A mapping from integer indices used in the Moyo NonCollinearMagneticCell to the</span>
+<span class="sd">            original pymatgen SpeciesLike objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">structure</span><span class="o">.</span><span class="n">is_ordered</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Structure is ordered. Consider using from_structure.&quot;</span><span class="p">)</span>
+
+        <span class="n">unique_species</span><span class="p">,</span> <span class="n">unique_species_mapping</span> <span class="o">=</span> <span class="n">_get_unique_species_and_mapping</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span>
+
+        <span class="n">basis</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">lattice</span><span class="o">.</span><span class="n">matrix</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">positions</span> <span class="o">=</span> <span class="n">structure</span><span class="o">.</span><span class="n">frac_coords</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">numbers</span> <span class="o">=</span> <span class="p">[</span><span class="n">unique_species</span><span class="p">[</span><span class="n">site</span><span class="o">.</span><span class="n">species</span><span class="p">]</span> <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">structure</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;magmom&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">structure</span><span class="o">.</span><span class="n">site_properties</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Structure must have non-collinear magnetic moments in site_properties[&#39;magmom&#39;]&quot;</span>
+            <span class="p">)</span>
+        <span class="n">magnetic_moments_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">structure</span><span class="o">.</span><span class="n">site_properties</span><span class="p">[</span><span class="s2">&quot;magmom&quot;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">magnetic_moments_arr</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">structure</span><span class="p">),</span> <span class="mi">3</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Structure must have non-collinear magnetic moments in site_properties[&#39;magmom&#39;]. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Expected shape: (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">structure</span><span class="p">)</span><span class="si">}</span><span class="s2">, 3), got: </span><span class="si">{</span><span class="n">magnetic_moments_arr</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">magnetic_cell</span> <span class="o">=</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">NonCollinearMagneticCell</span><span class="p">(</span>
+            <span class="n">basis</span><span class="o">=</span><span class="n">basis</span><span class="p">,</span>
+            <span class="n">positions</span><span class="o">=</span><span class="n">positions</span><span class="p">,</span>
+            <span class="n">numbers</span><span class="o">=</span><span class="n">numbers</span><span class="p">,</span>
+            <span class="n">magnetic_moments</span><span class="o">=</span><span class="n">magnetic_moments_arr</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">magnetic_cell</span><span class="p">,</span> <span class="n">unique_species_mapping</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="_species_from_numbers">
+<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface._species_from_numbers">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_species_from_numbers</span><span class="p">(</span>
+    <span class="n">numbers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">unique_species_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Composition</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Composition</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">unique_species_mapping</span><span class="p">:</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="p">[</span><span class="n">unique_species_mapping</span><span class="p">[</span><span class="n">number</span><span class="p">]</span> <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">numbers</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">species</span> <span class="o">=</span> <span class="p">[</span><span class="n">Element</span><span class="o">.</span><span class="n">from_Z</span><span class="p">(</span><span class="n">number</span><span class="p">)</span> <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">numbers</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">species</span></div>
+
+
+
+<div class="viewcode-block" id="_get_unique_species_and_mapping">
+<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface._get_unique_species_and_mapping">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_unique_species_and_mapping</span><span class="p">(</span>
+    <span class="n">structure</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="n">Composition</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Composition</span><span class="p">]]:</span>
+    <span class="n">unique_species</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">site</span> <span class="ow">in</span> <span class="n">structure</span><span class="p">:</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">site</span><span class="o">.</span><span class="n">species</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unique_species</span><span class="p">:</span>
+            <span class="n">unique_species</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_species</span><span class="p">)</span>
+    <span class="n">unique_species_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">species</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">species</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_species</span><span class="p">)}</span>
+    <span class="k">return</span> <span class="n">unique_species</span><span class="p">,</span> <span class="n">unique_species_mapping</span></div>
 
 </pre></div>
 
