@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v5
       - name: Filter paths
         id: filter
-        uses: dorny/paths-filter@v2
+        uses: dorny/paths-filter@v3
         with:
           filters: .github/filters.yaml
 
