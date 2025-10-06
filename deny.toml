@@ -60,6 +60,8 @@ feature-depth = 1
 # More documentation for the advisories section can be found here:
 # https://embarkstudios.github.io/cargo-deny/checks/advisories/cfg.html
 [advisories]
+# TODO: Tighten check after paste is replaced with pasty https://github.com/dimforge/simba/pull/71
+unmaintained = 'workspace'
 # The path where the advisory database is cloned/fetched into
 db-path = "~/.cargo/advisory-db"
 # The url(s) of the advisory databases to use
