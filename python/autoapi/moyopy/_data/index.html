@@ -1,0 +1,964 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>moyopy._data &#8212; moyopy 0.6.0</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=c73c0f3e"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/moyopy/_data/index';</script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="moyopy._dataset" href="../_dataset/index.html" />
+    <link rel="prev" title="moyopy._base" href="../_base/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">moyopy 0.6.0</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">    Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples/index.html">    Examples</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../index.html">moyopy</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../_base/index.html">moyopy._base</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">moyopy._data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../_dataset/index.html">moyopy._dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../_identify/index.html">moyopy._identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../_moyopy/index.html">moyopy._moyopy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../interface/index.html">moyopy.interface</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/spglib/moyo" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../_sources/autoapi/moyopy/_data/index.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>moyopy._data</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting"><code class="docutils literal notranslate"><span class="pre">Setting</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting.spglib"><code class="docutils literal notranslate"><span class="pre">Setting.spglib()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting.standard"><code class="docutils literal notranslate"><span class="pre">Setting.standard()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting.hall_number"><code class="docutils literal notranslate"><span class="pre">Setting.hall_number()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting.serialize_json"><code class="docutils literal notranslate"><span class="pre">Setting.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting.as_dict"><code class="docutils literal notranslate"><span class="pre">Setting.as_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering"><code class="docutils literal notranslate"><span class="pre">Centering</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.order"><code class="docutils literal notranslate"><span class="pre">Centering.order</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.linear"><code class="docutils literal notranslate"><span class="pre">Centering.linear</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.lattice_points"><code class="docutils literal notranslate"><span class="pre">Centering.lattice_points</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.serialize_json"><code class="docutils literal notranslate"><span class="pre">Centering.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.as_dict"><code class="docutils literal notranslate"><span class="pre">Centering.as_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.hall_number"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.hall_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.number"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.arithmetic_number"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.arithmetic_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.setting"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.setting</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.hall_symbol"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.hall_symbol</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.hm_short"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.hm_short</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.hm_full"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.hm_full</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.centering"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.centering</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.serialize_json"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.as_dict"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.as_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.number"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.hm_short"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.hm_short</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.hm_full"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.hm_full</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.arithmetic_number"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.arithmetic_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.arithmetic_symbol"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.arithmetic_symbol</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.geometric_crystal_class"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.geometric_crystal_class</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.crystal_system"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.crystal_system</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.bravais_class"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.bravais_class</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.lattice_system"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.lattice_system</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.crystal_family"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.crystal_family</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.serialize_json"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.as_dict"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.as_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.uni_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.uni_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.litvin_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.litvin_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.bns_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.bns_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.og_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.og_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.construct_type"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.construct_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.serialize_json"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.as_dict"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.as_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.arithmetic_number"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.arithmetic_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.arithmetic_symbol"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.arithmetic_symbol</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.geometric_crystal_class"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.geometric_crystal_class</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.bravais_class"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.bravais_class</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.serialize_json"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.as_dict"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.as_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.operations_from_number"><code class="docutils literal notranslate"><span class="pre">operations_from_number()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.magnetic_operations_from_uni_number"><code class="docutils literal notranslate"><span class="pre">magnetic_operations_from_uni_number()</span></code></a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="module-moyopy._data">
+<span id="moyopy-data"></span><h1>moyopy._data<a class="headerlink" href="#module-moyopy._data" title="Link to this heading">#</a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#moyopy._data.Setting" title="moyopy._data.Setting"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Setting</span></code></a></p></td>
+<td><p>Preference for the setting of the space group.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#moyopy._data.Centering" title="moyopy._data.Centering"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Centering</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#moyopy._data.HallSymbolEntry" title="moyopy._data.HallSymbolEntry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HallSymbolEntry</span></code></a></p></td>
+<td><p>An entry containing space-group information for a specified hall_number.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#moyopy._data.SpaceGroupType" title="moyopy._data.SpaceGroupType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SpaceGroupType</span></code></a></p></td>
+<td><p>Space-group type information.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#moyopy._data.MagneticSpaceGroupType" title="moyopy._data.MagneticSpaceGroupType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MagneticSpaceGroupType</span></code></a></p></td>
+<td><p>Magnetic space-group type information.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#moyopy._data.ArithmeticCrystalClass" title="moyopy._data.ArithmeticCrystalClass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArithmeticCrystalClass</span></code></a></p></td>
+<td><p>Arithmetic crystal class information.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#moyopy._data.operations_from_number" title="moyopy._data.operations_from_number"><code class="xref py py-obj docutils literal notranslate"><span class="pre">operations_from_number</span></code></a>(→ moyopy._base.Operations)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#moyopy._data.magnetic_operations_from_uni_number" title="moyopy._data.magnetic_operations_from_uni_number"><code class="xref py py-obj docutils literal notranslate"><span class="pre">magnetic_operations_from_uni_number</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="moyopy._data.Setting">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">Setting</span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Setting" title="Link to this definition">#</a></dt>
+<dd><p>Preference for the setting of the space group.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.Setting.spglib">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spglib</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._data.Setting" title="moyopy._data.Setting"><span class="pre">Setting</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting.spglib"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Setting.spglib" title="Link to this definition">#</a></dt>
+<dd><p>The setting of the smallest Hall number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.Setting.standard">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">standard</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._data.Setting" title="moyopy._data.Setting"><span class="pre">Setting</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting.standard"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Setting.standard" title="Link to this definition">#</a></dt>
+<dd><p>Unique axis b, cell choice 1 for monoclinic, hexagonal axes for rhombohedral,
+and origin choice 2 for centrosymmetric space groups.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.Setting.hall_number">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hall_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hall_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#moyopy._data.Setting" title="moyopy._data.Setting"><span class="pre">Setting</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting.hall_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Setting.hall_number" title="Link to this definition">#</a></dt>
+<dd><p>Specific Hall number from 1 to 530.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.Setting.serialize_json">
+<span class="sig-name descname"><span class="pre">serialize_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting.serialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Setting.serialize_json" title="Link to this definition">#</a></dt>
+<dd><p>Serialize an object to a JSON string</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.Setting.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Setting.as_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Setting.as_dict" title="Link to this definition">#</a></dt>
+<dd><p>Convert an object to a dictionary</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="moyopy._data.Centering">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">Centering</span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Centering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Centering" title="Link to this definition">#</a></dt>
+<dd><dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.Centering.order">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">order</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#Centering.order"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Centering.order" title="Link to this definition">#</a></dt>
+<dd><p>Order of the centering.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.Centering.linear">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">linear</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#Centering.linear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Centering.linear" title="Link to this definition">#</a></dt>
+<dd><p>Transformation matrix.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.Centering.lattice_points">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lattice_points</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#Centering.lattice_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Centering.lattice_points" title="Link to this definition">#</a></dt>
+<dd><p>Unique lattice points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.Centering.serialize_json">
+<span class="sig-name descname"><span class="pre">serialize_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Centering.serialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Centering.serialize_json" title="Link to this definition">#</a></dt>
+<dd><p>Serialize an object to a JSON string</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.Centering.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#Centering.as_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.Centering.as_dict" title="Link to this definition">#</a></dt>
+<dd><p>Convert an object to a dictionary</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="moyopy._data.HallSymbolEntry">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">HallSymbolEntry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">hall_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_data.html#HallSymbolEntry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.HallSymbolEntry" title="Link to this definition">#</a></dt>
+<dd><p>An entry containing space-group information for a specified hall_number.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.HallSymbolEntry.hall_number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hall_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#HallSymbolEntry.hall_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.HallSymbolEntry.hall_number" title="Link to this definition">#</a></dt>
+<dd><p>Number for Hall symbols (1 - 530).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.HallSymbolEntry.number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#HallSymbolEntry.number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.HallSymbolEntry.number" title="Link to this definition">#</a></dt>
+<dd><p>ITA number for space group types (1 - 230).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.HallSymbolEntry.arithmetic_number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arithmetic_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#HallSymbolEntry.arithmetic_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.HallSymbolEntry.arithmetic_number" title="Link to this definition">#</a></dt>
+<dd><p>Number for arithmetic crystal classes (1 - 73).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.HallSymbolEntry.setting">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">setting</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#moyopy._data.Setting" title="moyopy._data.Setting"><span class="pre">Setting</span></a></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#HallSymbolEntry.setting"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.HallSymbolEntry.setting" title="Link to this definition">#</a></dt>
+<dd><p>Setting.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.HallSymbolEntry.hall_symbol">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hall_symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#HallSymbolEntry.hall_symbol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.HallSymbolEntry.hall_symbol" title="Link to this definition">#</a></dt>
+<dd><p>Hall symbol.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.HallSymbolEntry.hm_short">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hm_short</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#HallSymbolEntry.hm_short"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.HallSymbolEntry.hm_short" title="Link to this definition">#</a></dt>
+<dd><p>Hermann-Mauguin symbol in short notation.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.HallSymbolEntry.hm_full">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hm_full</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#HallSymbolEntry.hm_full"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.HallSymbolEntry.hm_full" title="Link to this definition">#</a></dt>
+<dd><p>Hermann-Mauguin symbol in full notation.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.HallSymbolEntry.centering">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">centering</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#moyopy._data.Centering" title="moyopy._data.Centering"><span class="pre">Centering</span></a></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#HallSymbolEntry.centering"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.HallSymbolEntry.centering" title="Link to this definition">#</a></dt>
+<dd><p>Centering.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.HallSymbolEntry.serialize_json">
+<span class="sig-name descname"><span class="pre">serialize_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#HallSymbolEntry.serialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.HallSymbolEntry.serialize_json" title="Link to this definition">#</a></dt>
+<dd><p>Serialize an object to a JSON string</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.HallSymbolEntry.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#HallSymbolEntry.as_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.HallSymbolEntry.as_dict" title="Link to this definition">#</a></dt>
+<dd><p>Convert an object to a dictionary</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="moyopy._data.SpaceGroupType">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">SpaceGroupType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.SpaceGroupType" title="Link to this definition">#</a></dt>
+<dd><p>Space-group type information.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.SpaceGroupType.number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType.number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.SpaceGroupType.number" title="Link to this definition">#</a></dt>
+<dd><p>ITA number for space group types (1 - 230).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.SpaceGroupType.hm_short">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hm_short</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType.hm_short"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.SpaceGroupType.hm_short" title="Link to this definition">#</a></dt>
+<dd><p>Hermann-Mauguin symbol in short notation.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.SpaceGroupType.hm_full">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">hm_full</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType.hm_full"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.SpaceGroupType.hm_full" title="Link to this definition">#</a></dt>
+<dd><p>Hermann-Mauguin symbol in full notation.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.SpaceGroupType.arithmetic_number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arithmetic_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType.arithmetic_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.SpaceGroupType.arithmetic_number" title="Link to this definition">#</a></dt>
+<dd><p>Number for arithmetic crystal classes (1 - 73).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.SpaceGroupType.arithmetic_symbol">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arithmetic_symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType.arithmetic_symbol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.SpaceGroupType.arithmetic_symbol" title="Link to this definition">#</a></dt>
+<dd><p>Symbol for arithmetic crystal class.</p>
+<p>See <a class="github reference external" href="https://github.com/spglib/moyo/blob/main/moyo/src/data/arithmetic_crystal_class.rs">spglib/moyo</a>
+for string values.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.SpaceGroupType.geometric_crystal_class">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geometric_crystal_class</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType.geometric_crystal_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.SpaceGroupType.geometric_crystal_class" title="Link to this definition">#</a></dt>
+<dd><p>Geometric crystal class.</p>
+<p>See <a class="github reference external" href="https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs">spglib/moyo</a>
+for string values.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.SpaceGroupType.crystal_system">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crystal_system</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType.crystal_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.SpaceGroupType.crystal_system" title="Link to this definition">#</a></dt>
+<dd><p>Crystal system.</p>
+<p>See <a class="github reference external" href="https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs">spglib/moyo</a>
+for string values.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.SpaceGroupType.bravais_class">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bravais_class</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType.bravais_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.SpaceGroupType.bravais_class" title="Link to this definition">#</a></dt>
+<dd><p>Bravais class.</p>
+<p>See <a class="github reference external" href="https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs">spglib/moyo</a>
+for string values.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.SpaceGroupType.lattice_system">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lattice_system</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType.lattice_system"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.SpaceGroupType.lattice_system" title="Link to this definition">#</a></dt>
+<dd><p>Lattice system.</p>
+<p>See <a class="github reference external" href="https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs">spglib/moyo</a>
+for string values.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.SpaceGroupType.crystal_family">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">crystal_family</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType.crystal_family"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.SpaceGroupType.crystal_family" title="Link to this definition">#</a></dt>
+<dd><p>Crystal family.</p>
+<p>See <a class="github reference external" href="https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs">spglib/moyo</a>
+for string values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.SpaceGroupType.serialize_json">
+<span class="sig-name descname"><span class="pre">serialize_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType.serialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.SpaceGroupType.serialize_json" title="Link to this definition">#</a></dt>
+<dd><p>Serialize an object to a JSON string</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.SpaceGroupType.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#SpaceGroupType.as_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.SpaceGroupType.as_dict" title="Link to this definition">#</a></dt>
+<dd><p>Convert an object to a dictionary</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">MagneticSpaceGroupType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uni_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType" title="Link to this definition">#</a></dt>
+<dd><p>Magnetic space-group type information.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.uni_number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">uni_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.uni_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.uni_number" title="Link to this definition">#</a></dt>
+<dd><p>Serial number of UNI (and BNS) symbols.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.litvin_number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">litvin_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.litvin_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.litvin_number" title="Link to this definition">#</a></dt>
+<dd><p>Serial number in Litvin’s <a class="reference external" href="https://www.iucr.org/publ/978-0-9553602-2-0">Magnetic group tables</a>.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.bns_number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bns_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.bns_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.bns_number" title="Link to this definition">#</a></dt>
+<dd><p>BNS number e.g. ‘151.32’</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.og_number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">og_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.og_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.og_number" title="Link to this definition">#</a></dt>
+<dd><p>OG number e.g. ‘153.4.1270’</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.number" title="Link to this definition">#</a></dt>
+<dd><p>ITA number for reference space group in BNS setting.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.construct_type">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">construct_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.construct_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.construct_type" title="Link to this definition">#</a></dt>
+<dd><p>Construct type of magnetic space group from 1 to 4.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.serialize_json">
+<span class="sig-name descname"><span class="pre">serialize_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.serialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.serialize_json" title="Link to this definition">#</a></dt>
+<dd><p>Serialize an object to a JSON string</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.MagneticSpaceGroupType.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#MagneticSpaceGroupType.as_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.MagneticSpaceGroupType.as_dict" title="Link to this definition">#</a></dt>
+<dd><p>Convert an object to a dictionary</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="moyopy._data.ArithmeticCrystalClass">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">ArithmeticCrystalClass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">arithmetic_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/moyopy/_data.html#ArithmeticCrystalClass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.ArithmeticCrystalClass" title="Link to this definition">#</a></dt>
+<dd><p>Arithmetic crystal class information.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.ArithmeticCrystalClass.arithmetic_number">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arithmetic_number</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#ArithmeticCrystalClass.arithmetic_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.ArithmeticCrystalClass.arithmetic_number" title="Link to this definition">#</a></dt>
+<dd><p>Number for arithmetic crystal classes (1 - 73).</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.ArithmeticCrystalClass.arithmetic_symbol">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">arithmetic_symbol</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#ArithmeticCrystalClass.arithmetic_symbol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.ArithmeticCrystalClass.arithmetic_symbol" title="Link to this definition">#</a></dt>
+<dd><p>Symbol for arithmetic crystal class.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.ArithmeticCrystalClass.geometric_crystal_class">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">geometric_crystal_class</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#ArithmeticCrystalClass.geometric_crystal_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.ArithmeticCrystalClass.geometric_crystal_class" title="Link to this definition">#</a></dt>
+<dd><p>Geometric crystal class.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="moyopy._data.ArithmeticCrystalClass.bravais_class">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bravais_class</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="reference internal" href="../../../_modules/moyopy/_data.html#ArithmeticCrystalClass.bravais_class"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.ArithmeticCrystalClass.bravais_class" title="Link to this definition">#</a></dt>
+<dd><p>Bravais class.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.ArithmeticCrystalClass.serialize_json">
+<span class="sig-name descname"><span class="pre">serialize_json</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#ArithmeticCrystalClass.serialize_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.ArithmeticCrystalClass.serialize_json" title="Link to this definition">#</a></dt>
+<dd><p>Serialize an object to a JSON string</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="moyopy._data.ArithmeticCrystalClass.as_dict">
+<span class="sig-name descname"><span class="pre">as_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#ArithmeticCrystalClass.as_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.ArithmeticCrystalClass.as_dict" title="Link to this definition">#</a></dt>
+<dd><p>Convert an object to a dictionary</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moyopy._data.operations_from_number">
+<span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">operations_from_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">setting</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#moyopy._data.Setting" title="moyopy._data.Setting"><span class="pre">Setting</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primitive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../_base/index.html#moyopy._base.Operations" title="moyopy._base.Operations"><span class="pre">moyopy._base.Operations</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#operations_from_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.operations_from_number" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="moyopy._data.magnetic_operations_from_uni_number">
+<span class="sig-prename descclassname"><span class="pre">moyopy._data.</span></span><span class="sig-name descname"><span class="pre">magnetic_operations_from_uni_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uni_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">primitive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../_base/index.html#moyopy._base.MagneticOperations" title="moyopy._base.MagneticOperations"><span class="pre">moyopy._base.MagneticOperations</span></a></span></span><a class="reference internal" href="../../../_modules/moyopy/_data.html#magnetic_operations_from_uni_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#moyopy._data.magnetic_operations_from_uni_number" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../_base/index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">moyopy._base</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../_dataset/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">moyopy._dataset</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions">Functions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting"><code class="docutils literal notranslate"><span class="pre">Setting</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting.spglib"><code class="docutils literal notranslate"><span class="pre">Setting.spglib()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting.standard"><code class="docutils literal notranslate"><span class="pre">Setting.standard()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting.hall_number"><code class="docutils literal notranslate"><span class="pre">Setting.hall_number()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting.serialize_json"><code class="docutils literal notranslate"><span class="pre">Setting.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Setting.as_dict"><code class="docutils literal notranslate"><span class="pre">Setting.as_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering"><code class="docutils literal notranslate"><span class="pre">Centering</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.order"><code class="docutils literal notranslate"><span class="pre">Centering.order</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.linear"><code class="docutils literal notranslate"><span class="pre">Centering.linear</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.lattice_points"><code class="docutils literal notranslate"><span class="pre">Centering.lattice_points</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.serialize_json"><code class="docutils literal notranslate"><span class="pre">Centering.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.Centering.as_dict"><code class="docutils literal notranslate"><span class="pre">Centering.as_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.hall_number"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.hall_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.number"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.arithmetic_number"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.arithmetic_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.setting"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.setting</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.hall_symbol"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.hall_symbol</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.hm_short"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.hm_short</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.hm_full"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.hm_full</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.centering"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.centering</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.serialize_json"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.HallSymbolEntry.as_dict"><code class="docutils literal notranslate"><span class="pre">HallSymbolEntry.as_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.number"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.hm_short"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.hm_short</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.hm_full"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.hm_full</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.arithmetic_number"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.arithmetic_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.arithmetic_symbol"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.arithmetic_symbol</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.geometric_crystal_class"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.geometric_crystal_class</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.crystal_system"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.crystal_system</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.bravais_class"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.bravais_class</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.lattice_system"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.lattice_system</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.crystal_family"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.crystal_family</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.serialize_json"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.SpaceGroupType.as_dict"><code class="docutils literal notranslate"><span class="pre">SpaceGroupType.as_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.uni_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.uni_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.litvin_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.litvin_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.bns_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.bns_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.og_number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.og_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.number"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.construct_type"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.construct_type</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.serialize_json"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.MagneticSpaceGroupType.as_dict"><code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.as_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.arithmetic_number"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.arithmetic_number</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.arithmetic_symbol"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.arithmetic_symbol</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.geometric_crystal_class"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.geometric_crystal_class</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.bravais_class"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.bravais_class</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.serialize_json"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.serialize_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.ArithmeticCrystalClass.as_dict"><code class="docutils literal notranslate"><span class="pre">ArithmeticCrystalClass.as_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.operations_from_number"><code class="docutils literal notranslate"><span class="pre">operations_from_number()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#moyopy._data.magnetic_operations_from_uni_number"><code class="docutils literal notranslate"><span class="pre">magnetic_operations_from_uni_number()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Author name not set
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023, Kohei Shinohara.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
