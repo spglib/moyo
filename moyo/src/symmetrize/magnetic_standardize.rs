@@ -46,6 +46,7 @@ impl<M: MagneticMoment> StandardizedMagneticCell<M> {
         mag_symprec: f64,
         epsilon: f64,
         action: RotationMagneticMomentAction,
+        rotate_basis: bool,
     ) -> Result<Self, MoyoError> {
         // Symmetrize positions and lattice by reference space group
         let ref_space_group = magnetic_space_group.reference_space_group();
@@ -64,22 +65,26 @@ impl<M: MagneticMoment> StandardizedMagneticCell<M> {
             &ref_space_group,
             symprec,
             epsilon,
+            rotate_basis,
         )?;
 
         // Need to rotate magnetic moments because the standardization rotates the ref cell.
-        let prim_std_magnetic_moments_tmp = (0..prim_mag_cell.magnetic_cell.magnetic_moments.len())
-            .map(|i| {
-                prim_mag_cell.magnetic_cell.magnetic_moments[ref_std_cell.site_mapping[i]]
-                    .act_rotation(&ref_std_cell.rotation_matrix, action)
-            })
+        // ref_std_cell.prim_cell and prim_mag_cell.magnetic_cell have the same order of sites.
+        let prim_std_magnetic_moments_tmp = prim_mag_cell
+            .magnetic_cell
+            .magnetic_moments
+            .iter()
+            .map(|m| m.act_rotation(&ref_std_cell.rotation_matrix, action))
             .collect::<Vec<_>>();
+        let rotated_lattice = prim_mag_cell
+            .magnetic_cell
+            .cell
+            .lattice
+            .rotate(&ref_std_cell.rotation_matrix);
         let cart_rotations = magnetic_symmetry_search
             .magnetic_operations
             .iter()
-            .map(|mops| {
-                mops.operation
-                    .cartesian_rotation(&prim_mag_cell.magnetic_cell.cell.lattice)
-            })
+            .map(|mops| mops.operation.cartesian_rotation(&rotated_lattice))
             .collect::<Vec<_>>();
         let time_reversals = magnetic_symmetry_search
             .magnetic_operations

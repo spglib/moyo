@@ -48,5 +48,10 @@ def test_moyo_dataset_repr(wurtzite: Cell):
 
 
 def test_moyo_collinear_magnetic_dataset(rutile_type3: CollinearMagneticCell):
+    uni_number = 1158
     dataset = MoyoCollinearMagneticDataset(rutile_type3)
-    assert dataset.uni_number == 1158
+    assert dataset.uni_number == uni_number
+    dataset2 = MoyoCollinearMagneticDataset(dataset.std_mag_cell)
+    assert dataset2.uni_number == uni_number
+    dataset3 = MoyoCollinearMagneticDataset(dataset.prim_std_mag_cell)
+    assert dataset3.uni_number == uni_number

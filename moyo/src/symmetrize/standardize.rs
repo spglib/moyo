@@ -44,7 +44,6 @@ impl StandardizedCell {
     /// Standardize the input **primitive** cell.
     /// For triclinic space groups, Niggli reduction is performed.
     /// Basis vectors are rotated to be a upper triangular matrix.
-    /// TODO: option not to rotate basis vectors
     pub fn new(
         prim_cell: &Cell,
         prim_operations: &Operations,
@@ -52,6 +51,7 @@ impl StandardizedCell {
         space_group: &SpaceGroup,
         symprec: f64,
         epsilon: f64,
+        rotate_basis: bool,
     ) -> Result<Self, MoyoError> {
         let (
             prim_std_cell,
@@ -67,6 +67,7 @@ impl StandardizedCell {
             prim_permutations,
             space_group,
             epsilon,
+            rotate_basis,
         )?;
 
         let wyckoffs = Self::assign_wyckoffs(
@@ -99,6 +100,7 @@ impl StandardizedCell {
         prim_permutations: &[Permutation],
         space_group: &SpaceGroup,
         epsilon: f64,
+        rotate_basis: bool,
     ) -> Result<
         (
             Cell,
@@ -172,23 +174,35 @@ impl StandardizedCell {
         let (std_cell, site_mapping) =
             Transformation::from_linear(conv_trans_linear).transform_cell(&prim_std_cell);
 
-        // Symmetrize lattice
-        let (_, rotation_matrix) =
-            symmetrize_lattice(&std_cell.lattice, &project_rotations(&conv_std_operations));
-
-        Ok((
-            prim_std_cell.rotate(&rotation_matrix),
-            prim_std_permutations,
-            prim_transformation.clone(),
-            std_cell.rotate(&rotation_matrix),
-            // prim_transformation * (conv_trans_linear, 0)
-            Transformation::new(
-                prim_transformation.linear * conv_trans_linear,
-                prim_transformation.origin_shift,
-            ),
-            rotation_matrix,
-            site_mapping,
-        ))
+        // prim_transformation * (conv_trans_linear, 0)
+        let transformation = Transformation::new(
+            prim_transformation.linear * conv_trans_linear,
+            prim_transformation.origin_shift,
+        );
+        if rotate_basis {
+            // Symmetrize lattice
+            let (_, rotation_matrix) =
+                symmetrize_lattice(&std_cell.lattice, &project_rotations(&conv_std_operations));
+            Ok((
+                prim_std_cell.rotate(&rotation_matrix),
+                prim_std_permutations,
+                prim_transformation.clone(),
+                std_cell.rotate(&rotation_matrix),
+                transformation,
+                rotation_matrix,
+                site_mapping,
+            ))
+        } else {
+            Ok((
+                prim_std_cell,
+                prim_std_permutations,
+                prim_transformation.clone(),
+                std_cell,
+                transformation,
+                Matrix3::identity(),
+                site_mapping,
+            ))
+        }
     }
 
     fn assign_wyckoffs(
