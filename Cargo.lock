@@ -719,7 +719,7 @@ dependencies = [
 
 [[package]]
 name = "moyo"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "approx",
  "criterion",
@@ -742,7 +742,7 @@ dependencies = [
 
 [[package]]
 name = "moyo-wasm"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "moyo",
  "serde",
@@ -753,7 +753,7 @@ dependencies = [
 
 [[package]]
 name = "moyoc"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "approx",
  "log",
@@ -765,7 +765,7 @@ dependencies = [
 
 [[package]]
 name = "moyopy"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "approx",
  "itertools 0.14.0",
