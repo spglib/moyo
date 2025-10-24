@@ -2,11 +2,15 @@
 extern crate approx;
 
 use nalgebra::{Matrix3, matrix, vector};
+use serde_json;
+use std::fs;
+use std::path::Path;
 use test_log::test;
 
 use moyo::MoyoMagneticDataset;
 use moyo::base::{
-    AngleTolerance, Collinear, Lattice, MagneticCell, MagneticMoment, RotationMagneticMomentAction,
+    AngleTolerance, Collinear, Lattice, MagneticCell, MagneticMoment, NonCollinear,
+    RotationMagneticMomentAction,
 };
 
 /// Sanity-check MoyoMagneticDataset
@@ -230,4 +234,24 @@ fn test_with_rutile_type4() {
     );
 
     assert_eq!(dataset.uni_number, 932);
+}
+
+#[test]
+fn test_with_pyrochlore() {
+    let path = Path::new("tests/assets/pyrochlore.json");
+    let magnetic_cell: MagneticCell<NonCollinear> =
+        serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+
+    let symprec = 1e-4;
+    let angle_tolerance = AngleTolerance::Default;
+    let mag_symprec = None;
+    let action = RotationMagneticMomentAction::Axial;
+
+    let _dataset = assert_magnetic_dataset(
+        &magnetic_cell,
+        symprec,
+        angle_tolerance,
+        mag_symprec,
+        action,
+    );
 }

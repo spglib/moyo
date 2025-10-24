@@ -1,3 +1,5 @@
+use core::fmt::Debug;
+
 use nalgebra::Vector3;
 use serde::{Deserialize, Serialize};
 
@@ -6,7 +8,7 @@ use super::cell::{AtomicSpecie, Cell, Position};
 use super::lattice::Lattice;
 use super::operation::{CartesianRotation, TimeReversal};
 
-pub trait MagneticMoment: Sized + Clone {
+pub trait MagneticMoment: Sized + Clone + Debug {
     fn act_rotation(
         &self,
         cartesian_rotation: &CartesianRotation,

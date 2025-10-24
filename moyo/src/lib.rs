@@ -199,6 +199,7 @@ impl MoyoDataset {
             &space_group,
             symprec,
             epsilon,
+            true, // TODO: option
         )?;
 
         // site symmetry
@@ -368,6 +369,7 @@ impl<M: MagneticMoment> MoyoMagneticDataset<M> {
             mag_symprec,
             epsilon,
             action,
+            true, // TODO: option
         )?;
 
         // Site symmetry
