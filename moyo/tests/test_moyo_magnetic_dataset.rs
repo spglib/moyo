@@ -35,9 +35,16 @@ fn assert_magnetic_dataset<M: MagneticMoment>(
     mag_symprec: Option<f64>,
     action: RotationMagneticMomentAction,
 ) -> MoyoMagneticDataset<M> {
-    let dataset =
-        MoyoMagneticDataset::new(magnetic_cell, symprec, angle_tolerance, mag_symprec, action)
-            .unwrap();
+    let rotate_basis = true;
+    let dataset = MoyoMagneticDataset::new(
+        magnetic_cell,
+        symprec,
+        angle_tolerance,
+        mag_symprec,
+        action,
+        rotate_basis,
+    )
+    .unwrap();
 
     // std_mag_cell
     let std_dataset = MoyoMagneticDataset::new(
@@ -46,6 +53,7 @@ fn assert_magnetic_dataset<M: MagneticMoment>(
         angle_tolerance,
         mag_symprec,
         action,
+        rotate_basis,
     )
     .unwrap();
     assert_eq!(std_dataset.uni_number, dataset.uni_number);
@@ -57,6 +65,7 @@ fn assert_magnetic_dataset<M: MagneticMoment>(
         angle_tolerance,
         mag_symprec,
         action,
+        rotate_basis,
     )
     .unwrap();
     assert_eq!(prim_std_dataset.uni_number, dataset.uni_number);

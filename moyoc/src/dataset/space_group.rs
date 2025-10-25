@@ -142,6 +142,7 @@ pub extern "C" fn moyo_dataset(
     angle_tolerance: f64,
     setting: MoyoSetting,
     hall_number: i32,
+    rotate_basis: bool,
 ) -> *mut MoyoDataset {
     let cell = MoyoCell {
         basis: unsafe { *basis },
@@ -168,7 +169,7 @@ pub extern "C" fn moyo_dataset(
         MoyoSetting::Standard => Setting::Standard,
     };
 
-    let dataset = Dataset::new(&cell, symprec, angle_tolerance, setting);
+    let dataset = Dataset::new(&cell, symprec, angle_tolerance, setting, rotate_basis);
     match dataset {
         Ok(dataset) => {
             let moyoc_dataset: MoyoDataset = dataset.into();

@@ -22,6 +22,7 @@ class MoyoDataset:
         symprec: float = 1e-4,
         angle_tolerance: float | None = None,
         setting: Setting | None = None,
+        rotate_basis: bool = True,
     ):
         """
         Parameters
@@ -34,6 +35,9 @@ class MoyoDataset:
             Symmetry search tolerance in the unit of radians.
         setting: Setting | None
             Preference for the setting of the space group.
+        rotate_basis: bool
+            Whether to rotate the basis vectors of the input cell to those of the standardized
+            cell.
         """
     # Space-group type
     @property
@@ -128,6 +132,7 @@ class MoyoCollinearMagneticDataset:
         angle_tolerance: float | None = None,
         mag_symprec: float | None = None,
         is_axial: bool = False,
+        rotate_basis: bool = True,
     ):
         """
         Parameters
@@ -142,6 +147,9 @@ class MoyoCollinearMagneticDataset:
             Symmetry search tolerance in the unit of magnetic moments.
         is_axial: bool
             Whether the magnetic moments are axial on improper operations.
+        rotate_basis: bool
+            Whether to rotate the basis vectors of the input cell to those of the standardized
+            cell.
         """
     # Magnetic space-group type
     @property
@@ -224,6 +232,7 @@ class MoyoNonCollinearMagneticDataset:
         angle_tolerance: float | None = None,
         mag_symprec: float | None = None,
         is_axial: bool = True,
+        rotate_basis: bool = True,
     ):
         """
         Parameters
@@ -238,6 +247,9 @@ class MoyoNonCollinearMagneticDataset:
             Symmetry search tolerance in the unit of magnetic moments.
         is_axial: bool
             Whether the magnetic moments are axial on improper operations.
+        rotate_basis: bool
+            Whether to rotate the basis vectors of the input cell to those of the standardized
+            cell.
         """
     # Magnetic space-group type
     @property

@@ -20,12 +20,13 @@ pub struct PyMoyoDataset(MoyoDataset);
 #[pymethods]
 impl PyMoyoDataset {
     #[new]
-    #[pyo3(signature = (cell, *, symprec=1e-4, angle_tolerance=None, setting=None))]
+    #[pyo3(signature = (cell, *, symprec=1e-4, angle_tolerance=None, setting=None, rotate_basis=true))]
     pub fn new(
         cell: &PyStructure,
         symprec: f64,
         angle_tolerance: Option<f64>,
         setting: Option<PySetting>,
+        rotate_basis: bool,
     ) -> Result<Self, PyMoyoError> {
         let angle_tolerance = if let Some(angle_tolerance) = angle_tolerance {
             AngleTolerance::Radian(angle_tolerance)
@@ -39,7 +40,13 @@ impl PyMoyoDataset {
             Setting::default()
         };
 
-        let dataset = MoyoDataset::new(&cell.to_owned().into(), symprec, angle_tolerance, setting)?;
+        let dataset = MoyoDataset::new(
+            &cell.to_owned().into(),
+            symprec,
+            angle_tolerance,
+            setting,
+            rotate_basis,
+        )?;
         Ok(PyMoyoDataset(dataset))
     }
 
