@@ -14,6 +14,7 @@ jobs:
       rust: ${{ steps.filter.outputs.rust }}
       python: ${{ steps.filter.outputs.python }}
       c: ${{ steps.filter.outputs.c }}
+      wasm: ${{ steps.filter.outputs.wasm }}
     steps:
       - uses: actions/checkout@v5
       - name: Filter paths
@@ -39,6 +40,16 @@ jobs:
     needs: path-filter
     if: ${{ needs.path-filter.outputs.c == 'true' }}
     uses: ./.github/workflows/rw-c-tests.yaml
+
+  wasm:
+    needs: path-filter
+    if: ${{ needs.path-filter.outputs.wasm == 'true' }}
+    uses: ./.github/workflows/rw-wasm-release.yaml
+    with:
+      dry_run: true
+    permissions:
+      id-token: write
+      contents: write
 
   pass:
     if: always()

@@ -39,6 +39,7 @@ jobs:
         run: npm test # this also builds the wasm package to be published in next step
 
       - name: Publish to npm
+        if: "startsWith(github.ref, 'refs/tags/') && ! inputs.dry_run"
         working-directory: moyo-wasm/pkg
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

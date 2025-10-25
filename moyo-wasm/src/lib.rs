@@ -27,7 +27,7 @@ fn parse_setting(setting: &str) -> Setting {
 fn convert_angle_tolerance(tol: InternalAngleTolerance) -> AngleTolerance {
     match tol {
         InternalAngleTolerance::Radian(x) => AngleTolerance::Radian(x),
-        InternalAngleTolerance::Default => AngleTolerance::default(),
+        InternalAngleTolerance::Default => AngleTolerance::Default,
     }
 }
 
@@ -182,8 +182,13 @@ pub fn analyze_cell(cell_json: &str, symprec: f64, setting: &str) -> Result<Moyo
 
     let setting = parse_setting(setting);
 
-    let dataset =
-        InternalMoyoDataset::new(&cell, symprec, InternalAngleTolerance::Default, setting)
-            .map_err(|err| JsValue::from_str(&format!("moyo error: {:?}", err)))?;
+    let dataset = InternalMoyoDataset::new(
+        &cell,
+        symprec,
+        InternalAngleTolerance::default(),
+        setting,
+        true,
+    )
+    .map_err(|err| JsValue::from_str(&format!("moyo error: {:?}", err)))?;
     Ok(MoyoDataset::from(dataset))
 }
