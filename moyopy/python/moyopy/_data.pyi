@@ -80,7 +80,7 @@ class HallSymbolEntry:
 class SpaceGroupType:
     """Space-group type information."""
     def __init__(self, number: int): ...
-    # Space group type
+    # Space-group type
     @property
     def number(self) -> int:
         """ITA number for space group types (1 - 230)."""
