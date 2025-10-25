@@ -47,6 +47,9 @@ jobs:
     uses: ./.github/workflows/rw-wasm-release.yaml
     with:
       dry_run: true
+    permissions:
+      id-token: write
+      contents: write
 
   pass:
     if: always()
