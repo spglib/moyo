@@ -272,7 +272,7 @@ impl MoyoDataset {
 
     /// Create a new [`MoyoDataset`] from the input cell, `cell`, with default parameters.
     pub fn with_default(cell: &Cell, symprec: f64) -> Result<Self, MoyoError> {
-        Self::new(cell, symprec, AngleTolerance::Default, Setting::default())
+        Self::new(cell, symprec, AngleTolerance::default(), Setting::default())
     }
 
     /// Return the number of symmetry operations in the input cell.
@@ -433,7 +433,7 @@ impl<M: MagneticMoment> MoyoMagneticDataset<M> {
         Self::new(
             magnetic_cell,
             symprec,
-            AngleTolerance::Default,
+            AngleTolerance::default(),
             None,
             action,
         )

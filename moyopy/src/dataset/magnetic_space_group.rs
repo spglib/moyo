@@ -31,7 +31,7 @@ impl PyMoyoCollinearMagneticDataset {
         let angle_tolerance = if let Some(angle_tolerance) = angle_tolerance {
             AngleTolerance::Radian(angle_tolerance)
         } else {
-            AngleTolerance::Default
+            AngleTolerance::default()
         };
         let action = if is_axial {
             RotationMagneticMomentAction::Axial
@@ -211,7 +211,7 @@ impl PyMoyoNonCollinearMagneticDataset {
         let angle_tolerance = if let Some(angle_tolerance) = angle_tolerance {
             AngleTolerance::Radian(angle_tolerance)
         } else {
-            AngleTolerance::Default
+            AngleTolerance::default()
         };
         let action = if is_axial {
             RotationMagneticMomentAction::Axial

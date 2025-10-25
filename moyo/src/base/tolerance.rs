@@ -17,6 +17,12 @@ pub enum AngleTolerance {
     Default,
 }
 
+impl Default for AngleTolerance {
+    fn default() -> Self {
+        AngleTolerance::Default
+    }
+}
+
 pub trait Tolerances {
     fn increase_tolerances(&self, stride: f64) -> Self;
     fn reduce_tolerances(&self, stride: f64) -> Self;
@@ -34,7 +40,7 @@ impl Tolerances for SymmetryTolerances {
         let angle_tolerance = if let AngleTolerance::Radian(angle) = self.angle_tolerance {
             AngleTolerance::Radian(angle * stride)
         } else {
-            AngleTolerance::Default
+            AngleTolerance::default()
         };
         Self {
             symprec,
@@ -47,7 +53,7 @@ impl Tolerances for SymmetryTolerances {
         let angle_tolerance = if let AngleTolerance::Radian(angle) = self.angle_tolerance {
             AngleTolerance::Radian(angle / stride)
         } else {
-            AngleTolerance::Default
+            AngleTolerance::default()
         };
         Self {
             symprec,
@@ -69,7 +75,7 @@ impl Tolerances for MagneticSymmetryTolerances {
         let angle_tolerance = if let AngleTolerance::Radian(angle) = self.angle_tolerance {
             AngleTolerance::Radian(angle * stride)
         } else {
-            AngleTolerance::Default
+            AngleTolerance::default()
         };
         let mag_symprec = self.mag_symprec * stride;
         Self {
@@ -84,7 +90,7 @@ impl Tolerances for MagneticSymmetryTolerances {
         let angle_tolerance = if let AngleTolerance::Radian(angle) = self.angle_tolerance {
             AngleTolerance::Radian(angle / stride)
         } else {
-            AngleTolerance::Default
+            AngleTolerance::default()
         };
         let mag_symprec = self.mag_symprec / stride;
         Self {

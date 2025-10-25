@@ -30,7 +30,7 @@ impl PyMoyoDataset {
         let angle_tolerance = if let Some(angle_tolerance) = angle_tolerance {
             AngleTolerance::Radian(angle_tolerance)
         } else {
-            AngleTolerance::Default
+            AngleTolerance::default()
         };
 
         let setting = if let Some(setting) = setting {

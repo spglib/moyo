@@ -13,6 +13,20 @@ use moyo::base::{
     RotationMagneticMomentAction,
 };
 
+fn assert_magnetic_dataset_with_default<M: MagneticMoment>(
+    magnetic_cell: &MagneticCell<M>,
+    symprec: f64,
+    action: RotationMagneticMomentAction,
+) -> MoyoMagneticDataset<M> {
+    assert_magnetic_dataset(
+        magnetic_cell,
+        symprec,
+        AngleTolerance::default(),
+        None,
+        action,
+    )
+}
+
 /// Sanity-check MoyoMagneticDataset
 fn assert_magnetic_dataset<M: MagneticMoment>(
     magnetic_cell: &MagneticCell<M>,
@@ -95,8 +109,6 @@ fn test_with_rutile() {
     let numbers = vec![0, 0, 1, 1, 1, 1];
 
     let symprec = 1e-4;
-    let angle_tolerance = AngleTolerance::Default;
-    let mag_symprec = None;
     let action = RotationMagneticMomentAction::Polar;
 
     {
@@ -111,13 +123,7 @@ fn test_with_rutile() {
         ];
         let magnetic_cell =
             MagneticCell::new(lattice.clone(), positions.clone(), numbers.clone(), magmoms);
-        let dataset = assert_magnetic_dataset(
-            &magnetic_cell,
-            symprec,
-            angle_tolerance,
-            mag_symprec,
-            action,
-        );
+        let dataset = assert_magnetic_dataset_with_default(&magnetic_cell, symprec, action);
 
         assert_eq!(dataset.uni_number, 1155);
     }
@@ -134,13 +140,7 @@ fn test_with_rutile() {
         ];
         let magnetic_cell =
             MagneticCell::new(lattice.clone(), positions.clone(), numbers.clone(), magmoms);
-        let dataset = assert_magnetic_dataset(
-            &magnetic_cell,
-            symprec,
-            angle_tolerance,
-            mag_symprec,
-            action,
-        );
+        let dataset = assert_magnetic_dataset_with_default(&magnetic_cell, symprec, action);
 
         assert_eq!(dataset.uni_number, 1156);
     }
@@ -157,13 +157,7 @@ fn test_with_rutile() {
         ];
         let magnetic_cell =
             MagneticCell::new(lattice.clone(), positions.clone(), numbers.clone(), magmoms);
-        let dataset = assert_magnetic_dataset(
-            &magnetic_cell,
-            symprec,
-            angle_tolerance,
-            mag_symprec,
-            action,
-        );
+        let dataset = assert_magnetic_dataset_with_default(&magnetic_cell, symprec, action);
 
         assert_eq!(dataset.uni_number, 1158);
         assert_eq!(dataset.num_magnetic_operations(), 16);
@@ -221,17 +215,9 @@ fn test_with_rutile_type4() {
     let magnetic_cell = MagneticCell::new(lattice, positions, numbers, magmoms);
 
     let symprec = 1e-4;
-    let angle_tolerance = AngleTolerance::Default;
-    let mag_symprec = None;
     let action = RotationMagneticMomentAction::Polar;
 
-    let dataset = assert_magnetic_dataset(
-        &magnetic_cell,
-        symprec,
-        angle_tolerance,
-        mag_symprec,
-        action,
-    );
+    let dataset = assert_magnetic_dataset_with_default(&magnetic_cell, symprec, action);
 
     assert_eq!(dataset.uni_number, 932);
 }
@@ -243,15 +229,7 @@ fn test_with_pyrochlore() {
         serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
 
     let symprec = 1e-4;
-    let angle_tolerance = AngleTolerance::Default;
-    let mag_symprec = None;
     let action = RotationMagneticMomentAction::Axial;
 
-    let _dataset = assert_magnetic_dataset(
-        &magnetic_cell,
-        symprec,
-        angle_tolerance,
-        mag_symprec,
-        action,
-    );
+    let _dataset = assert_magnetic_dataset_with_default(&magnetic_cell, symprec, action);
 }
