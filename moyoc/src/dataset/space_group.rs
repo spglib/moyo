@@ -152,7 +152,7 @@ pub extern "C" fn moyo_dataset(
     let cell: Cell = (&cell).into();
 
     let angle_tolerance = if angle_tolerance < 0.0 {
-        AngleTolerance::Default
+        AngleTolerance::default()
     } else {
         AngleTolerance::Radian(angle_tolerance)
     };

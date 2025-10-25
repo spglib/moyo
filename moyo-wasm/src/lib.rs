@@ -27,7 +27,7 @@ fn parse_setting(setting: &str) -> Setting {
 fn convert_angle_tolerance(tol: InternalAngleTolerance) -> AngleTolerance {
     match tol {
         InternalAngleTolerance::Radian(x) => AngleTolerance::Radian(x),
-        InternalAngleTolerance::Default => AngleTolerance::Default,
+        InternalAngleTolerance::Default => AngleTolerance::default(),
     }
 }
 

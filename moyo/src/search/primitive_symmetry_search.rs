@@ -497,7 +497,7 @@ mod tests {
                 0.0, 0.0, 1.0;
             ]);
             let rotations =
-                search_bravais_group(&lattice, symprec, AngleTolerance::Default).unwrap();
+                search_bravais_group(&lattice, symprec, AngleTolerance::default()).unwrap();
             assert_eq!(rotations.len(), 24);
         }
 
@@ -508,7 +508,7 @@ mod tests {
                 0.0, 0.5, 0.5;
             ]);
             let rotations =
-                search_bravais_group(&lattice, symprec, AngleTolerance::Default).unwrap();
+                search_bravais_group(&lattice, symprec, AngleTolerance::default()).unwrap();
             assert_eq!(rotations.len(), 48);
         }
     }
@@ -516,7 +516,7 @@ mod tests {
     #[test]
     fn test_primitive_magnetic_symmetry_search() {
         let symprec = 1e-4;
-        let angle_tolerance = AngleTolerance::Default;
+        let angle_tolerance = AngleTolerance::default();
         let mag_symprec = 1e-4;
 
         {
