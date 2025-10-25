@@ -308,6 +308,7 @@ document.write(`
         <span class="n">symprec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
         <span class="n">angle_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">setting</span><span class="p">:</span> <span class="n">Setting</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rotate_basis</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
@@ -320,6 +321,9 @@ document.write(`
 <span class="sd">            Symmetry search tolerance in the unit of radians.</span>
 <span class="sd">        setting: Setting | None</span>
 <span class="sd">            Preference for the setting of the space group.</span>
+<span class="sd">        rotate_basis: bool</span>
+<span class="sd">            Whether to rotate the basis vectors of the input cell to those of the standardized</span>
+<span class="sd">            cell.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
     <span class="c1"># Space-group type</span>
     <span class="nd">@property</span>
@@ -480,6 +484,7 @@ document.write(`
         <span class="n">angle_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">mag_symprec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">is_axial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">rotate_basis</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
@@ -494,6 +499,9 @@ document.write(`
 <span class="sd">            Symmetry search tolerance in the unit of magnetic moments.</span>
 <span class="sd">        is_axial: bool</span>
 <span class="sd">            Whether the magnetic moments are axial on improper operations.</span>
+<span class="sd">        rotate_basis: bool</span>
+<span class="sd">            Whether to rotate the basis vectors of the input cell to those of the standardized</span>
+<span class="sd">            cell.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
     <span class="c1"># Magnetic space-group type</span>
     <span class="nd">@property</span>
@@ -633,6 +641,7 @@ document.write(`
         <span class="n">angle_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">mag_symprec</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">is_axial</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">rotate_basis</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
@@ -647,6 +656,9 @@ document.write(`
 <span class="sd">            Symmetry search tolerance in the unit of magnetic moments.</span>
 <span class="sd">        is_axial: bool</span>
 <span class="sd">            Whether the magnetic moments are axial on improper operations.</span>
+<span class="sd">        rotate_basis: bool</span>
+<span class="sd">            Whether to rotate the basis vectors of the input cell to those of the standardized</span>
+<span class="sd">            cell.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
     <span class="c1"># Magnetic space-group type</span>
     <span class="nd">@property</span>

@@ -632,7 +632,7 @@ Package Contents
 
 .. py:function:: magnetic_operations_from_uni_number(uni_number: int, *, primitive: bool = False) -> moyopy._base.MagneticOperations
 
-.. py:class:: MoyoDataset(cell: moyopy._base.Cell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, setting: moyopy._data.Setting | None = None)
+.. py:class:: MoyoDataset(cell: moyopy._base.Cell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, setting: moyopy._data.Setting | None = None, rotate_basis: bool = True)
 
    A dataset containing symmetry information of the input crystal structure.
 
@@ -794,7 +794,7 @@ Package Contents
 
 
 
-.. py:class:: MoyoCollinearMagneticDataset(magnetic_cell: moyopy._base.CollinearMagneticCell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, mag_symprec: float | None = None, is_axial: bool = False)
+.. py:class:: MoyoCollinearMagneticDataset(magnetic_cell: moyopy._base.CollinearMagneticCell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, mag_symprec: float | None = None, is_axial: bool = False, rotate_basis: bool = True)
 
    A dataset containing magnetic symmetry information of the input collinear magnetic
    structure.
@@ -934,7 +934,7 @@ Package Contents
 
 
 
-.. py:class:: MoyoNonCollinearMagneticDataset(magnetic_cell: moyopy._base.NonCollinearMagneticCell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, mag_symprec: float | None = None, is_axial: bool = True)
+.. py:class:: MoyoNonCollinearMagneticDataset(magnetic_cell: moyopy._base.NonCollinearMagneticCell, *, symprec: float = 0.0001, angle_tolerance: float | None = None, mag_symprec: float | None = None, is_axial: bool = True, rotate_basis: bool = True)
 
    A dataset containing magnetic symmetry information of the input non-collinear magnetic
    structure.
