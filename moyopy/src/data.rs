@@ -35,7 +35,7 @@ pub fn operations_from_number(
     };
     let hall_number = match setting.0 {
         Setting::HallNumber(hall_number) => hall_number,
-        Setting::Spglib | Setting::Standard => *setting
+        _ => *setting
             .0
             .hall_numbers()
             .get((number - 1) as usize)

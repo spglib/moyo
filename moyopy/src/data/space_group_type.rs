@@ -53,7 +53,7 @@ pub struct PySpaceGroupType {
 impl PySpaceGroupType {
     #[new]
     pub fn new(number: Number) -> Result<Self, PyMoyoError> {
-        let ita_hall_number = Setting::Standard
+        let ita_hall_number = Setting::default()
             .hall_number(number)
             .ok_or(MoyoError::UnknownNumberError)?;
         let ita_hall_symbol = hall_symbol_entry(ita_hall_number).unwrap();

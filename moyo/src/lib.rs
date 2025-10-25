@@ -47,10 +47,8 @@ let numbers = vec![0, 0, 1, 1, 1, 1];
 let cell = Cell::new(lattice.clone(), positions.clone(), numbers.clone());
 
 let symprec = 1e-4;
-let angle_tolerance = AngleTolerance::Default;
-let setting = Setting::Standard;
 
-let dataset = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
+let dataset = MoyoDataset::with_default(&cell, symprec).unwrap();
 assert_eq!(dataset.number, 136);  // P4_2/mnm
 
 let magnetic_moments = vec![
@@ -65,7 +63,7 @@ let magnetic_cell = MagneticCell::new(lattice, positions, numbers, magnetic_mome
 
 let action = RotationMagneticMomentAction::Axial;
 
-let magnetic_dataset = MoyoMagneticDataset::new(&magnetic_cell, symprec, angle_tolerance, None, action).unwrap();
+let magnetic_dataset = MoyoMagneticDataset::with_default(&magnetic_cell, symprec, action).unwrap();
 assert_eq!(magnetic_dataset.uni_number, 1159);  // BNS 136.499
 ```
 
@@ -272,6 +270,11 @@ impl MoyoDataset {
         })
     }
 
+    /// Create a new [`MoyoDataset`] from the input cell, `cell`, with default parameters.
+    pub fn with_default(cell: &Cell, symprec: f64) -> Result<Self, MoyoError> {
+        Self::new(cell, symprec, AngleTolerance::Default, Setting::default())
+    }
+
     /// Return the number of symmetry operations in the input cell.
     pub fn num_operations(&self) -> usize {
         self.operations.len()
@@ -419,6 +422,21 @@ impl<M: MagneticMoment> MoyoMagneticDataset<M> {
             angle_tolerance,
             mag_symprec,
         })
+    }
+
+    /// Create a new [`MoyoMagneticDataset`] from the input magnetic cell, `magnetic_cell`, with default parameters.
+    pub fn with_default(
+        magnetic_cell: &MagneticCell<M>,
+        symprec: f64,
+        action: RotationMagneticMomentAction,
+    ) -> Result<Self, MoyoError> {
+        Self::new(
+            magnetic_cell,
+            symprec,
+            AngleTolerance::Default,
+            None,
+            action,
+        )
     }
 
     /// Return the number of magnetic symmetry operations in the input magnetic cell.

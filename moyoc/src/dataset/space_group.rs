@@ -156,6 +156,7 @@ pub extern "C" fn moyo_dataset(
     } else {
         AngleTolerance::Radian(angle_tolerance)
     };
+    // TODO: refactor conversion between MoyoSetting and Setting
     let setting = match setting {
         MoyoSetting::HallNumber => {
             if hall_number <= 0 {

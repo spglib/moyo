@@ -65,3 +65,9 @@ impl From<Setting> for PySetting {
         Self(setting)
     }
 }
+
+impl Default for PySetting {
+    fn default() -> Self {
+        Self(Setting::default())
+    }
+}

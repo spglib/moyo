@@ -12,10 +12,8 @@ pub fn benchmark(c: &mut Criterion) {
     let path = Path::new("tests/assets/mp-1201492.json");
     let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
     let symprec = 1e-4;
-    let angle_tolerance = AngleTolerance::Default;
-    let setting = Setting::Standard;
     c.bench_function("dataset_clathrate_Si", |b| {
-        b.iter(|| MoyoDataset::new(&cell, symprec, angle_tolerance, setting))
+        b.iter(|| MoyoDataset::with_default(&cell, symprec))
     });
 }
 
