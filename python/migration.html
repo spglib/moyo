@@ -1,0 +1,814 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Migration Guide from spglib &#8212; moyopy 0.6.1</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=c73c0f3e"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'migration';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="autoapi/index.html" />
+    <link rel="prev" title="Examples" href="examples/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">moyopy 0.6.1</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="index.html">    Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">    Examples</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">    Migration Guide from spglib</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="autoapi/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="autoapi/moyopy/index.html">moyopy</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/moyopy/_base/index.html">moyopy._base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/moyopy/_data/index.html">moyopy._data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/moyopy/_dataset/index.html">moyopy._dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/moyopy/_identify/index.html">moyopy._identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/moyopy/_moyopy/index.html">moyopy._moyopy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/moyopy/interface/index.html">moyopy.interface</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/spglib/moyo" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/migration.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Migration Guide from spglib</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#symmetry-tolerance">Symmetry tolerance</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#symprec-and-mag-symprec"><code class="docutils literal notranslate"><span class="pre">symprec</span></code> and <code class="docutils literal notranslate"><span class="pre">mag_symprec</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#angle-tolerance"><code class="docutils literal notranslate"><span class="pre">angle_tolerance</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#space-group">Space group</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cell-representation">Cell representation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#space-group-symmetry-search">Space-group symmetry search</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-symmetry"><code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-symmetry-dataset"><code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry_dataset()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#space-group-type-search">Space-group type search</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-spacegroup"><code class="docutils literal notranslate"><span class="pre">spglib.get_spacegroup()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#space-group-dataset-access">Space-group dataset access</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-symmetry-from-database"><code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry_from_database()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-spacegroup-type"><code class="docutils literal notranslate"><span class="pre">spglib.get_spacegroup_type()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-spacegroup-type-from-symmetry"><code class="docutils literal notranslate"><span class="pre">spglib.get_spacegroup_type_from_symmetry()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#magnetic-symmetry">Magnetic symmetry</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#magnetic-cell-representation">Magnetic cell representation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-magnetic-symmetry"><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_symmetry()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-magnetic-symmetry-dataset"><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_symmetry_dataset()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-magnetic-spacegroup-type"><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_spacegroup_type()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-magnetic-spacegroup-type-from-symmetry"><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_spacegroup_type_from_symmetry()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-magnetic-symmetry-from-database"><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_symmetry_from_database()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#standardization-and-finding-primitive-cell">Standardization and finding primitive cell</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-standardize-cell"><code class="docutils literal notranslate"><span class="pre">spglib.standardize_cell()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-find-primitive"><code class="docutils literal notranslate"><span class="pre">spglib.find_primitive()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-refine-cell"><code class="docutils literal notranslate"><span class="pre">spglib.refine_cell()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lattice-reduction">Lattice reduction</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-niggli-reduce"><code class="docutils literal notranslate"><span class="pre">spglib.niggli_reduce()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-delaunay-reduce"><code class="docutils literal notranslate"><span class="pre">spglib.delaunay_reduce()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kpoints-spglib-get-ir-reciprocal-mesh">Kpoints: <code class="docutils literal notranslate"><span class="pre">spglib.get_ir_reciprocal_mesh()</span></code></a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="migration-guide-from-spglib">
+<h1>Migration Guide from spglib<a class="headerlink" href="#migration-guide-from-spglib" title="Link to this heading">#</a></h1>
+<p>Based on spglib v2.6.0</p>
+<section id="symmetry-tolerance">
+<h2>Symmetry tolerance<a class="headerlink" href="#symmetry-tolerance" title="Link to this heading">#</a></h2>
+<section id="symprec-and-mag-symprec">
+<h3><code class="docutils literal notranslate"><span class="pre">symprec</span></code> and <code class="docutils literal notranslate"><span class="pre">mag_symprec</span></code><a class="headerlink" href="#symprec-and-mag-symprec" title="Link to this heading">#</a></h3>
+<p>Same as in spglib.</p>
+</section>
+<section id="angle-tolerance">
+<h3><code class="docutils literal notranslate"><span class="pre">angle_tolerance</span></code><a class="headerlink" href="#angle-tolerance" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">angle_tolerance</span></code> in moyopy is in <strong>radian</strong> unit, while in spglib it is in <strong>degree</strong> unit.
+That being said, moyopy is expected to work without specifying <code class="docutils literal notranslate"><span class="pre">angle_tolerance</span></code> in most cases.</p>
+</section>
+</section>
+<section id="space-group">
+<h2>Space group<a class="headerlink" href="#space-group" title="Link to this heading">#</a></h2>
+<section id="cell-representation">
+<h3>Cell representation<a class="headerlink" href="#cell-representation" title="Link to this heading">#</a></h3>
+<p>Spglib’s <code class="docutils literal notranslate"><span class="pre">cell</span> <span class="pre">=</span> <span class="pre">(lattice,</span> <span class="pre">positions,</span> <span class="pre">numbers)</span></code> corresponds to <code class="docutils literal notranslate"><span class="pre">moyopy.Cell(basis=lattice,</span> <span class="pre">positions=positions,</span> <span class="pre">numbers=numbers)</span></code>.</p>
+</section>
+<section id="space-group-symmetry-search">
+<h3>Space-group symmetry search<a class="headerlink" href="#space-group-symmetry-search" title="Link to this heading">#</a></h3>
+<section id="spglib-get-symmetry">
+<h4><code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry()</span></code><a class="headerlink" href="#spglib-get-symmetry" title="Link to this heading">#</a></h4>
+<p>Replace with <code class="docutils literal notranslate"><span class="pre">MoyoDataset</span></code>.</p>
+<p>Let <code class="docutils literal notranslate"><span class="pre">symmetry</span></code> be the returned dictionary of <code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry()</span></code>, the fields correspond to <code class="docutils literal notranslate"><span class="pre">MoyoDataset</span></code> fields as follows:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">symmetry['rotations']</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.operations.rotations</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">symmetry['translations']</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.operations.translations</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">symmetry['equivalent_atoms']</span></code> is not directly available in <code class="docutils literal notranslate"><span class="pre">MoyoDataset</span></code>. However, <code class="docutils literal notranslate"><span class="pre">MoyoDataset.orbits</span></code> gives Spglib’s <code class="docutils literal notranslate"><span class="pre">crystallographic_orbits</span></code>.</p></li>
+</ul>
+</section>
+<section id="spglib-get-symmetry-dataset">
+<h4><code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry_dataset()</span></code><a class="headerlink" href="#spglib-get-symmetry-dataset" title="Link to this heading">#</a></h4>
+<p>Replace with <code class="docutils literal notranslate"><span class="pre">MoyoDataset</span></code>.</p>
+<p>If you need to specify <code class="docutils literal notranslate"><span class="pre">hall_number</span></code>, use</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MoyoDataset</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">setting</span><span class="o">=</span><span class="n">Setting</span><span class="o">.</span><span class="n">hall_number</span><span class="p">(</span><span class="n">hall_number</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">spglib.SpglibDataset</span></code> fields correspond to <code class="docutils literal notranslate"><span class="pre">MoyoDataset</span></code> fields as follows:</p>
+<ul class="simple">
+<li><p>Space-group type</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">number</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.number</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hall_number</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.hall_number</span></code></p></li>
+</ul>
+</li>
+<li><p>Symmetry operations in the input cell</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">rotations</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.operations.rotations</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">translations</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.operations.translations</span></code></p></li>
+</ul>
+</li>
+<li><p>Site symmetry</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">crystallographic_orbits</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.orbits</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">wyckoffs</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.wyckoffs</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">site_symmetry_symbols</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.site_symmetry_symbols</span></code></p></li>
+</ul>
+</li>
+<li><p>Standardized cell</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">std_lattice</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.std_cell.basis</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">std_positions</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.std_cell.positions</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">std_types</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.std_cell.numbers</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transformation_matrix</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.std_linear</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">origin_shift</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.std_origin_shift</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">std_rotation_matrix</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.std_rotation_matrix</span></code></p></li>
+</ul>
+</li>
+<li><p>Primitive standardized cell</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">mapping_to_primitive</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset.mapping_std_prim</span></code></p></li>
+</ul>
+</li>
+<li><p>Secondary information</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">hall</span></code> -&gt; Obtain <code class="docutils literal notranslate"><span class="pre">hall_number</span></code> from <code class="docutils literal notranslate"><span class="pre">MoyoDataset.hall_number</span></code> and Access <code class="docutils literal notranslate"><span class="pre">HallSymbolEntry(hall_number).hm_short</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">choice</span></code> -&gt; Obtain <code class="docutils literal notranslate"><span class="pre">hall_number</span></code> from <code class="docutils literal notranslate"><span class="pre">MoyoDataset.hall_number</span></code> and Access <code class="docutils literal notranslate"><span class="pre">HallSymbolEntry(hall_number).centering</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">international</span></code> -&gt; Obtain <code class="docutils literal notranslate"><span class="pre">number</span></code> from <code class="docutils literal notranslate"><span class="pre">MoyoDataset.number</span></code> and Access <code class="docutils literal notranslate"><span class="pre">SpaceGroupType(number).hm_short</span></code></p></li>
+</ul>
+</li>
+<li><p>Not supported in moyopy</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">equivalent_atoms</span></code>: Use <code class="docutils literal notranslate"><span class="pre">MoyoDataset.orbits</span></code> to get crystallographic orbits instead</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">primitive_lattice</span></code>: Use <code class="docutils literal notranslate"><span class="pre">MoyoDataset.prim_std_cell</span></code> if you need a primitive standardized cell</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">std_mapping_to_primitive</span></code>: Recreate <code class="docutils literal notranslate"><span class="pre">MoyoDataset</span></code> again with <code class="docutils literal notranslate"><span class="pre">MoyoDataset.prim_std_cell</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pointgroup</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+<section id="space-group-type-search">
+<h3>Space-group type search<a class="headerlink" href="#space-group-type-search" title="Link to this heading">#</a></h3>
+<section id="spglib-get-spacegroup">
+<h4><code class="docutils literal notranslate"><span class="pre">spglib.get_spacegroup()</span></code><a class="headerlink" href="#spglib-get-spacegroup" title="Link to this heading">#</a></h4>
+<p>Moyopy does not directly support this function.
+<a class="reference internal" href="#spglibget_symmetry_dataset"><span class="xref myst">See <code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry_dataset()</span></code></span></a>.</p>
+</section>
+</section>
+<section id="space-group-dataset-access">
+<h3>Space-group dataset access<a class="headerlink" href="#space-group-dataset-access" title="Link to this heading">#</a></h3>
+<section id="spglib-get-symmetry-from-database">
+<h4><code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry_from_database()</span></code><a class="headerlink" href="#spglib-get-symmetry-from-database" title="Link to this heading">#</a></h4>
+<p>Replace <code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry_from_database(hall_number)</span></code> with <code class="docutils literal notranslate"><span class="pre">operations_from_number(number,</span> <span class="pre">setting)</span></code>.
+An ITA number, <code class="docutils literal notranslate"><span class="pre">number</span></code>, can be obtained from <code class="docutils literal notranslate"><span class="pre">HallSymbolEntry(hall_number).number</span></code>.</p>
+</section>
+<section id="spglib-get-spacegroup-type">
+<h4><code class="docutils literal notranslate"><span class="pre">spglib.get_spacegroup_type()</span></code><a class="headerlink" href="#spglib-get-spacegroup-type" title="Link to this heading">#</a></h4>
+<p>Replace <code class="docutils literal notranslate"><span class="pre">spglib.get_spacegroup_type(hall_number)</span></code> with <code class="docutils literal notranslate"><span class="pre">SpaceGroupType(number)</span></code>.
+An ITA number, <code class="docutils literal notranslate"><span class="pre">number</span></code>, can be obtained from <code class="docutils literal notranslate"><span class="pre">HallSymbolEntry(hall_number).number</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">spglib.SpaceGroupType</span></code> fields correspond to <code class="docutils literal notranslate"><span class="pre">SpaceGroupType</span></code> fields as follows:</p>
+<ul class="simple">
+<li><p>Space-group type</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">number</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">SpaceGroupType.number</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">international_short</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">SpaceGroupType.hm_short</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">international_full</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">SpaceGroupType.hm_full</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">international</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">SpaceGroupType.hm_short</span></code></p></li>
+</ul>
+</li>
+<li><p>Arithmetic crystal class</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">arithmetic_crystal_class_number</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">SpaceGroupType.arithmetic_number</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">arithmetic_crystal_class_symbol</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">SpaceGroupType.arithmetic_symbol</span></code></p></li>
+</ul>
+</li>
+<li><p>Other classifications</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">pointgroup_international</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">SpaceGroupType.geometric_crystal_class</span></code></p></li>
+</ul>
+</li>
+<li><p>Not supported in moyopy</p>
+<ul>
+<li><p>Hall symbol information (<code class="docutils literal notranslate"><span class="pre">choice</span></code>, <code class="docutils literal notranslate"><span class="pre">hall_number</span></code>, <code class="docutils literal notranslate"><span class="pre">hall_symbol</span></code>) -&gt; Use <code class="docutils literal notranslate"><span class="pre">HallSymbolEntry</span></code> instead</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pointgroup_schoenflies</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">schoenflies</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="spglib-get-spacegroup-type-from-symmetry">
+<h4><code class="docutils literal notranslate"><span class="pre">spglib.get_spacegroup_type_from_symmetry()</span></code><a class="headerlink" href="#spglib-get-spacegroup-type-from-symmetry" title="Link to this heading">#</a></h4>
+<p>Replace <code class="docutils literal notranslate"><span class="pre">spglib.get_spacegroup_type_from_symmetry(rotations,</span> <span class="pre">translations,</span> <span class="pre">lattice)</span></code> it with <code class="docutils literal notranslate"><span class="pre">SpaceGroup(prim_rotations,</span> <span class="pre">prim_translations,</span> <span class="pre">basis=lattice)</span></code>.
+Be careful that <code class="docutils literal notranslate"><span class="pre">SpaceGroup</span></code> works only with symmetry operations in primitive.</p>
+</section>
+</section>
+</section>
+<section id="magnetic-symmetry">
+<h2>Magnetic symmetry<a class="headerlink" href="#magnetic-symmetry" title="Link to this heading">#</a></h2>
+<section id="magnetic-cell-representation">
+<h3>Magnetic cell representation<a class="headerlink" href="#magnetic-cell-representation" title="Link to this heading">#</a></h3>
+<p>Spglib’s magnetic cell <code class="docutils literal notranslate"><span class="pre">cell</span> <span class="pre">=</span> <span class="pre">(lattice,</span> <span class="pre">positions,</span> <span class="pre">numbers,</span> <span class="pre">magmoms)</span></code> with collinear (N, )-shape <code class="docutils literal notranslate"><span class="pre">magmoms</span></code> corresponds to <code class="docutils literal notranslate"><span class="pre">MoyoCollinearMagneticCell(basis=lattice,</span> <span class="pre">positions=positions,</span> <span class="pre">numbers=numbers,</span> <span class="pre">magnetic_moments=magmoms)</span></code>.
+Spglib’s magnetic cell <code class="docutils literal notranslate"><span class="pre">cell</span> <span class="pre">=</span> <span class="pre">(lattice,</span> <span class="pre">positions,</span> <span class="pre">numbers,</span> <span class="pre">magmoms)</span></code> with noncollinear (N, 3)-shape <code class="docutils literal notranslate"><span class="pre">magmoms</span></code> corresponds to <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticCell(basis=lattice,</span> <span class="pre">positions=positions,</span> <span class="pre">numbers=numbers,</span> <span class="pre">magnetic_moments=magmoms)</span></code>.</p>
+</section>
+<section id="spglib-get-magnetic-symmetry">
+<h3><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_symmetry()</span></code><a class="headerlink" href="#spglib-get-magnetic-symmetry" title="Link to this heading">#</a></h3>
+<p>Replace with <code class="docutils literal notranslate"><span class="pre">MoyoCollinearMagneticDataset</span></code> for collinear and <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset</span></code> for noncollinear.</p>
+<p>Let <code class="docutils literal notranslate"><span class="pre">symmetry</span></code> be the returned dictionary of <code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_symmetry()</span></code>, the fields correspond to <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset</span></code> as follows:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">symmetry['rotations']</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.magnetic_operations.rotations</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">symmetry['translations']</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.magnetic_operations.translations</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">symmetry['time_reversals']</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.magnetic_operations.time_reversals</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">symmetry['equivalent_atoms']</span></code> is not directly available in <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset</span></code>. However, <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.orbits</span></code> gives Spglib’s <code class="docutils literal notranslate"><span class="pre">crystallographic_orbits</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">symmetry['primitive_lattice']</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.prim_std_mag_cell.basis</span></code>
+Reread <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset</span></code> as <code class="docutils literal notranslate"><span class="pre">MoyoCollinearMagneticDataset</span></code> for collinear case.</p></li>
+</ul>
+</section>
+<section id="spglib-get-magnetic-symmetry-dataset">
+<h3><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_symmetry_dataset()</span></code><a class="headerlink" href="#spglib-get-magnetic-symmetry-dataset" title="Link to this heading">#</a></h3>
+<p>Replace with <code class="docutils literal notranslate"><span class="pre">MoyoCollinearMagneticDataset</span></code> for collinear and <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset</span></code> for noncollinear.</p>
+<p><code class="docutils literal notranslate"><span class="pre">spglib.SpglibMagneticDataset</span></code> fields correspond to <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset</span></code> fields as follows:</p>
+<ul class="simple">
+<li><p>Magnetic space-group type</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">uni_number</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.uni_number</span></code></p></li>
+</ul>
+</li>
+<li><p>Magnetic symmetry operations in the input cell</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">rotations</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.magnetic_operations.rotations</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">translations</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.magnetic_operations.translations</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">time_reversals</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.magnetic_operations.time_reversals</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_operations</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.magnetic_operations.num_operations</span></code></p></li>
+</ul>
+</li>
+<li><p>Site symmetry</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">equivalent_atoms</span></code> -&gt; Use <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.orbits</span></code> to get crystallographic orbits instead</p></li>
+</ul>
+</li>
+<li><p>Standardized magnetic cell</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">std_lattice</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.std_mag_cell.basis</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">std_positions</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.std_mag_cell.positions</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">std_types</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.std_mag_cell.numbers</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">std_tensors</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.std_mag_cell.magnetic_moments</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_std_atoms</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.std_mag_cell.num_atoms</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">transformation_matrix</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.std_linear</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">origin_shift</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.std_origin_shift</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">std_rotation_matrix</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.std_rotation_matrix</span></code></p></li>
+</ul>
+</li>
+<li><p>Secondary information</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">msg_type</span></code> -&gt; Obtain <code class="docutils literal notranslate"><span class="pre">uni_number</span></code> from <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.uni_number</span></code> and Access <code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType(uni_number).construct_type</span></code></p></li>
+</ul>
+</li>
+<li><p>Not supported in moyopy</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">primitive_lattice</span></code> -&gt; Use <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.prim_std_mag_cell</span></code> if you need a primitive standardized magnetic cell</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">hall_number</span></code> -&gt; Obtain <code class="docutils literal notranslate"><span class="pre">uni_number</span></code> from <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset.uni_number</span></code> and Access <code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType(uni_number)</span></code> instead</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tensor_rank</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_atoms</span></code>
+Reread <code class="docutils literal notranslate"><span class="pre">MoyoNonCollinearMagneticDataset</span></code> as <code class="docutils literal notranslate"><span class="pre">MoyoCollinearMagneticDataset</span></code> for collinear case.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="spglib-get-magnetic-spacegroup-type">
+<h3><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_spacegroup_type()</span></code><a class="headerlink" href="#spglib-get-magnetic-spacegroup-type" title="Link to this heading">#</a></h3>
+<p>Replace with <code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType(uni_number)</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">spglib.MagneticSpaceGroupType</span></code> fields correspond to <code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType</span></code> fields as follows:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">uni_number</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.uni_number</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">litvin_number</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.litvin_number</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bns_number</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.bns_number</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">og_number</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.og_number</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">number</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.number</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroupType.construct_type</span></code></p></li>
+</ul>
+</section>
+<section id="spglib-get-magnetic-spacegroup-type-from-symmetry">
+<h3><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_spacegroup_type_from_symmetry()</span></code><a class="headerlink" href="#spglib-get-magnetic-spacegroup-type-from-symmetry" title="Link to this heading">#</a></h3>
+<p>Replace <code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_spacegroup_type_from_symmetry(rotations,</span> <span class="pre">translations,</span> <span class="pre">time_reversals,</span> <span class="pre">lattice)</span></code> with <code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup(prim_rotations,</span> <span class="pre">prim_translations,</span> <span class="pre">prim_time_reversals,</span> <span class="pre">basis=lattice)</span></code>.
+Be careful that <code class="docutils literal notranslate"><span class="pre">MagneticSpaceGroup</span></code> works only with symmetry operations in primitive.</p>
+</section>
+<section id="spglib-get-magnetic-symmetry-from-database">
+<h3><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_symmetry_from_database()</span></code><a class="headerlink" href="#spglib-get-magnetic-symmetry-from-database" title="Link to this heading">#</a></h3>
+<p>Replace it with <code class="docutils literal notranslate"><span class="pre">magnetic_operations_from_uni_number(uni_number)</span></code>.</p>
+</section>
+</section>
+<section id="standardization-and-finding-primitive-cell">
+<h2>Standardization and finding primitive cell<a class="headerlink" href="#standardization-and-finding-primitive-cell" title="Link to this heading">#</a></h2>
+<section id="spglib-standardize-cell">
+<h3><code class="docutils literal notranslate"><span class="pre">spglib.standardize_cell()</span></code><a class="headerlink" href="#spglib-standardize-cell" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">spglib.standardize_cell(...,</span> <span class="pre">to_primitive,</span> <span class="pre">no_idealize)</span></code> is replaced with creating <code class="docutils literal notranslate"><span class="pre">MoyoDataset</span></code> with appropriate arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">to_primitive=True</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset(...,</span> <span class="pre">rotate_basis=no_idealize).prim_std_cell</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">to_primitive=False</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">MoyoDataset(...,</span> <span class="pre">rotate_basis=no_idealize).std_cell</span></code></p></li>
+</ul>
+</section>
+<section id="spglib-find-primitive">
+<h3><code class="docutils literal notranslate"><span class="pre">spglib.find_primitive()</span></code><a class="headerlink" href="#spglib-find-primitive" title="Link to this heading">#</a></h3>
+<p>Moyopy does not directly support this function.
+<a class="reference internal" href="#spglib-standardize-cell">See <code class="docutils literal notranslate"><span class="pre">spglib.standardize_cell()</span></code></a>.</p>
+</section>
+<section id="spglib-refine-cell">
+<h3><code class="docutils literal notranslate"><span class="pre">spglib.refine_cell()</span></code><a class="headerlink" href="#spglib-refine-cell" title="Link to this heading">#</a></h3>
+<p>Moyopy does not directly support this function.
+<a class="reference internal" href="#spglib-standardize-cell">See <code class="docutils literal notranslate"><span class="pre">spglib.standardize_cell()</span></code></a>.</p>
+</section>
+</section>
+<section id="lattice-reduction">
+<h2>Lattice reduction<a class="headerlink" href="#lattice-reduction" title="Link to this heading">#</a></h2>
+<section id="spglib-niggli-reduce">
+<h3><code class="docutils literal notranslate"><span class="pre">spglib.niggli_reduce()</span></code><a class="headerlink" href="#spglib-niggli-reduce" title="Link to this heading">#</a></h3>
+<p>TODO: not supported yet</p>
+</section>
+<section id="spglib-delaunay-reduce">
+<h3><code class="docutils literal notranslate"><span class="pre">spglib.delaunay_reduce()</span></code><a class="headerlink" href="#spglib-delaunay-reduce" title="Link to this heading">#</a></h3>
+<p>TODO: not supported yet</p>
+</section>
+</section>
+<section id="kpoints-spglib-get-ir-reciprocal-mesh">
+<h2>Kpoints: <code class="docutils literal notranslate"><span class="pre">spglib.get_ir_reciprocal_mesh()</span></code><a class="headerlink" href="#kpoints-spglib-get-ir-reciprocal-mesh" title="Link to this heading">#</a></h2>
+<p>moyopy does not plan to support it</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="examples/index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Examples</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="autoapi/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">API Reference</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#symmetry-tolerance">Symmetry tolerance</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#symprec-and-mag-symprec"><code class="docutils literal notranslate"><span class="pre">symprec</span></code> and <code class="docutils literal notranslate"><span class="pre">mag_symprec</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#angle-tolerance"><code class="docutils literal notranslate"><span class="pre">angle_tolerance</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#space-group">Space group</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cell-representation">Cell representation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#space-group-symmetry-search">Space-group symmetry search</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-symmetry"><code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-symmetry-dataset"><code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry_dataset()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#space-group-type-search">Space-group type search</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-spacegroup"><code class="docutils literal notranslate"><span class="pre">spglib.get_spacegroup()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#space-group-dataset-access">Space-group dataset access</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-symmetry-from-database"><code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry_from_database()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-spacegroup-type"><code class="docutils literal notranslate"><span class="pre">spglib.get_spacegroup_type()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-spacegroup-type-from-symmetry"><code class="docutils literal notranslate"><span class="pre">spglib.get_spacegroup_type_from_symmetry()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#magnetic-symmetry">Magnetic symmetry</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#magnetic-cell-representation">Magnetic cell representation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-magnetic-symmetry"><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_symmetry()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-magnetic-symmetry-dataset"><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_symmetry_dataset()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-magnetic-spacegroup-type"><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_spacegroup_type()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-magnetic-spacegroup-type-from-symmetry"><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_spacegroup_type_from_symmetry()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-get-magnetic-symmetry-from-database"><code class="docutils literal notranslate"><span class="pre">spglib.get_magnetic_symmetry_from_database()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#standardization-and-finding-primitive-cell">Standardization and finding primitive cell</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-standardize-cell"><code class="docutils literal notranslate"><span class="pre">spglib.standardize_cell()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-find-primitive"><code class="docutils literal notranslate"><span class="pre">spglib.find_primitive()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-refine-cell"><code class="docutils literal notranslate"><span class="pre">spglib.refine_cell()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#lattice-reduction">Lattice reduction</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-niggli-reduce"><code class="docutils literal notranslate"><span class="pre">spglib.niggli_reduce()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#spglib-delaunay-reduce"><code class="docutils literal notranslate"><span class="pre">spglib.delaunay_reduce()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kpoints-spglib-get-ir-reciprocal-mesh">Kpoints: <code class="docutils literal notranslate"><span class="pre">spglib.get_ir_reciprocal_mesh()</span></code></a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Author name not set
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023, Kohei Shinohara.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

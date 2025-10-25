@@ -6,6 +6,7 @@ hidden:
 ---
     Introduction <self>
     Examples <examples/index>
+    Migration Guide from spglib <migration>
 ```
 
 ```{include} ../README.md
