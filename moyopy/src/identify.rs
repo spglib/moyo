@@ -108,7 +108,7 @@ impl PySpaceGroup {
         let setting = if let Some(setting) = setting {
             setting.into()
         } else {
-            Setting::Spglib
+            Setting::default()
         };
 
         let space_group = if let Some(basis) = basis {

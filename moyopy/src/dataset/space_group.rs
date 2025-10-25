@@ -36,7 +36,7 @@ impl PyMoyoDataset {
         let setting = if let Some(setting) = setting {
             setting.into()
         } else {
-            Setting::Spglib
+            Setting::default()
         };
 
         let dataset = MoyoDataset::new(&cell.to_owned().into(), symprec, angle_tolerance, setting)?;

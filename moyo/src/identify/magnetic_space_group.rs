@@ -31,7 +31,7 @@ impl MagneticSpaceGroup {
             identify_reference_space_group(prim_mag_operations, epsilon)
                 .ok_or(MoyoError::ConstructTypeIdentificationError)?;
         debug!("Construct type: {:?}", construct_type);
-        let setting = Setting::Standard;
+        let setting = Setting::default();
         // std_ref_spg.transformation: primitive input -> primitive BNS setting
         let std_ref_spg = SpaceGroup::new(&ref_spg, setting, epsilon)?;
         debug!("Reference space group: {:?}", std_ref_spg.number);

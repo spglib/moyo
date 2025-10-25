@@ -59,3 +59,10 @@ impl Setting {
         }
     }
 }
+
+impl Default for Setting {
+    fn default() -> Self {
+        // Differ from spglib's default!
+        Self::Standard
+    }
+}
