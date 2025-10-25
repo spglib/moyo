@@ -71,10 +71,11 @@ int main(void) {
     double angle_tolerance = -1;
     MoyoSetting setting = MOYO_SETTING_SPGLIB;
     int hall_number = -1;
+    bool rotate_basis = true;
 
     MoyoDataset *dataset = moyo_dataset(
         &basis, positions, numbers, num_atoms,
-        symprec, angle_tolerance, setting, hall_number
+        symprec, angle_tolerance, setting, hall_number, rotate_basis
     );
     assert(dataset != NULL);
 

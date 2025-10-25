@@ -20,13 +20,14 @@ pub struct PyMoyoCollinearMagneticDataset(MoyoMagneticDataset<Collinear>);
 #[pymethods]
 impl PyMoyoCollinearMagneticDataset {
     #[new]
-    #[pyo3(signature = (magnetic_cell, *, symprec=1e-4, angle_tolerance=None, mag_symprec=None, is_axial=false))]
+    #[pyo3(signature = (magnetic_cell, *, symprec=1e-4, angle_tolerance=None, mag_symprec=None, is_axial=false, rotate_basis=true))]
     pub fn new(
         magnetic_cell: &PyCollinearMagneticCell,
         symprec: f64,
         angle_tolerance: Option<f64>,
         mag_symprec: Option<f64>,
         is_axial: bool,
+        rotate_basis: bool,
     ) -> Result<Self, PyMoyoError> {
         let angle_tolerance = if let Some(angle_tolerance) = angle_tolerance {
             AngleTolerance::Radian(angle_tolerance)
@@ -45,6 +46,7 @@ impl PyMoyoCollinearMagneticDataset {
             angle_tolerance,
             mag_symprec,
             action,
+            rotate_basis,
         )?;
         Ok(PyMoyoCollinearMagneticDataset(dataset))
     }
@@ -200,13 +202,14 @@ pub struct PyMoyoNonCollinearMagneticDataset(MoyoMagneticDataset<NonCollinear>);
 #[pymethods]
 impl PyMoyoNonCollinearMagneticDataset {
     #[new]
-    #[pyo3(signature = (magnetic_cell, *, symprec=1e-4, angle_tolerance=None, mag_symprec=None, is_axial=true))]
+    #[pyo3(signature = (magnetic_cell, *, symprec=1e-4, angle_tolerance=None, mag_symprec=None, is_axial=true, rotate_basis=true))]
     pub fn new(
         magnetic_cell: &PyNonCollinearMagneticCell,
         symprec: f64,
         angle_tolerance: Option<f64>,
         mag_symprec: Option<f64>,
         is_axial: bool,
+        rotate_basis: bool,
     ) -> Result<Self, PyMoyoError> {
         let angle_tolerance = if let Some(angle_tolerance) = angle_tolerance {
             AngleTolerance::Radian(angle_tolerance)
@@ -225,6 +228,7 @@ impl PyMoyoNonCollinearMagneticDataset {
             angle_tolerance,
             mag_symprec,
             action,
+            rotate_basis,
         )?;
         Ok(PyMoyoNonCollinearMagneticDataset(dataset))
     }

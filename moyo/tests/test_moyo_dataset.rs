@@ -22,7 +22,8 @@ fn assert_dataset(
     angle_tolerance: AngleTolerance,
     setting: Setting,
 ) -> MoyoDataset {
-    let dataset = MoyoDataset::new(cell, symprec, angle_tolerance, setting).unwrap();
+    let rotate_basis = true;
+    let dataset = MoyoDataset::new(cell, symprec, angle_tolerance, setting, rotate_basis).unwrap();
 
     // Check if operations are unique
     let num_operations = dataset.operations.len();
@@ -59,15 +60,27 @@ fn assert_dataset(
     }
 
     // std_cell
-    let std_dataset =
-        MoyoDataset::new(&dataset.std_cell, symprec, angle_tolerance, setting).unwrap();
+    let std_dataset = MoyoDataset::new(
+        &dataset.std_cell,
+        symprec,
+        angle_tolerance,
+        setting,
+        rotate_basis,
+    )
+    .unwrap();
     assert_eq!(std_dataset.number, dataset.number);
     assert_eq!(std_dataset.hall_number, dataset.hall_number);
     assert_eq!(std_dataset.pearson_symbol, dataset.pearson_symbol);
 
     // prim_std_cell
-    let prim_std_dataset =
-        MoyoDataset::new(&dataset.prim_std_cell, symprec, angle_tolerance, setting).unwrap();
+    let prim_std_dataset = MoyoDataset::new(
+        &dataset.prim_std_cell,
+        symprec,
+        angle_tolerance,
+        setting,
+        rotate_basis,
+    )
+    .unwrap();
     assert_eq!(prim_std_dataset.number, dataset.number);
     assert_eq!(prim_std_dataset.hall_number, dataset.hall_number);
     assert_eq!(prim_std_dataset.pearson_symbol, dataset.pearson_symbol);
@@ -585,9 +598,8 @@ fn test_with_high_symprec_and_angle_tolerance() {
 
     let symprec = 0.1;
     let angle_tolerance = AngleTolerance::Radian(1.0);
-    let setting = Setting::default();
 
-    let _ = MoyoDataset::new(&cell, symprec, angle_tolerance, setting).unwrap();
+    let _ = MoyoDataset::new(&cell, symprec, angle_tolerance, Setting::default(), true).unwrap();
 }
 
 #[test]
