@@ -56,4 +56,4 @@ npm test
 
 ## Publish
 
-This crate is published as an [NPM package](https://www.npmjs.com/package/moyo-wasm) with CI when a new `git` tag is pushed to the Rust monorepo.
+This crate is published as an [NPM package](https://www.npmjs.com/package/@spglib/moyo-wasm) with CI when a new `git` tag is pushed to the Rust monorepo.

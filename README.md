@@ -1,9 +1,13 @@
-# moyo
+<div align="center">
+
+# <img src="./logo.png" alt="moyo" width=450>
 
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/spglib/moyo/main.svg)](https://results.pre-commit.ci/latest/github/spglib/moyo/main)
 [![image](https://img.shields.io/pypi/l/moyopy.svg)](https://pypi.python.org/pypi/moyopy)
 [![moyo at crates.io](https://img.shields.io/crates/v/moyo.svg)](https://img.shields.io/crates/v/moyo)
 [![image](https://img.shields.io/pypi/v/moyopy.svg)](https://pypi.python.org/pypi/moyopy)
+
+</div>
 
 A fast and robust crystal symmetry finder, written in Rust.
 
@@ -16,6 +20,7 @@ A fast and robust crystal symmetry finder, written in Rust.
 
 - Rust support available via [crates.io](https://crates.io/crates/moyo): [Docs](https://docs.rs/moyo/latest/moyo/)
 - Python support available via [PyPI](https://pypi.org/project/moyopy/): [Docs](https://spglib.github.io/moyo/python/)
+- JavaScript and WebAssembly support available via [npm](https://www.npmjs.com/package/@spglib/moyo-wasm)
 
 ## Interfaces
 

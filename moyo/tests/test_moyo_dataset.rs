@@ -71,6 +71,10 @@ fn assert_dataset(
     assert_eq!(std_dataset.number, dataset.number);
     assert_eq!(std_dataset.hall_number, dataset.hall_number);
     assert_eq!(std_dataset.pearson_symbol, dataset.pearson_symbol);
+    // TODO: No transformation or rotation for std_cell input
+    // assert_eq!(std_dataset.std_linear, Matrix3::identity());
+    // assert_relative_eq!(std_dataset.std_origin_shift, Vector3::zeros());
+    // assert_relative_eq!(std_dataset.std_rotation_matrix, Matrix3::identity());
 
     // prim_std_cell
     let prim_std_dataset = MoyoDataset::new(
