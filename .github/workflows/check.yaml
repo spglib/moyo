@@ -33,7 +33,7 @@ jobs:
   pass:
     name: ✅ Pass checks
     needs: [pre-commit, cargo-deny]
-    runs-on: ubuntu-ubuntu  # ubuntu-slim lacks python
+    runs-on: ubuntu-latest # ubuntu-slim lacks python
     steps:
       - name: Check all CI jobs
         uses: re-actors/alls-green@release/v1
