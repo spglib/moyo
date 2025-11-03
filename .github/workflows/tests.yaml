@@ -9,7 +9,7 @@ on:
 
 jobs:
   path-filter:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       rust: ${{ steps.filter.outputs.rust }}
       python: ${{ steps.filter.outputs.python }}
@@ -55,7 +55,7 @@ jobs:
     if: always()
     name: ✅ Pass tests
     needs: [rust, python, c]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     steps:
       - if: needs.rust.result == 'failure'
         run: exit 1

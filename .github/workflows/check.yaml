@@ -9,7 +9,7 @@ on:
 
 jobs:
   pre-commit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # ubuntu-slim lacks cargo
     env:
       SKIP: cbindgen
     steps:
@@ -22,7 +22,7 @@ jobs:
         extra_args: --all-files
 
   cargo-deny:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # ubuntu-slim lacks docker
     steps:
     - uses: actions/checkout@v5
     - uses: Swatinem/rust-cache@v2
@@ -33,7 +33,7 @@ jobs:
   pass:
     name: ✅ Pass checks
     needs: [pre-commit, cargo-deny]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # ubuntu-slim lacks python
     steps:
       - name: Check all CI jobs
         uses: re-actors/alls-green@release/v1
