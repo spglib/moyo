@@ -13,9 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: Swatinem/rust-cache@v2
-      - uses: cargo-bins/cargo-binstall@v1.15.10
       - name: Install cbindgen
-        run: cargo binstall cbindgen --locked --no-confirm
+        run: cargo install cbindgen
       - name: Run tests
         run: |
           set -e
