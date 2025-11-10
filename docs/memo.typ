@@ -1,5 +1,5 @@
 #import "@preview/ctheorems:1.1.3": *
-#import "@preview/physica:0.9.3": *
+#import "@preview/physica:0.9.7": *
 #show: thmrules
 
 #set heading(numbering: "1.")
