@@ -118,6 +118,11 @@ fn assert_dataset(
 
     assert_eq!(dataset.mapping_std_prim.len(), cell.num_atoms());
 
+    // Check handedness
+    assert!(dataset.std_linear.determinant() > 0.0);
+    assert!(dataset.prim_std_linear.determinant() > 0.0);
+    assert!(dataset.std_rotation_matrix.determinant() > 0.0);
+
     dataset
 }
 
@@ -632,4 +637,36 @@ fn test_wyckoff_position_assignment() {
             vec!['e', 'e', 'e', 'e', 'a', 'a', 'a', 'a']
         );
     }
+}
+
+#[test]
+fn test_handedness() {
+    // P 3_1 (144)
+    let a = 1.0;
+    let c = 2.0;
+    let lattice = Lattice::new(matrix![
+        a, 0.0, 0.0;
+        -a / 2.0, a * 3.0_f64.sqrt() / 2.0, 0.0;
+        0.0, 0.0, -c;  // left-handed
+    ]);
+    let x1_3a = 0.1;
+    let y1_3a = 0.2;
+    let z1_3a = 0.3;
+    let x2_3a = 0.4;
+    let y2_3a = 0.5;
+    let z2_3a = 0.6;
+    let positions = vec![
+        vector![x1_3a, y1_3a, z1_3a],
+        vector![-y1_3a, x1_3a - y1_3a, z1_3a + 1.0 / 3.0],
+        vector![-x1_3a + y1_3a, -x1_3a, z1_3a + 2.0 / 3.0],
+        vector![x2_3a, y2_3a, z2_3a],
+        vector![-y2_3a, x2_3a - y2_3a, z2_3a + 1.0 / 3.0],
+        vector![-x2_3a + y2_3a, -x2_3a, z2_3a + 2.0 / 3.0],
+    ];
+    let numbers = vec![0, 0, 0, 1, 1, 1];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let dataset = assert_dataset_with_default(&cell, symprec);
+    assert_eq!(dataset.number, 144);
 }

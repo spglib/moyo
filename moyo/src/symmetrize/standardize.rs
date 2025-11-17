@@ -458,20 +458,29 @@ fn symmetrize_lattice(lattice: &Lattice, rotations: &Rotations) -> (Lattice, Mat
         .sum();
     symmetrized_metric_tensor /= rotations.len() as f64;
 
-    // upper-triangular basis
-    let tri_basis = Cholesky::new_unchecked(symmetrized_metric_tensor)
+    // Upper-triangular basis
+    let mut tri_basis = Cholesky::new_unchecked(symmetrized_metric_tensor)
         .l()
         .transpose();
-
-    // tri_basis \approx rotation_matrix * lattice.basis
-    // QR(tri_basis * lattice.basis^-1) = rotation_matrix * strain
-    let qr = QR::new(tri_basis * lattice.basis.try_inverse().unwrap());
-    let r = qr.r();
-    let signs =
-        Matrix3::<f64>::from_diagonal(&vector![sign(r[(0, 0)]), sign(r[(1, 1)]), sign(r[(2, 2)])]);
-    let mut rotation_matrix = QR::new(tri_basis * lattice.basis.try_inverse().unwrap()).q();
     // Remove axis-direction freedom
-    rotation_matrix *= signs;
+    let diagonal_signs = Matrix3::<f64>::from_diagonal(&vector![
+        sign(tri_basis[(0, 0)]),
+        sign(tri_basis[(1, 1)]),
+        sign(tri_basis[(2, 2)])
+    ]);
+    tri_basis *= diagonal_signs;
+    // Adjust handedness
+    if sign(lattice.basis.determinant()) * sign(tri_basis.determinant()) < 0.0 {
+        tri_basis *= Matrix3::<f64>::from_diagonal(&vector![1.0, 1.0, -1.0]);
+    }
+
+    // tri_basis \approx orthogonal_matrix * lattice.basis
+    // QR(tri_basis * lattice.basis^-1) = rotation_matrix * strain
+    let mut rotation_matrix = QR::new(tri_basis * lattice.basis.try_inverse().unwrap()).q();
+    if rotation_matrix.determinant() < 0.0 {
+        rotation_matrix *= -1.0;
+    }
+
     (Lattice::new(tri_basis.transpose()), rotation_matrix)
 }
 
