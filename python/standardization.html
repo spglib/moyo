@@ -1,0 +1,659 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Moyo conventions of standardized cell &#8212; moyopy 0.7.3</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=c73c0f3e"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'standardization';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Migration Guide from spglib" href="migration.html" />
+    <link rel="prev" title="Examples" href="examples/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">moyopy 0.7.3</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="index.html">    Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/index.html">    Examples</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">    Standardization of Crystal Structures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migration.html">    Migration Guide from spglib</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="autoapi/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="autoapi/moyopy/index.html">moyopy</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/moyopy/_base/index.html">moyopy._base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/moyopy/_data/index.html">moyopy._data</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/moyopy/_dataset/index.html">moyopy._dataset</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/moyopy/_identify/index.html">moyopy._identify</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/moyopy/_moyopy/index.html">moyopy._moyopy</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/moyopy/interface/index.html">moyopy.interface</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+<a href="https://github.com/spglib/moyo" target="_blank"
+   class="btn btn-sm btn-source-repository-button"
+   title="Source repository"
+   data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+
+</a>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/standardization.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Moyo conventions of standardized cell</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-option-in-moyodataset-new"><code class="docutils literal notranslate"><span class="pre">setting</span></code> option in <code class="docutils literal notranslate"><span class="pre">MoyoDataset::new</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rotate-basis-option-in-moyodataset-new"><code class="docutils literal notranslate"><span class="pre">rotate_basis</span></code> option in <code class="docutils literal notranslate"><span class="pre">MoyoDataset::new</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#standardized-cell-with-setting-setting-standard-rotate-basis-true-and-right-handed-input-basis-vectors">Standardized cell with <code class="docutils literal notranslate"><span class="pre">setting=Setting.Standard</span></code>, <code class="docutils literal notranslate"><span class="pre">rotate_basis=true</span></code>, and right-handed input basis vectors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#primitive-standardized-cell-with-setting-setting-standard-rotate-basis-true-and-right-handed-input-basis-vectors">Primitive standardized cell with <code class="docutils literal notranslate"><span class="pre">setting=Setting.Standard</span></code>, <code class="docutils literal notranslate"><span class="pre">rotate_basis=true</span></code>, and right-handed input basis vectors</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="moyo-conventions-of-standardized-cell">
+<h1>Moyo conventions of standardized cell<a class="headerlink" href="#moyo-conventions-of-standardized-cell" title="Link to this heading">#</a></h1>
+<p>[!NOTE]
+This document is based on moyo==0.7.3.</p>
+<p>This document describes how the standardized cell <code class="docutils literal notranslate"><span class="pre">MoyoDataset.std_cell</span></code> and the primitive standardized cell <code class="docutils literal notranslate"><span class="pre">MoyoDataset.prim_std_cell</span></code> are specified in Moyo.
+The conventions described here apply uniformly to the core Rust implementation as well as all other language bindings.</p>
+<section id="setting-option-in-moyodataset-new">
+<h2><code class="docutils literal notranslate"><span class="pre">setting</span></code> option in <code class="docutils literal notranslate"><span class="pre">MoyoDataset::new</span></code><a class="headerlink" href="#setting-option-in-moyodataset-new" title="Link to this heading">#</a></h2>
+<p>We refer to the criteria to choose a representative of each space-group type as a setting.
+After symmetry operations of an input crystal structure are determined, moyo transforms the space group into a representative of its space-group type defined by the chosen <code class="docutils literal notranslate"><span class="pre">setting</span></code>.
+Here, the transformation comprises both a change of basis and an origin shift.</p>
+<p>Moyo supports three settings;</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Setting.Standard</span></code>: the so called <a class="reference external" href="http://webbdcrista2.ehu.es/cgi-bin/cryst/programs/nph-def-ita_settings">“ITA setting”</a>, which is one of the conventional descriptions for each space-group type used in the International Tables for Crystallography Volume A (2016). The ITA setting chooses unique axis b setting, cell choice 1 for monoclinic space groups, hexagonal axes for rhombohedral groups, and origin choice 2 for centrosymmetric groups.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Setting.Spglib</span></code>: the setting used in <a class="reference external" href="https://spglib.readthedocs.io/en/stable/index.html">spglib</a>, which chooses the smallest one in the serial numbers for Hall symbols described in <a class="reference external" href="https://yseto.net/en/sg/sg1">Prof. Seto’s page</a>.
+Be sure that this serial number, so called “Hall number”, would not be a standard crystallographic definition <a class="footnote-reference brackets" href="#setting" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Setting.HallNumber</span></code>: allows users to specify a “Hall number” (an integer from 1 to 530) directly.</p></li>
+</ul>
+<p>Moyo chooses <code class="docutils literal notranslate"><span class="pre">Setting.Standard</span></code> as the default setting, which is different from spglib’s default <code class="docutils literal notranslate"><span class="pre">Setting.Spglib</span></code>.
+This change of the default behavior affects in centrosymmetric groups: moyo chooses origin choice 2 by default, while spglib chooses origin choice 1 by default.</p>
+</section>
+<section id="rotate-basis-option-in-moyodataset-new">
+<h2><code class="docutils literal notranslate"><span class="pre">rotate_basis</span></code> option in <code class="docutils literal notranslate"><span class="pre">MoyoDataset::new</span></code><a class="headerlink" href="#rotate-basis-option-in-moyodataset-new" title="Link to this heading">#</a></h2>
+<p>Because the basis vectors of the input crystal structure are not assumed to align with Cartesian x, y, and z axes, moyo rotates the basis vectors at <code class="docutils literal notranslate"><span class="pre">rotate_basis=True</span></code> (default) as follows:</p>
+</section>
+<section id="standardized-cell-with-setting-setting-standard-rotate-basis-true-and-right-handed-input-basis-vectors">
+<h2>Standardized cell with <code class="docutils literal notranslate"><span class="pre">setting=Setting.Standard</span></code>, <code class="docutils literal notranslate"><span class="pre">rotate_basis=true</span></code>, and right-handed input basis vectors<a class="headerlink" href="#standardized-cell-with-setting-setting-standard-rotate-basis-true-and-right-handed-input-basis-vectors" title="Link to this heading">#</a></h2>
+<p>Let <span class="math notranslate nohighlight">\(\mathbf{P}_{\mathrm{std}}\)</span> be <code class="docutils literal notranslate"><span class="pre">MoyoDataset.std_linear</span></code> and <span class="math notranslate nohighlight">\(\mathbf{p}_{\mathrm{std}}\)</span> be <code class="docutils literal notranslate"><span class="pre">MoyoDataset.std_origin_shift</span></code>.
+The transformation <span class="math notranslate nohighlight">\((\mathbf{P}_{\mathrm{std}}, \mathbf{p}_{\mathrm{std}})\)</span> brings the input crystal structure into the standardized cell (<code class="docutils literal notranslate"><span class="pre">MoyoDataset.std_cell</span></code>).
+When <code class="docutils literal notranslate"><span class="pre">setting=Setting.Standard</span></code>, the standardized cell gives the space group in the ITA setting.</p>
+<p>Let <span class="math notranslate nohighlight">\(\mathbf{A}\)</span> be the column-wise basis vectors of the input crystal structure, <code class="docutils literal notranslate"><span class="pre">Cell.basis</span></code>, and <span class="math notranslate nohighlight">\(\mathbf{A}_{\mathbf{std}}\)</span> be the column-wise basis vectors of the standardized cell, <code class="docutils literal notranslate"><span class="pre">MoyoDataset.std_cell.basis</span></code>.
+When <code class="docutils literal notranslate"><span class="pre">rotate_basis=true</span></code>, the following relation holds:
+<span class="math notranslate nohighlight">\(
+\mathbf{A}_{\mathbf{std}} = \mathbf{R} \mathbf{A} \mathbf{P}_{\mathrm{std}},
+\)</span>
+where <span class="math notranslate nohighlight">\(\mathbf{R}\)</span> is <code class="docutils literal notranslate"><span class="pre">MoyoDataset.std_rotation_matrix</span></code>.
+Here, <span class="math notranslate nohighlight">\(\mathbf{R}\)</span> is a proper rotation matrix that brings the input basis vectors into a certain orientation depending on the crystal family.</p>
+<p>[!CAUTION]
+The Rust-implementation attribute <code class="docutils literal notranslate"><span class="pre">Cell.basis</span></code> stores the basis vectors in column-wise manner, while the other language bindings store them in row-wise manner.</p>
+<p>The standardized cell basis vectors <span class="math notranslate nohighlight">\(\mathbf{A}_{\mathrm{std}}\)</span> are defined for each crystal family as the following table.
+Note that <code class="docutils literal notranslate"><span class="pre">rotate_basis=true</span></code> is assumed, and that the input basis vectors are right-handed.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Crystal family</p></th>
+<th class="head"><p>“Conventional” basis vectors <span class="math notranslate nohighlight">\(\mathbf{A}_{\mathrm{std}}\)</span> <br> (<code class="docutils literal notranslate"><span class="pre">MoyoDataset.std_cell.basis</span></code>)</p></th>
+<th class="head"><p>Additional conditions</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Triclinic</p></td>
+<td><p><span class="math notranslate nohighlight">\(\begin{pmatrix} a_x &amp; b_x &amp; c_x \\ a_y &amp; b_y &amp; c_y \\ a_z &amp; b_z &amp; c_z \end{pmatrix}\)</span></p></td>
+<td><p>Niggli reduced <a class="footnote-reference brackets" href="#std-cell-2" id="id2" role="doc-noteref"><span class="fn-bracket">[</span>2<span class="fn-bracket">]</span></a>; <span class="math notranslate nohighlight">\(a_x, b_y, c_z \gt 0\)</span> <a class="footnote-reference brackets" href="#std-cell-3" id="id3" role="doc-noteref"><span class="fn-bracket">[</span>3<span class="fn-bracket">]</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Monoclinic</p></td>
+<td><p><span class="math notranslate nohighlight">\(\begin{pmatrix} a &amp; 0 &amp; c \cos \beta \\ 0 &amp; b &amp; 0 \\ 0 &amp; 0 &amp; c \sin \beta \end{pmatrix}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(a, b, c \sin \beta \gt 0\)</span> <a class="footnote-reference brackets" href="#std-cell-4" id="id4" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#std-cell-7" id="id5" role="doc-noteref"><span class="fn-bracket">[</span>5<span class="fn-bracket">]</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>Orthorhombic</p></td>
+<td><p><span class="math notranslate nohighlight">\(\begin{pmatrix} a &amp; 0 &amp; 0 \\ 0 &amp; b &amp; 0 \\ 0 &amp; 0 &amp; c \end{pmatrix}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(a, b, c \gt 0\)</span> <a class="footnote-reference brackets" href="#std-cell-4" id="id6" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a> <a class="footnote-reference brackets" href="#std-cell-6" id="id7" role="doc-noteref"><span class="fn-bracket">[</span>6<span class="fn-bracket">]</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Tetragonal</p></td>
+<td><p><span class="math notranslate nohighlight">\(\begin{pmatrix} a &amp; 0 &amp; 0 \\ 0 &amp; a &amp; 0 \\ 0 &amp; 0 &amp; c \end{pmatrix}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(a, c \gt 0\)</span> <a class="footnote-reference brackets" href="#std-cell-4" id="id8" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>Hexagonal</p></td>
+<td><p><span class="math notranslate nohighlight">\(\begin{pmatrix} a &amp; -a / 2 &amp; 0 \\0 &amp; \sqrt{3} a / 2 &amp; 0 \\ 0 &amp; 0 &amp; c \end{pmatrix}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(a, c &gt; 0\)</span> <a class="footnote-reference brackets" href="#std-cell-4" id="id9" role="doc-noteref"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Cubic</p></td>
+<td><p><span class="math notranslate nohighlight">\(\begin{pmatrix} a &amp; 0 &amp; 0 \\ 0 &amp; a &amp; 0 \\ 0 &amp; 0 &amp; a \end{pmatrix}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(a &gt; 0\)</span> <a class="footnote-reference brackets" href="#std-cell-5" id="id10" role="doc-noteref"><span class="fn-bracket">[</span>7<span class="fn-bracket">]</span></a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="primitive-standardized-cell-with-setting-setting-standard-rotate-basis-true-and-right-handed-input-basis-vectors">
+<h2>Primitive standardized cell with <code class="docutils literal notranslate"><span class="pre">setting=Setting.Standard</span></code>, <code class="docutils literal notranslate"><span class="pre">rotate_basis=true</span></code>, and right-handed input basis vectors<a class="headerlink" href="#primitive-standardized-cell-with-setting-setting-standard-rotate-basis-true-and-right-handed-input-basis-vectors" title="Link to this heading">#</a></h2>
+<p>Let <span class="math notranslate nohighlight">\(\mathbf{P}_{\mathrm{prim}}\)</span> be <code class="docutils literal notranslate"><span class="pre">MoyoDataset.prim_std_linear</span></code> and <span class="math notranslate nohighlight">\(\mathbf{p}_{\mathrm{prim}}\)</span> be <code class="docutils literal notranslate"><span class="pre">MoyoDataset.prim_std_origin_shift</span></code>.
+The transformation <span class="math notranslate nohighlight">\((\mathbf{P}_{\mathrm{prim}}, \mathbf{p}_{\mathrm{prim}})\)</span> brings the input crystal structure into the primitive standardized cell (<code class="docutils literal notranslate"><span class="pre">MoyoDataset.prim_std_cell</span></code>).
+Moyo chooses a transformation matrix <span class="math notranslate nohighlight">\(\mathbf{Q}\)</span> from a primitive cell to the standardized cell as the following table.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Crystal family</p></th>
+<th class="head"><p>Bravais class</p></th>
+<th class="head"><p>Transformation matrix from primitive to conventional, <span class="math notranslate nohighlight">\(\mathbf{Q}\)</span></p></th>
+<th class="head"><p><span class="math notranslate nohighlight">\(\mathbf{Q}^{-1}\)</span></p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Triclinic</p></td>
+<td><p>aP</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_P = \begin{pmatrix} 1 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{pmatrix}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_P^{-1} = \begin{pmatrix} 1 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{pmatrix}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Monoclinic</p></td>
+<td><p>mP</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_P\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_P^{-1}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td><p>mC</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_C = \begin{pmatrix} 1 &amp; -1 &amp; 0 \\ 1 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{pmatrix}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_C^{-1} = \begin{pmatrix} 1/2 &amp; 1/2 &amp; 0 \\ -1/2 &amp; 1/2 &amp; 0 \\ 0 &amp; 0 &amp; 1 \end{pmatrix}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Orthorhombic</p></td>
+<td><p>oP</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_P\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_P^{-1}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td><p>oS</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_C\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_C^{-1}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p></p></td>
+<td><p>oF</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_F = \begin{pmatrix} -1 &amp; 1 &amp; 1 \\ 1 &amp; -1 &amp; 1 \\ 1 &amp; 1 &amp; -1 \end{pmatrix}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_F^{-1} = \begin{pmatrix} 0 &amp; 1/2 &amp; 1/2 \\ 1/2 &amp; 0 &amp; 1/2 \\ 1/2 &amp; 1/2 &amp; 0 \end{pmatrix}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td><p>oI</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_I = \begin{pmatrix} 0 &amp; 1 &amp; 1 \\ 1 &amp; 0 &amp; 1 \\ 1 &amp; 1 &amp; 0 \end{pmatrix}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_I^{-1} = \begin{pmatrix} -1/2 &amp; 1/2 &amp; 1/2 \\ 1/2 &amp; -1/2 &amp; 1/2 \\ 1/2 &amp; 1/2 &amp; -1/2 \end{pmatrix}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Tetragonal</p></td>
+<td><p>tP</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_P\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_P^{-1}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td><p>tI</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_I\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_I^{-1}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Hexagonal</p></td>
+<td><p>hR</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_R = \begin{pmatrix} 1 &amp; 0 &amp; 1 \\ -1 &amp; 1 &amp; 1 \\ 0 &amp; -1 &amp; 1 \end{pmatrix}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_R^{-1} = \begin{pmatrix} 2/3 &amp; -1/3 &amp; -1/3 \\ 1/3 &amp; 1/3 &amp; -2/3 \\ 1/3 &amp; 1/3 &amp; 1/3 \end{pmatrix}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td><p>hP</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_P\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_P^{-1}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p>Cubic</p></td>
+<td><p>cP</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_P\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_P^{-1}\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p></p></td>
+<td><p>cF</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_F\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_F^{-1}\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p></p></td>
+<td><p>cI</p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_I\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(\mathbf{Q}_I^{-1}\)</span></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Depending on the Bravais class of the standardized cell, the following relation holds:</p>
+<p><span class="math notranslate nohighlight">\(
+(\mathbf{P}_{\mathrm{prim}}, \mathbf{p}_{\mathrm{prim}}) = (\mathbf{P}_{\mathrm{std}}, \mathbf{p}_{\mathrm{std}}) (\mathbf{Q}, \mathbf{0})^{-1}
+\)</span></p>
+<p><span class="math notranslate nohighlight">\(
+\mathbf{A}_{\mathrm{prim}} = \mathbf{A}_{\mathrm{std}} \mathbf{Q}^{-1}.
+\)</span></p>
+</section>
+</section>
+<hr class="footnotes docutils" />
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="setting" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<p>That being said, the order of the Hall symbols are the same as Table A1.4.2.7 in International Tables for Crystallography Volume B (2010).</p>
+</aside>
+<aside class="footnote brackets" id="std-cell-2" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
+<p>Applied regardless of <code class="docutils literal notranslate"><span class="pre">rotate_basis</span></code> value.</p>
+</aside>
+<aside class="footnote brackets" id="std-cell-3" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">3</a><span class="fn-bracket">]</span></span>
+<p><span class="math notranslate nohighlight">\(c_z &lt; 0\)</span> for left-handed input basis vectors.</p>
+</aside>
+<aside class="footnote brackets" id="std-cell-4" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span>4<span class="fn-bracket">]</span></span>
+<span class="backrefs">(<a role="doc-backlink" href="#id4">1</a>,<a role="doc-backlink" href="#id6">2</a>,<a role="doc-backlink" href="#id8">3</a>,<a role="doc-backlink" href="#id9">4</a>)</span>
+<p><span class="math notranslate nohighlight">\(c &lt; 0\)</span> for left-handed input basis vectors.</p>
+</aside>
+<aside class="footnote brackets" id="std-cell-7" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">5</a><span class="fn-bracket">]</span></span>
+<p>moyo tries to bring <span class="math notranslate nohighlight">\(\beta\)</span> closer to <span class="math notranslate nohighlight">\(\pi / 2\)</span> as much as possible.</p>
+</aside>
+<aside class="footnote brackets" id="std-cell-6" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">6</a><span class="fn-bracket">]</span></span>
+<p>Currently, moyo does not enforce the order in <span class="math notranslate nohighlight">\(a\)</span>, <span class="math notranslate nohighlight">\(b\)</span>, and <span class="math notranslate nohighlight">\(c\)</span>.</p>
+</aside>
+<aside class="footnote brackets" id="std-cell-5" role="doc-footnote">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id10">7</a><span class="fn-bracket">]</span></span>
+<p>Negative (z, z)-component for left-handed input basis vectors.</p>
+</aside>
+</aside>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="examples/index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Examples</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="migration.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Migration Guide from spglib</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setting-option-in-moyodataset-new"><code class="docutils literal notranslate"><span class="pre">setting</span></code> option in <code class="docutils literal notranslate"><span class="pre">MoyoDataset::new</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rotate-basis-option-in-moyodataset-new"><code class="docutils literal notranslate"><span class="pre">rotate_basis</span></code> option in <code class="docutils literal notranslate"><span class="pre">MoyoDataset::new</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#standardized-cell-with-setting-setting-standard-rotate-basis-true-and-right-handed-input-basis-vectors">Standardized cell with <code class="docutils literal notranslate"><span class="pre">setting=Setting.Standard</span></code>, <code class="docutils literal notranslate"><span class="pre">rotate_basis=true</span></code>, and right-handed input basis vectors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#primitive-standardized-cell-with-setting-setting-standard-rotate-basis-true-and-right-handed-input-basis-vectors">Primitive standardized cell with <code class="docutils literal notranslate"><span class="pre">setting=Setting.Standard</span></code>, <code class="docutils literal notranslate"><span class="pre">rotate_basis=true</span></code>, and right-handed input basis vectors</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Author name not set
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023, Kohei Shinohara.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
