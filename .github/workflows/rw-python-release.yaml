@@ -76,7 +76,7 @@ jobs:
   release:
     if: ${{ ! inputs.dry_run }}
     name: Release
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     needs: [wheel, sdist]
     environment: release
     permissions:
