@@ -6,9 +6,12 @@ hidden:
 ---
     Introduction <self>
     Examples <examples/index>
+    Standardization of Crystal Structures <standardization>
     Migration Guide from spglib <migration>
 ```
 
 ```{include} ../README.md
-:relative-docs: docs/
+---
+relative-docs: docs/
+---
 ```

@@ -35,6 +35,10 @@
       "matchManagers": ["npm"]
     },
     {
+      "groupName": "typst",
+      "matchManagers": ["typst"]
+    },
+    {
       "description": "Automerge patch updates",
       "matchUpdateTypes": ["patch"],
       "automerge": true,
