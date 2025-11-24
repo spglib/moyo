@@ -30,11 +30,11 @@ repos:
           - mdformat-gfm
           - mdformat-myst
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.34.1
+    rev: 0.35.0
     hooks:
       - id: check-github-workflows
   - repo: https://github.com/crate-ci/typos
-    rev: v1.39.0
+    rev: v1.39.2
     hooks:
       - id: typos
   # Rust
@@ -78,7 +78,7 @@ repos:
         files: \.ipynb$
   # sub-pre-commit
   - repo: https://github.com/ddanier/sub-pre-commit.git
-    rev: v4.3.0-2
+    rev: v4.5.0
     hooks:
       - id: sub-pre-commit
         alias: moyopy
