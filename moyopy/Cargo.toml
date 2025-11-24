@@ -24,9 +24,9 @@ approx.workspace = true
 log.workspace = true
 itertools.workspace = true
 pyo3-log = "0.13"
-pythonize = "0.26"
+pythonize = "0.27"
 
 
 [dependencies.pyo3]
-version = "0.26"
+version = "0.27"
 features = ["abi3-py39"]
