@@ -52,7 +52,7 @@ jobs:
           sccache: 'true'
           manylinux: auto
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: pypi-${{ matrix.target }}-${{ matrix.system }}
           path: dist
@@ -68,7 +68,7 @@ jobs:
           command: sdist
           args: --out dist --manifest-path moyopy/Cargo.toml
       - name: Upload sdist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: pypi-sdist
           path: dist
