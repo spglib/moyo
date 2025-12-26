@@ -76,19 +76,3 @@ repos:
         additional_dependencies: [jupyter]
         types: [jupyter]
         files: \.ipynb$
-  # sub-pre-commit
-  - repo: https://github.com/ddanier/sub-pre-commit.git
-    rev: v4.5.1
-    hooks:
-      - id: sub-pre-commit
-        alias: moyopy
-        name: "pre-commit for moyopy/"
-        args: ["-p", "moyopy"]
-        files: ^moyopy/
-        stages: ["pre-commit"]
-      - id: sub-pre-commit
-        alias: moyoc
-        name: "pre-commit for moyoc/"
-        args: ['-p', 'moyoc']
-        files: ^moyoc/
-        stages: ["pre-commit"]

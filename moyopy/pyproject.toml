@@ -39,7 +39,7 @@ interface = [
 ]
 testing = [
     "pytest",
-    "pre-commit==4.3.0",
+    "prek",
     "numpy",
 ]
 docs = [

@@ -4,11 +4,11 @@ set positional-arguments
 default:
     just --list
 
-pre-commit:
-    pre-commit run --all-files
+prek:
+    prek run --all-files
 
-pre-commit-all:
-    pre-commit run --all-files --hook-stage manual
+prek-all:
+    prek run --all-files --hook-stage manual
 
 clean:
     rm moyopy/python/moyopy/*.so
