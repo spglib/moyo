@@ -372,6 +372,7 @@ docs/note/
 _build/
 apidocs/
 
+debug/*
 debug.py
 
 package-lock.json
