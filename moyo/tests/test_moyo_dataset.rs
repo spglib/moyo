@@ -670,3 +670,13 @@ fn test_handedness() {
     let dataset = assert_dataset_with_default(&cell, symprec);
     assert_eq!(dataset.number, 144);
 }
+
+#[test]
+fn test_issue206_triclinic_symmetrization() {
+    // https://github.com/spglib/moyo/issues/206
+    let path = Path::new("tests/assets/issue206.json");
+    let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+
+    let symprec = 1e-8;
+    assert_dataset_with_default(&cell, symprec);
+}

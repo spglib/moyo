@@ -1,5 +1,5 @@
 use itertools::{Itertools, iproduct};
-use log::debug;
+use log::{debug, warn};
 use nalgebra::linalg::{Cholesky, QR};
 use nalgebra::{Matrix3, Vector3, vector};
 use once_cell::sync::Lazy;
@@ -127,7 +127,7 @@ impl StandardizedCell {
             .lattice_system();
         let (prim_transformation, conv_trans_linear) = match lattice_system {
             LatticeSystem::Triclinic => (
-                standardize_triclinic_cell(&prim_cell.lattice),
+                standardize_triclinic_cell(&prim_cell.lattice, &space_group.transformation),
                 Linear::identity(),
             ),
             LatticeSystem::Monoclinic => {
@@ -161,6 +161,7 @@ impl StandardizedCell {
             &prim_std_cell_tmp,
             &prim_std_operations,
             &prim_std_permutations,
+            epsilon,
         );
 
         // Note: prim_transformation.transform_cell does not change the order of sites
@@ -301,9 +302,16 @@ pub fn orbits_in_cell(
 
 /// Niggli reduction for distorted triclinic lattice systems is numerically so challenging.
 /// Thus, we skip checking reduction condition.
-fn standardize_triclinic_cell(lattice: &Lattice) -> UnimodularTransformation {
-    let (_, linear) = lattice.unchecked_niggli_reduce();
-    UnimodularTransformation::from_linear(linear)
+fn standardize_triclinic_cell(
+    lattice: &Lattice,
+    transformation_to_prim_std: &UnimodularTransformation,
+) -> UnimodularTransformation {
+    let lattice_prim_std_tmp = transformation_to_prim_std.transform_lattice(lattice);
+    let (_, niggli_linear) = lattice_prim_std_tmp.unchecked_niggli_reduce();
+    UnimodularTransformation::new(
+        niggli_linear * transformation_to_prim_std.linear,
+        transformation_to_prim_std.origin_shift,
+    )
 }
 
 static UNIMODULAR3_RANGE1: Lazy<Vec<UnimodularTransformation>> = Lazy::new(|| {
@@ -426,7 +434,10 @@ fn symmetrize_positions(
     cell: &Cell,
     operations: &Operations,
     permutations: &[Permutation],
+    epsilon: f64,
 ) -> Vec<Position> {
+    // operations[k] maps site-i to site-permutations[k].apply(i)
+    // Thus, it maps site-`inverse_permutations[k].apply(i)` to site-i.
     let inverse_permutations = permutations
         .iter()
         .map(|permutation| permutation.inverse())
@@ -443,7 +454,14 @@ fn symmetrize_positions(
                 frac_displacements -= frac_displacements.map(|e| e.round()); // in [-0.5, 0.5]
                 acc += frac_displacements;
             }
-            cell.positions[i] + acc / (permutations.len() as f64)
+            acc /= permutations.len() as f64;
+            if acc.abs().max() > epsilon {
+                warn!(
+                    "Large displacement during symmetrization: {:?} for site {}",
+                    acc, i
+                )
+            }
+            cell.positions[i] + acc
         })
         .collect::<Vec<_>>()
 }

@@ -58,6 +58,7 @@ dev = [
     "nbconvert",
     "maturin",
     "ipython",
+    "average-minimum-distance>=1.4",
 ]
 
 [dependency-groups]
