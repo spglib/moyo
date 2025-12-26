@@ -2,7 +2,6 @@
 
 # <img src="./logo.png" alt="moyo" width=450>
 
-[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/spglib/moyo/main.svg)](https://results.pre-commit.ci/latest/github/spglib/moyo/main)
 [![image](https://img.shields.io/pypi/l/moyopy.svg)](https://pypi.python.org/pypi/moyopy)
 [![moyo at crates.io](https://img.shields.io/crates/v/moyo.svg)](https://img.shields.io/crates/v/moyo)
 [![image](https://img.shields.io/pypi/v/moyopy.svg)](https://pypi.python.org/pypi/moyopy)
