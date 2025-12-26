@@ -11,12 +11,21 @@ changelog:
     - title: ⚙️ moyo-core
       labels:
         - moyo-core
+      exclude:
+        labels:
+          - renovate
     - title: 🐍 moyopy
       labels:
         - moyopy
+      exclude:
+        labels:
+          - renovate
     - title: 🧩 moyo-wasm
       labels:
         - moyo-wasm
+      exclude:
+        labels:
+          - renovate
     - title: 🐞 Bug fixes
       labels:
         - bug
@@ -26,6 +35,12 @@ changelog:
     - title: 🤖 CI
       labels:
         - ci
+      exclude:
+        labels:
+          - renovate
+    - title: renovate
+      labels:
+        - renovate
     - title: 🧹 Other changes
       labels:
         - '*'
