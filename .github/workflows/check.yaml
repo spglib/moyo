@@ -13,7 +13,7 @@ jobs:
     env:
       SKIP: cbindgen
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: actions/setup-python@v6
       with:
         python-version: '3.13'
@@ -24,7 +24,7 @@ jobs:
   cargo-deny:
     runs-on: ubuntu-latest  # ubuntu-slim lacks docker
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - uses: Swatinem/rust-cache@v2
     - uses: EmbarkStudios/cargo-deny-action@v2
       with:

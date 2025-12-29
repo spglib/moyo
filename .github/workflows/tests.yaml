@@ -16,7 +16,7 @@ jobs:
       c: ${{ steps.filter.outputs.c }}
       wasm: ${{ steps.filter.outputs.wasm }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Filter paths
         id: filter
         uses: dorny/paths-filter@v3
