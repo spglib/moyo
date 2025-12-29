@@ -25,7 +25,7 @@ jobs:
             target: aarch64-apple-darwin
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: Swatinem/rust-cache@v2
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -46,7 +46,7 @@ jobs:
             export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc
           fi
           cd moyoc && make dist TARGET_TRIPLE=${{ matrix.target }}
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: moyoc-${{ matrix.target }}
           path: moyoc/dist/moyoc-*-${{ matrix.target }}.*
@@ -56,7 +56,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/upload-artifact/merge@v5
+      - uses: actions/upload-artifact/merge@v6
         with:
           name: artifacts
           pattern: moyoc-*

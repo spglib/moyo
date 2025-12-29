@@ -15,7 +15,7 @@ jobs:
     name: Create release
     runs-on: ubuntu-slim
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: softprops/action-gh-release@v2
         with:
           name: moyo ${{ github.ref_name }}
