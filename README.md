@@ -28,6 +28,24 @@ A fast and robust crystal symmetry finder, written in Rust.
 - [C](moyoc/README.md): C binding
 - [JavaScript](moyo-wasm/README.md): JavaScript and WebAssembly binding
 
+## How to cite moyo and its interfaces
+
+If you use moyo or its interfaces in your work, please cite the following figshare entry.
+
+```
+@article{moyo,
+  author = {Kohei Shinohara},
+  title  = {{moyo: A fast and robust crystal symmetry finder, written in Rust}},
+  year   = {2026},
+  month  = {1},
+  doi    = {10.6084/m9.figshare.31081162.v1},
+  url    = {https://figshare.com/articles/software/moyo_A_fast_and_robust_crystal_symmetry_finder_written_in_Rust_/31081162},
+  note   = {Source code available at \url{https://github.com/spglib/moyo}}
+}
+```
+
+This citation may be superseded by a peer-reviewed publication in the future.
+
 ## Dev
 
 ```shell

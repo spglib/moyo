@@ -17,3 +17,7 @@ pip install moyopy
 # If you want to convert structures into Pymatgen or ASE objects
 pip install moyopy[interface]
 ```
+
+## How to cite moyopy
+
+See the citation information in [the root README](../README.md)
