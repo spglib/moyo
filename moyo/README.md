@@ -26,3 +26,7 @@ math <- base <- data <- identify <- standardize <- lib
 
 - Crystallographic groups in other than three dimensions
 - Matching two similar crystal structures
+
+## How to cite moyo
+
+See the citation information in [the root README](../README.md)
