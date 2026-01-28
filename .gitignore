@@ -357,6 +357,7 @@ target/
 .ipynb_checkpoints/
 lcov.info
 *.out
+*.ai
 
 moyoc.h
 
