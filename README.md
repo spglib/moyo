@@ -1,6 +1,6 @@
 <div align="center">
 
-# <img src="./logo.png" alt="moyo" width=450>
+# <img src="./logo.svg" alt="moyo" width=450>
 
 [![image](https://img.shields.io/pypi/l/moyopy.svg)](https://pypi.python.org/pypi/moyopy)
 [![moyo at crates.io](https://img.shields.io/crates/v/moyo.svg)](https://img.shields.io/crates/v/moyo)
