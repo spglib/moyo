@@ -41,6 +41,4 @@ jobs:
       - name: Publish to npm
         if: "startsWith(github.ref, 'refs/tags/') && ! inputs.dry_run"
         working-directory: moyo-wasm/pkg
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --access public
+        run: npm publish --provenance --access public
