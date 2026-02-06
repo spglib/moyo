@@ -10,7 +10,12 @@ use super::elementary::swapping_column_matrix;
 const EPS: f64 = 1e-8;
 
 /// basis is column-wise
+/// If the basis is already Minkowski reduced, return the input basis and identity matrix
 pub fn minkowski_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
+    if is_minkowski_reduced(basis) {
+        return (basis.clone(), Matrix3::<i32>::identity());
+    }
+
     let mut reduced_basis = *basis;
     let mut trans_mat = Matrix3::<i32>::identity();
     minkowski_reduce_greedy(U3, &mut reduced_basis, &mut trans_mat, 3);
@@ -248,5 +253,18 @@ mod tests {
                 epsilon = 1e-4
             );
         }
+    }
+
+    #[test]
+    fn test_minkowski_idempotent() {
+        let basis = Matrix3::<f64>::from_columns(&[
+            Vector3::new(1.0, 0.0, 0.0),
+            Vector3::new(-0.5, 3.0_f64.sqrt() / 2.0, 0.0),
+            Vector3::new(0.0, 0.0, 10.0),
+        ]);
+        assert!(is_minkowski_reduced(&basis));
+
+        let (reduced_basis, _) = minkowski_reduce(&basis);
+        assert_relative_eq!(reduced_basis, basis);
     }
 }
