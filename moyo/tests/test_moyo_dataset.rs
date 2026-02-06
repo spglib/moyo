@@ -680,3 +680,54 @@ fn test_issue206_triclinic_symmetrization() {
     let symprec = 1e-8;
     assert_dataset_with_default(&cell, symprec);
 }
+
+#[test]
+fn test_with_nickeline() {
+    // P6_3/mmc (No. 194)
+    // https://aflowlib.org/prototype-encyclopedia/AB_hP4_194_c_a-001/
+    let a = 3.61;
+    let c = 5.04;
+    let lattice = Lattice::new(matrix![
+        a, 0.0, 0.0;
+        -a / 2.0, a * 3.0_f64.sqrt() / 2.0, 0.0;
+        0.0, 0.0, c;
+    ]);
+    let positions = vec![
+        // 2a
+        Vector3::new(0.0, 0.0, 0.0),
+        Vector3::new(0.0, 0.0, 0.5),
+        // 2c
+        Vector3::new(1.0 / 3.0, 2.0 / 3.0, 1.0 / 4.0),
+        Vector3::new(2.0 / 3.0, 1.0 / 3.0, 3.0 / 4.0),
+    ];
+    let numbers = vec![0, 0, 1, 1];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+
+    // Check idempotency
+    let dataset = MoyoDataset::new(
+        &cell,
+        symprec,
+        AngleTolerance::default(),
+        Setting::default(),
+        false,
+    )
+    .unwrap();
+
+    assert_eq!(dataset.number, 194);
+    assert_eq!(dataset.orbits, vec![0, 0, 2, 2]);
+    assert_eq!(dataset.pearson_symbol, "hP4");
+    assert_relative_eq!(
+        dataset.prim_std_cell.lattice.basis,
+        cell.lattice.basis,
+        epsilon = 1e-8
+    );
+    assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'c', 'c']);
+    assert_relative_eq!(dataset.prim_std_linear, Matrix3::identity(), epsilon = 1e-8);
+    assert_relative_eq!(
+        dataset.prim_std_origin_shift,
+        Vector3::zeros(),
+        epsilon = 1e-8
+    );
+}
