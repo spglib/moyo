@@ -91,6 +91,21 @@ fn match_with_cubic_point_group(
             Some((entry.arithmetic_number, point_group_db))
         })
         .collect::<Vec<_>>();
+
+    // Try identity transformation first
+    for (arithmetic_number, point_group_db) in arithmetic_crystal_class_candidates.iter() {
+        let prim_generators_db = point_group_db.primitive_generators();
+        if prim_generators_db
+            .iter()
+            .all(|r| prim_rotations.contains(r))
+        {
+            return Ok(PointGroup {
+                arithmetic_number: *arithmetic_number,
+                prim_trans_mat: UnimodularLinear::identity(),
+            });
+        }
+    }
+
     let primitive_arithmetic_crystal_class = arithmetic_crystal_class_candidates
         .iter()
         .find(|(_, point_group_db)| point_group_db.centering == Centering::P)
@@ -118,8 +133,7 @@ fn match_with_cubic_point_group(
             Ordering::Greater => {}
         }
 
-        for (arithmetic_crystal_class, point_group_db) in arithmetic_crystal_class_candidates.iter()
-        {
+        for (arithmetic_number, point_group_db) in arithmetic_crystal_class_candidates.iter() {
             let centering = point_group_db.centering;
             if centering.order() as i32 != det {
                 continue;
@@ -131,7 +145,7 @@ fn match_with_cubic_point_group(
             }
 
             return Ok(PointGroup {
-                arithmetic_number: *arithmetic_crystal_class,
+                arithmetic_number: *arithmetic_number,
                 prim_trans_mat,
             });
         }
@@ -152,12 +166,23 @@ fn match_with_point_group(
 
         let point_group_db =
             PointGroupRepresentative::from_arithmetic_crystal_class(entry.arithmetic_number);
-        let other_prim_generators = point_group_db.primitive_generators();
+        let prim_generators_db = point_group_db.primitive_generators();
+
+        // Try identity transformation first
+        if prim_generators_db
+            .iter()
+            .all(|r| prim_rotations.contains(r))
+        {
+            return Ok(PointGroup {
+                arithmetic_number: entry.arithmetic_number,
+                prim_trans_mat: UnimodularLinear::identity(),
+            });
+        }
 
         for trans_mat_basis in iter_trans_mat_basis(
             prim_rotations.clone(),
             rotation_types.to_vec(),
-            other_prim_generators,
+            prim_generators_db,
         ) {
             if let Some(prim_trans_mat) = iter_unimodular_trans_mat(trans_mat_basis).next() {
                 return Ok(PointGroup {
