@@ -9,12 +9,14 @@ on:
         required: true
         type: boolean
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
+    environment: release
     steps:
       - uses: actions/checkout@v6
 
@@ -41,4 +43,4 @@ jobs:
       - name: Publish to npm
         if: "startsWith(github.ref, 'refs/tags/') && ! inputs.dry_run"
         working-directory: moyo-wasm/pkg
-        run: npm publish --provenance --access public
+        run: npm publish --access public
