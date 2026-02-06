@@ -13,7 +13,7 @@ const EPS: f64 = 1e-8;
 /// If the basis is already Minkowski reduced, return the input basis and identity matrix
 pub fn minkowski_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
     if is_minkowski_reduced(basis) {
-        return (basis.clone(), Matrix3::<i32>::identity());
+        return (*basis, Matrix3::<i32>::identity());
     }
 
     let mut reduced_basis = *basis;
