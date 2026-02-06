@@ -41,7 +41,7 @@ profile:
 
 [group('python')]
 py-build:
-    maturin develop --release --manifest-path moyopy/Cargo.toml
+    uv run maturin develop --release --manifest-path moyopy/Cargo.toml
 
 [group('python')]
 py-install:

@@ -368,6 +368,7 @@ moyoc.h
 *.html
 
 docs/note/
+bench/mp/*.json
 
 # python-interface docs
 _build/

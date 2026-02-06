@@ -51,13 +51,20 @@ docs = [
     "myst-parser >= 2.0",
     "linkify-it-py",
 ]
+bench = [
+    "matbench-discovery==1.3.1; python_version >= '3.11'",
+    "mp_api",
+]
 dev = [
     "moyopy[testing]",
     "moyopy[docs]",
     "moyopy[interface]",
+    "moyopy[bench]",
     "nbconvert",
+    "nbformat",
     "maturin",
     "ipython",
+    "seaborn",
     "average-minimum-distance>=1.4",
 ]
 
