@@ -736,7 +736,7 @@ Module Contents
 
 
 
-   .. py:method:: deserialize_json(json_str: str) -> typing_extensions.Self
+   .. py:method:: deserialize_json(json_str: str) -> Self
       :classmethod:
 
 
@@ -750,7 +750,7 @@ Module Contents
 
 
 
-   .. py:method:: from_dict(obj: dict[str, Any]) -> typing_extensions.Self
+   .. py:method:: from_dict(obj: dict[str, Any]) -> Self
       :classmethod:
 
 
@@ -898,7 +898,7 @@ Module Contents
 
 
 
-   .. py:method:: deserialize_json(json_str: str) -> typing_extensions.Self
+   .. py:method:: deserialize_json(json_str: str) -> Self
       :classmethod:
 
 
@@ -912,7 +912,7 @@ Module Contents
 
 
 
-   .. py:method:: from_dict(obj: dict[str, Any]) -> typing_extensions.Self
+   .. py:method:: from_dict(obj: dict[str, Any]) -> Self
       :classmethod:
 
 
@@ -1038,7 +1038,7 @@ Module Contents
 
 
 
-   .. py:method:: deserialize_json(json_str: str) -> typing_extensions.Self
+   .. py:method:: deserialize_json(json_str: str) -> Self
       :classmethod:
 
 
@@ -1052,7 +1052,7 @@ Module Contents
 
 
 
-   .. py:method:: from_dict(obj: dict[str, Any]) -> typing_extensions.Self
+   .. py:method:: from_dict(obj: dict[str, Any]) -> Self
       :classmethod:
 
 
