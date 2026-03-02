@@ -28,7 +28,7 @@ kiddo = "5.2.1"
 once_cell = "1.21.3"
 
 [dev-dependencies]
-rand = "0.9"
+rand = "0.10"
 rstest = "0.26"
 criterion = { version = "0.8", features = ["html_reports"] }
 env_logger = "0.11"
