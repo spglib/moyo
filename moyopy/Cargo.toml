@@ -29,4 +29,4 @@ pythonize = "0.28"
 
 [dependencies.pyo3]
 version = "0.28"
-features = ["abi3-py39"]
+features = ["abi3-py310"]
