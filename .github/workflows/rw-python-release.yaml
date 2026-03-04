@@ -2,6 +2,12 @@ name: Python Release CI
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'If true, perform a dry run without releasing'
+        required: false
+        type: boolean
+        default: true
   workflow_call:
     inputs:
       dry_run:
@@ -48,7 +54,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --manifest-path moyopy/Cargo.toml
+          args: --release --out dist --find-interpreter --manifest-path moyopy/Cargo.toml
           sccache: 'true'
           manylinux: auto
       - name: Upload wheels
