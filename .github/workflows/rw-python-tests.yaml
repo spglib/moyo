@@ -25,7 +25,6 @@ jobs:
         with:
           args: --release --out dist --manifest-path moyopy/Cargo.toml
           sccache: 'true'
-          manylinux: auto
       - uses: actions/cache@v5
         with:
           path: ~/.cache/pip
@@ -61,7 +60,6 @@ jobs:
         with:
           args: --release --out dist --manifest-path moyopy/Cargo.toml
           sccache: 'true'
-          manylinux: auto
       - name: pytest
         shell: bash
         run: |
@@ -91,7 +89,6 @@ jobs:
         with:
           args: --release --out dist --manifest-path moyopy/Cargo.toml
           sccache: 'true'
-          manylinux: auto
       - name: Install
         run: |
           set -e
