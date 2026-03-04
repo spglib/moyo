@@ -48,7 +48,7 @@ jobs:
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --manifest-path moyopy/Cargo.toml
+          args: --release --out dist --find-interpreter --manifest-path moyopy/Cargo.toml
           sccache: 'true'
           manylinux: auto
       - name: Upload wheels
