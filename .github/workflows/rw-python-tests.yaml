@@ -59,7 +59,6 @@ jobs:
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          target: x86_64
           args: --release --out dist --manifest-path moyopy/Cargo.toml
           sccache: 'true'
           manylinux: auto
@@ -90,7 +89,6 @@ jobs:
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
-          target: x86_64
           args: --release --out dist --manifest-path moyopy/Cargo.toml
           sccache: 'true'
           manylinux: auto
