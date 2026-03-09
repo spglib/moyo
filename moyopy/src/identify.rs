@@ -1,4 +1,7 @@
+use std::collections::VecDeque;
+
 use itertools::izip;
+use pyo3::exceptions::PyValueError;
 use pyo3::{IntoPyObjectExt, prelude::*};
 use pythonize::pythonize;
 use serde::Serialize;
@@ -6,11 +9,184 @@ use serde_json;
 
 use moyo::base::{Lattice, MagneticOperation, Operation};
 use moyo::data::{ArithmeticNumber, HallNumber, Number, Setting, UNINumber};
-use moyo::identify::{MagneticSpaceGroup, PointGroup, SpaceGroup};
+use moyo::identify::{
+    MagneticSpaceGroup, PointGroup, SpaceGroup, integral_normalizer as identify_integral_normalizer,
+};
 use moyo::utils::{to_3_slice, to_3x3_slice, to_matrix3, to_vector3};
 
-use crate::base::PyMoyoError;
+use crate::base::{PyMoyoError, PyUnimodularTransformation};
 use crate::data::PySetting;
+
+fn normalize_translation_component(value: f64) -> f64 {
+    let mut normalized = value % 1.0;
+    if normalized < 0.0 {
+        normalized += 1.0;
+    }
+    if normalized.abs() < 1e-12 || (1.0 - normalized).abs() < 1e-12 {
+        0.0
+    } else {
+        normalized
+    }
+}
+
+fn normalize_operation(operation: &Operation) -> Operation {
+    Operation::new(
+        operation.rotation,
+        operation.translation.map(normalize_translation_component),
+    )
+}
+
+fn operations_match(lhs: &Operation, rhs: &Operation, epsilon: f64) -> bool {
+    if lhs.rotation != rhs.rotation {
+        return false;
+    }
+
+    let mut diff = lhs.translation - rhs.translation;
+    diff -= diff.map(|e| e.round());
+    diff.iter().all(|e| e.abs() < epsilon)
+}
+
+fn push_unique_operation(
+    operations: &mut Vec<Operation>,
+    operation: Operation,
+    epsilon: f64,
+) -> bool {
+    if operations
+        .iter()
+        .any(|candidate| operations_match(candidate, &operation, epsilon))
+    {
+        false
+    } else {
+        operations.push(operation);
+        true
+    }
+}
+
+fn unique_operations(operations: &[Operation], epsilon: f64) -> Vec<Operation> {
+    let mut unique = vec![];
+    for operation in operations {
+        push_unique_operation(&mut unique, normalize_operation(operation), epsilon);
+    }
+    unique
+}
+
+fn generated_closure(generators: &[Operation], epsilon: f64, limit: usize) -> Vec<Operation> {
+    let mut closure = vec![];
+    let mut queue = VecDeque::from([Operation::identity()]);
+
+    while let Some(operation) = queue.pop_front() {
+        let operation = normalize_operation(&operation);
+        if !push_unique_operation(&mut closure, operation.clone(), epsilon) {
+            continue;
+        }
+        if closure.len() >= limit {
+            break;
+        }
+
+        for generator in generators {
+            queue.push_back(normalize_operation(
+                &(operation.clone() * generator.clone()),
+            ));
+        }
+    }
+
+    closure
+}
+
+fn derive_small_generators(prim_operations: &[Operation], epsilon: f64) -> Vec<Operation> {
+    let unique_prim_operations = unique_operations(prim_operations, epsilon);
+    if unique_prim_operations.len() <= 1 {
+        return unique_prim_operations;
+    }
+
+    let target_size = unique_prim_operations.len();
+    let mut chosen_indices = vec![];
+    let mut current_closure = generated_closure(&[], epsilon, target_size);
+
+    while current_closure.len() < target_size {
+        let mut best_choice = None;
+        let mut best_closure = current_closure.clone();
+
+        for (index, operation) in unique_prim_operations.iter().enumerate() {
+            if chosen_indices.contains(&index) {
+                continue;
+            }
+
+            let mut generators = chosen_indices
+                .iter()
+                .map(|&chosen| unique_prim_operations[chosen].clone())
+                .collect::<Vec<_>>();
+            generators.push(operation.clone());
+
+            let trial_closure = generated_closure(&generators, epsilon, target_size);
+            if trial_closure.len() > best_closure.len() {
+                best_choice = Some(index);
+                best_closure = trial_closure;
+            }
+        }
+
+        let Some(best_index) = best_choice else {
+            return unique_prim_operations;
+        };
+        if best_closure.len() <= current_closure.len() {
+            return unique_prim_operations;
+        }
+
+        chosen_indices.push(best_index);
+        current_closure = best_closure;
+    }
+
+    chosen_indices
+        .into_iter()
+        .map(|index| unique_prim_operations[index].clone())
+        .collect()
+}
+
+#[pyfunction]
+#[pyo3(signature = (prim_rotations, prim_translations, *, prim_generators=None, epsilon=1e-4))]
+pub fn integral_normalizer(
+    prim_rotations: Vec<[[i32; 3]; 3]>,
+    prim_translations: Vec<[f64; 3]>,
+    prim_generators: Option<Vec<usize>>,
+    epsilon: f64,
+) -> PyResult<Vec<PyUnimodularTransformation>> {
+    if prim_rotations.len() != prim_translations.len() {
+        return Err(PyValueError::new_err(
+            "prim_rotations and prim_translations must have the same length",
+        ));
+    }
+
+    let prim_operations = prim_rotations
+        .iter()
+        .zip(prim_translations.iter())
+        .map(|(rotation, translation)| {
+            Operation::new(to_matrix3(rotation), to_vector3(translation))
+        })
+        .collect::<Vec<_>>();
+
+    let prim_generators = if let Some(indices) = prim_generators {
+        let mut generators = Vec::with_capacity(indices.len());
+        for index in indices {
+            let operation = prim_operations.get(index).ok_or_else(|| {
+                PyValueError::new_err(format!(
+                    "prim_generators index {index} is out of range for {} operations",
+                    prim_operations.len()
+                ))
+            })?;
+            generators.push(operation.clone());
+        }
+        generators
+    } else {
+        derive_small_generators(&prim_operations, epsilon)
+    };
+
+    Ok(
+        identify_integral_normalizer(&prim_operations, &prim_generators, epsilon)
+            .into_iter()
+            .map(PyUnimodularTransformation::from)
+            .collect(),
+    )
+}
 
 #[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "PointGroup", frozen)]
@@ -257,6 +433,27 @@ impl PyMagneticSpaceGroup {
 impl From<PyMagneticSpaceGroup> for MagneticSpaceGroup {
     fn from(magnetic_space_group: PyMagneticSpaceGroup) -> Self {
         magnetic_space_group.0
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{derive_small_generators, generated_closure};
+    use crate::data::operations_from_number;
+    use moyo::base::Operations;
+
+    fn primitive_operations_from_number(number: i32) -> Operations {
+        operations_from_number(number, None, true).unwrap().into()
+    }
+
+    #[test]
+    fn test_derive_small_generators_reaches_full_group() {
+        let prim_operations = primitive_operations_from_number(221);
+        let generators = derive_small_generators(&prim_operations, 1e-4);
+        let closure = generated_closure(&generators, 1e-4, prim_operations.len());
+
+        assert!(generators.len() < prim_operations.len());
+        assert_eq!(closure.len(), prim_operations.len());
     }
 }
 

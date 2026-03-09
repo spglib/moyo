@@ -128,3 +128,13 @@ class MagneticOperations:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> MagneticOperations:
         """Create an object from a dictionary"""
+
+class UnimodularTransformation:
+    @property
+    def linear(self) -> list[list[int]]: ...
+    @property
+    def origin_shift(self) -> list[float]: ...
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""

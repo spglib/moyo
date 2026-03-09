@@ -5,6 +5,7 @@ mod rotation_type;
 mod space_group;
 
 pub use magnetic_space_group::MagneticSpaceGroup;
+pub use normalizer::integral_normalizer;
 pub use point_group::PointGroup;
 pub use space_group::SpaceGroup;
 

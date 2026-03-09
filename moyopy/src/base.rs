@@ -6,4 +6,4 @@ mod operation;
 pub use cell::PyStructure;
 pub use error::PyMoyoError;
 pub use magnetic_cell::{PyCollinearMagneticCell, PyNonCollinearMagneticCell};
-pub use operation::{PyMagneticOperations, PyOperations};
+pub use operation::{PyMagneticOperations, PyOperations, PyUnimodularTransformation};
