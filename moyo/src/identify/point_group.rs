@@ -301,8 +301,15 @@ pub fn iter_trans_mat_basis(
         })
 }
 
-/// Search integer linear combination such that the transformation matrix is unimodular
-/// Consider coefficients in [-2, 2], which will be sufficient for Delaunay reduced basis
+/// Search integer linear combinations whose determinant is one.
+///
+/// This bounded integer search tries coefficients in `[-1, 1]` first and then the
+/// remaining shell in `[-2, 2]`.
+///
+/// For a Delaunay-reduced basis, this window is sufficient and the search is exact.
+/// For a non-reduced basis, this iterator is only a best-effort search and may miss
+/// valid unimodular transformations outside the bounded window.
+///
 pub fn iter_unimodular_trans_mat(
     trans_mat_basis: Vec<Matrix3<i32>>,
 ) -> impl Iterator<Item = UnimodularLinear> {

@@ -314,6 +314,10 @@ fn standardize_triclinic_cell(
     )
 }
 
+/// Candidate unimodular corrections with entries in `[-1, 1]`.
+///
+/// This bounded search is used as a best-effort search space for monoclinic
+/// conventional-cell standardization. Exhaustiveness is not claimed here.
 static UNIMODULAR3_RANGE1: Lazy<Vec<UnimodularTransformation>> = Lazy::new(|| {
     (0..9)
         .map(|_| -1_i32..=1_i32)
@@ -339,6 +343,8 @@ fn standardize_monoclinic_conv_cell(
     epsilon: f64,
 ) -> Linear {
     let mut candidate_conv_transformations = vec![];
+    // Search candidate corrections in the bounded `[-1, 1]` window and choose
+    // the least skewed valid one. This is a best-effort bounded search.
     for trans_corr in UNIMODULAR3_RANGE1.iter() {
         // trans_corr should keep centering translations
         if centering.lattice_points().iter().any(|translation| {
@@ -385,6 +391,12 @@ fn standardize_monoclinic_conv_cell(
         .1
 }
 
+/// Assign a Wyckoff position by solving for a compatible integer offset.
+///
+/// This function first tries offsets in `[-1, 1]^3` and then the remaining
+/// shell in `[-2, 2]^3`. This bounded integer search is heuristic. If no
+/// compatible offset is found in the bounded window,
+/// `MoyoError::WyckoffPositionAssignmentError` is returned.
 fn assign_wyckoff_position(
     position: &Position,
     multiplicity: usize,
@@ -405,6 +417,7 @@ fn assign_wyckoff_position(
         let space = WyckoffPositionSpace::new(wyckoff.coordinates);
         let snf = SNF::new(&space.linear);
 
+        // Try the bounded `[-2, 2]^3` window heuristically.
         let iter_multi_1 = iproduct!(-1..=1, -1..=1, -1..=1);
         let iter_multi_2 = iproduct!(-2_i32..=2_i32, -2_i32..=2_i32, -2_i32..=2_i32)
             .filter(|&(n1, n2, n3)| n1.abs() == 2 || n2.abs() == 2 || n3.abs() == 2);

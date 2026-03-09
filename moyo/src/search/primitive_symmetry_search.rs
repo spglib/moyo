@@ -333,7 +333,9 @@ fn search_bravais_group(
         .map(|v| v.norm())
         .collect::<Vec<_>>();
     let mut candidate_lattice_points = [vec![], vec![], vec![]];
-    // It would be sufficient to search coeffs in [-1, 0, 1] because the third column of the Minkowski lattice is already in [-1, 0, 1]^3
+    // For a Minkowski-reduced lattice, it is sufficient to search coeffs in
+    // `[-1, 0, 1]` because the third column is already in `[-1, 0, 1]^3`.
+    // This bounded integer search is exact under that precondition.
     for coeffs in iproduct!(-1..=1, -1..=1, -1..=1) {
         let v = minkowski_lattice.basis
             * Vector3::new(coeffs.0 as f64, coeffs.1 as f64, coeffs.2 as f64);
