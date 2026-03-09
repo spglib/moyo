@@ -9,6 +9,10 @@ use crate::base::{Operations, UnimodularTransformation, project_rotations};
 /// Integral normalizers for all arithmetic point groups up to their centralizers.
 /// Generate integral normalizer of the given space group up to its centralizer.
 /// Because the factor group of the integral normalizer by the centralizer is isomorphic to a finite permutation group, the output is guaranteed to be finite.
+///
+/// Be careful that the input primitive operations should be in a reduced basis.
+/// This function relies on the bounded search in `iter_unimodular_trans_mat`.
+/// For a non-reduced basis, the output is only best effort and may not be exhaustive.
 pub fn integral_normalizer(
     prim_operations: &Operations,
     prim_generators: &Operations,

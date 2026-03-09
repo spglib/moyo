@@ -78,7 +78,9 @@ fn minkowski_reduce_greedy<N: Dim + DimName>(
         let mut coeffs_argmin = DVector::<i32>::zeros(rank - 1);
         let mut c_argmin = OVector::<f64, N>::zeros();
 
-        // [-1, 0, 1] is sufficient for up to three dimensional Minkowski-reduced basis
+        // For up to three dimensions, `[-1, 0, 1]` is sufficient once
+        // `basis[0..(rank-1)]` is already Minkowski reduced, so this bounded
+        // integer search is exact under that precondition.
         for voronoi_vector in (0..rank - 1).map(|_| -1..=1).multi_cartesian_product() {
             let coeffs = gs_coeffs_rint.clone() + DVector::from_iterator(rank - 1, voronoi_vector);
             let c = basis.columns(0, rank - 1) * coeffs.map(|e| e as f64);
