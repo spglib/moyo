@@ -14,6 +14,7 @@ Classes
    moyopy._base.NonCollinearMagneticCell
    moyopy._base.Operations
    moyopy._base.MagneticOperations
+   moyopy._base.UnimodularTransformation
 
 
 Module Contents
@@ -277,6 +278,30 @@ Module Contents
 
 
       Create an object from a dictionary
+
+
+
+.. py:class:: UnimodularTransformation
+
+   .. py:property:: linear
+      :type: list[list[int]]
+
+
+
+   .. py:property:: origin_shift
+      :type: list[float]
+
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
 
 
 

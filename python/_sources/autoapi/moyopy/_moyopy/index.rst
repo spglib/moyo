@@ -21,6 +21,7 @@ Classes
    moyopy._moyopy.CollinearMagneticCell
    moyopy._moyopy.NonCollinearMagneticCell
    moyopy._moyopy.Operations
+   moyopy._moyopy.UnimodularTransformation
    moyopy._moyopy.ArithmeticCrystalClass
    moyopy._moyopy.Centering
    moyopy._moyopy.HallSymbolEntry
@@ -42,6 +43,7 @@ Functions
 
    moyopy._moyopy.magnetic_operations_from_uni_number
    moyopy._moyopy.operations_from_number
+   moyopy._moyopy.integral_normalizer
 
 
 Module Contents
@@ -252,6 +254,30 @@ Module Contents
 
 
       Create an object from a dictionary
+
+
+
+.. py:class:: UnimodularTransformation
+
+   .. py:property:: linear
+      :type: list[list[int]]
+
+
+
+   .. py:property:: origin_shift
+      :type: list[float]
+
+
+
+   .. py:method:: serialize_json() -> str
+
+      Serialize an object to a JSON string
+
+
+
+   .. py:method:: as_dict() -> dict[str, Any]
+
+      Convert an object to a dictionary
 
 
 
@@ -1146,6 +1172,8 @@ Module Contents
       Convert an object to a dictionary
 
 
+
+.. py:function:: integral_normalizer(prim_rotations: list[list[list[int]]], prim_translations: list[list[float]], *, prim_generators: list[int] | None = None, epsilon: float = 0.0001) -> list[moyopy._base.UnimodularTransformation]
 
 .. py:data:: __version__
    :type:  str
