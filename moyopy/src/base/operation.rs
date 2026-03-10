@@ -5,7 +5,7 @@ use pythonize::{depythonize, pythonize};
 use serde::{Deserialize, Serialize};
 use serde_json;
 
-use moyo::base::{MagneticOperations, Operations};
+use moyo::base::{MagneticOperations, Operations, UnimodularTransformation};
 use moyo::utils::{to_3_slice, to_3x3_slice};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -172,5 +172,70 @@ impl From<PyMagneticOperations> for MagneticOperations {
 impl From<MagneticOperations> for PyMagneticOperations {
     fn from(operations: MagneticOperations) -> Self {
         PyMagneticOperations(operations)
+    }
+}
+
+#[derive(Debug, Clone)]
+#[pyclass(name = "UnimodularTransformation", frozen)]
+#[pyo3(module = "moyopy")]
+pub struct PyUnimodularTransformation(UnimodularTransformation);
+
+#[derive(Serialize)]
+struct PyUnimodularTransformationRepr {
+    linear: [[i32; 3]; 3],
+    origin_shift: [f64; 3],
+}
+
+impl PyUnimodularTransformation {
+    fn repr(&self) -> PyUnimodularTransformationRepr {
+        PyUnimodularTransformationRepr {
+            linear: to_3x3_slice(&self.0.linear),
+            origin_shift: to_3_slice(&self.0.origin_shift),
+        }
+    }
+}
+
+#[pymethods]
+impl PyUnimodularTransformation {
+    #[getter]
+    pub fn linear(&self) -> [[i32; 3]; 3] {
+        to_3x3_slice(&self.0.linear)
+    }
+
+    #[getter]
+    pub fn origin_shift(&self) -> [f64; 3] {
+        to_3_slice(&self.0.origin_shift)
+    }
+
+    fn __repr__(&self) -> String {
+        self.serialize_json()
+    }
+
+    fn __str__(&self) -> String {
+        self.__repr__()
+    }
+
+    pub fn serialize_json(&self) -> String {
+        serde_json::to_string(&self.repr()).expect("Serialization should not fail")
+    }
+
+    pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
+        Python::attach(|py| {
+            let obj =
+                pythonize(py, &self.repr()).expect("Python object conversion should not fail");
+            obj.into_py_any(py)
+        })
+    }
+}
+
+impl From<PyUnimodularTransformation> for UnimodularTransformation {
+    fn from(transformation: PyUnimodularTransformation) -> Self {
+        transformation.0
+    }
+}
+
+impl From<UnimodularTransformation> for PyUnimodularTransformation {
+    fn from(transformation: UnimodularTransformation) -> Self {
+        PyUnimodularTransformation(transformation)
     }
 }

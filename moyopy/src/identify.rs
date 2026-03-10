@@ -1,4 +1,5 @@
 use itertools::izip;
+use pyo3::exceptions::PyValueError;
 use pyo3::{IntoPyObjectExt, prelude::*};
 use pythonize::pythonize;
 use serde::Serialize;
@@ -6,11 +7,122 @@ use serde_json;
 
 use moyo::base::{Lattice, MagneticOperation, Operation};
 use moyo::data::{ArithmeticNumber, HallNumber, Number, Setting, UNINumber};
-use moyo::identify::{MagneticSpaceGroup, PointGroup, SpaceGroup};
+use moyo::identify::{
+    MagneticSpaceGroup, PointGroup, SpaceGroup, integral_normalizer as identify_integral_normalizer,
+};
 use moyo::utils::{to_3_slice, to_3x3_slice, to_matrix3, to_vector3};
 
-use crate::base::PyMoyoError;
+use crate::base::{PyMoyoError, PyUnimodularTransformation};
 use crate::data::PySetting;
+
+fn has_same_rotation(lhs: &Operation, rhs: &Operation) -> bool {
+    lhs.rotation == rhs.rotation
+}
+
+fn push_operation(operations: &mut Vec<Operation>, operation: Operation) -> bool {
+    if operations
+        .iter()
+        .any(|candidate| has_same_rotation(candidate, &operation))
+    {
+        false
+    } else {
+        operations.push(operation);
+        true
+    }
+}
+
+fn generated_closure(generators: &[Operation], prim_operations: &[Operation]) -> Vec<Operation> {
+    let mut closure = vec![];
+    let mut cursor = 0;
+    push_operation(&mut closure, Operation::identity());
+
+    while cursor < closure.len() {
+        let lhs = closure[cursor].clone();
+        cursor += 1;
+
+        for rhs in generators {
+            let new_operation = lhs.clone() * rhs.clone();
+            if prim_operations
+                .iter()
+                .any(|operation| has_same_rotation(operation, &new_operation))
+            {
+                push_operation(&mut closure, new_operation);
+            }
+        }
+    }
+
+    closure
+}
+
+fn derive_small_generators(prim_operations: &[Operation]) -> PyResult<Vec<Operation>> {
+    let mut generators = vec![];
+    let mut closure = generated_closure(&generators, prim_operations);
+
+    for operation in prim_operations {
+        if closure
+            .iter()
+            .any(|generated| has_same_rotation(generated, operation))
+        {
+            continue;
+        }
+        generators.push(operation.clone());
+        closure = generated_closure(&generators, prim_operations);
+    }
+
+    if closure.len() != prim_operations.len() {
+        return Err(PyValueError::new_err(
+            "failed to derive generators whose closure matches prim_operations",
+        ));
+    }
+
+    Ok(generators)
+}
+
+#[pyfunction]
+#[pyo3(signature = (prim_rotations, prim_translations, *, prim_generators=None, epsilon=1e-4))]
+pub fn integral_normalizer(
+    prim_rotations: Vec<[[i32; 3]; 3]>,
+    prim_translations: Vec<[f64; 3]>,
+    prim_generators: Option<Vec<usize>>,
+    epsilon: f64,
+) -> PyResult<Vec<PyUnimodularTransformation>> {
+    if prim_rotations.len() != prim_translations.len() {
+        return Err(PyValueError::new_err(
+            "prim_rotations and prim_translations must have the same length",
+        ));
+    }
+
+    let prim_operations = prim_rotations
+        .iter()
+        .zip(prim_translations.iter())
+        .map(|(rotation, translation)| {
+            Operation::new(to_matrix3(rotation), to_vector3(translation))
+        })
+        .collect::<Vec<_>>();
+
+    let prim_generators = if let Some(indices) = prim_generators {
+        let mut generators = Vec::with_capacity(indices.len());
+        for index in indices {
+            let operation = prim_operations.get(index).ok_or_else(|| {
+                PyValueError::new_err(format!(
+                    "prim_generators index {index} is out of range for {} operations",
+                    prim_operations.len()
+                ))
+            })?;
+            generators.push(operation.clone());
+        }
+        generators
+    } else {
+        derive_small_generators(&prim_operations)?
+    };
+
+    Ok(
+        identify_integral_normalizer(&prim_operations, &prim_generators, epsilon)
+            .into_iter()
+            .map(PyUnimodularTransformation::from)
+            .collect(),
+    )
+}
 
 #[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "PointGroup", frozen)]
@@ -257,6 +369,27 @@ impl PyMagneticSpaceGroup {
 impl From<PyMagneticSpaceGroup> for MagneticSpaceGroup {
     fn from(magnetic_space_group: PyMagneticSpaceGroup) -> Self {
         magnetic_space_group.0
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{derive_small_generators, generated_closure};
+    use crate::data::operations_from_number;
+    use moyo::base::Operations;
+
+    fn primitive_operations_from_number(number: i32) -> Operations {
+        operations_from_number(number, None, true).unwrap().into()
+    }
+
+    #[test]
+    fn test_derive_small_generators_reaches_full_group() {
+        let prim_operations = primitive_operations_from_number(221);
+        let generators = derive_small_generators(&prim_operations).unwrap();
+        let closure = generated_closure(&generators, &prim_operations);
+
+        assert!(generators.len() < prim_operations.len());
+        assert_eq!(closure.len(), prim_operations.len());
     }
 }
 

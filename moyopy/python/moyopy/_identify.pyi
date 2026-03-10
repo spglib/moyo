@@ -1,5 +1,6 @@
 from typing import Any
 
+from moyopy._base import UnimodularTransformation
 from moyopy._data import Setting
 
 class PointGroup:
@@ -61,3 +62,11 @@ class MagneticSpaceGroup:
         """Serialize an object to a JSON string"""
     def as_dict(self) -> dict[str, Any]:
         """Convert an object to a dictionary"""
+
+def integral_normalizer(
+    prim_rotations: list[list[list[int]]],
+    prim_translations: list[list[float]],
+    *,
+    prim_generators: list[int] | None = None,
+    epsilon: float = 1e-4,
+) -> list[UnimodularTransformation]: ...

@@ -6,6 +6,8 @@ from moyopy import (
     MagneticSpaceGroup,
     PointGroup,
     SpaceGroup,
+    UnimodularTransformation,
+    integral_normalizer,
     magnetic_operations_from_uni_number,
     operations_from_number,
 )
@@ -53,3 +55,37 @@ def test_identify_magnetic_space_group(uni_number: int):
         prim_time_reversals=magnetic_operations.time_reversals,
     )
     assert magnetic_space_group.uni_number == uni_number
+
+
+def test_integral_normalizer_defaults_to_small_generators():
+    operations = operations_from_number(158, primitive=True)
+
+    actual = integral_normalizer(
+        operations.rotations,
+        operations.translations,
+    )
+    expected = integral_normalizer(
+        operations.rotations,
+        operations.translations,
+        prim_generators=list(range(len(operations))),
+    )
+
+    assert actual
+    assert {transformation.serialize_json() for transformation in actual} == {
+        transformation.serialize_json() for transformation in expected
+    }
+    assert all(isinstance(transformation, UnimodularTransformation) for transformation in actual)
+    assert all(len(transformation.linear) == 3 for transformation in actual)
+    assert all(len(row) == 3 for transformation in actual for row in transformation.linear)
+    assert all(len(transformation.origin_shift) == 3 for transformation in actual)
+
+
+def test_integral_normalizer_invalid_generator_index():
+    operations = operations_from_number(158, primitive=True)
+
+    with pytest.raises(ValueError, match="out of range"):
+        integral_normalizer(
+            operations.rotations,
+            operations.translations,
+            prim_generators=[len(operations)],
+        )

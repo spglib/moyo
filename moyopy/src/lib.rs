@@ -8,7 +8,7 @@ pub mod identify;
 
 use crate::base::{
     PyCollinearMagneticCell, PyMagneticOperations, PyMoyoError, PyNonCollinearMagneticCell,
-    PyOperations, PyStructure,
+    PyOperations, PyStructure, PyUnimodularTransformation,
 };
 use crate::data::{
     PyArithmeticCrystalClass, PyCentering, PyHallSymbolEntry, PyMagneticSpaceGroupType, PySetting,
@@ -17,7 +17,7 @@ use crate::data::{
 use crate::dataset::{
     PyMoyoCollinearMagneticDataset, PyMoyoDataset, PyMoyoNonCollinearMagneticDataset,
 };
-use crate::identify::{PyMagneticSpaceGroup, PyPointGroup, PySpaceGroup};
+use crate::identify::{PyMagneticSpaceGroup, PyPointGroup, PySpaceGroup, integral_normalizer};
 
 // https://github.com/pydantic/pydantic-core/blob/main/src/lib.rs
 fn moyopy_version() -> &'static str {
@@ -55,6 +55,7 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyMoyoError>()?;
     m.add_class::<PyOperations>()?;
     m.add_class::<PyMagneticOperations>()?;
+    m.add_class::<PyUnimodularTransformation>()?;
 
     // data: Hall symbol data
     m.add_class::<PySetting>()?;
@@ -72,6 +73,7 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyPointGroup>()?;
     m.add_class::<PySpaceGroup>()?;
     m.add_class::<PyMagneticSpaceGroup>()?;
+    m.add_wrapped(wrap_pyfunction!(integral_normalizer))?;
 
     Ok(())
 }
