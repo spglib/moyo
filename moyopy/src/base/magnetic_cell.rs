@@ -15,14 +15,14 @@ enum MagneticCellEnum {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[pyclass(name = "MagneticCell", frozen)]
+#[pyclass(name = "MagneticCell", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyMagneticCell {
     magnetic_cell: MagneticCellEnum,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[pyclass(name = "CollinearMagneticCell", frozen)]
+#[pyclass(name = "CollinearMagneticCell", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyCollinearMagneticCell(MagneticCell<Collinear>);
 
@@ -134,7 +134,7 @@ impl From<MagneticCell<Collinear>> for PyCollinearMagneticCell {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[pyclass(name = "NonCollinearMagneticCell", frozen)]
+#[pyclass(name = "NonCollinearMagneticCell", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyNonCollinearMagneticCell(MagneticCell<NonCollinear>);
 

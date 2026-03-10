@@ -13,7 +13,7 @@ use crate::base::{
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[pyclass(name = "MoyoCollinearMagneticDataset", frozen)]
+#[pyclass(name = "MoyoCollinearMagneticDataset", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyMoyoCollinearMagneticDataset(MoyoMagneticDataset<Collinear>);
 
@@ -195,7 +195,7 @@ impl PyMoyoCollinearMagneticDataset {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[pyclass(name = "MoyoNonCollinearMagneticDataset", frozen)]
+#[pyclass(name = "MoyoNonCollinearMagneticDataset", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyMoyoNonCollinearMagneticDataset(MoyoMagneticDataset<NonCollinear>);
 

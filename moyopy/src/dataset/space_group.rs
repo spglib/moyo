@@ -13,7 +13,7 @@ use crate::base::{PyMoyoError, PyOperations, PyStructure};
 use crate::data::PySetting;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[pyclass(name = "MoyoDataset", frozen)]
+#[pyclass(name = "MoyoDataset", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyMoyoDataset(MoyoDataset);
 

@@ -125,7 +125,7 @@ pub fn integral_normalizer(
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[pyclass(name = "PointGroup", frozen)]
+#[pyclass(name = "PointGroup", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyPointGroup(PointGroup);
 
@@ -197,7 +197,7 @@ impl From<PointGroup> for PyPointGroup {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[pyclass(name = "SpaceGroup", frozen)]
+#[pyclass(name = "SpaceGroup", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PySpaceGroup(SpaceGroup);
 
@@ -292,7 +292,7 @@ impl From<SpaceGroup> for PySpaceGroup {
 }
 
 #[derive(Debug, Clone, Serialize)]
-#[pyclass(name = "MagneticSpaceGroup", frozen)]
+#[pyclass(name = "MagneticSpaceGroup", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyMagneticSpaceGroup(MagneticSpaceGroup);
 

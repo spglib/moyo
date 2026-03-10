@@ -12,7 +12,7 @@ use moyo::data::{
 use crate::base::PyMoyoError;
 
 #[derive(Debug, Clone, Serialize)]
-#[pyclass(name = "SpaceGroupType", frozen)]
+#[pyclass(name = "SpaceGroupType", frozen, from_py_object)]
 pub struct PySpaceGroupType {
     // Space group type
     #[pyo3(get)]

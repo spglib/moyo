@@ -7,7 +7,7 @@ use moyo::data::Centering;
 use moyo::utils::{to_3_slice, to_3x3_slice};
 
 #[derive(Debug, Clone, Serialize)]
-#[pyclass(name = "Centering", frozen)]
+#[pyclass(name = "Centering", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyCentering(pub Centering);
 
