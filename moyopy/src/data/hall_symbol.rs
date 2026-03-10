@@ -10,7 +10,7 @@ use moyo::data::{ArithmeticNumber, HallNumber, HallSymbolEntry, Number, hall_sym
 use super::centering::PyCentering;
 
 #[derive(Debug, Clone, Serialize)]
-#[pyclass(name = "HallSymbolEntry", frozen)]
+#[pyclass(name = "HallSymbolEntry", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyHallSymbolEntry(pub HallSymbolEntry);
 

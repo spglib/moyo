@@ -8,7 +8,7 @@ use moyo::base::MoyoError;
 use moyo::data::{ArithmeticNumber, arithmetic_crystal_class_entry};
 
 #[derive(Debug, Clone, Serialize)]
-#[pyclass(name = "ArithmeticCrystalClass", frozen)]
+#[pyclass(name = "ArithmeticCrystalClass", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyArithmeticCrystalClass {
     // Arithmetic crystal class

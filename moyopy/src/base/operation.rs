@@ -9,7 +9,7 @@ use moyo::base::{MagneticOperations, Operations, UnimodularTransformation};
 use moyo::utils::{to_3_slice, to_3x3_slice};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[pyclass(name = "Operations", frozen)]
+#[pyclass(name = "Operations", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyOperations(Operations);
 
@@ -87,7 +87,7 @@ impl From<Operations> for PyOperations {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[pyclass(name = "MagneticOperations", frozen)]
+#[pyclass(name = "MagneticOperations", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyMagneticOperations(MagneticOperations);
 
@@ -176,7 +176,7 @@ impl From<MagneticOperations> for PyMagneticOperations {
 }
 
 #[derive(Debug, Clone)]
-#[pyclass(name = "UnimodularTransformation", frozen)]
+#[pyclass(name = "UnimodularTransformation", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyUnimodularTransformation(UnimodularTransformation);
 

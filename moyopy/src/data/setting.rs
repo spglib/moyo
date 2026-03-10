@@ -7,7 +7,7 @@ use serde_json;
 use moyo::data::Setting;
 
 #[derive(Debug, Clone, Serialize)]
-#[pyclass(name = "Setting", frozen)]
+#[pyclass(name = "Setting", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PySetting(pub Setting);
 

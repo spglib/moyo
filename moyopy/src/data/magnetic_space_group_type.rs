@@ -9,7 +9,7 @@ use moyo::data::{
 };
 
 #[derive(Debug, Clone, Serialize)]
-#[pyclass(name = "MagneticSpaceGroupType", frozen)]
+#[pyclass(name = "MagneticSpaceGroupType", frozen, from_py_object)]
 pub struct PyMagneticSpaceGroupType(MagneticSpaceGroupType);
 
 #[pymethods]
