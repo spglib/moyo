@@ -57,6 +57,21 @@ def test_identify_magnetic_space_group(uni_number: int):
     assert magnetic_space_group.uni_number == uni_number
 
 
+@pytest.mark.parametrize(
+    "number,expected",
+    [
+        pytest.param(16, 6, id="P 2 2 2"),  # Permutations for the three rotation axes
+        pytest.param(17, 2, id="P 2 2 2_1"),  # Permutations for the two rotation axes
+        pytest.param(18, 2, id="P 2_1 2_1 2"),  # Permutations for the two skew rotation axes
+        pytest.param(19, 6, id="P 2_1 2_1 2_1"),  # Permutations for the three skew rotation axes
+    ],
+)
+def test_integral_normalizer_orthorhombic(number: int, expected: int):
+    operations = operations_from_number(number, primitive=True)
+    normalizer = integral_normalizer(operations.rotations, operations.translations)
+    assert len(normalizer) == expected
+
+
 def test_integral_normalizer_defaults_to_small_generators():
     operations = operations_from_number(158, primitive=True)
 
