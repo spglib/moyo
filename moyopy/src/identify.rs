@@ -15,20 +15,14 @@ use moyo::utils::{to_3_slice, to_3x3_slice, to_matrix3, to_vector3};
 use crate::base::{PyMoyoError, PyUnimodularTransformation};
 use crate::data::PySetting;
 
-fn operations_match(lhs: &Operation, rhs: &Operation, epsilon: f64) -> bool {
-    if lhs.rotation != rhs.rotation {
-        return false;
-    }
-
-    let mut diff = lhs.translation - rhs.translation;
-    diff -= diff.map(|e| e.round());
-    diff.iter().all(|e| e.abs() < epsilon)
+fn has_same_rotation(lhs: &Operation, rhs: &Operation) -> bool {
+    lhs.rotation == rhs.rotation
 }
 
-fn push_operation(operations: &mut Vec<Operation>, operation: Operation, epsilon: f64) -> bool {
+fn push_operation(operations: &mut Vec<Operation>, operation: Operation) -> bool {
     if operations
         .iter()
-        .any(|candidate| operations_match(candidate, &operation, epsilon))
+        .any(|candidate| has_same_rotation(candidate, &operation))
     {
         false
     } else {
@@ -37,14 +31,10 @@ fn push_operation(operations: &mut Vec<Operation>, operation: Operation, epsilon
     }
 }
 
-fn generated_closure(
-    generators: &[Operation],
-    prim_operations: &[Operation],
-    epsilon: f64,
-) -> Vec<Operation> {
+fn generated_closure(generators: &[Operation], prim_operations: &[Operation]) -> Vec<Operation> {
     let mut closure = vec![];
     let mut cursor = 0;
-    push_operation(&mut closure, Operation::identity(), epsilon);
+    push_operation(&mut closure, Operation::identity());
 
     while cursor < closure.len() {
         let lhs = closure[cursor].clone();
@@ -54,9 +44,9 @@ fn generated_closure(
             let new_operation = lhs.clone() * rhs.clone();
             if prim_operations
                 .iter()
-                .any(|operation| operations_match(operation, &new_operation, epsilon))
+                .any(|operation| has_same_rotation(operation, &new_operation))
             {
-                push_operation(&mut closure, new_operation, epsilon);
+                push_operation(&mut closure, new_operation);
             }
         }
     }
@@ -64,22 +54,19 @@ fn generated_closure(
     closure
 }
 
-fn derive_small_generators(
-    prim_operations: &[Operation],
-    epsilon: f64,
-) -> PyResult<Vec<Operation>> {
+fn derive_small_generators(prim_operations: &[Operation]) -> PyResult<Vec<Operation>> {
     let mut generators = vec![];
-    let mut closure = generated_closure(&generators, prim_operations, epsilon);
+    let mut closure = generated_closure(&generators, prim_operations);
 
     for operation in prim_operations {
         if closure
             .iter()
-            .any(|generated| operations_match(generated, operation, epsilon))
+            .any(|generated| has_same_rotation(generated, operation))
         {
             continue;
         }
         generators.push(operation.clone());
-        closure = generated_closure(&generators, prim_operations, epsilon);
+        closure = generated_closure(&generators, prim_operations);
     }
 
     if closure.len() != prim_operations.len() {
@@ -126,7 +113,7 @@ pub fn integral_normalizer(
         }
         generators
     } else {
-        derive_small_generators(&prim_operations, epsilon)?
+        derive_small_generators(&prim_operations)?
     };
 
     Ok(
@@ -398,8 +385,8 @@ mod tests {
     #[test]
     fn test_derive_small_generators_reaches_full_group() {
         let prim_operations = primitive_operations_from_number(221);
-        let generators = derive_small_generators(&prim_operations, 1e-4).unwrap();
-        let closure = generated_closure(&generators, &prim_operations, 1e-4);
+        let generators = derive_small_generators(&prim_operations).unwrap();
+        let closure = generated_closure(&generators, &prim_operations);
 
         assert!(generators.len() < prim_operations.len());
         assert_eq!(closure.len(), prim_operations.len());
