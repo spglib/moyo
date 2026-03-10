@@ -1,5 +1,3 @@
-use std::collections::VecDeque;
-
 use itertools::izip;
 use pyo3::exceptions::PyValueError;
 use pyo3::{IntoPyObjectExt, prelude::*};
@@ -17,25 +15,6 @@ use moyo::utils::{to_3_slice, to_3x3_slice, to_matrix3, to_vector3};
 use crate::base::{PyMoyoError, PyUnimodularTransformation};
 use crate::data::PySetting;
 
-fn normalize_translation_component(value: f64) -> f64 {
-    let mut normalized = value % 1.0;
-    if normalized < 0.0 {
-        normalized += 1.0;
-    }
-    if normalized.abs() < 1e-12 || (1.0 - normalized).abs() < 1e-12 {
-        0.0
-    } else {
-        normalized
-    }
-}
-
-fn normalize_operation(operation: &Operation) -> Operation {
-    Operation::new(
-        operation.rotation,
-        operation.translation.map(normalize_translation_component),
-    )
-}
-
 fn operations_match(lhs: &Operation, rhs: &Operation, epsilon: f64) -> bool {
     if lhs.rotation != rhs.rotation {
         return false;
@@ -46,11 +25,7 @@ fn operations_match(lhs: &Operation, rhs: &Operation, epsilon: f64) -> bool {
     diff.iter().all(|e| e.abs() < epsilon)
 }
 
-fn push_unique_operation(
-    operations: &mut Vec<Operation>,
-    operation: Operation,
-    epsilon: f64,
-) -> bool {
+fn push_operation(operations: &mut Vec<Operation>, operation: Operation, epsilon: f64) -> bool {
     if operations
         .iter()
         .any(|candidate| operations_match(candidate, &operation, epsilon))
@@ -62,84 +37,58 @@ fn push_unique_operation(
     }
 }
 
-fn unique_operations(operations: &[Operation], epsilon: f64) -> Vec<Operation> {
-    let mut unique = vec![];
-    for operation in operations {
-        push_unique_operation(&mut unique, normalize_operation(operation), epsilon);
-    }
-    unique
-}
-
-fn generated_closure(generators: &[Operation], epsilon: f64, limit: usize) -> Vec<Operation> {
+fn generated_closure(
+    generators: &[Operation],
+    prim_operations: &[Operation],
+    epsilon: f64,
+) -> Vec<Operation> {
     let mut closure = vec![];
-    let mut queue = VecDeque::from([Operation::identity()]);
+    let mut cursor = 0;
+    push_operation(&mut closure, Operation::identity(), epsilon);
 
-    while let Some(operation) = queue.pop_front() {
-        let operation = normalize_operation(&operation);
-        if !push_unique_operation(&mut closure, operation.clone(), epsilon) {
-            continue;
-        }
-        if closure.len() >= limit {
-            break;
-        }
+    while cursor < closure.len() {
+        let lhs = closure[cursor].clone();
+        cursor += 1;
 
-        for generator in generators {
-            queue.push_back(normalize_operation(
-                &(operation.clone() * generator.clone()),
-            ));
+        for rhs in generators {
+            let new_operation = lhs.clone() * rhs.clone();
+            if prim_operations
+                .iter()
+                .any(|operation| operations_match(operation, &new_operation, epsilon))
+            {
+                push_operation(&mut closure, new_operation, epsilon);
+            }
         }
     }
 
     closure
 }
 
-fn derive_small_generators(prim_operations: &[Operation], epsilon: f64) -> Vec<Operation> {
-    let unique_prim_operations = unique_operations(prim_operations, epsilon);
-    if unique_prim_operations.len() <= 1 {
-        return unique_prim_operations;
+fn derive_small_generators(
+    prim_operations: &[Operation],
+    epsilon: f64,
+) -> PyResult<Vec<Operation>> {
+    let mut generators = vec![];
+    let mut closure = generated_closure(&generators, prim_operations, epsilon);
+
+    for operation in prim_operations {
+        if closure
+            .iter()
+            .any(|generated| operations_match(generated, operation, epsilon))
+        {
+            continue;
+        }
+        generators.push(operation.clone());
+        closure = generated_closure(&generators, prim_operations, epsilon);
     }
 
-    let target_size = unique_prim_operations.len();
-    let mut chosen_indices = vec![];
-    let mut current_closure = generated_closure(&[], epsilon, target_size);
-
-    while current_closure.len() < target_size {
-        let mut best_choice = None;
-        let mut best_closure = current_closure.clone();
-
-        for (index, operation) in unique_prim_operations.iter().enumerate() {
-            if chosen_indices.contains(&index) {
-                continue;
-            }
-
-            let mut generators = chosen_indices
-                .iter()
-                .map(|&chosen| unique_prim_operations[chosen].clone())
-                .collect::<Vec<_>>();
-            generators.push(operation.clone());
-
-            let trial_closure = generated_closure(&generators, epsilon, target_size);
-            if trial_closure.len() > best_closure.len() {
-                best_choice = Some(index);
-                best_closure = trial_closure;
-            }
-        }
-
-        let Some(best_index) = best_choice else {
-            return unique_prim_operations;
-        };
-        if best_closure.len() <= current_closure.len() {
-            return unique_prim_operations;
-        }
-
-        chosen_indices.push(best_index);
-        current_closure = best_closure;
+    if closure.len() != prim_operations.len() {
+        return Err(PyValueError::new_err(
+            "failed to derive generators whose closure matches prim_operations",
+        ));
     }
 
-    chosen_indices
-        .into_iter()
-        .map(|index| unique_prim_operations[index].clone())
-        .collect()
+    Ok(generators)
 }
 
 #[pyfunction]
@@ -177,7 +126,7 @@ pub fn integral_normalizer(
         }
         generators
     } else {
-        derive_small_generators(&prim_operations, epsilon)
+        derive_small_generators(&prim_operations, epsilon)?
     };
 
     Ok(
@@ -449,8 +398,8 @@ mod tests {
     #[test]
     fn test_derive_small_generators_reaches_full_group() {
         let prim_operations = primitive_operations_from_number(221);
-        let generators = derive_small_generators(&prim_operations, 1e-4);
-        let closure = generated_closure(&generators, 1e-4, prim_operations.len());
+        let generators = derive_small_generators(&prim_operations, 1e-4).unwrap();
+        let closure = generated_closure(&generators, &prim_operations, 1e-4);
 
         assert!(generators.len() < prim_operations.len());
         assert_eq!(closure.len(), prim_operations.len());
