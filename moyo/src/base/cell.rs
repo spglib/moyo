@@ -1,6 +1,8 @@
 use std::collections::BTreeMap;
 
 use nalgebra::{Matrix3, Vector3};
+
+use crate::utils::to_3_slice;
 use serde::{Deserialize, Serialize};
 use union_find::{QuickFindUf, UnionByRank, UnionFind};
 
@@ -38,6 +40,17 @@ impl Cell {
     /// Return the number of atoms in the cell.
     pub fn num_atoms(&self) -> usize {
         self.positions.len()
+    }
+
+    /// Returns fractional positions as a vector of `[f64; 3]` arrays.
+    ///
+    /// Each `[f64; 3]` contains the fractional coordinates `[x, y, z]`
+    /// of a site in the cell.
+    ///
+    /// This is a convenience method for users who do not depend on `nalgebra`.
+    /// It is equivalent to converting each `Vector3<f64>` in `self.positions`.
+    pub fn positions_as_arrays(&self) -> Vec<[f64; 3]> {
+        self.positions.iter().map(|p| to_3_slice(p)).collect()
     }
 
     /// Rotate the cell by the given rotation matrix.

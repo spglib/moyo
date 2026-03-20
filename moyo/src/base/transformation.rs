@@ -9,6 +9,7 @@ use super::lattice::Lattice;
 use super::magnetic_cell::{MagneticCell, MagneticMoment};
 use super::operation::{MagneticOperation, Operation};
 use crate::math::SNF;
+use crate::utils::{to_3_slice, to_3x3_slice};
 
 pub type UnimodularLinear = Matrix3<i32>;
 pub type Linear = Matrix3<i32>;
@@ -63,6 +64,16 @@ impl UnimodularTransformation {
 
     pub fn linear_as_f64(&self) -> Matrix3<f64> {
         self.linear.map(|e| e as f64)
+    }
+
+    /// Returns the linear part as a 3x3 integer array.
+    pub fn linear_as_array(&self) -> [[i32; 3]; 3] {
+        to_3x3_slice(&self.linear)
+    }
+
+    /// Returns the origin shift as a `[f64; 3]` array.
+    pub fn origin_shift_as_array(&self) -> [f64; 3] {
+        to_3_slice(&self.origin_shift)
     }
 
     pub fn transform_lattice(&self, lattice: &Lattice) -> Lattice {
@@ -181,6 +192,16 @@ impl Transformation {
 
     pub fn linear_as_f64(&self) -> Matrix3<f64> {
         self.linear.map(|e| e as f64)
+    }
+
+    /// Returns the linear part as a 3x3 integer array.
+    pub fn linear_as_array(&self) -> [[i32; 3]; 3] {
+        to_3x3_slice(&self.linear)
+    }
+
+    /// Returns the origin shift as a `[f64; 3]` array.
+    pub fn origin_shift_as_array(&self) -> [f64; 3] {
+        to_3_slice(&self.origin_shift)
     }
 
     pub fn transform_lattice(&self, lattice: &Lattice) -> Lattice {

@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 
 use moyo::base::{Cell, Lattice};
-use moyo::utils::{to_3_slice, to_3x3_slice, to_vector3};
+use moyo::utils::to_vector3;
 
 // Unfortunately, "PyCell" is already reversed by pyo3...
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -38,13 +38,12 @@ impl PyStructure {
 
     #[getter]
     pub fn basis(&self) -> [[f64; 3]; 3] {
-        // Transpose column-major basis
-        to_3x3_slice(&self.0.lattice.basis.transpose())
+        self.0.lattice.basis_as_array()
     }
 
     #[getter]
     pub fn positions(&self) -> Vec<[f64; 3]> {
-        self.0.positions.iter().map(to_3_slice).collect()
+        self.0.positions_as_arrays()
     }
 
     #[getter]

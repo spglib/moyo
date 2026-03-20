@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::math::{
     delaunay_reduce, is_minkowski_reduced, is_niggli_reduced, minkowski_reduce, niggli_reduce,
 };
+use crate::utils::to_3x3_slice;
 
 use super::error::MoyoError;
 
@@ -110,6 +111,18 @@ impl Lattice {
         let beta = (g[(0, 2)] / (a * c)).acos().to_degrees();
         let gamma = (g[(0, 1)] / (a * b)).acos().to_degrees();
         [a, b, c, alpha, beta, gamma]
+    }
+
+    /// Returns the basis vectors as a 3x3 array of row vectors.
+    ///
+    /// Each inner array `[x, y, z]` is a basis vector in Cartesian coordinates.
+    /// `result[0]`, `result[1]`, `result[2]` correspond to the first, second,
+    /// and third basis vectors respectively.
+    ///
+    /// This is a convenience method for users who do not depend on `nalgebra`.
+    /// It is equivalent to transposing `self.basis` (which stores column vectors).
+    pub fn basis_as_array(&self) -> [[f64; 3]; 3] {
+        to_3x3_slice(&self.basis.transpose())
     }
 
     /// Rotate the lattice by the given rotation matrix

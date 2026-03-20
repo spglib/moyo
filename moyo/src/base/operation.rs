@@ -3,6 +3,8 @@ use std::fmt;
 use std::ops::Mul;
 
 use nalgebra::base::{Matrix3, Vector3};
+
+use crate::utils::{to_3_slice, to_3x3_slice};
 use serde::{Deserialize, Serialize};
 
 use super::lattice::Lattice;
@@ -37,6 +39,29 @@ impl Operation {
 
     pub fn identity() -> Self {
         Self::new(Rotation::identity(), Translation::zeros())
+    }
+
+    /// Returns the rotation matrix as a 3x3 array.
+    ///
+    /// The rotation matrix acts on fractional coordinates in the
+    /// crystallographic basis. `result[i][j]` is the element at
+    /// row `i`, column `j`.
+    ///
+    /// This is a convenience method for users who do not depend on `nalgebra`.
+    /// It is equivalent to reading `self.rotation` element by element.
+    pub fn rotation_as_array(&self) -> [[i32; 3]; 3] {
+        to_3x3_slice(&self.rotation)
+    }
+
+    /// Returns the translation vector as a `[f64; 3]` array.
+    ///
+    /// The translation vector is in fractional coordinates in the
+    /// crystallographic basis.
+    ///
+    /// This is a convenience method for users who do not depend on `nalgebra`.
+    /// It is equivalent to reading `self.translation` element by element.
+    pub fn translation_as_array(&self) -> [f64; 3] {
+        to_3_slice(&self.translation)
     }
 }
 

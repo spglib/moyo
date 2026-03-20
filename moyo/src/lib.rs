@@ -105,6 +105,7 @@ use crate::search::{
     magnetic_operations_in_magnetic_cell, operations_in_cell,
 };
 use crate::symmetrize::{StandardizedCell, StandardizedMagneticCell, orbits_in_cell};
+use crate::utils::{to_3_slice, to_3x3_slice};
 
 use nalgebra::Matrix3;
 use serde::{Deserialize, Serialize};
@@ -311,6 +312,31 @@ impl MoyoDataset {
     pub fn num_operations(&self) -> usize {
         self.operations.len()
     }
+
+    /// Returns `std_linear` as a 3x3 array. See [`std_linear`](Self::std_linear) field docs.
+    pub fn std_linear_as_array(&self) -> [[f64; 3]; 3] {
+        to_3x3_slice(&self.std_linear)
+    }
+
+    /// Returns `std_origin_shift` as a `[f64; 3]` array.
+    pub fn std_origin_shift_as_array(&self) -> [f64; 3] {
+        to_3_slice(&self.std_origin_shift)
+    }
+
+    /// Returns `std_rotation_matrix` as a 3x3 array.
+    pub fn std_rotation_matrix_as_array(&self) -> [[f64; 3]; 3] {
+        to_3x3_slice(&self.std_rotation_matrix)
+    }
+
+    /// Returns `prim_std_linear` as a 3x3 array.
+    pub fn prim_std_linear_as_array(&self) -> [[f64; 3]; 3] {
+        to_3x3_slice(&self.prim_std_linear)
+    }
+
+    /// Returns `prim_std_origin_shift` as a `[f64; 3]` array.
+    pub fn prim_std_origin_shift_as_array(&self) -> [f64; 3] {
+        to_3_slice(&self.prim_std_origin_shift)
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -506,5 +532,30 @@ impl<M: MagneticMoment> MoyoMagneticDataset<M> {
     /// Return the number of magnetic symmetry operations in the input magnetic cell.
     pub fn num_magnetic_operations(&self) -> usize {
         self.magnetic_operations.len()
+    }
+
+    /// Returns `std_linear` as a 3x3 array. See [`std_linear`](Self::std_linear) field docs.
+    pub fn std_linear_as_array(&self) -> [[f64; 3]; 3] {
+        to_3x3_slice(&self.std_linear)
+    }
+
+    /// Returns `std_origin_shift` as a `[f64; 3]` array.
+    pub fn std_origin_shift_as_array(&self) -> [f64; 3] {
+        to_3_slice(&self.std_origin_shift)
+    }
+
+    /// Returns `std_rotation_matrix` as a 3x3 array.
+    pub fn std_rotation_matrix_as_array(&self) -> [[f64; 3]; 3] {
+        to_3x3_slice(&self.std_rotation_matrix)
+    }
+
+    /// Returns `prim_std_linear` as a 3x3 array.
+    pub fn prim_std_linear_as_array(&self) -> [[f64; 3]; 3] {
+        to_3x3_slice(&self.prim_std_linear)
+    }
+
+    /// Returns `prim_std_origin_shift` as a `[f64; 3]` array.
+    pub fn prim_std_origin_shift_as_array(&self) -> [f64; 3] {
+        to_3_slice(&self.prim_std_origin_shift)
     }
 }
