@@ -3,6 +3,8 @@ use std::fmt;
 use std::ops::Mul;
 
 use nalgebra::base::{Matrix3, Vector3};
+
+use crate::utils::{to_3_slice, to_3x3_slice};
 use serde::{Deserialize, Serialize};
 
 use super::lattice::Lattice;
@@ -48,12 +50,7 @@ impl Operation {
     /// This is a convenience method for users who do not depend on `nalgebra`.
     /// It is equivalent to reading `self.rotation` element by element.
     pub fn rotation_as_array(&self) -> [[i32; 3]; 3] {
-        let r = &self.rotation;
-        [
-            [r[(0, 0)], r[(0, 1)], r[(0, 2)]],
-            [r[(1, 0)], r[(1, 1)], r[(1, 2)]],
-            [r[(2, 0)], r[(2, 1)], r[(2, 2)]],
-        ]
+        to_3x3_slice(&self.rotation)
     }
 
     /// Returns the translation vector as a `[f64; 3]` array.
@@ -64,11 +61,7 @@ impl Operation {
     /// This is a convenience method for users who do not depend on `nalgebra`.
     /// It is equivalent to reading `self.translation` element by element.
     pub fn translation_as_array(&self) -> [f64; 3] {
-        [
-            self.translation[0],
-            self.translation[1],
-            self.translation[2],
-        ]
+        to_3_slice(&self.translation)
     }
 }
 

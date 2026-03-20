@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use crate::math::{
     delaunay_reduce, is_minkowski_reduced, is_niggli_reduced, minkowski_reduce, niggli_reduce,
 };
+use crate::utils::to_3x3_slice;
 
 use super::error::MoyoError;
 
@@ -121,12 +122,7 @@ impl Lattice {
     /// This is a convenience method for users who do not depend on `nalgebra`.
     /// It is equivalent to transposing `self.basis` (which stores column vectors).
     pub fn basis_as_array(&self) -> [[f64; 3]; 3] {
-        let m = self.basis.transpose();
-        [
-            [m[(0, 0)], m[(0, 1)], m[(0, 2)]],
-            [m[(1, 0)], m[(1, 1)], m[(1, 2)]],
-            [m[(2, 0)], m[(2, 1)], m[(2, 2)]],
-        ]
+        to_3x3_slice(&self.basis.transpose())
     }
 
     /// Rotate the lattice by the given rotation matrix

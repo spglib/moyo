@@ -1,6 +1,8 @@
 use core::fmt::Debug;
 
 use nalgebra::Vector3;
+
+use crate::utils::to_3_slice;
 use serde::{Deserialize, Serialize};
 
 use super::action::RotationMagneticMomentAction;
@@ -111,7 +113,7 @@ impl MagneticMoment for NonCollinear {
 impl NonCollinear {
     /// Returns the magnetic moment vector as a `[f64; 3]` array.
     pub fn as_array(&self) -> [f64; 3] {
-        [self.0[0], self.0[1], self.0[2]]
+        to_3_slice(&self.0)
     }
 }
 

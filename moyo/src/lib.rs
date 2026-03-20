@@ -105,6 +105,7 @@ use crate::search::{
     magnetic_operations_in_magnetic_cell, operations_in_cell,
 };
 use crate::symmetrize::{StandardizedCell, StandardizedMagneticCell, orbits_in_cell};
+use crate::utils::{to_3_slice, to_3x3_slice};
 
 use nalgebra::Matrix3;
 use serde::{Deserialize, Serialize};
@@ -314,50 +315,27 @@ impl MoyoDataset {
 
     /// Returns `std_linear` as a 3x3 array. See [`std_linear`](Self::std_linear) field docs.
     pub fn std_linear_as_array(&self) -> [[f64; 3]; 3] {
-        let m = &self.std_linear;
-        [
-            [m[(0, 0)], m[(0, 1)], m[(0, 2)]],
-            [m[(1, 0)], m[(1, 1)], m[(1, 2)]],
-            [m[(2, 0)], m[(2, 1)], m[(2, 2)]],
-        ]
+        to_3x3_slice(&self.std_linear)
     }
 
     /// Returns `std_origin_shift` as a `[f64; 3]` array.
     pub fn std_origin_shift_as_array(&self) -> [f64; 3] {
-        [
-            self.std_origin_shift[0],
-            self.std_origin_shift[1],
-            self.std_origin_shift[2],
-        ]
+        to_3_slice(&self.std_origin_shift)
     }
 
     /// Returns `std_rotation_matrix` as a 3x3 array.
     pub fn std_rotation_matrix_as_array(&self) -> [[f64; 3]; 3] {
-        let m = &self.std_rotation_matrix;
-        [
-            [m[(0, 0)], m[(0, 1)], m[(0, 2)]],
-            [m[(1, 0)], m[(1, 1)], m[(1, 2)]],
-            [m[(2, 0)], m[(2, 1)], m[(2, 2)]],
-        ]
+        to_3x3_slice(&self.std_rotation_matrix)
     }
 
     /// Returns `prim_std_linear` as a 3x3 array.
     pub fn prim_std_linear_as_array(&self) -> [[f64; 3]; 3] {
-        let m = &self.prim_std_linear;
-        [
-            [m[(0, 0)], m[(0, 1)], m[(0, 2)]],
-            [m[(1, 0)], m[(1, 1)], m[(1, 2)]],
-            [m[(2, 0)], m[(2, 1)], m[(2, 2)]],
-        ]
+        to_3x3_slice(&self.prim_std_linear)
     }
 
     /// Returns `prim_std_origin_shift` as a `[f64; 3]` array.
     pub fn prim_std_origin_shift_as_array(&self) -> [f64; 3] {
-        [
-            self.prim_std_origin_shift[0],
-            self.prim_std_origin_shift[1],
-            self.prim_std_origin_shift[2],
-        ]
+        to_3_slice(&self.prim_std_origin_shift)
     }
 }
 
@@ -558,49 +536,26 @@ impl<M: MagneticMoment> MoyoMagneticDataset<M> {
 
     /// Returns `std_linear` as a 3x3 array. See [`std_linear`](Self::std_linear) field docs.
     pub fn std_linear_as_array(&self) -> [[f64; 3]; 3] {
-        let m = &self.std_linear;
-        [
-            [m[(0, 0)], m[(0, 1)], m[(0, 2)]],
-            [m[(1, 0)], m[(1, 1)], m[(1, 2)]],
-            [m[(2, 0)], m[(2, 1)], m[(2, 2)]],
-        ]
+        to_3x3_slice(&self.std_linear)
     }
 
     /// Returns `std_origin_shift` as a `[f64; 3]` array.
     pub fn std_origin_shift_as_array(&self) -> [f64; 3] {
-        [
-            self.std_origin_shift[0],
-            self.std_origin_shift[1],
-            self.std_origin_shift[2],
-        ]
+        to_3_slice(&self.std_origin_shift)
     }
 
     /// Returns `std_rotation_matrix` as a 3x3 array.
     pub fn std_rotation_matrix_as_array(&self) -> [[f64; 3]; 3] {
-        let m = &self.std_rotation_matrix;
-        [
-            [m[(0, 0)], m[(0, 1)], m[(0, 2)]],
-            [m[(1, 0)], m[(1, 1)], m[(1, 2)]],
-            [m[(2, 0)], m[(2, 1)], m[(2, 2)]],
-        ]
+        to_3x3_slice(&self.std_rotation_matrix)
     }
 
     /// Returns `prim_std_linear` as a 3x3 array.
     pub fn prim_std_linear_as_array(&self) -> [[f64; 3]; 3] {
-        let m = &self.prim_std_linear;
-        [
-            [m[(0, 0)], m[(0, 1)], m[(0, 2)]],
-            [m[(1, 0)], m[(1, 1)], m[(1, 2)]],
-            [m[(2, 0)], m[(2, 1)], m[(2, 2)]],
-        ]
+        to_3x3_slice(&self.prim_std_linear)
     }
 
     /// Returns `prim_std_origin_shift` as a `[f64; 3]` array.
     pub fn prim_std_origin_shift_as_array(&self) -> [f64; 3] {
-        [
-            self.prim_std_origin_shift[0],
-            self.prim_std_origin_shift[1],
-            self.prim_std_origin_shift[2],
-        ]
+        to_3_slice(&self.prim_std_origin_shift)
     }
 }

@@ -1,6 +1,8 @@
 use std::collections::BTreeMap;
 
 use nalgebra::{Matrix3, Vector3};
+
+use crate::utils::to_3_slice;
 use serde::{Deserialize, Serialize};
 use union_find::{QuickFindUf, UnionByRank, UnionFind};
 
@@ -48,7 +50,7 @@ impl Cell {
     /// This is a convenience method for users who do not depend on `nalgebra`.
     /// It is equivalent to converting each `Vector3<f64>` in `self.positions`.
     pub fn positions_as_arrays(&self) -> Vec<[f64; 3]> {
-        self.positions.iter().map(|p| [p[0], p[1], p[2]]).collect()
+        self.positions.iter().map(|p| to_3_slice(p)).collect()
     }
 
     /// Rotate the cell by the given rotation matrix.
