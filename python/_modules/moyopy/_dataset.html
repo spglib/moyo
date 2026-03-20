@@ -365,7 +365,23 @@
 <div class="viewcode-block" id="MoyoDataset.std_cell">
 <a class="viewcode-back" href="../../autoapi/moyopy/_dataset/index.html#moyopy._dataset.MoyoDataset.std_cell">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">std_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cell</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Standardized cell.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Standardized cell.</span>
+
+<span class="sd">        The input cell is related to the standardized cell by</span>
+<span class="sd">        ``(std_linear, std_origin_shift)`` and ``std_rotation_matrix``:</span>
+
+<span class="sd">        Lattice::</span>
+
+<span class="sd">            std_cell.basis.T = std_rotation_matrix @ cell.basis.T @ std_linear</span>
+
+<span class="sd">        Fractional positions::</span>
+
+<span class="sd">            x_std = np.linalg.inv(std_linear) @ (x_input - std_origin_shift)</span>
+
+<span class="sd">        ``std_rotation_matrix`` is a rigid rotation (orthogonal matrix) applied</span>
+<span class="sd">        only to the Cartesian lattice basis. It does not affect fractional</span>
+<span class="sd">        coordinates.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@property</span>
 <div class="viewcode-block" id="MoyoDataset.std_linear">
@@ -383,7 +399,7 @@
 <div class="viewcode-block" id="MoyoDataset.std_rotation_matrix">
 <a class="viewcode-back" href="../../autoapi/moyopy/_dataset/index.html#moyopy._dataset.MoyoDataset.std_rotation_matrix">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">std_rotation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rigid rotation.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rigid rotation (orthogonal matrix) applied to the lattice basis.&quot;&quot;&quot;</span></div>
 
     <span class="nd">@property</span>
 <div class="viewcode-block" id="MoyoDataset.pearson_symbol">
@@ -396,7 +412,13 @@
 <div class="viewcode-block" id="MoyoDataset.prim_std_cell">
 <a class="viewcode-back" href="../../autoapi/moyopy/_dataset/index.html#moyopy._dataset.MoyoDataset.prim_std_cell">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prim_std_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Cell</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Primitive standardized cell.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Primitive standardized cell.</span>
+
+<span class="sd">        Same transformation convention as the standardized cell above::</span>
+
+<span class="sd">            prim_std_cell.basis.T = std_rotation_matrix @ cell.basis.T @ prim_std_linear</span>
+<span class="sd">            x_prim_std = np.linalg.inv(prim_std_linear) @ (x_input - prim_std_origin_shift)</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@property</span>
 <div class="viewcode-block" id="MoyoDataset.prim_std_linear">
@@ -520,7 +542,23 @@
 <div class="viewcode-block" id="MoyoCollinearMagneticDataset.std_mag_cell">
 <a class="viewcode-back" href="../../autoapi/moyopy/_dataset/index.html#moyopy._dataset.MoyoCollinearMagneticDataset.std_mag_cell">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">std_mag_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CollinearMagneticCell</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Standardized magnetic cell.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Standardized magnetic cell.</span>
+
+<span class="sd">        The input magnetic cell is related to the standardized magnetic cell by</span>
+<span class="sd">        ``(std_linear, std_origin_shift)`` and ``std_rotation_matrix``:</span>
+
+<span class="sd">        Lattice::</span>
+
+<span class="sd">            std_mag_cell.cell.basis.T = std_rotation_matrix @ mag_cell.cell.basis.T @ std_linear</span>
+
+<span class="sd">        Fractional positions::</span>
+
+<span class="sd">            x_std = np.linalg.inv(std_linear) @ (x_input - std_origin_shift)</span>
+
+<span class="sd">        ``std_rotation_matrix`` is a rigid rotation (orthogonal matrix) applied</span>
+<span class="sd">        only to the Cartesian lattice basis. It does not affect fractional</span>
+<span class="sd">        coordinates.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@property</span>
 <div class="viewcode-block" id="MoyoCollinearMagneticDataset.std_linear">
@@ -540,14 +578,22 @@
 <div class="viewcode-block" id="MoyoCollinearMagneticDataset.std_rotation_matrix">
 <a class="viewcode-back" href="../../autoapi/moyopy/_dataset/index.html#moyopy._dataset.MoyoCollinearMagneticDataset.std_rotation_matrix">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">std_rotation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rigid rotation.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rigid rotation (orthogonal matrix) applied to the lattice basis.&quot;&quot;&quot;</span></div>
 
     <span class="c1"># Primitive standardized magnetic cell</span>
     <span class="nd">@property</span>
 <div class="viewcode-block" id="MoyoCollinearMagneticDataset.prim_std_mag_cell">
 <a class="viewcode-back" href="../../autoapi/moyopy/_dataset/index.html#moyopy._dataset.MoyoCollinearMagneticDataset.prim_std_mag_cell">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prim_std_mag_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">CollinearMagneticCell</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Primitive standardized magnetic cell.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Primitive standardized magnetic cell.</span>
+
+<span class="sd">        Same transformation convention as the standardized magnetic cell above::</span>
+
+<span class="sd">            prim_std_mag_cell.cell.basis.T = (</span>
+<span class="sd">                std_rotation_matrix @ mag_cell.cell.basis.T @ prim_std_linear</span>
+<span class="sd">            )</span>
+<span class="sd">            x_prim_std = np.linalg.inv(prim_std_linear) @ (x_input - prim_std_origin_shift)</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@property</span>
 <div class="viewcode-block" id="MoyoCollinearMagneticDataset.prim_std_linear">
@@ -677,7 +723,23 @@
 <div class="viewcode-block" id="MoyoNonCollinearMagneticDataset.std_mag_cell">
 <a class="viewcode-back" href="../../autoapi/moyopy/_dataset/index.html#moyopy._dataset.MoyoNonCollinearMagneticDataset.std_mag_cell">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">std_mag_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NonCollinearMagneticCell</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Standardized magnetic cell.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Standardized magnetic cell.</span>
+
+<span class="sd">        The input magnetic cell is related to the standardized magnetic cell by</span>
+<span class="sd">        ``(std_linear, std_origin_shift)`` and ``std_rotation_matrix``:</span>
+
+<span class="sd">        Lattice::</span>
+
+<span class="sd">            std_mag_cell.cell.basis.T = std_rotation_matrix @ mag_cell.cell.basis.T @ std_linear</span>
+
+<span class="sd">        Fractional positions::</span>
+
+<span class="sd">            x_std = np.linalg.inv(std_linear) @ (x_input - std_origin_shift)</span>
+
+<span class="sd">        ``std_rotation_matrix`` is a rigid rotation (orthogonal matrix) applied</span>
+<span class="sd">        only to the Cartesian lattice basis. It does not affect fractional</span>
+<span class="sd">        coordinates.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@property</span>
 <div class="viewcode-block" id="MoyoNonCollinearMagneticDataset.std_linear">
@@ -697,14 +759,22 @@
 <div class="viewcode-block" id="MoyoNonCollinearMagneticDataset.std_rotation_matrix">
 <a class="viewcode-back" href="../../autoapi/moyopy/_dataset/index.html#moyopy._dataset.MoyoNonCollinearMagneticDataset.std_rotation_matrix">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">std_rotation_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rigid rotation.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rigid rotation (orthogonal matrix) applied to the lattice basis.&quot;&quot;&quot;</span></div>
 
     <span class="c1"># Primitive standardized magnetic cell</span>
     <span class="nd">@property</span>
 <div class="viewcode-block" id="MoyoNonCollinearMagneticDataset.prim_std_mag_cell">
 <a class="viewcode-back" href="../../autoapi/moyopy/_dataset/index.html#moyopy._dataset.MoyoNonCollinearMagneticDataset.prim_std_mag_cell">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prim_std_mag_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NonCollinearMagneticCell</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Primitive standardized magnetic cell.&quot;&quot;&quot;</span></div>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Primitive standardized magnetic cell.</span>
+
+<span class="sd">        Same transformation convention as the standardized magnetic cell above::</span>
+
+<span class="sd">            prim_std_mag_cell.cell.basis.T = (</span>
+<span class="sd">                std_rotation_matrix @ mag_cell.cell.basis.T @ prim_std_linear</span>
+<span class="sd">            )</span>
+<span class="sd">            x_prim_std = np.linalg.inv(prim_std_linear) @ (x_input - prim_std_origin_shift)</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
 
     <span class="nd">@property</span>
 <div class="viewcode-block" id="MoyoNonCollinearMagneticDataset.prim_std_linear">

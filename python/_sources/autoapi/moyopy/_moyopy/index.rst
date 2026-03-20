@@ -679,6 +679,21 @@ Module Contents
 
       Standardized magnetic cell.
 
+      The input magnetic cell is related to the standardized magnetic cell by
+      ``(std_linear, std_origin_shift)`` and ``std_rotation_matrix``:
+
+      Lattice::
+
+          std_mag_cell.cell.basis.T = std_rotation_matrix @ mag_cell.cell.basis.T @ std_linear
+
+      Fractional positions::
+
+          x_std = np.linalg.inv(std_linear) @ (x_input - std_origin_shift)
+
+      ``std_rotation_matrix`` is a rigid rotation (orthogonal matrix) applied
+      only to the Cartesian lattice basis. It does not affect fractional
+      coordinates.
+
 
    .. py:property:: std_linear
       :type: list[list[float]]
@@ -700,7 +715,7 @@ Module Contents
       :type: list[list[float]]
 
 
-      Rigid rotation.
+      Rigid rotation (orthogonal matrix) applied to the lattice basis.
 
 
    .. py:property:: prim_std_mag_cell
@@ -708,6 +723,13 @@ Module Contents
 
 
       Primitive standardized magnetic cell.
+
+      Same transformation convention as the standardized magnetic cell above::
+
+          prim_std_mag_cell.cell.basis.T = (
+              std_rotation_matrix @ mag_cell.cell.basis.T @ prim_std_linear
+          )
+          x_prim_std = np.linalg.inv(prim_std_linear) @ (x_input - prim_std_origin_shift)
 
 
    .. py:property:: prim_std_linear
@@ -843,6 +865,21 @@ Module Contents
 
       Standardized cell.
 
+      The input cell is related to the standardized cell by
+      ``(std_linear, std_origin_shift)`` and ``std_rotation_matrix``:
+
+      Lattice::
+
+          std_cell.basis.T = std_rotation_matrix @ cell.basis.T @ std_linear
+
+      Fractional positions::
+
+          x_std = np.linalg.inv(std_linear) @ (x_input - std_origin_shift)
+
+      ``std_rotation_matrix`` is a rigid rotation (orthogonal matrix) applied
+      only to the Cartesian lattice basis. It does not affect fractional
+      coordinates.
+
 
    .. py:property:: std_linear
       :type: list[list[float]]
@@ -862,7 +899,7 @@ Module Contents
       :type: list[list[float]]
 
 
-      Rigid rotation.
+      Rigid rotation (orthogonal matrix) applied to the lattice basis.
 
 
    .. py:property:: pearson_symbol
@@ -877,6 +914,11 @@ Module Contents
 
 
       Primitive standardized cell.
+
+      Same transformation convention as the standardized cell above::
+
+          prim_std_cell.basis.T = std_rotation_matrix @ cell.basis.T @ prim_std_linear
+          x_prim_std = np.linalg.inv(prim_std_linear) @ (x_input - prim_std_origin_shift)
 
 
    .. py:property:: prim_std_linear
@@ -981,6 +1023,21 @@ Module Contents
 
       Standardized magnetic cell.
 
+      The input magnetic cell is related to the standardized magnetic cell by
+      ``(std_linear, std_origin_shift)`` and ``std_rotation_matrix``:
+
+      Lattice::
+
+          std_mag_cell.cell.basis.T = std_rotation_matrix @ mag_cell.cell.basis.T @ std_linear
+
+      Fractional positions::
+
+          x_std = np.linalg.inv(std_linear) @ (x_input - std_origin_shift)
+
+      ``std_rotation_matrix`` is a rigid rotation (orthogonal matrix) applied
+      only to the Cartesian lattice basis. It does not affect fractional
+      coordinates.
+
 
    .. py:property:: std_linear
       :type: list[list[float]]
@@ -1002,7 +1059,7 @@ Module Contents
       :type: list[list[float]]
 
 
-      Rigid rotation.
+      Rigid rotation (orthogonal matrix) applied to the lattice basis.
 
 
    .. py:property:: prim_std_mag_cell
@@ -1010,6 +1067,13 @@ Module Contents
 
 
       Primitive standardized magnetic cell.
+
+      Same transformation convention as the standardized magnetic cell above::
+
+          prim_std_mag_cell.cell.basis.T = (
+              std_rotation_matrix @ mag_cell.cell.basis.T @ prim_std_linear
+          )
+          x_prim_std = np.linalg.inv(prim_std_linear) @ (x_input - prim_std_origin_shift)
 
 
    .. py:property:: prim_std_linear

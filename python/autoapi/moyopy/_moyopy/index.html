@@ -1231,6 +1231,19 @@ the first two atoms are equivalent and the last four atoms are equivalent to eac
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.std_mag_cell">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">std_mag_cell</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.CollinearMagneticCell" title="moyopy._base.CollinearMagneticCell"><span class="pre">moyopy._base.CollinearMagneticCell</span></a></span><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.std_mag_cell" title="Link to this definition">#</a></dt>
 <dd><p>Standardized magnetic cell.</p>
+<p>The input magnetic cell is related to the standardized magnetic cell by
+<code class="docutils literal notranslate"><span class="pre">(std_linear,</span> <span class="pre">std_origin_shift)</span></code> and <code class="docutils literal notranslate"><span class="pre">std_rotation_matrix</span></code>:</p>
+<p>Lattice:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">std_mag_cell</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">std_rotation_matrix</span> <span class="o">@</span> <span class="n">mag_cell</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">std_linear</span>
+</pre></div>
+</div>
+<p>Fractional positions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">std_linear</span><span class="p">)</span> <span class="o">@</span> <span class="p">(</span><span class="n">x_input</span> <span class="o">-</span> <span class="n">std_origin_shift</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">std_rotation_matrix</span></code> is a rigid rotation (orthogonal matrix) applied
+only to the Cartesian lattice basis. It does not affect fractional
+coordinates.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1250,13 +1263,20 @@ magnetic cell.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.std_rotation_matrix">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">std_rotation_matrix</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.std_rotation_matrix" title="Link to this definition">#</a></dt>
-<dd><p>Rigid rotation.</p>
+<dd><p>Rigid rotation (orthogonal matrix) applied to the lattice basis.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoCollinearMagneticDataset.prim_std_mag_cell">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">prim_std_mag_cell</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.CollinearMagneticCell" title="moyopy._base.CollinearMagneticCell"><span class="pre">moyopy._base.CollinearMagneticCell</span></a></span><a class="headerlink" href="#moyopy._moyopy.MoyoCollinearMagneticDataset.prim_std_mag_cell" title="Link to this definition">#</a></dt>
 <dd><p>Primitive standardized magnetic cell.</p>
+<p>Same transformation convention as the standardized magnetic cell above:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">prim_std_mag_cell</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">std_rotation_matrix</span> <span class="o">@</span> <span class="n">mag_cell</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">prim_std_linear</span>
+<span class="p">)</span>
+<span class="n">x_prim_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">prim_std_linear</span><span class="p">)</span> <span class="o">@</span> <span class="p">(</span><span class="n">x_input</span> <span class="o">-</span> <span class="n">prim_std_origin_shift</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py property">
@@ -1373,6 +1393,19 @@ and the last four atoms are equivalent to each other.</p>
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.std_cell">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">std_cell</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.Cell" title="moyopy._base.Cell"><span class="pre">moyopy._base.Cell</span></a></span><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.std_cell" title="Link to this definition">#</a></dt>
 <dd><p>Standardized cell.</p>
+<p>The input cell is related to the standardized cell by
+<code class="docutils literal notranslate"><span class="pre">(std_linear,</span> <span class="pre">std_origin_shift)</span></code> and <code class="docutils literal notranslate"><span class="pre">std_rotation_matrix</span></code>:</p>
+<p>Lattice:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">std_cell</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">std_rotation_matrix</span> <span class="o">@</span> <span class="n">cell</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">std_linear</span>
+</pre></div>
+</div>
+<p>Fractional positions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">std_linear</span><span class="p">)</span> <span class="o">@</span> <span class="p">(</span><span class="n">x_input</span> <span class="o">-</span> <span class="n">std_origin_shift</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">std_rotation_matrix</span></code> is a rigid rotation (orthogonal matrix) applied
+only to the Cartesian lattice basis. It does not affect fractional
+coordinates.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1390,7 +1423,7 @@ and the last four atoms are equivalent to each other.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.std_rotation_matrix">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">std_rotation_matrix</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.std_rotation_matrix" title="Link to this definition">#</a></dt>
-<dd><p>Rigid rotation.</p>
+<dd><p>Rigid rotation (orthogonal matrix) applied to the lattice basis.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1403,6 +1436,11 @@ and the last four atoms are equivalent to each other.</p>
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoDataset.prim_std_cell">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">prim_std_cell</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.Cell" title="moyopy._base.Cell"><span class="pre">moyopy._base.Cell</span></a></span><a class="headerlink" href="#moyopy._moyopy.MoyoDataset.prim_std_cell" title="Link to this definition">#</a></dt>
 <dd><p>Primitive standardized cell.</p>
+<p>Same transformation convention as the standardized cell above:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">prim_std_cell</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">std_rotation_matrix</span> <span class="o">@</span> <span class="n">cell</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">prim_std_linear</span>
+<span class="n">x_prim_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">prim_std_linear</span><span class="p">)</span> <span class="o">@</span> <span class="p">(</span><span class="n">x_input</span> <span class="o">-</span> <span class="n">prim_std_origin_shift</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py property">
@@ -1493,6 +1531,19 @@ the first two atoms are equivalent and the last four atoms are equivalent to eac
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_mag_cell">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">std_mag_cell</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.NonCollinearMagneticCell" title="moyopy._base.NonCollinearMagneticCell"><span class="pre">moyopy._base.NonCollinearMagneticCell</span></a></span><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_mag_cell" title="Link to this definition">#</a></dt>
 <dd><p>Standardized magnetic cell.</p>
+<p>The input magnetic cell is related to the standardized magnetic cell by
+<code class="docutils literal notranslate"><span class="pre">(std_linear,</span> <span class="pre">std_origin_shift)</span></code> and <code class="docutils literal notranslate"><span class="pre">std_rotation_matrix</span></code>:</p>
+<p>Lattice:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">std_mag_cell</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="n">std_rotation_matrix</span> <span class="o">@</span> <span class="n">mag_cell</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">std_linear</span>
+</pre></div>
+</div>
+<p>Fractional positions:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">x_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">std_linear</span><span class="p">)</span> <span class="o">@</span> <span class="p">(</span><span class="n">x_input</span> <span class="o">-</span> <span class="n">std_origin_shift</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">std_rotation_matrix</span></code> is a rigid rotation (orthogonal matrix) applied
+only to the Cartesian lattice basis. It does not affect fractional
+coordinates.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -1512,13 +1563,20 @@ magnetic cell.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_rotation_matrix">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">std_rotation_matrix</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.std_rotation_matrix" title="Link to this definition">#</a></dt>
-<dd><p>Rigid rotation.</p>
+<dd><p>Rigid rotation (orthogonal matrix) applied to the lattice basis.</p>
 </dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="moyopy._moyopy.MoyoNonCollinearMagneticDataset.prim_std_mag_cell">
 <span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">prim_std_mag_cell</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../_base/index.html#moyopy._base.NonCollinearMagneticCell" title="moyopy._base.NonCollinearMagneticCell"><span class="pre">moyopy._base.NonCollinearMagneticCell</span></a></span><a class="headerlink" href="#moyopy._moyopy.MoyoNonCollinearMagneticDataset.prim_std_mag_cell" title="Link to this definition">#</a></dt>
 <dd><p>Primitive standardized magnetic cell.</p>
+<p>Same transformation convention as the standardized magnetic cell above:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">prim_std_mag_cell</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">T</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">std_rotation_matrix</span> <span class="o">@</span> <span class="n">mag_cell</span><span class="o">.</span><span class="n">cell</span><span class="o">.</span><span class="n">basis</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">prim_std_linear</span>
+<span class="p">)</span>
+<span class="n">x_prim_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">prim_std_linear</span><span class="p">)</span> <span class="o">@</span> <span class="p">(</span><span class="n">x_input</span> <span class="o">-</span> <span class="n">prim_std_origin_shift</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py property">
