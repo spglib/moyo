@@ -10,7 +10,7 @@ use moyo::data::{ArithmeticNumber, HallNumber, Number, Setting, UNINumber};
 use moyo::identify::{
     MagneticSpaceGroup, PointGroup, SpaceGroup, integral_normalizer as identify_integral_normalizer,
 };
-use moyo::utils::{to_3_slice, to_3x3_slice, to_matrix3, to_vector3};
+use moyo::utils::{to_3x3_slice, to_matrix3, to_vector3};
 
 use crate::base::{PyMoyoError, PyUnimodularTransformation};
 use crate::data::PySetting;
@@ -245,12 +245,12 @@ impl PySpaceGroup {
 
     #[getter]
     pub fn linear(&self) -> [[i32; 3]; 3] {
-        to_3x3_slice(&self.0.transformation.linear)
+        self.0.transformation.linear_as_array()
     }
 
     #[getter]
     pub fn origin_shift(&self) -> [f64; 3] {
-        to_3_slice(&self.0.transformation.origin_shift)
+        self.0.transformation.origin_shift_as_array()
     }
 
     // ------------------------------------------------------------------------
@@ -332,12 +332,12 @@ impl PyMagneticSpaceGroup {
 
     #[getter]
     pub fn linear(&self) -> [[i32; 3]; 3] {
-        to_3x3_slice(&self.0.transformation.linear)
+        self.0.transformation.linear_as_array()
     }
 
     #[getter]
     pub fn origin_shift(&self) -> [f64; 3] {
-        to_3_slice(&self.0.transformation.origin_shift)
+        self.0.transformation.origin_shift_as_array()
     }
 
     // ------------------------------------------------------------------------

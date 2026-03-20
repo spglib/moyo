@@ -7,7 +7,6 @@ use serde::{Deserialize, Serialize};
 use moyo::MoyoDataset;
 use moyo::base::AngleTolerance;
 use moyo::data::Setting;
-use moyo::utils::{to_3_slice, to_3x3_slice};
 
 use crate::base::{PyMoyoError, PyOperations, PyStructure};
 use crate::data::PySetting;
@@ -99,17 +98,17 @@ impl PyMoyoDataset {
 
     #[getter]
     pub fn std_linear(&self) -> [[f64; 3]; 3] {
-        to_3x3_slice(&self.0.std_linear)
+        self.0.std_linear_as_array()
     }
 
     #[getter]
     pub fn std_origin_shift(&self) -> [f64; 3] {
-        to_3_slice(&self.0.std_origin_shift)
+        self.0.std_origin_shift_as_array()
     }
 
     #[getter]
     pub fn std_rotation_matrix(&self) -> [[f64; 3]; 3] {
-        to_3x3_slice(&self.0.std_rotation_matrix)
+        self.0.std_rotation_matrix_as_array()
     }
 
     #[getter]
@@ -127,12 +126,12 @@ impl PyMoyoDataset {
 
     #[getter]
     pub fn prim_std_linear(&self) -> [[f64; 3]; 3] {
-        to_3x3_slice(&self.0.prim_std_linear)
+        self.0.prim_std_linear_as_array()
     }
 
     #[getter]
     pub fn prim_std_origin_shift(&self) -> [f64; 3] {
-        to_3_slice(&self.0.prim_std_origin_shift)
+        self.0.prim_std_origin_shift_as_array()
     }
 
     #[getter]

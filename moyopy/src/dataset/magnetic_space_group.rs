@@ -5,7 +5,6 @@ use pythonize::{depythonize, pythonize};
 
 use moyo::MoyoMagneticDataset;
 use moyo::base::{AngleTolerance, Collinear, NonCollinear, RotationMagneticMomentAction};
-use moyo::utils::{to_3_slice, to_3x3_slice};
 use serde::{Deserialize, Serialize};
 
 use crate::base::{
@@ -89,17 +88,17 @@ impl PyMoyoCollinearMagneticDataset {
 
     #[getter]
     pub fn std_linear(&self) -> [[f64; 3]; 3] {
-        to_3x3_slice(&self.0.std_linear)
+        self.0.std_linear_as_array()
     }
 
     #[getter]
     pub fn std_origin_shift(&self) -> [f64; 3] {
-        to_3_slice(&self.0.std_origin_shift)
+        self.0.std_origin_shift_as_array()
     }
 
     #[getter]
     pub fn std_rotation_matrix(&self) -> [[f64; 3]; 3] {
-        to_3x3_slice(&self.0.std_rotation_matrix)
+        self.0.std_rotation_matrix_as_array()
     }
 
     // ------------------------------------------------------------------------
@@ -113,12 +112,12 @@ impl PyMoyoCollinearMagneticDataset {
 
     #[getter]
     pub fn prim_std_linear(&self) -> [[f64; 3]; 3] {
-        to_3x3_slice(&self.0.prim_std_linear)
+        self.0.prim_std_linear_as_array()
     }
 
     #[getter]
     pub fn prim_std_origin_shift(&self) -> [f64; 3] {
-        to_3_slice(&self.0.prim_std_origin_shift)
+        self.0.prim_std_origin_shift_as_array()
     }
 
     #[getter]
@@ -271,17 +270,17 @@ impl PyMoyoNonCollinearMagneticDataset {
 
     #[getter]
     pub fn std_linear(&self) -> [[f64; 3]; 3] {
-        to_3x3_slice(&self.0.std_linear)
+        self.0.std_linear_as_array()
     }
 
     #[getter]
     pub fn std_origin_shift(&self) -> [f64; 3] {
-        to_3_slice(&self.0.std_origin_shift)
+        self.0.std_origin_shift_as_array()
     }
 
     #[getter]
     pub fn std_rotation_matrix(&self) -> [[f64; 3]; 3] {
-        to_3x3_slice(&self.0.std_rotation_matrix)
+        self.0.std_rotation_matrix_as_array()
     }
 
     // ------------------------------------------------------------------------
@@ -295,12 +294,12 @@ impl PyMoyoNonCollinearMagneticDataset {
 
     #[getter]
     pub fn prim_std_linear(&self) -> [[f64; 3]; 3] {
-        to_3x3_slice(&self.0.prim_std_linear)
+        self.0.prim_std_linear_as_array()
     }
 
     #[getter]
     pub fn prim_std_origin_shift(&self) -> [f64; 3] {
-        to_3_slice(&self.0.prim_std_origin_shift)
+        self.0.prim_std_origin_shift_as_array()
     }
 
     #[getter]

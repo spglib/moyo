@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 
 use moyo::base::{MagneticOperations, Operations, UnimodularTransformation};
-use moyo::utils::{to_3_slice, to_3x3_slice};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[pyclass(name = "Operations", frozen, from_py_object)]
@@ -17,12 +16,12 @@ pub struct PyOperations(Operations);
 impl PyOperations {
     #[getter]
     pub fn rotations(&self) -> Vec<[[i32; 3]; 3]> {
-        self.0.iter().map(|x| to_3x3_slice(&x.rotation)).collect()
+        self.0.iter().map(|x| x.rotation_as_array()).collect()
     }
 
     #[getter]
     pub fn translations(&self) -> Vec<[f64; 3]> {
-        self.0.iter().map(|x| to_3_slice(&x.translation)).collect()
+        self.0.iter().map(|x| x.translation_as_array()).collect()
     }
 
     #[getter]
@@ -97,7 +96,7 @@ impl PyMagneticOperations {
     pub fn rotations(&self) -> Vec<[[i32; 3]; 3]> {
         self.0
             .iter()
-            .map(|x| to_3x3_slice(&x.operation.rotation))
+            .map(|x| x.operation.rotation_as_array())
             .collect()
     }
 
@@ -105,7 +104,7 @@ impl PyMagneticOperations {
     pub fn translations(&self) -> Vec<[f64; 3]> {
         self.0
             .iter()
-            .map(|x| to_3_slice(&x.operation.translation))
+            .map(|x| x.operation.translation_as_array())
             .collect()
     }
 
@@ -189,8 +188,8 @@ struct PyUnimodularTransformationRepr {
 impl PyUnimodularTransformation {
     fn repr(&self) -> PyUnimodularTransformationRepr {
         PyUnimodularTransformationRepr {
-            linear: to_3x3_slice(&self.0.linear),
-            origin_shift: to_3_slice(&self.0.origin_shift),
+            linear: self.0.linear_as_array(),
+            origin_shift: self.0.origin_shift_as_array(),
         }
     }
 }
@@ -199,12 +198,12 @@ impl PyUnimodularTransformation {
 impl PyUnimodularTransformation {
     #[getter]
     pub fn linear(&self) -> [[i32; 3]; 3] {
-        to_3x3_slice(&self.0.linear)
+        self.0.linear_as_array()
     }
 
     #[getter]
     pub fn origin_shift(&self) -> [f64; 3] {
-        to_3_slice(&self.0.origin_shift)
+        self.0.origin_shift_as_array()
     }
 
     fn __repr__(&self) -> String {

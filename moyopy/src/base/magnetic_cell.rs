@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json;
 
 use moyo::base::{Collinear, Lattice, MagneticCell, NonCollinear};
-use moyo::utils::{to_3_slice, to_3x3_slice, to_vector3};
+use moyo::utils::to_vector3;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 enum MagneticCellEnum {
@@ -57,13 +57,12 @@ impl PyCollinearMagneticCell {
 
     #[getter]
     pub fn basis(&self) -> [[f64; 3]; 3] {
-        // Transpose column-major basis
-        to_3x3_slice(&self.0.cell.lattice.basis.transpose())
+        self.0.cell.lattice.basis_as_array()
     }
 
     #[getter]
     pub fn positions(&self) -> Vec<[f64; 3]> {
-        self.0.cell.positions.iter().map(to_3_slice).collect()
+        self.0.cell.positions_as_arrays()
     }
 
     #[getter]
@@ -172,13 +171,12 @@ impl PyNonCollinearMagneticCell {
 
     #[getter]
     pub fn basis(&self) -> [[f64; 3]; 3] {
-        // Transpose column-major basis
-        to_3x3_slice(&self.0.cell.lattice.basis.transpose())
+        self.0.cell.lattice.basis_as_array()
     }
 
     #[getter]
     pub fn positions(&self) -> Vec<[f64; 3]> {
-        self.0.cell.positions.iter().map(to_3_slice).collect()
+        self.0.cell.positions_as_arrays()
     }
 
     #[getter]
@@ -191,7 +189,7 @@ impl PyNonCollinearMagneticCell {
         self.0
             .magnetic_moments
             .iter()
-            .map(|m| to_3_slice(&m.0))
+            .map(|m| m.as_array())
             .collect()
     }
 
