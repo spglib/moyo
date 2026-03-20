@@ -90,6 +90,8 @@ pub mod utils;
 
 mod symmetrize;
 
+pub use base::MoyoError as Error;
+
 use crate::base::{
     AngleTolerance, Cell, MagneticCell, MagneticMoment, MagneticOperations, MoyoError, Operations,
     OriginShift, RotationMagneticMomentAction,
