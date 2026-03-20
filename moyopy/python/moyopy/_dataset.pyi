@@ -71,7 +71,23 @@ class MoyoDataset:
     # Standardized cell
     @property
     def std_cell(self) -> Cell:
-        """Standardized cell."""
+        """Standardized cell.
+
+        The input cell is related to the standardized cell by
+        ``(std_linear, std_origin_shift)`` and ``std_rotation_matrix``:
+
+        Lattice::
+
+            std_cell.basis.T = std_rotation_matrix @ cell.basis.T @ std_linear
+
+        Fractional positions::
+
+            x_std = np.linalg.inv(std_linear) @ (x_input - std_origin_shift)
+
+        ``std_rotation_matrix`` is a rigid rotation (orthogonal matrix) applied
+        only to the Cartesian lattice basis. It does not affect fractional
+        coordinates.
+        """
     @property
     def std_linear(self) -> list[list[float]]:
         """Linear part of transformation from the input cell to the standardized cell."""
@@ -80,14 +96,20 @@ class MoyoDataset:
         """Origin shift of transformation from the input cell to the standardized cell."""
     @property
     def std_rotation_matrix(self) -> list[list[float]]:
-        """Rigid rotation."""
+        """Rigid rotation (orthogonal matrix) applied to the lattice basis."""
     @property
     def pearson_symbol(self) -> str:
         """Pearson symbol for standardized cell."""
     # Primitive standardized cell
     @property
     def prim_std_cell(self) -> Cell:
-        """Primitive standardized cell."""
+        """Primitive standardized cell.
+
+        Same transformation convention as the standardized cell above::
+
+            prim_std_cell.basis.T = std_rotation_matrix @ cell.basis.T @ prim_std_linear
+            x_prim_std = np.linalg.inv(prim_std_linear) @ (x_input - prim_std_origin_shift)
+        """
     @property
     def prim_std_linear(self) -> list[list[float]]:
         """Linear part of transformation from the input cell to the primitive standardized cell."""
@@ -169,7 +191,23 @@ class MoyoCollinearMagneticDataset:
     # Standardized magnetic cell
     @property
     def std_mag_cell(self) -> CollinearMagneticCell:
-        """Standardized magnetic cell."""
+        """Standardized magnetic cell.
+
+        The input magnetic cell is related to the standardized magnetic cell by
+        ``(std_linear, std_origin_shift)`` and ``std_rotation_matrix``:
+
+        Lattice::
+
+            std_mag_cell.cell.basis.T = std_rotation_matrix @ mag_cell.cell.basis.T @ std_linear
+
+        Fractional positions::
+
+            x_std = np.linalg.inv(std_linear) @ (x_input - std_origin_shift)
+
+        ``std_rotation_matrix`` is a rigid rotation (orthogonal matrix) applied
+        only to the Cartesian lattice basis. It does not affect fractional
+        coordinates.
+        """
     @property
     def std_linear(self) -> list[list[float]]:
         """Linear part of transformation from the input magnetic cell to the standardized
@@ -180,11 +218,19 @@ class MoyoCollinearMagneticDataset:
         magnetic cell."""
     @property
     def std_rotation_matrix(self) -> list[list[float]]:
-        """Rigid rotation."""
+        """Rigid rotation (orthogonal matrix) applied to the lattice basis."""
     # Primitive standardized magnetic cell
     @property
     def prim_std_mag_cell(self) -> CollinearMagneticCell:
-        """Primitive standardized magnetic cell."""
+        """Primitive standardized magnetic cell.
+
+        Same transformation convention as the standardized magnetic cell above::
+
+            prim_std_mag_cell.cell.basis.T = (
+                std_rotation_matrix @ mag_cell.cell.basis.T @ prim_std_linear
+            )
+            x_prim_std = np.linalg.inv(prim_std_linear) @ (x_input - prim_std_origin_shift)
+        """
     @property
     def prim_std_linear(self) -> list[list[float]]:
         """Linear part of transformation from the input magnetic cell to the primitive
@@ -269,7 +315,23 @@ class MoyoNonCollinearMagneticDataset:
     # Standardized magnetic cell
     @property
     def std_mag_cell(self) -> NonCollinearMagneticCell:
-        """Standardized magnetic cell."""
+        """Standardized magnetic cell.
+
+        The input magnetic cell is related to the standardized magnetic cell by
+        ``(std_linear, std_origin_shift)`` and ``std_rotation_matrix``:
+
+        Lattice::
+
+            std_mag_cell.cell.basis.T = std_rotation_matrix @ mag_cell.cell.basis.T @ std_linear
+
+        Fractional positions::
+
+            x_std = np.linalg.inv(std_linear) @ (x_input - std_origin_shift)
+
+        ``std_rotation_matrix`` is a rigid rotation (orthogonal matrix) applied
+        only to the Cartesian lattice basis. It does not affect fractional
+        coordinates.
+        """
     @property
     def std_linear(self) -> list[list[float]]:
         """Linear part of transformation from the input magnetic cell to the standardized
@@ -280,11 +342,19 @@ class MoyoNonCollinearMagneticDataset:
         magnetic cell."""
     @property
     def std_rotation_matrix(self) -> list[list[float]]:
-        """Rigid rotation."""
+        """Rigid rotation (orthogonal matrix) applied to the lattice basis."""
     # Primitive standardized magnetic cell
     @property
     def prim_std_mag_cell(self) -> NonCollinearMagneticCell:
-        """Primitive standardized magnetic cell."""
+        """Primitive standardized magnetic cell.
+
+        Same transformation convention as the standardized magnetic cell above::
+
+            prim_std_mag_cell.cell.basis.T = (
+                std_rotation_matrix @ mag_cell.cell.basis.T @ prim_std_linear
+            )
+            x_prim_std = np.linalg.inv(prim_std_linear) @ (x_input - prim_std_origin_shift)
+        """
     @property
     def prim_std_linear(self) -> list[list[float]]:
         """Linear part of transformation from the input magnetic cell to the primitive
