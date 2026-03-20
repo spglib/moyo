@@ -38,6 +38,38 @@ impl Operation {
     pub fn identity() -> Self {
         Self::new(Rotation::identity(), Translation::zeros())
     }
+
+    /// Returns the rotation matrix as a 3x3 array.
+    ///
+    /// The rotation matrix acts on fractional coordinates in the
+    /// crystallographic basis. `result[i][j]` is the element at
+    /// row `i`, column `j`.
+    ///
+    /// This is a convenience method for users who do not depend on `nalgebra`.
+    /// It is equivalent to reading `self.rotation` element by element.
+    pub fn rotation_as_array(&self) -> [[i32; 3]; 3] {
+        let r = &self.rotation;
+        [
+            [r[(0, 0)], r[(0, 1)], r[(0, 2)]],
+            [r[(1, 0)], r[(1, 1)], r[(1, 2)]],
+            [r[(2, 0)], r[(2, 1)], r[(2, 2)]],
+        ]
+    }
+
+    /// Returns the translation vector as a `[f64; 3]` array.
+    ///
+    /// The translation vector is in fractional coordinates in the
+    /// crystallographic basis.
+    ///
+    /// This is a convenience method for users who do not depend on `nalgebra`.
+    /// It is equivalent to reading `self.translation` element by element.
+    pub fn translation_as_array(&self) -> [f64; 3] {
+        [
+            self.translation[0],
+            self.translation[1],
+            self.translation[2],
+        ]
+    }
 }
 
 impl fmt::Debug for Operation {

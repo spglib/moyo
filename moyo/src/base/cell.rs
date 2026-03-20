@@ -40,6 +40,17 @@ impl Cell {
         self.positions.len()
     }
 
+    /// Returns fractional positions as a vector of `[f64; 3]` arrays.
+    ///
+    /// Each `[f64; 3]` contains the fractional coordinates `[x, y, z]`
+    /// of a site in the cell.
+    ///
+    /// This is a convenience method for users who do not depend on `nalgebra`.
+    /// It is equivalent to converting each `Vector3<f64>` in `self.positions`.
+    pub fn positions_as_arrays(&self) -> Vec<[f64; 3]> {
+        self.positions.iter().map(|p| [p[0], p[1], p[2]]).collect()
+    }
+
     /// Rotate the cell by the given rotation matrix.
     pub fn rotate(&self, rotation_matrix: &Matrix3<f64>) -> Self {
         Self::new(

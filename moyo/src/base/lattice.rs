@@ -112,6 +112,23 @@ impl Lattice {
         [a, b, c, alpha, beta, gamma]
     }
 
+    /// Returns the basis vectors as a 3x3 array of row vectors.
+    ///
+    /// Each inner array `[x, y, z]` is a basis vector in Cartesian coordinates.
+    /// `result[0]`, `result[1]`, `result[2]` correspond to the first, second,
+    /// and third basis vectors respectively.
+    ///
+    /// This is a convenience method for users who do not depend on `nalgebra`.
+    /// It is equivalent to transposing `self.basis` (which stores column vectors).
+    pub fn basis_as_array(&self) -> [[f64; 3]; 3] {
+        let m = self.basis.transpose();
+        [
+            [m[(0, 0)], m[(0, 1)], m[(0, 2)]],
+            [m[(1, 0)], m[(1, 1)], m[(1, 2)]],
+            [m[(2, 0)], m[(2, 1)], m[(2, 2)]],
+        ]
+    }
+
     /// Rotate the lattice by the given rotation matrix
     pub fn rotate(&self, rotation_matrix: &Matrix3<f64>) -> Self {
         Self {

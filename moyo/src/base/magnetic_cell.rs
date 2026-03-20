@@ -108,6 +108,13 @@ impl MagneticMoment for NonCollinear {
     }
 }
 
+impl NonCollinear {
+    /// Returns the magnetic moment vector as a `[f64; 3]` array.
+    pub fn as_array(&self) -> [f64; 3] {
+        [self.0[0], self.0[1], self.0[2]]
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MagneticCell<M: MagneticMoment> {
     pub cell: Cell,

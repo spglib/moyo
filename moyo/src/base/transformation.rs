@@ -65,6 +65,25 @@ impl UnimodularTransformation {
         self.linear.map(|e| e as f64)
     }
 
+    /// Returns the linear part as a 3x3 integer array.
+    pub fn linear_as_array(&self) -> [[i32; 3]; 3] {
+        let m = &self.linear;
+        [
+            [m[(0, 0)], m[(0, 1)], m[(0, 2)]],
+            [m[(1, 0)], m[(1, 1)], m[(1, 2)]],
+            [m[(2, 0)], m[(2, 1)], m[(2, 2)]],
+        ]
+    }
+
+    /// Returns the origin shift as a `[f64; 3]` array.
+    pub fn origin_shift_as_array(&self) -> [f64; 3] {
+        [
+            self.origin_shift[0],
+            self.origin_shift[1],
+            self.origin_shift[2],
+        ]
+    }
+
     pub fn transform_lattice(&self, lattice: &Lattice) -> Lattice {
         Lattice::new((lattice.basis * self.linear_as_f64()).transpose())
     }
@@ -181,6 +200,25 @@ impl Transformation {
 
     pub fn linear_as_f64(&self) -> Matrix3<f64> {
         self.linear.map(|e| e as f64)
+    }
+
+    /// Returns the linear part as a 3x3 integer array.
+    pub fn linear_as_array(&self) -> [[i32; 3]; 3] {
+        let m = &self.linear;
+        [
+            [m[(0, 0)], m[(0, 1)], m[(0, 2)]],
+            [m[(1, 0)], m[(1, 1)], m[(1, 2)]],
+            [m[(2, 0)], m[(2, 1)], m[(2, 2)]],
+        ]
+    }
+
+    /// Returns the origin shift as a `[f64; 3]` array.
+    pub fn origin_shift_as_array(&self) -> [f64; 3] {
+        [
+            self.origin_shift[0],
+            self.origin_shift[1],
+            self.origin_shift[2],
+        ]
     }
 
     pub fn transform_lattice(&self, lattice: &Lattice) -> Lattice {
