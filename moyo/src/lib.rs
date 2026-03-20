@@ -139,20 +139,41 @@ pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     // Standardized cell
     // ------------------------------------------------------------------------
-    /// Standardized cell
+    /// Standardized cell.
+    ///
+    /// The input cell is related to the standardized cell by
+    /// `(std_linear, std_origin_shift)` and `std_rotation_matrix`:
+    ///
+    ///   Lattice (column-vector convention):
+    ///     std_cell.lattice.basis = std_rotation_matrix * cell.lattice.basis * std_linear
+    ///
+    ///   Fractional positions:
+    ///     x_std = std_linear^-1 * (x_input - std_origin_shift)
+    ///
+    /// `std_rotation_matrix` is a rigid rotation (orthogonal matrix) applied
+    /// only to the Cartesian lattice basis. It does not affect fractional
+    /// coordinates.
     pub std_cell: Cell,
     /// Linear part of transformation from the input cell to the standardized cell.
     pub std_linear: Matrix3<f64>,
     /// Origin shift of transformation from the input cell to the standardized cell.
     pub std_origin_shift: OriginShift,
-    /// Rigid rotation
+    /// Rigid rotation (orthogonal matrix) applied to the lattice basis.
     pub std_rotation_matrix: Matrix3<f64>,
-    /// Pearson symbol for standardized cell
+    /// Pearson symbol for standardized cell.
     pub pearson_symbol: String,
     // ------------------------------------------------------------------------
     // Primitive standardized cell
     // ------------------------------------------------------------------------
-    /// Primitive standardized cell
+    /// Primitive standardized cell.
+    ///
+    /// Same transformation convention as the standardized cell above:
+    ///
+    ///   Lattice:
+    ///     prim_std_cell.lattice.basis = std_rotation_matrix * cell.lattice.basis * prim_std_linear
+    ///
+    ///   Fractional positions:
+    ///     x_prim_std = prim_std_linear^-1 * (x_input - prim_std_origin_shift)
     pub prim_std_cell: Cell,
     /// Linear part of transformation from the input cell to the primitive standardized cell.
     pub prim_std_linear: Matrix3<f64>,
