@@ -331,17 +331,39 @@ pub struct MoyoMagneticDataset<M: MagneticMoment> {
     // ------------------------------------------------------------------------
     // Standardized magnetic cell
     // ------------------------------------------------------------------------
-    /// Standardized magnetic cell
+    /// Standardized magnetic cell.
+    ///
+    /// The input magnetic cell is related to the standardized magnetic cell by
+    /// `(std_linear, std_origin_shift)` and `std_rotation_matrix`:
+    ///
+    ///   Lattice (column-vector convention):
+    ///     std_mag_cell.cell.lattice.basis = std_rotation_matrix * mag_cell.cell.lattice.basis * std_linear
+    ///
+    ///   Fractional positions:
+    ///     x_std = std_linear^-1 * (x_input - std_origin_shift)
+    ///
+    /// `std_rotation_matrix` is a rigid rotation (orthogonal matrix) applied
+    /// only to the Cartesian lattice basis. It does not affect fractional
+    /// coordinates.
     pub std_mag_cell: MagneticCell<M>,
     /// Linear part of transformation from the input magnetic cell to the standardized one.
     pub std_linear: Matrix3<f64>,
     /// Origin shift of transformation from the input magnetic cell to the standardized one.
     pub std_origin_shift: OriginShift,
-    /// Rigid rotation
+    /// Rigid rotation (orthogonal matrix) applied to the lattice basis.
     pub std_rotation_matrix: Matrix3<f64>,
     // ------------------------------------------------------------------------
     // Primitive standardized magnetic cell
     // ------------------------------------------------------------------------
+    /// Primitive standardized magnetic cell.
+    ///
+    /// Same transformation convention as the standardized magnetic cell above:
+    ///
+    ///   Lattice:
+    ///     prim_std_mag_cell.cell.lattice.basis = std_rotation_matrix * mag_cell.cell.lattice.basis * prim_std_linear
+    ///
+    ///   Fractional positions:
+    ///     x_prim_std = prim_std_linear^-1 * (x_input - prim_std_origin_shift)
     pub prim_std_mag_cell: MagneticCell<M>,
     /// Linear part of transformation from the input magnetic cell to the primitive standardized magnetic cell.
     pub prim_std_linear: Matrix3<f64>,
