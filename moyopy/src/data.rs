@@ -15,7 +15,7 @@ pub use space_group_type::PySpaceGroupType;
 use pyo3::prelude::*;
 
 use super::base::{PyMagneticOperations, PyMoyoError, PyOperations};
-use moyo::base::{MagneticOperation, MoyoError, Operation};
+use moyo::base::{Error as MoyoError, MagneticOperation, Operation};
 use moyo::data::{
     HallSymbol, MagneticHallSymbol, Number, Setting, UNINumber, hall_symbol_entry,
     magnetic_hall_symbol_entry,

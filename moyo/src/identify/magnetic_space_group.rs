@@ -8,7 +8,7 @@ use super::point_group::{iter_trans_mat_basis, iter_unimodular_trans_mat};
 use super::rotation_type::identify_rotation_type;
 use super::space_group::{SpaceGroup, match_origin_shift};
 use crate::base::{
-    Lattice, MagneticOperations, MoyoError, Operation, Operations, Rotation, Translation,
+    Error, Lattice, MagneticOperations, Operation, Operations, Rotation, Translation,
     UnimodularTransformation, project_rotations,
 };
 use crate::data::{
@@ -28,18 +28,18 @@ impl MagneticSpaceGroup {
     /// epsilon: tolerance for comparing translation parts
     ///
     /// Be careful that the input primitive magnetic operations should be in a reduced basis.
-    pub fn new(prim_mag_operations: &MagneticOperations, epsilon: f64) -> Result<Self, MoyoError> {
+    pub fn new(prim_mag_operations: &MagneticOperations, epsilon: f64) -> Result<Self, Error> {
         let (ref_spg, construct_type) =
             identify_reference_space_group(prim_mag_operations, epsilon)
-                .ok_or(MoyoError::ConstructTypeIdentificationError)?;
+                .ok_or(Error::ConstructTypeIdentificationError)?;
         debug!("Construct type: {:?}", construct_type);
         let setting = Setting::default();
         // std_ref_spg.transformation: primitive input -> primitive BNS setting
         let std_ref_spg = SpaceGroup::new(&ref_spg, setting, epsilon)?;
         debug!("Reference space group: {:?}", std_ref_spg.number);
 
-        let uni_number_range = uni_number_range(std_ref_spg.number)
-            .ok_or(MoyoError::SpaceGroupTypeIdentificationError)?;
+        let uni_number_range =
+            uni_number_range(std_ref_spg.number).ok_or(Error::SpaceGroupTypeIdentificationError)?;
 
         for uni_number in uni_number_range {
             if get_magnetic_space_group_type(uni_number)
@@ -60,7 +60,7 @@ impl MagneticSpaceGroup {
 
             let entry = magnetic_hall_symbol_entry(uni_number).unwrap();
             let mhs = MagneticHallSymbol::new(entry.magnetic_hall_symbol)
-                .ok_or(MoyoError::MagneticSpaceGroupTypeIdentificationError)?;
+                .ok_or(Error::MagneticSpaceGroupTypeIdentificationError)?;
             let db_prim_mag_operations = mhs.primitive_traverse();
             let (db_ref_prim_operations, db_ref_prim_generators) =
                 db_reference_space_group_primitive(&entry);
@@ -139,14 +139,14 @@ impl MagneticSpaceGroup {
                 _ => unreachable!(),
             }
         }
-        Err(MoyoError::MagneticSpaceGroupTypeIdentificationError)
+        Err(Error::MagneticSpaceGroupTypeIdentificationError)
     }
 
     pub fn from_lattice(
         lattice: &Lattice,
         prim_mag_operations: &MagneticOperations,
         epsilon: f64,
-    ) -> Result<Self, MoyoError> {
+    ) -> Result<Self, Error> {
         let (_, reduced_trans_mat) = lattice.minkowski_reduce()?;
         let to_reduced = UnimodularTransformation::from_linear(reduced_trans_mat);
         let reduced_prim_mag_operations =

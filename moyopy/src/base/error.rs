@@ -1,7 +1,7 @@
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
-use moyo::base::MoyoError;
+use moyo::base::Error as MoyoError;
 
 #[derive(Debug)]
 #[pyclass(name = "MoyoError", frozen)]

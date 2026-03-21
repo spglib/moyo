@@ -6,7 +6,7 @@ use once_cell::sync::Lazy;
 use std::collections::HashMap;
 
 use crate::base::{
-    Cell, EPS, Lattice, Linear, MoyoError, Operations, Permutation, Position, Rotations,
+    Cell, EPS, Error, Lattice, Linear, Operations, Permutation, Position, Rotations,
     Transformation, UnimodularTransformation, orbits_from_permutations, project_rotations,
 };
 use crate::data::{
@@ -52,7 +52,7 @@ impl StandardizedCell {
         symprec: f64,
         epsilon: f64,
         rotate_basis: bool,
-    ) -> Result<Self, MoyoError> {
+    ) -> Result<Self, Error> {
         let (
             prim_std_cell,
             prim_std_permutations,
@@ -111,14 +111,14 @@ impl StandardizedCell {
             Matrix3<f64>,
             Vec<usize>,
         ),
-        MoyoError,
+        Error,
     > {
         let entry =
-            hall_symbol_entry(space_group.hall_number).ok_or(MoyoError::StandardizationError)?;
+            hall_symbol_entry(space_group.hall_number).ok_or(Error::StandardizationError)?;
 
         // Prepare operations in primitive standard
         let hs = HallSymbol::from_hall_number(space_group.hall_number)
-            .ok_or(MoyoError::StandardizationError)?;
+            .ok_or(Error::StandardizationError)?;
         let (conv_std_operations, prim_std_operations) = hs.traverse_and_primitive_traverse();
 
         // To standardized primitive cell
@@ -213,7 +213,7 @@ impl StandardizedCell {
         site_mapping: &[usize],
         hall_number: HallNumber,
         symprec: f64,
-    ) -> Result<Vec<WyckoffPosition>, MoyoError> {
+    ) -> Result<Vec<WyckoffPosition>, Error> {
         // Group sites in std_cell by crystallographic orbits
         let orbits = orbits_in_cell(
             prim_std_cell.num_atoms(),
@@ -267,7 +267,7 @@ impl StandardizedCell {
         }
         let representative_wyckoffs = representative_wyckoffs
             .into_iter()
-            .map(|wyckoff| wyckoff.ok_or(MoyoError::WyckoffPositionAssignmentError))
+            .map(|wyckoff| wyckoff.ok_or(Error::WyckoffPositionAssignmentError))
             .collect::<Result<Vec<_>, _>>()?;
 
         let wyckoffs = (0..std_cell.num_atoms())
@@ -396,14 +396,14 @@ fn standardize_monoclinic_conv_cell(
 /// This function first tries offsets in `[-1, 1]^3` and then the remaining
 /// shell in `[-2, 2]^3`. This bounded integer search is heuristic. If no
 /// compatible offset is found in the bounded window,
-/// `MoyoError::WyckoffPositionAssignmentError` is returned.
+/// `Error::WyckoffPositionAssignmentError` is returned.
 fn assign_wyckoff_position(
     position: &Position,
     multiplicity: usize,
     hall_number: HallNumber,
     lattice: &Lattice,
     symprec: f64,
-) -> Result<WyckoffPosition, MoyoError> {
+) -> Result<WyckoffPosition, Error> {
     for wyckoff in iter_wyckoff_positions(hall_number, multiplicity) {
         // Find variable `y` and integers offset `offset` such that
         //    | lattice * (space.linear * y + space.origin - position - offset) | < symprec.
@@ -439,7 +439,7 @@ fn assign_wyckoff_position(
             }
         }
     }
-    Err(MoyoError::WyckoffPositionAssignmentError)
+    Err(Error::WyckoffPositionAssignmentError)
 }
 
 /// Symmetrize positions by site symmetry groups

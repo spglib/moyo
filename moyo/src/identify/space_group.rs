@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use super::point_group::PointGroup;
 use crate::base::{
-    Lattice, MoyoError, Operations, OriginShift, UnimodularLinear, UnimodularTransformation,
+    Error, Lattice, Operations, OriginShift, UnimodularLinear, UnimodularTransformation,
     project_rotations,
 };
 use crate::data::{
@@ -30,7 +30,7 @@ impl SpaceGroup {
         prim_operations: &Operations,
         setting: Setting,
         epsilon: f64,
-    ) -> Result<Self, MoyoError> {
+    ) -> Result<Self, Error> {
         // point_group.trans_mat: self -> primitive
         let prim_rotations = project_rotations(prim_operations);
         let point_group = PointGroup::new(&prim_rotations)?;
@@ -46,7 +46,7 @@ impl SpaceGroup {
             }
 
             let hall_symbol = HallSymbol::from_hall_number(hall_number)
-                .ok_or(MoyoError::SpaceGroupTypeIdentificationError)?;
+                .ok_or(Error::SpaceGroupTypeIdentificationError)?;
             let db_prim_generators = hall_symbol.primitive_generators();
 
             // Try several correction transformation matrices for monoclinic and orthorhombic
@@ -68,7 +68,7 @@ impl SpaceGroup {
             }
         }
 
-        Err(MoyoError::SpaceGroupTypeIdentificationError)
+        Err(Error::SpaceGroupTypeIdentificationError)
     }
 
     pub fn from_lattice(
@@ -76,7 +76,7 @@ impl SpaceGroup {
         prim_operations: &Operations,
         setting: Setting,
         epsilon: f64,
-    ) -> Result<Self, MoyoError> {
+    ) -> Result<Self, Error> {
         let (_, reduced_trans_mat) = lattice.minkowski_reduce()?;
         let to_reduced = UnimodularTransformation::from_linear(reduced_trans_mat);
         let reduced_prim_operations = to_reduced.transform_operations(prim_operations);
@@ -92,9 +92,9 @@ impl SpaceGroup {
     pub fn from_hall_number_and_transformation(
         hall_number: HallNumber,
         transformation: UnimodularTransformation,
-    ) -> Result<Self, MoyoError> {
+    ) -> Result<Self, Error> {
         let entry =
-            hall_symbol_entry(hall_number).ok_or(MoyoError::SpaceGroupTypeIdentificationError)?;
+            hall_symbol_entry(hall_number).ok_or(Error::SpaceGroupTypeIdentificationError)?;
         Ok(Self {
             number: entry.number,
             hall_number,

@@ -1,7 +1,7 @@
 use super::primitive_cell::{PrimitiveCell, PrimitiveMagneticCell};
 use super::primitive_symmetry_search::{PrimitiveMagneticSymmetrySearch, PrimitiveSymmetrySearch};
 use crate::base::{
-    AngleTolerance, Cell, MagneticCell, MagneticMoment, MagneticSymmetryTolerances, MoyoError,
+    AngleTolerance, Cell, Error, MagneticCell, MagneticMoment, MagneticSymmetryTolerances,
     RotationMagneticMomentAction, SymmetryTolerances, ToleranceHandler,
 };
 
@@ -14,7 +14,7 @@ pub fn iterative_symmetry_search(
     cell: &Cell,
     symprec: f64,
     angle_tolerance: AngleTolerance,
-) -> Result<(PrimitiveCell, PrimitiveSymmetrySearch, f64, AngleTolerance), MoyoError> {
+) -> Result<(PrimitiveCell, PrimitiveSymmetrySearch, f64, AngleTolerance), Error> {
     let mut tolerances = SymmetryTolerances {
         symprec,
         angle_tolerance,
@@ -51,7 +51,7 @@ pub fn iterative_symmetry_search(
         debug!("Restart ToleranceHandler with {:?}", tolerances);
     }
     debug!("Reach the maximum number of symmetry search trials");
-    Err(MoyoError::PrimitiveSymmetrySearchError)
+    Err(Error::PrimitiveSymmetrySearchError)
 }
 
 pub fn iterative_magnetic_symmetry_search<M: MagneticMoment>(
@@ -68,7 +68,7 @@ pub fn iterative_magnetic_symmetry_search<M: MagneticMoment>(
         AngleTolerance,
         f64,
     ),
-    MoyoError,
+    Error,
 > {
     let mut tolerances = MagneticSymmetryTolerances {
         symprec,
@@ -114,5 +114,5 @@ pub fn iterative_magnetic_symmetry_search<M: MagneticMoment>(
         debug!("Restart ToleranceHandler with {:?}", tolerances);
     }
     debug!("Reach the maximum number of symmetry search trials");
-    Err(MoyoError::PrimitiveMagneticSymmetrySearchError)
+    Err(Error::PrimitiveMagneticSymmetrySearchError)
 }

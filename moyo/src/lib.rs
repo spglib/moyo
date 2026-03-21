@@ -90,10 +90,12 @@ pub mod utils;
 
 mod symmetrize;
 
-pub use base::MoyoError as Error;
+pub use base::Error;
+#[allow(deprecated)]
+pub use base::MoyoError;
 
 use crate::base::{
-    AngleTolerance, Cell, MagneticCell, MagneticMoment, MagneticOperations, MoyoError, Operations,
+    AngleTolerance, Cell, MagneticCell, MagneticMoment, MagneticOperations, Operations,
     OriginShift, RotationMagneticMomentAction,
 };
 use crate::data::{
@@ -199,14 +201,14 @@ impl MoyoDataset {
     /// `symprec` controls the tolerance for searching symmetry operations in the unit of `cell.lattice.basis`.
     /// `setting` determines the preference for the "standardized" setting of a detected space-group type.
     /// `rotate_basis` specifies whether to rotate the basis vectors of the input cell to those of the standardized cell.
-    /// If the search fails, [`MoyoError`] is returned.
+    /// If the search fails, [`Error`] is returned.
     pub fn new(
         cell: &Cell,
         symprec: f64,
         angle_tolerance: AngleTolerance,
         setting: Setting,
         rotate_basis: bool,
-    ) -> Result<Self, MoyoError> {
+    ) -> Result<Self, Error> {
         let (prim_cell, symmetry_search, symprec, angle_tolerance) =
             iterative_symmetry_search(cell, symprec, angle_tolerance)?;
         let operations = operations_in_cell(&prim_cell, &symmetry_search.operations);
@@ -245,7 +247,7 @@ impl MoyoDataset {
             .iter()
             .map(|&i| std_prim_wyckoffs[i].clone())
             .collect();
-        let wyckoffs = wyckoffs.ok_or(MoyoError::WyckoffPositionAssignmentError)?;
+        let wyckoffs = wyckoffs.ok_or(Error::WyckoffPositionAssignmentError)?;
 
         // cell <-(prim_cell.linear, 0)- prim_cell.cell -(std_cell.transformation)-> std_cell.cell
         // (std_linear, std_origin_shift) = (prim_cell.linear^-1, 0) * std_cell.transformation
@@ -298,7 +300,7 @@ impl MoyoDataset {
 
     /// Create a new [`MoyoDataset`] from the input cell, `cell`, with default parameters.
     /// `symprec` controls the tolerance for searching symmetry operations in the unit of `cell.lattice.basis`.
-    pub fn with_default(cell: &Cell, symprec: f64) -> Result<Self, MoyoError> {
+    pub fn with_default(cell: &Cell, symprec: f64) -> Result<Self, Error> {
         Self::new(
             cell,
             symprec,
@@ -417,7 +419,7 @@ impl<M: MagneticMoment> MoyoMagneticDataset<M> {
     /// `mag_symprec` controls the tolerance for searching magnetic symmetry operations in the unit of `magnetic_cell.magnetic_moments`.
     /// `action` specifies how a magnetic symmetry operation acts on magnetic moments.
     /// `rotate_basis` specifies whether to rotate the basis vectors of the input cell to those of the standardized cell.
-    /// If the search fails, [`MoyoError`] is returned.
+    /// If the search fails, [`Error`] is returned.
     pub fn new(
         magnetic_cell: &MagneticCell<M>,
         symprec: f64,
@@ -425,7 +427,7 @@ impl<M: MagneticMoment> MoyoMagneticDataset<M> {
         mag_symprec: Option<f64>,
         action: RotationMagneticMomentAction,
         rotate_basis: bool,
-    ) -> Result<Self, MoyoError> {
+    ) -> Result<Self, Error> {
         let (prim_mag_cell, magnetic_symmetry_search, symprec, angle_tolerance, mag_symprec) =
             iterative_magnetic_symmetry_search(
                 magnetic_cell,
@@ -518,7 +520,7 @@ impl<M: MagneticMoment> MoyoMagneticDataset<M> {
         magnetic_cell: &MagneticCell<M>,
         symprec: f64,
         action: RotationMagneticMomentAction,
-    ) -> Result<Self, MoyoError> {
+    ) -> Result<Self, Error> {
         Self::new(
             magnetic_cell,
             symprec,

@@ -3,7 +3,7 @@ use pythonize::pythonize;
 use serde::Serialize;
 use serde_json;
 
-use moyo::base::MoyoError;
+use moyo::base::Error as MoyoError;
 use moyo::data::{
     ArithmeticNumber, CrystalFamily, CrystalSystem, LatticeSystem, Number, Setting,
     arithmetic_crystal_class_entry, hall_symbol_entry,

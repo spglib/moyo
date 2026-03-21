@@ -10,6 +10,8 @@ mod transformation;
 
 pub use action::RotationMagneticMomentAction;
 pub use cell::{AtomicSpecie, Cell, Position};
+pub use error::Error;
+#[allow(deprecated)]
 pub use error::MoyoError;
 pub use lattice::Lattice;
 pub use magnetic_cell::{Collinear, MagneticCell, MagneticMoment, NonCollinear};

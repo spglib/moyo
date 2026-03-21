@@ -2,7 +2,7 @@ use log::debug;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
-use super::error::MoyoError;
+use super::error::Error;
 
 pub const EPS: f64 = 1e-8;
 
@@ -104,7 +104,7 @@ impl Tolerances for MagneticSymmetryTolerances {
 pub struct ToleranceHandler<T: Tolerances> {
     pub tolerances: T,
     stride: f64,
-    prev_error: Option<MoyoError>,
+    prev_error: Option<Error>,
 }
 
 impl<T: Tolerances + Debug> ToleranceHandler<T> {
@@ -116,7 +116,7 @@ impl<T: Tolerances + Debug> ToleranceHandler<T> {
         }
     }
 
-    pub fn update(&mut self, err: MoyoError) {
+    pub fn update(&mut self, err: Error) {
         // Update stride
         if self.prev_error.is_some() && self.prev_error != Some(err) {
             self.stride = self.stride.sqrt()
@@ -125,7 +125,7 @@ impl<T: Tolerances + Debug> ToleranceHandler<T> {
 
         // Update tolerances
         self.tolerances = match err {
-            MoyoError::TooSmallToleranceError => {
+            Error::TooSmallToleranceError => {
                 let new_tolerances = self.tolerances.increase_tolerances(self.stride);
                 debug!("Increase tolerances: {:?}", new_tolerances);
                 new_tolerances

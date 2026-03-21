@@ -3,7 +3,7 @@ use nalgebra::Matrix3;
 
 use super::standardize::StandardizedCell;
 use crate::base::{
-    MagneticCell, MagneticMoment, MoyoError, Operations, Permutation, RotationMagneticMomentAction,
+    Error, MagneticCell, MagneticMoment, Operations, Permutation, RotationMagneticMomentAction,
     Transformation, UnimodularTransformation,
 };
 use crate::data::{ConstructType, get_magnetic_space_group_type};
@@ -47,11 +47,11 @@ impl<M: MagneticMoment> StandardizedMagneticCell<M> {
         epsilon: f64,
         action: RotationMagneticMomentAction,
         rotate_basis: bool,
-    ) -> Result<Self, MoyoError> {
+    ) -> Result<Self, Error> {
         // Symmetrize positions and lattice by reference space group
         let ref_space_group = magnetic_space_group.reference_space_group();
         let msg_type = get_magnetic_space_group_type(magnetic_space_group.uni_number)
-            .ok_or(MoyoError::MagneticStandardizationError)?;
+            .ok_or(Error::MagneticStandardizationError)?;
         let (ref_prim_operations, ref_prim_permutations) =
             Self::reference_symmetry_operations_and_permutations(
                 magnetic_symmetry_search,
@@ -109,7 +109,7 @@ impl<M: MagneticMoment> StandardizedMagneticCell<M> {
         time_reversals: &[bool],
         permutations: &[Permutation],
         action: RotationMagneticMomentAction,
-    ) -> Result<Self, MoyoError> {
+    ) -> Result<Self, Error> {
         // Symmetrize magnetic moments by magnetic space group
         let prim_std_magnetic_moments = Self::symmetrize_magnetic_moments(
             prim_std_magnetic_moments_tmp,

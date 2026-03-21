@@ -6,7 +6,7 @@ use crate::math::{
 };
 use crate::utils::to_3x3_slice;
 
-use super::error::MoyoError;
+use super::error::Error;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 /// Representing basis vectors of a lattice
@@ -33,14 +33,14 @@ impl Lattice {
     }
 
     /// Return Minkowski reduced lattice and transformation matrix to it
-    pub fn minkowski_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
+    pub fn minkowski_reduce(&self) -> Result<(Self, Matrix3<i32>), Error> {
         let (reduced_basis, trans_mat) = minkowski_reduce(&self.basis);
         let reduced_lattice = Self {
             basis: reduced_basis,
         };
 
         if !reduced_lattice.is_minkowski_reduced() {
-            return Err(MoyoError::MinkowskiReductionError);
+            return Err(Error::MinkowskiReductionError);
         }
 
         Ok((reduced_lattice, trans_mat))
@@ -52,11 +52,11 @@ impl Lattice {
     }
 
     /// Return Niggli reduced lattice and transformation matrix to it
-    pub fn niggli_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
+    pub fn niggli_reduce(&self) -> Result<(Self, Matrix3<i32>), Error> {
         let (reduced_lattice, trans_mat) = self.unchecked_niggli_reduce();
 
         if !reduced_lattice.is_niggli_reduced() {
-            return Err(MoyoError::NiggliReductionError);
+            return Err(Error::NiggliReductionError);
         }
 
         Ok((reduced_lattice, trans_mat))
@@ -77,7 +77,7 @@ impl Lattice {
     }
 
     /// Return Delaunay reduced lattice and transformation matrix to it
-    pub fn delaunay_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
+    pub fn delaunay_reduce(&self) -> Result<(Self, Matrix3<i32>), Error> {
         let (reduced_basis, trans_mat) = delaunay_reduce(&self.basis);
         let reduced_lattice = Self {
             basis: reduced_basis,

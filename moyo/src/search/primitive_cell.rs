@@ -8,7 +8,7 @@ use super::solve::{
     symmetrize_translation_from_permutation,
 };
 use crate::base::{
-    Cell, EPS, Linear, MagneticCell, MagneticMoment, MoyoError, Permutation, Position, Rotation,
+    Cell, EPS, Error, Linear, MagneticCell, MagneticMoment, Permutation, Position, Rotation,
     Transformation, Translation, UnimodularTransformation, orbits_from_permutations,
 };
 use crate::math::HNF;
@@ -32,7 +32,7 @@ pub struct PrimitiveCell {
 impl PrimitiveCell {
     /// Return primitive cell and transformation matrix from the primitive cell to the input cell
     /// Possible replacements for spglib/src/primitive.h::prm_get_primitive
-    pub fn new(cell: &Cell, symprec: f64) -> Result<Self, MoyoError> {
+    pub fn new(cell: &Cell, symprec: f64) -> Result<Self, Error> {
         // cell.lattice.basis * reduced_trans_mat = reduced_cell.lattice.basis
         let (reduced_lattice, reduced_trans_mat) = cell.lattice.minkowski_reduce()?;
         let reduced_cell =
@@ -50,7 +50,7 @@ impl PrimitiveCell {
             debug!(
                 "symprec is too large compared to the basis vectors. Consider reducing symprec."
             );
-            return Err(MoyoError::TooLargeToleranceError);
+            return Err(Error::TooLargeToleranceError);
         }
 
         // Try possible translations: overlap the `src`the site to the `dst`th site
@@ -98,7 +98,7 @@ impl PrimitiveCell {
                 size,
                 reduced_cell.num_atoms()
             );
-            return Err(MoyoError::TooSmallToleranceError);
+            return Err(Error::TooSmallToleranceError);
         }
         debug!("Found {} pure translations", size);
 
@@ -111,7 +111,7 @@ impl PrimitiveCell {
             debug!(
                 "Failed to find a transformation matrix for a primitive cell. Consider increasing symprec."
             );
-            return Err(MoyoError::TooSmallToleranceError);
+            return Err(Error::TooSmallToleranceError);
         };
 
         // Primitive cell
@@ -169,7 +169,7 @@ impl<M: MagneticMoment> PrimitiveMagneticCell<M> {
         magnetic_cell: &MagneticCell<M>,
         symprec: f64,
         mag_symprec: f64,
-    ) -> Result<Self, MoyoError> {
+    ) -> Result<Self, Error> {
         // Prepare candidate translations from nonmagnetic cell
         let prim_nonmagnetic_cell = PrimitiveCell::new(&magnetic_cell.cell, symprec)?;
 
@@ -203,7 +203,7 @@ impl<M: MagneticMoment> PrimitiveMagneticCell<M> {
                 size,
                 magnetic_cell.cell.num_atoms()
             );
-            return Err(MoyoError::TooSmallToleranceError);
+            return Err(Error::TooSmallToleranceError);
         }
         debug!("Found {} pure translations", size);
 
@@ -217,7 +217,7 @@ impl<M: MagneticMoment> PrimitiveMagneticCell<M> {
             debug!(
                 "Failed to find a transformation matrix for a primitive cell. Consider increasing symprec."
             );
-            return Err(MoyoError::TooSmallToleranceError);
+            return Err(Error::TooSmallToleranceError);
         };
 
         // Primitive magnetic cell

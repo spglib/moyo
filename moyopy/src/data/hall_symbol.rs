@@ -4,7 +4,7 @@ use serde::Serialize;
 use serde_json;
 
 use crate::base::PyMoyoError;
-use moyo::base::MoyoError;
+use moyo::base::Error as MoyoError;
 use moyo::data::{ArithmeticNumber, HallNumber, HallSymbolEntry, Number, hall_symbol_entry};
 
 use super::centering::PyCentering;

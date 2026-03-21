@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 
 use super::rotation_type::{RotationType, identify_rotation_type};
 use crate::base::{
-    Lattice, MoyoError, Operation, Rotations, Translation, UnimodularLinear,
-    UnimodularTransformation, project_rotations,
+    Error, Lattice, Operation, Rotations, Translation, UnimodularLinear, UnimodularTransformation,
+    project_rotations,
 };
 use crate::data::{
     ArithmeticNumber, Centering, CrystalSystem, GeometricCrystalClass, PointGroupRepresentative,
@@ -27,7 +27,7 @@ pub struct PointGroup {
 impl PointGroup {
     /// Given rotations, identify the arithmetic crystal class and transformation matrix into the representative
     /// Assume the rotations are given in the (reduced) primitive basis
-    pub fn new(prim_rotations: &Rotations) -> Result<Self, MoyoError> {
+    pub fn new(prim_rotations: &Rotations) -> Result<Self, Error> {
         let rotation_types = prim_rotations.iter().map(identify_rotation_type).collect();
         let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types)?;
         debug!("Geometric crystal class: {:?}", geometric_crystal_class);
@@ -56,7 +56,7 @@ impl PointGroup {
     }
 
     /// Given lattice and rotations, identify the arithmetic crystal class and transformation matrix into the representative
-    pub fn from_lattice(lattice: &Lattice, prim_rotations: &Rotations) -> Result<Self, MoyoError> {
+    pub fn from_lattice(lattice: &Lattice, prim_rotations: &Rotations) -> Result<Self, Error> {
         let (_, reduced_trans_mat) = lattice.minkowski_reduce()?;
         let reduced_prim_operations = UnimodularTransformation::from_linear(reduced_trans_mat)
             .transform_operations(
@@ -80,7 +80,7 @@ fn match_with_cubic_point_group(
     prim_rotations: &Rotations,
     rotation_types: &[RotationType],
     geometric_crystal_class: GeometricCrystalClass,
-) -> Result<PointGroup, MoyoError> {
+) -> Result<PointGroup, Error> {
     let arithmetic_crystal_class_candidates = iter_arithmetic_crystal_entry()
         .filter_map(|entry| {
             if entry.geometric_crystal_class != geometric_crystal_class {
@@ -141,7 +141,7 @@ fn match_with_cubic_point_group(
             // conv_trans_mat: self -> conventional
             let prim_trans_mat = (conv_trans_mat * centering.inverse()).map(|e| e.round() as i32);
             if prim_trans_mat.map(|e| e as f64).determinant().round() as i32 != 1 {
-                return Err(MoyoError::ArithmeticCrystalClassIdentificationError);
+                return Err(Error::ArithmeticCrystalClassIdentificationError);
             }
 
             return Ok(PointGroup {
@@ -151,14 +151,14 @@ fn match_with_cubic_point_group(
         }
     }
 
-    Err(MoyoError::ArithmeticCrystalClassIdentificationError)
+    Err(Error::ArithmeticCrystalClassIdentificationError)
 }
 
 fn match_with_point_group(
     prim_rotations: &Rotations,
     rotation_types: &[RotationType],
     geometric_crystal_class: GeometricCrystalClass,
-) -> Result<PointGroup, MoyoError> {
+) -> Result<PointGroup, Error> {
     for entry in iter_arithmetic_crystal_entry() {
         if entry.geometric_crystal_class != geometric_crystal_class {
             continue;
@@ -193,13 +193,13 @@ fn match_with_point_group(
         }
     }
 
-    Err(MoyoError::ArithmeticCrystalClassIdentificationError)
+    Err(Error::ArithmeticCrystalClassIdentificationError)
 }
 
 /// Use look up table in Table 6 of https://arxiv.org/pdf/1808.01590.pdf
 fn identify_geometric_crystal_class(
     rotation_types: &Vec<RotationType>,
-) -> Result<GeometricCrystalClass, MoyoError> {
+) -> Result<GeometricCrystalClass, Error> {
     // count RotationTypes in point_group
     let mut rotation_types_count = [0; 10];
     for rotation_type in rotation_types {
@@ -262,7 +262,7 @@ fn identify_geometric_crystal_class(
                 "Unknown geometric crystal class: {:?}",
                 rotation_types_count
             );
-            Err(MoyoError::GeometricCrystalClassIdentificationError)
+            Err(Error::GeometricCrystalClassIdentificationError)
         }
     }
 }

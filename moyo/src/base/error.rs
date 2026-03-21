@@ -1,8 +1,8 @@
-use thiserror::Error;
+use thiserror::Error as ThisError;
 
-#[derive(Error, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(ThisError, Debug, PartialEq, Eq, Clone, Copy)]
 /// Error types for the **moyo** library
-pub enum MoyoError {
+pub enum Error {
     // Lattice reduction errors
     #[error("Minkowski reduction failed")]
     MinkowskiReductionError,
@@ -56,3 +56,7 @@ pub enum MoyoError {
     #[error("Unknown uni_number")]
     UnknownUNINumberError,
 }
+
+/// Deprecated: Use [`Error`] instead.
+#[deprecated(since = "0.8.0", note = "Use `moyo::Error` instead")]
+pub type MoyoError = Error;

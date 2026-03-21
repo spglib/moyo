@@ -13,9 +13,9 @@ use super::{
     },
 };
 use crate::base::{
-    AngleTolerance, Cell, EPS, Lattice, MagneticCell, MagneticMoment, MagneticOperation,
-    MagneticOperations, MoyoError, Operation, Operations, Permutation, Rotation,
-    RotationMagneticMomentAction, Rotations, Transformation, traverse,
+    AngleTolerance, Cell, EPS, Error, Lattice, MagneticCell, MagneticMoment, MagneticOperation,
+    MagneticOperations, Operation, Operations, Permutation, Rotation, RotationMagneticMomentAction,
+    Rotations, Transformation, traverse,
 };
 
 #[derive(Debug)]
@@ -35,7 +35,7 @@ impl PrimitiveSymmetrySearch {
         primitive_cell: &Cell,
         symprec: f64,
         angle_tolerance: AngleTolerance,
-    ) -> Result<Self, MoyoError> {
+    ) -> Result<Self, Error> {
         // Check if symprec is sufficiently small
         let minimum_basis_norm = primitive_cell.lattice.basis.column(0).norm();
         let rough_symprec = 2.0 * symprec;
@@ -43,7 +43,7 @@ impl PrimitiveSymmetrySearch {
             debug!(
                 "symprec is too large compared to the basis vectors. Consider reducing symprec."
             );
-            return Err(MoyoError::TooLargeToleranceError);
+            return Err(Error::TooLargeToleranceError);
         }
 
         // Search symmetry operations
@@ -98,7 +98,7 @@ impl PrimitiveSymmetrySearch {
             debug!(
                 "No symmetry operations are found. Consider increasing symprec and angle_tolerance."
             );
-            return Err(MoyoError::TooSmallToleranceError);
+            return Err(Error::TooSmallToleranceError);
         }
 
         // Recover operations by group multiplication
@@ -130,14 +130,14 @@ impl PrimitiveSymmetrySearch {
             debug!(
                 "Found operations do not form a group. Consider reducing symprec and angle_tolerance."
             );
-            return Err(MoyoError::TooLargeToleranceError);
+            return Err(Error::TooLargeToleranceError);
         }
 
         if !Self::check_closure(&operations, &primitive_cell.lattice, rough_symprec) {
             debug!(
                 "Some centering translations are missing. Consider reducing symprec and angle_tolerance."
             );
-            return Err(MoyoError::TooLargeToleranceError);
+            return Err(Error::TooLargeToleranceError);
         }
 
         debug!("Order of point group: {}", operations.len());
@@ -184,7 +184,7 @@ impl PrimitiveMagneticSymmetrySearch {
         angle_tolerance: AngleTolerance,
         mag_symprec: f64,
         action: RotationMagneticMomentAction,
-    ) -> Result<Self, MoyoError> {
+    ) -> Result<Self, Error> {
         // Prepare candidate operations from primitive **nonmagnetic** cell
         let prim_nonmag_cell = PrimitiveCell::new(&primitive_magnetic_cell.cell, symprec)?;
         let prim_nonmag_symmetry =
@@ -249,7 +249,7 @@ impl PrimitiveMagneticSymmetrySearch {
             debug!(
                 "Some centering translations are missing. Consider reducing symprec and angle_tolerance."
             );
-            return Err(MoyoError::TooLargeToleranceError);
+            return Err(Error::TooLargeToleranceError);
         }
 
         Ok(Self {
@@ -325,7 +325,7 @@ fn search_bravais_group(
     minkowski_lattice: &Lattice,
     symprec: f64,
     angle_tolerance: AngleTolerance,
-) -> Result<Rotations, MoyoError> {
+) -> Result<Rotations, Error> {
     // Candidate column vectors for rotation matrix
     let lengths = minkowski_lattice
         .basis
@@ -420,7 +420,7 @@ fn search_bravais_group(
         debug!(
             "Found automorphisms for the lattice do not form a group. Consider reducing symprec and angle_tolerance."
         );
-        return Err(MoyoError::TooLargeToleranceError);
+        return Err(Error::TooLargeToleranceError);
     }
 
     let complemented_rotations = traverse(&rotations);
@@ -428,7 +428,7 @@ fn search_bravais_group(
         debug!(
             "Found automorphisms for the lattice do not form a group. Consider reducing symprec and angle_tolerance."
         );
-        return Err(MoyoError::TooLargeToleranceError);
+        return Err(Error::TooLargeToleranceError);
     }
     debug!("Order of Bravais group: {}", complemented_rotations.len());
     Ok(complemented_rotations)

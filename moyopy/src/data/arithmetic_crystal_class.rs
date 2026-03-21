@@ -4,7 +4,7 @@ use serde::Serialize;
 use serde_json;
 
 use crate::base::PyMoyoError;
-use moyo::base::MoyoError;
+use moyo::base::Error as MoyoError;
 use moyo::data::{ArithmeticNumber, arithmetic_crystal_class_entry};
 
 #[derive(Debug, Clone, Serialize)]
