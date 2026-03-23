@@ -232,9 +232,9 @@ checksum = "c3e64b0cc0439b12df2fa678eae89a1c56a529fd067a9115f7827f1fffd22b32"
 
 [[package]]
 name = "cmov"
-version = "0.4.6"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d5ce5728ecb5285a5dd35f02a6a8e34e0828e0b38e8e632e249a3fe3f320211"
+checksum = "de0758edba32d61d1fd9f4d69491b47604b91ee2f7e6b33de7e54ca4ebe55dc3"
 
 [[package]]
 name = "colorchoice"
@@ -706,9 +706,9 @@ dependencies = [
 
 [[package]]
 name = "kiddo"
-version = "5.2.4"
+version = "5.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07ab03cc75e18eb1eec59f4037e2e17ce9d13920f0013b0719dea613d9414e4e"
+checksum = "ea504edb9bee0c3f348e54aa2ce2c10a5fe10de221f39b745c654f3b51220992"
 dependencies = [
  "aligned-vec",
  "array-init",
