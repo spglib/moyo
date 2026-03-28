@@ -97,7 +97,8 @@ use crate::base::{
     OriginShift, RotationMagneticMomentAction,
 };
 use crate::data::{
-    HallNumber, Number, Setting, UNINumber, arithmetic_crystal_class_entry, hall_symbol_entry,
+    ArithmeticCrystalClassEntry, HallNumber, HallSymbolEntry, Number, Setting, UNINumber,
+    arithmetic_crystal_class_entry, hall_symbol_entry,
 };
 use crate::identify::{MagneticSpaceGroup, SpaceGroup};
 use crate::search::{
@@ -336,6 +337,16 @@ impl MoyoDataset {
     /// Returns `prim_std_origin_shift` as a `[f64; 3]` array.
     pub fn prim_std_origin_shift_as_array(&self) -> [f64; 3] {
         to_3_slice(&self.prim_std_origin_shift)
+    }
+
+    /// Returns the Hall symbol entry for the space group.
+    pub fn hall_symbol(&self) -> HallSymbolEntry {
+        hall_symbol_entry(self.hall_number).unwrap()
+    }
+
+    /// Returns the arithmetic crystal class entry for the space group.
+    pub fn arithmetic_crystal_class(&self) -> ArithmeticCrystalClassEntry {
+        arithmetic_crystal_class_entry(self.hall_symbol().arithmetic_number).unwrap()
     }
 }
 
