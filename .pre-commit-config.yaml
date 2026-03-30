@@ -30,7 +30,7 @@ repos:
           - mdformat-gfm
           - mdformat-myst
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.0
+    rev: 0.37.1
     hooks:
       - id: check-github-workflows
   - repo: https://github.com/crate-ci/typos
