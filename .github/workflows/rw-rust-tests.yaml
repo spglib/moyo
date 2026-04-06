@@ -16,7 +16,7 @@ jobs:
       run: cargo llvm-cov --release --all-features --workspace --lcov --output-path lcov.info
     - name: Upload coverage to Codecov
       if: github.event.repository.fork == false
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@v6
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: lcov.info
