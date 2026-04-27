@@ -1,0 +1,100 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+
+  "dependencyDashboard": true,
+
+  "pre-commit": { "enabled": true },
+
+  "lockFileMaintenance": {
+    "enabled": true,
+    "automerge": true,
+    "platformAutomerge": true
+  },
+
+  "separateMultipleMajor": true,
+
+  "minimumReleaseAge": "7d",
+
+  // Enable config migration pull requests
+  "configMigration": true,
+
+  "extends": [
+    "config:recommended",
+    "schedule:weekly",
+    ":semanticCommitTypeAll(chore)",
+    ":label(renovate)",
+    "helpers:pinGitHubActionDigests",
+  ],
+
+  "enableManagers": [
+    "cargo",
+    "github-actions",
+    "npm",
+    "pep621",
+    "pre-commit",
+    "typst",
+  ],
+
+  "packageRules": [
+    // General
+    {
+      "description": "Automerge patch updates",
+      "matchUpdateTypes": ["patch"],
+      "automerge": true,
+      "platformAutomerge": true
+    },
+
+    // github-actions and pre-commit
+    {
+      "groupName": "CI and devDependencies",
+      "matchManagers": ["github-actions", "pre-commit"]
+    },
+    {
+      "description": "Automerge CI and devDependencies non-major updates",
+      "matchManagers": ["github-actions", "pre-commit"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "platformAutomerge": true
+    },
+
+    // Rust
+    {
+      "groupName": "pyo3 ecosystem",
+      "matchManagers": ["cargo"],
+      "matchPackageNames": ["pyo3", "pyo3-log", "pythonize"]
+    },
+    {
+      "groupName": "serde ecosystem",
+      "matchManagers": ["cargo"],
+      "matchPackageNames": ["serde", "serde_json"]
+    },
+    {
+      "groupName": "cargo",
+      "matchJsonata": ["isBreaking != true"],
+      "matchManagers": ["cargo"]
+    },
+
+    // Python
+    {
+      "matchDepNames": ["python"],
+      "enabled": false
+    },
+    {
+      "groupName": "python",
+      "matchManagers": ["pep621"]
+    },
+
+    // npm
+    {
+      "groupName": "wasm",
+      "matchJsonata": ["isBreaking != true"],
+      "matchManagers": ["npm"]
+    },
+
+    // typst
+    {
+      "groupName": "typst",
+      "matchManagers": ["typst"]
+    },
+  ],
+}
