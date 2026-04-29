@@ -8,15 +8,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
-    - uses: Swatinem/rust-cache@v2
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+    - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
     - name: Install cargo-llvm-cov
-      uses: taiki-e/install-action@cargo-llvm-cov
+      uses: taiki-e/install-action@4c6ee9b0c14666cb5ccda351bcaf3b49e9bd74f4 # cargo-llvm-cov
     - name: Test
       run: cargo llvm-cov --release --all-features --workspace --lcov --output-path lcov.info
     - name: Upload coverage to Codecov
       if: github.event.repository.fork == false
-      uses: codecov/codecov-action@v6
+      uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: lcov.info
