@@ -9,6 +9,7 @@ use moyo::data::{ArithmeticNumber, HallNumber, HallSymbolEntry, Number, hall_sym
 
 use super::centering::PyCentering;
 
+/// An entry containing space-group information for a specified ``hall_number``.
 #[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "HallSymbolEntry", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
@@ -22,41 +23,49 @@ impl PyHallSymbolEntry {
         Ok(Self(entry))
     }
 
+    /// Number for Hall symbols (1 - 530).
     #[getter]
     pub fn hall_number(&self) -> HallNumber {
         self.0.hall_number
     }
 
+    /// ITA number for space group types (1 - 230).
     #[getter]
     pub fn number(&self) -> Number {
         self.0.number
     }
 
+    /// Number for arithmetic crystal classes (1 - 73).
     #[getter]
     pub fn arithmetic_number(&self) -> ArithmeticNumber {
         self.0.arithmetic_number
     }
 
+    /// Setting.
     #[getter]
     pub fn setting(&self) -> &str {
         self.0.setting
     }
 
+    /// Hall symbol.
     #[getter]
     pub fn hall_symbol(&self) -> &str {
         self.0.hall_symbol
     }
 
+    /// Hermann-Mauguin symbol in short notation.
     #[getter]
     pub fn hm_short(&self) -> &str {
         self.0.hm_short
     }
 
+    /// Hermann-Mauguin symbol in full notation.
     #[getter]
     pub fn hm_full(&self) -> &str {
         self.0.hm_full
     }
 
+    /// Centering.
     #[getter]
     pub fn centering(&self) -> PyCentering {
         self.0.centering.into()
@@ -76,10 +85,12 @@ impl PyHallSymbolEntry {
     // ------------------------------------------------------------------------
     // Serialization
     // ------------------------------------------------------------------------
+    /// Serialize this object to a JSON string.
     pub fn serialize_json(&self) -> String {
         serde_json::to_string(&self).expect("Serialization should not fail")
     }
 
+    /// Convert this object to a dictionary.
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
         Python::attach(|py| {
             let obj = pythonize(py, &self).expect("Python object conversion should not fail");

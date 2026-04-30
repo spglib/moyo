@@ -53,11 +53,11 @@ class MoyoDataset:
     # Site symmetry
     @property
     def orbits(self) -> list[int]:
-        """Spglib's `crystallographic_orbits` not `equivalent_atoms`.
+        """Spglib's ``crystallographic_orbits`` not ``equivalent_atoms``.
 
-        The `i`th atom in the input cell is equivalent to the `orbits[i]`th atom in the **input**
-        cell. For example, orbits=[0, 0, 2, 2, 2, 2] means the first two atoms are equivalent
-        and the last four atoms are equivalent to each other.
+        The ``i``-th atom in the input cell is equivalent to the ``orbits[i]``-th atom in the
+        **input** cell. For example, ``orbits=[0, 0, 2, 2, 2, 2]`` means the first two atoms
+        are equivalent and the last four atoms are equivalent to each other.
         """
     @property
     def wyckoffs(self) -> list[str]:
@@ -121,16 +121,16 @@ class MoyoDataset:
     def mapping_std_prim(self) -> list[int]:
         """Mapping sites in the input cell to those in the primitive standardized cell.
 
-        The `i`th atom in the input cell is mapped to the `mapping_to_std_prim[i]`th atom in the
-        primitive standardized cell.
+        The ``i``-th atom in the input cell is mapped to the ``mapping_to_std_prim[i]``-th atom
+        in the primitive standardized cell.
         """
     # Final parameters
     @property
     def symprec(self) -> float:
-        """Actually used `symprec` in iterative symmetry search."""
+        """Actually used ``symprec`` in iterative symmetry search."""
     @property
     def angle_tolerance(self) -> float | None:
-        """Actually used `angle_tolerance` in iterative symmetry search."""
+        """Actually used ``angle_tolerance`` in iterative symmetry search."""
     # Serialization and deserialization
     def serialize_json(self) -> str:
         """Serialize an object to a JSON string."""
@@ -184,8 +184,8 @@ class MoyoCollinearMagneticDataset:
     # Site symmetry
     @property
     def orbits(self) -> list[int]:
-        """The `i`th atom in the input magnetic cell is equivalent to the `orbits[i]`th atom
-        in the **input** magnetic cell. For example, orbits=[0, 0, 2, 2, 2, 2] means
+        """The ``i``-th atom in the input magnetic cell is equivalent to the ``orbits[i]``-th
+        atom in the **input** magnetic cell. For example, ``orbits=[0, 0, 2, 2, 2, 2]`` means
         the first two atoms are equivalent and the last four atoms are equivalent to each other.
         """
     # Standardized magnetic cell
@@ -241,20 +241,22 @@ class MoyoCollinearMagneticDataset:
         standardized magnetic cell."""
     @property
     def mapping_std_prim(self) -> list[int]:
-        """Mapping sites in the input magnetic cell to those in the primitive standardized magnetic
-        cell. The `i`th atom in the input magnetic cell is mapped to the `mapping_to_std_prim[i]`th
-        atom in the primitive standardized magnetic cell.
+        """Mapping sites in the input magnetic cell to those in the primitive standardized
+        magnetic cell.
+
+        The ``i``-th atom in the input magnetic cell is mapped to the
+        ``mapping_to_std_prim[i]``-th atom in the primitive standardized magnetic cell.
         """
     # Final parameters
     @property
     def symprec(self) -> float:
-        """Actually used `symprec` in iterative symmetry search."""
+        """Actually used ``symprec`` in iterative symmetry search."""
     @property
     def angle_tolerance(self) -> float | None:
-        """Actually used `angle_tolerance` in iterative symmetry search."""
+        """Actually used ``angle_tolerance`` in iterative symmetry search."""
     @property
     def mag_symprec(self) -> float | None:
-        """Actually used `mag_symprec` in iterative symmetry search."""
+        """Actually used ``mag_symprec`` in iterative symmetry search."""
     # Serialization and deserialization
     def serialize_json(self) -> str:
         """Serialize an object to a JSON string."""
@@ -308,8 +310,8 @@ class MoyoNonCollinearMagneticDataset:
     # Site symmetry
     @property
     def orbits(self) -> list[int]:
-        """The `i`th atom in the input magnetic cell is equivalent to the `orbits[i]`th atom
-        in the **input** magnetic cell. For example, orbits=[0, 0, 2, 2, 2, 2] means
+        """The ``i``-th atom in the input magnetic cell is equivalent to the ``orbits[i]``-th
+        atom in the **input** magnetic cell. For example, ``orbits=[0, 0, 2, 2, 2, 2]`` means
         the first two atoms are equivalent and the last four atoms are equivalent to each other.
         """
     # Standardized magnetic cell
@@ -365,20 +367,22 @@ class MoyoNonCollinearMagneticDataset:
         standardized magnetic cell."""
     @property
     def mapping_std_prim(self) -> list[int]:
-        """Mapping sites in the input magnetic cell to those in the primitive standardized magnetic
-        cell. The `i`th atom in the input magnetic cell is mapped to the `mapping_to_std_prim[i]`th
-        atom in the primitive standardized magnetic cell.
+        """Mapping sites in the input magnetic cell to those in the primitive standardized
+        magnetic cell.
+
+        The ``i``-th atom in the input magnetic cell is mapped to the
+        ``mapping_to_std_prim[i]``-th atom in the primitive standardized magnetic cell.
         """
     # Final parameters
     @property
     def symprec(self) -> float:
-        """Actually used `symprec` in iterative symmetry search."""
+        """Actually used ``symprec`` in iterative symmetry search."""
     @property
     def angle_tolerance(self) -> float | None:
-        """Actually used `angle_tolerance` in iterative symmetry search."""
+        """Actually used ``angle_tolerance`` in iterative symmetry search."""
     @property
     def mag_symprec(self) -> float | None:
-        """Actually used `mag_symprec` in iterative symmetry search."""
+        """Actually used ``mag_symprec`` in iterative symmetry search."""
     # Serialization and deserialization
     def serialize_json(self) -> str:
         """Serialize an object to a JSON string."""

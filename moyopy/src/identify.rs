@@ -78,6 +78,21 @@ fn derive_small_generators(prim_operations: &[Operation]) -> PyResult<Vec<Operat
     Ok(generators)
 }
 
+/// Compute the integral normalizer of a space group.
+///
+/// Returns the unimodular transformations that conjugate the given space group into itself.
+///
+/// Parameters
+/// ----------
+/// prim_rotations : list[list[list[int]]]
+///     Rotation matrices of the symmetry operations of the primitive cell.
+/// prim_translations : list[list[float]]
+///     Translation vectors of the symmetry operations of the primitive cell.
+/// prim_generators : list[int] | None
+///     Optional indices of operations to use as generators. If ``None``, a small generating
+///     set is derived automatically.
+/// epsilon : float
+///     Numerical tolerance for matching translations.
 #[pyfunction]
 #[pyo3(signature = (prim_rotations, prim_translations, *, prim_generators=None, epsilon=1e-4))]
 pub fn integral_normalizer(
@@ -124,6 +139,7 @@ pub fn integral_normalizer(
     )
 }
 
+/// Point group identified from a list of rotation matrices.
 #[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "PointGroup", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
@@ -131,6 +147,15 @@ pub struct PyPointGroup(PointGroup);
 
 #[pymethods]
 impl PyPointGroup {
+    /// Identify the point group of the given primitive rotations.
+    ///
+    /// Parameters
+    /// ----------
+    /// prim_rotations : list[list[list[int]]]
+    ///     Rotation matrices in the primitive cell.
+    /// basis : list[list[float]] | None
+    ///     Row-wise basis vectors of the primitive lattice. If ``None``, an identity basis
+    ///     is assumed.
     #[new]
     #[pyo3(signature = (prim_rotations, *, basis=None))]
     pub fn new(
@@ -148,11 +173,13 @@ impl PyPointGroup {
         Ok(Self(point_group))
     }
 
+    /// Number for the arithmetic crystal class (1 - 73).
     #[getter]
     pub fn arithmetic_number(&self) -> ArithmeticNumber {
         self.0.arithmetic_number
     }
 
+    /// Transformation matrix from the input primitive basis to the standardized basis.
     #[getter]
     pub fn prim_trans_mat(&self) -> [[i32; 3]; 3] {
         to_3x3_slice(&self.0.prim_trans_mat)
@@ -172,10 +199,12 @@ impl PyPointGroup {
     // ------------------------------------------------------------------------
     // Serialization
     // ------------------------------------------------------------------------
+    /// Serialize this object to a JSON string.
     pub fn serialize_json(&self) -> String {
         serde_json::to_string(&self).expect("Serialization should not fail")
     }
 
+    /// Convert this object to a dictionary.
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
         Python::attach(|py| {
             let obj = pythonize(py, &self).expect("Python object conversion should not fail");
@@ -196,6 +225,7 @@ impl From<PointGroup> for PyPointGroup {
     }
 }
 
+/// Space group identified from a list of primitive symmetry operations.
 #[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "SpaceGroup", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
@@ -203,6 +233,21 @@ pub struct PySpaceGroup(SpaceGroup);
 
 #[pymethods]
 impl PySpaceGroup {
+    /// Identify the space group from primitive rotations and translations.
+    ///
+    /// Parameters
+    /// ----------
+    /// prim_rotations : list[list[list[int]]]
+    ///     Rotation matrices of the symmetry operations of the primitive cell.
+    /// prim_translations : list[list[float]]
+    ///     Translation vectors of the symmetry operations of the primitive cell.
+    /// basis : list[list[float]] | None
+    ///     Row-wise basis vectors of the primitive lattice. If ``None``, an identity basis
+    ///     is assumed.
+    /// setting : Setting | None
+    ///     Preference for the standardized setting of the detected space-group type.
+    /// epsilon : float
+    ///     Numerical tolerance for matching translations.
     #[new]
     #[pyo3(signature = (prim_rotations, prim_translations, *, basis=None, setting=None, epsilon=1e-4))]
     pub fn new(
@@ -233,21 +278,27 @@ impl PySpaceGroup {
         Ok(Self(space_group))
     }
 
+    /// ITA number for the identified space group (1 - 230).
     #[getter]
     pub fn number(&self) -> Number {
         self.0.number
     }
 
+    /// Hall symbol number (1 - 530) for the chosen setting.
     #[getter]
     pub fn hall_number(&self) -> HallNumber {
         self.0.hall_number
     }
 
+    /// Linear part of the transformation from the input primitive basis to the standardized
+    /// basis.
     #[getter]
     pub fn linear(&self) -> [[i32; 3]; 3] {
         self.0.transformation.linear_as_array()
     }
 
+    /// Origin shift of the transformation from the input primitive basis to the standardized
+    /// basis.
     #[getter]
     pub fn origin_shift(&self) -> [f64; 3] {
         self.0.transformation.origin_shift_as_array()
@@ -267,10 +318,12 @@ impl PySpaceGroup {
     // ------------------------------------------------------------------------
     // Serialization
     // ------------------------------------------------------------------------
+    /// Serialize this object to a JSON string.
     pub fn serialize_json(&self) -> String {
         serde_json::to_string(&self).expect("Serialization should not fail")
     }
 
+    /// Convert this object to a dictionary.
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
         Python::attach(|py| {
             let obj = pythonize(py, &self).expect("Python object conversion should not fail");
@@ -291,6 +344,7 @@ impl From<SpaceGroup> for PySpaceGroup {
     }
 }
 
+/// Magnetic space group identified from a list of primitive magnetic operations.
 #[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "MagneticSpaceGroup", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
@@ -298,6 +352,21 @@ pub struct PyMagneticSpaceGroup(MagneticSpaceGroup);
 
 #[pymethods]
 impl PyMagneticSpaceGroup {
+    /// Identify the magnetic space group from primitive magnetic operations.
+    ///
+    /// Parameters
+    /// ----------
+    /// prim_rotations : list[list[list[int]]]
+    ///     Rotation matrices of the magnetic operations of the primitive cell.
+    /// prim_translations : list[list[float]]
+    ///     Translation vectors of the magnetic operations of the primitive cell.
+    /// prim_time_reversals : list[bool]
+    ///     Time-reversal flag for each magnetic operation of the primitive cell.
+    /// basis : list[list[float]] | None
+    ///     Row-wise basis vectors of the primitive lattice. If ``None``, an identity basis
+    ///     is assumed.
+    /// epsilon : float
+    ///     Numerical tolerance for matching translations.
     #[new]
     #[pyo3(signature = (prim_rotations, prim_translations, prim_time_reversals, *, basis=None, epsilon=1e-4))]
     pub fn new(
@@ -325,16 +394,21 @@ impl PyMagneticSpaceGroup {
         Ok(Self(magnetic_space_group))
     }
 
+    /// Serial number of UNI (and BNS) symbols.
     #[getter]
     pub fn uni_number(&self) -> UNINumber {
         self.0.uni_number
     }
 
+    /// Linear part of the transformation from the input primitive basis to the standardized
+    /// basis.
     #[getter]
     pub fn linear(&self) -> [[i32; 3]; 3] {
         self.0.transformation.linear_as_array()
     }
 
+    /// Origin shift of the transformation from the input primitive basis to the standardized
+    /// basis.
     #[getter]
     pub fn origin_shift(&self) -> [f64; 3] {
         self.0.transformation.origin_shift_as_array()
@@ -354,10 +428,12 @@ impl PyMagneticSpaceGroup {
     // ------------------------------------------------------------------------
     // Serialization
     // ------------------------------------------------------------------------
+    /// Serialize this object to a JSON string.
     pub fn serialize_json(&self) -> String {
         serde_json::to_string(&self).expect("Serialization should not fail")
     }
 
+    /// Convert this object to a dictionary.
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
         Python::attach(|py| {
             let obj = pythonize(py, &self).expect("Python object conversion should not fail");

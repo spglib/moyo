@@ -7,21 +7,21 @@ use crate::base::PyMoyoError;
 use moyo::base::MoyoError;
 use moyo::data::{ArithmeticNumber, arithmetic_crystal_class_entry};
 
+/// Arithmetic crystal class information.
 #[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "ArithmeticCrystalClass", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
 pub struct PyArithmeticCrystalClass {
-    // Arithmetic crystal class
+    /// Number for arithmetic crystal classes (1 - 73).
     #[pyo3(get)]
-    /// Number for arithmetic crystal classes (1 - 73)
     pub arithmetic_number: ArithmeticNumber,
-    /// Symbol for arithmetic crystal class
+    /// Symbol for arithmetic crystal class.
     #[pyo3(get)]
     pub symbol: &'static str,
-    /// Geometric crystal class
+    /// Geometric crystal class.
     #[pyo3(get)]
     pub geometric_crystal_class: String,
-    /// Bravais class
+    /// Bravais class.
     #[pyo3(get)]
     pub bravais_class: String,
 }
@@ -54,10 +54,12 @@ impl PyArithmeticCrystalClass {
     // ------------------------------------------------------------------------
     // Serialization
     // ------------------------------------------------------------------------
+    /// Serialize this object to a JSON string.
     pub fn serialize_json(&self) -> String {
         serde_json::to_string(&self).expect("Serialization should not fail")
     }
 
+    /// Convert this object to a dictionary.
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
         Python::attach(|py| {
             let obj = pythonize(py, &self).expect("Python object conversion should not fail");

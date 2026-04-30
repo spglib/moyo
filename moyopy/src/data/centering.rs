@@ -6,6 +6,7 @@ use serde_json;
 use moyo::data::Centering;
 use moyo::utils::{to_3_slice, to_3x3_slice};
 
+/// Centering of a conventional cell.
 #[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "Centering", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
@@ -13,16 +14,19 @@ pub struct PyCentering(pub Centering);
 
 #[pymethods]
 impl PyCentering {
+    /// Order of the centering.
     #[getter]
     pub fn order(&self) -> usize {
         self.0.order()
     }
 
+    /// Transformation matrix from a primitive cell to the conventional cell.
     #[getter]
     pub fn linear(&self) -> [[i32; 3]; 3] {
         to_3x3_slice(&self.0.linear())
     }
 
+    /// Unique lattice points (in fractional coordinates) of the conventional cell.
     #[getter]
     pub fn lattice_points(&self) -> Vec<[f64; 3]> {
         self.0.lattice_points().iter().map(to_3_slice).collect()
@@ -42,10 +46,12 @@ impl PyCentering {
     // ------------------------------------------------------------------------
     // Serialization
     // ------------------------------------------------------------------------
+    /// Serialize this object to a JSON string.
     pub fn serialize_json(&self) -> String {
         serde_json::to_string(&self).expect("Serialization should not fail")
     }
 
+    /// Convert this object to a dictionary.
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
         Python::attach(|py| {
             let obj = pythonize(py, &self).expect("Python object conversion should not fail");
