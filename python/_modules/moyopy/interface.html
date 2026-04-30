@@ -143,18 +143,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">    Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../standardization.html">    Standardization of Crystal Structures</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../migration.html">    Migration Guide from spglib</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../../autoapi/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../../autoapi/moyopy/index.html">moyopy</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_base/index.html">moyopy._base</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_data/index.html">moyopy._data</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_dataset/index.html">moyopy._dataset</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_identify/index.html">moyopy._identify</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/_moyopy/index.html">moyopy._moyopy</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../autoapi/moyopy/interface/index.html">moyopy.interface</a></li>
-</ul>
-</details></li>
-</ul>
-</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">    API Reference</a></li>
 </ul>
 
     </div>
@@ -286,11 +275,11 @@
 
 
 <div class="viewcode-block" id="MoyoAdapter">
-<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoAdapter">[docs]</a>
+<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoAdapter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MoyoAdapter</span><span class="p">:</span>
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="MoyoAdapter.get_structure">
-<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoAdapter.get_structure">[docs]</a>
+<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoAdapter.get_structure">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_structure</span><span class="p">(</span>
         <span class="n">cell</span><span class="p">:</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">Cell</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">unique_species_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Composition</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Structure</span><span class="p">:</span>
@@ -318,7 +307,7 @@
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="MoyoAdapter.get_atoms">
-<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoAdapter.get_atoms">[docs]</a>
+<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoAdapter.get_atoms">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_atoms</span><span class="p">(</span><span class="n">cell</span><span class="p">:</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">Cell</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">:</span>
         <span class="n">atoms</span> <span class="o">=</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">(</span>
             <span class="n">cell</span><span class="o">=</span><span class="n">cell</span><span class="o">.</span><span class="n">basis</span><span class="p">,</span>
@@ -331,7 +320,7 @@
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="MoyoAdapter.from_structure">
-<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoAdapter.from_structure">[docs]</a>
+<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoAdapter.from_structure">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_structure</span><span class="p">(</span><span class="n">structure</span><span class="p">:</span> <span class="n">Structure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">Cell</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a pymatgen Structure to a Moyo Cell.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">structure</span><span class="o">.</span><span class="n">is_ordered</span><span class="p">:</span>
@@ -350,7 +339,7 @@
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="MoyoAdapter.from_disordered_structure">
-<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoAdapter.from_disordered_structure">[docs]</a>
+<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoAdapter.from_disordered_structure">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_disordered_structure</span><span class="p">(</span>
         <span class="n">structure</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">moyopy</span><span class="o">.</span><span class="n">Cell</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Composition</span><span class="p">]]:</span>
@@ -388,7 +377,7 @@
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="MoyoAdapter.from_atoms">
-<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoAdapter.from_atoms">[docs]</a>
+<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoAdapter.from_atoms">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_atoms</span><span class="p">(</span><span class="n">atoms</span><span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">Cell</span><span class="p">:</span>
         <span class="n">basis</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">cell</span><span class="p">)</span>
         <span class="n">positions</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_scaled_positions</span><span class="p">()</span>
@@ -403,7 +392,7 @@
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="MoyoAdapter.from_py_obj">
-<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoAdapter.from_py_obj">[docs]</a>
+<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoAdapter.from_py_obj">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_py_obj</span><span class="p">(</span><span class="n">struct</span><span class="p">:</span> <span class="n">Structure</span> <span class="o">|</span> <span class="n">ase</span><span class="o">.</span><span class="n">Atoms</span> <span class="o">|</span> <span class="n">MSONAtoms</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">Cell</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a Python atomic structure object to a Moyo Cell.</span>
 
@@ -425,11 +414,11 @@
 
 
 <div class="viewcode-block" id="MoyoNonCollinearMagneticAdapter">
-<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoNonCollinearMagneticAdapter">[docs]</a>
+<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoNonCollinearMagneticAdapter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MoyoNonCollinearMagneticAdapter</span><span class="p">:</span>
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="MoyoNonCollinearMagneticAdapter.get_structure">
-<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.get_structure">[docs]</a>
+<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.get_structure">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_structure</span><span class="p">(</span>
         <span class="n">magnetic_cell</span><span class="p">:</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">NonCollinearMagneticCell</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -466,7 +455,7 @@
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="MoyoNonCollinearMagneticAdapter.from_structure">
-<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.from_structure">[docs]</a>
+<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.from_structure">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_structure</span><span class="p">(</span><span class="n">structure</span><span class="p">:</span> <span class="n">Structure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">NonCollinearMagneticCell</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a pymatgen Structure with non-collinear magnetic moments to a Moyo</span>
 <span class="sd">        NonCollinearMagneticCell.&quot;&quot;&quot;</span>
@@ -498,7 +487,7 @@
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="MoyoNonCollinearMagneticAdapter.from_disordered_structure">
-<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.from_disordered_structure">[docs]</a>
+<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.from_disordered_structure">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_disordered_structure</span><span class="p">(</span>
         <span class="n">structure</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">moyopy</span><span class="o">.</span><span class="n">NonCollinearMagneticCell</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Composition</span><span class="p">]]:</span>
@@ -550,8 +539,6 @@
 
 
 
-<div class="viewcode-block" id="_species_from_numbers">
-<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface._species_from_numbers">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_species_from_numbers</span><span class="p">(</span>
     <span class="n">numbers</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">unique_species_mapping</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Composition</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Composition</span><span class="p">]:</span>
@@ -559,12 +546,9 @@
         <span class="n">species</span> <span class="o">=</span> <span class="p">[</span><span class="n">unique_species_mapping</span><span class="p">[</span><span class="n">number</span><span class="p">]</span> <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">numbers</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">species</span> <span class="o">=</span> <span class="p">[</span><span class="n">Element</span><span class="o">.</span><span class="n">from_Z</span><span class="p">(</span><span class="n">number</span><span class="p">)</span> <span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">numbers</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">species</span></div>
+    <span class="k">return</span> <span class="n">species</span>
 
 
-
-<div class="viewcode-block" id="_get_unique_species_and_mapping">
-<a class="viewcode-back" href="../../autoapi/moyopy/interface/index.html#moyopy.interface._get_unique_species_and_mapping">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_unique_species_and_mapping</span><span class="p">(</span>
     <span class="n">structure</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">dict</span><span class="p">[</span><span class="n">Composition</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Composition</span><span class="p">]]:</span>
@@ -574,8 +558,7 @@
         <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unique_species</span><span class="p">:</span>
             <span class="n">unique_species</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_species</span><span class="p">)</span>
     <span class="n">unique_species_mapping</span> <span class="o">=</span> <span class="p">{</span><span class="n">i</span><span class="p">:</span> <span class="n">species</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">species</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">unique_species</span><span class="p">)}</span>
-    <span class="k">return</span> <span class="n">unique_species</span><span class="p">,</span> <span class="n">unique_species_mapping</span></div>
-
+    <span class="k">return</span> <span class="n">unique_species</span><span class="p">,</span> <span class="n">unique_species_mapping</span>
 </pre></div>
 
                 </article>
