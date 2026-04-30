@@ -8,6 +8,7 @@ hidden:
     Examples <examples/index>
     Standardization of Crystal Structures <standardization>
     Migration Guide from spglib <migration>
+    API Reference <api>
 ```
 
 ```{include} ../README.md

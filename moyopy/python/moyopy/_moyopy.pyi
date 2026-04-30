@@ -1,6 +1,7 @@
 from moyopy._base import (  # noqa: F401
     Cell,
     CollinearMagneticCell,
+    MagneticOperations,
     NonCollinearMagneticCell,
     Operations,
     UnimodularTransformation,
@@ -33,6 +34,7 @@ __all__ = [
     # base
     "Cell",
     "CollinearMagneticCell",
+    "MagneticOperations",
     "NonCollinearMagneticCell",
     "Operations",
     "UnimodularTransformation",

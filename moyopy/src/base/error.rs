@@ -3,6 +3,7 @@ use pyo3::prelude::*;
 
 use moyo::base::MoyoError;
 
+/// Error returned by moyo when a symmetry analysis fails.
 #[derive(Debug)]
 #[pyclass(name = "MoyoError", frozen)]
 #[pyo3(module = "moyopy")]

@@ -75,6 +75,21 @@ myst_heading_anchors = 3
 autoapi_dirs = [
     "../python/moyopy",
 ]
+# Drop `private-members` (default-on) so leading-underscore helpers like
+# `_species_from_numbers` don't appear in the rendered API reference.
+autoapi_options = [
+    "members",
+    "undoc-members",
+    "show-inheritance",
+    "show-module-summary",
+    "special-members",
+    "imported-members",
+]
+# We hand-curate the API Reference into grouped sections in `api.md` and use
+# autoapi's directives there. Stop autoapi from generating its own per-module
+# stub pages so we don't end up with two competing entry points.
+autoapi_add_toctree_entry = False
+autoapi_generate_api_docs = False
 
 # -----------------------------------------------------------------------------
 # sphinx-book-theme
@@ -86,7 +101,7 @@ html_theme_options = {
     "use_repository_button": True,
     "navigation_with_keys": True,
     "globaltoc_includehidden": "true",
-    "show_toc_level": 3,
+    "show_toc_level": 2,
 }
 
 # hide sphinx footer

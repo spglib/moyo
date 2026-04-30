@@ -21,6 +21,7 @@ pub struct PyMagneticCell {
     magnetic_cell: MagneticCellEnum,
 }
 
+/// A crystal structure with collinear magnetic moments.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[pyclass(name = "CollinearMagneticCell", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
@@ -28,8 +29,19 @@ pub struct PyCollinearMagneticCell(MagneticCell<Collinear>);
 
 #[pymethods]
 impl PyCollinearMagneticCell {
+    /// Create a new ``CollinearMagneticCell``.
+    ///
+    /// Parameters
+    /// ----------
+    /// basis : list[list[float]]
+    ///     Row-wise basis vectors of the lattice.
+    /// positions : list[list[float]]
+    ///     Fractional coordinates of each site.
+    /// numbers : list[int]
+    ///     Atomic number of each site.
+    /// magnetic_moments : list[float]
+    ///     Scalar magnetic moment of each site (collinear).
     #[new]
-    /// basis: row-wise basis vectors
     pub fn new(
         basis: [[f64; 3]; 3],
         positions: Vec<[f64; 3]>,
@@ -55,26 +67,31 @@ impl PyCollinearMagneticCell {
         Ok(Self(magnetic_cell))
     }
 
+    /// Row-wise basis vectors of the lattice.
     #[getter]
     pub fn basis(&self) -> [[f64; 3]; 3] {
         self.0.cell.lattice.basis_as_array()
     }
 
+    /// Fractional coordinates of each site.
     #[getter]
     pub fn positions(&self) -> Vec<[f64; 3]> {
         self.0.cell.positions_as_arrays()
     }
 
+    /// Atomic number of each site.
     #[getter]
     pub fn numbers(&self) -> Vec<i32> {
         self.0.cell.numbers.clone()
     }
 
+    /// Scalar magnetic moment of each site.
     #[getter]
     pub fn magnetic_moments(&self) -> Vec<f64> {
         self.0.magnetic_moments.iter().map(|m| m.0).collect()
     }
 
+    /// Number of atoms in the magnetic cell.
     #[getter]
     pub fn num_atoms(&self) -> usize {
         self.0.num_atoms()
@@ -94,15 +111,18 @@ impl PyCollinearMagneticCell {
     // ------------------------------------------------------------------------
     // Serialization
     // ------------------------------------------------------------------------
+    /// Serialize this object to a JSON string.
     pub fn serialize_json(&self) -> String {
         serde_json::to_string(&self.0).expect("Serialization should not fail")
     }
 
+    /// Deserialize an object from a JSON string.
     #[classmethod]
     pub fn deserialize_json(_cls: &Bound<'_, PyType>, s: &str) -> PyResult<Self> {
         serde_json::from_str(s).map_err(|e| PyValueError::new_err(e.to_string()))
     }
 
+    /// Convert this object to a dictionary.
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
         Python::attach(|py| {
             let obj = pythonize(py, &self.0).expect("Python object conversion should not fail");
@@ -110,6 +130,7 @@ impl PyCollinearMagneticCell {
         })
     }
 
+    /// Create an object from a dictionary.
     #[classmethod]
     pub fn from_dict(_cls: &Bound<'_, PyType>, obj: &Bound<'_, PyAny>) -> PyResult<Self> {
         Python::attach(|_| {
@@ -132,6 +153,7 @@ impl From<MagneticCell<Collinear>> for PyCollinearMagneticCell {
     }
 }
 
+/// A crystal structure with non-collinear (vector) magnetic moments.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[pyclass(name = "NonCollinearMagneticCell", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]
@@ -139,8 +161,19 @@ pub struct PyNonCollinearMagneticCell(MagneticCell<NonCollinear>);
 
 #[pymethods]
 impl PyNonCollinearMagneticCell {
+    /// Create a new ``NonCollinearMagneticCell``.
+    ///
+    /// Parameters
+    /// ----------
+    /// basis : list[list[float]]
+    ///     Row-wise basis vectors of the lattice.
+    /// positions : list[list[float]]
+    ///     Fractional coordinates of each site.
+    /// numbers : list[int]
+    ///     Atomic number of each site.
+    /// magnetic_moments : list[list[float]]
+    ///     Three-component magnetic moment vector of each site.
     #[new]
-    /// basis: row-wise basis vectors
     pub fn new(
         basis: [[f64; 3]; 3],
         positions: Vec<[f64; 3]>,
@@ -169,21 +202,25 @@ impl PyNonCollinearMagneticCell {
         Ok(Self(magnetic_cell))
     }
 
+    /// Row-wise basis vectors of the lattice.
     #[getter]
     pub fn basis(&self) -> [[f64; 3]; 3] {
         self.0.cell.lattice.basis_as_array()
     }
 
+    /// Fractional coordinates of each site.
     #[getter]
     pub fn positions(&self) -> Vec<[f64; 3]> {
         self.0.cell.positions_as_arrays()
     }
 
+    /// Atomic number of each site.
     #[getter]
     pub fn numbers(&self) -> Vec<i32> {
         self.0.cell.numbers.clone()
     }
 
+    /// Three-component magnetic moment vector of each site.
     #[getter]
     pub fn magnetic_moments(&self) -> Vec<[f64; 3]> {
         self.0
@@ -193,6 +230,7 @@ impl PyNonCollinearMagneticCell {
             .collect()
     }
 
+    /// Number of atoms in the magnetic cell.
     #[getter]
     pub fn num_atoms(&self) -> usize {
         self.0.num_atoms()
@@ -212,15 +250,18 @@ impl PyNonCollinearMagneticCell {
     // ------------------------------------------------------------------------
     // Serialization
     // ------------------------------------------------------------------------
+    /// Serialize this object to a JSON string.
     pub fn serialize_json(&self) -> String {
         serde_json::to_string(&self.0).expect("Serialization should not fail")
     }
 
+    /// Deserialize an object from a JSON string.
     #[classmethod]
     pub fn deserialize_json(_cls: &Bound<'_, PyType>, s: &str) -> PyResult<Self> {
         serde_json::from_str(s).map_err(|e| PyValueError::new_err(e.to_string()))
     }
 
+    /// Convert this object to a dictionary.
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
         Python::attach(|py| {
             let obj = pythonize(py, &self.0).expect("Python object conversion should not fail");
@@ -228,6 +269,7 @@ impl PyNonCollinearMagneticCell {
         })
     }
 
+    /// Create an object from a dictionary.
     #[classmethod]
     pub fn from_dict(_cls: &Bound<'_, PyType>, obj: &Bound<'_, PyAny>) -> PyResult<Self> {
         Python::attach(|_| {

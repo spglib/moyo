@@ -21,6 +21,17 @@ use moyo::data::{
     magnetic_hall_symbol_entry,
 };
 
+/// Return symmetry operations for the given space-group ITA ``number``.
+///
+/// Parameters
+/// ----------
+/// number : int
+///     ITA number of the space group (1 - 230).
+/// setting : Setting, optional
+///     Setting of the space group. If ``None``, the spglib default is used.
+/// primitive : bool, optional
+///     If ``True``, return operations of the primitive cell; otherwise return operations
+///     of the conventional cell.
 #[pyfunction]
 #[pyo3(signature = (number, *, setting=None, primitive=false))]
 pub fn operations_from_number(
@@ -65,6 +76,15 @@ pub fn operations_from_number(
     Ok(PyOperations::from(operations))
 }
 
+/// Return magnetic symmetry operations for the given UNI number.
+///
+/// Parameters
+/// ----------
+/// uni_number : int
+///     UNI (and BNS) serial number of the magnetic space group.
+/// primitive : bool, optional
+///     If ``True``, return magnetic operations of the primitive cell; otherwise return
+///     operations of the conventional cell.
 #[pyfunction]
 #[pyo3(signature = (uni_number, *, primitive=false))]
 pub fn magnetic_operations_from_uni_number(

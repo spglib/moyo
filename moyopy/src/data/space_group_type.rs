@@ -11,40 +11,60 @@ use moyo::data::{
 
 use crate::base::PyMoyoError;
 
+/// Space-group type information.
 #[derive(Debug, Clone, Serialize)]
 #[pyclass(name = "SpaceGroupType", frozen, from_py_object)]
+#[pyo3(module = "moyopy")]
 pub struct PySpaceGroupType {
     // Space group type
+    /// ITA number for space group types (1 - 230).
     #[pyo3(get)]
-    /// ITA number for space group types (1 - 230)
     number: Number,
-    /// Hermann-Mauguin symbol in short notation
+    /// Hermann-Mauguin symbol in short notation.
     #[pyo3(get)]
     hm_short: &'static str,
-    /// Hermann-Mauguin symbol in full notation
+    /// Hermann-Mauguin symbol in full notation.
     #[pyo3(get)]
     hm_full: &'static str,
     // Arithmetic crystal system
-    /// Number for arithmetic crystal classes (1 - 73)
+    /// Number for arithmetic crystal classes (1 - 73).
     #[pyo3(get)]
     arithmetic_number: ArithmeticNumber,
-    /// Symbol for arithmetic crystal class
+    /// Symbol for arithmetic crystal class.
+    ///
+    /// See <https://github.com/spglib/moyo/blob/main/moyo/src/data/arithmetic_crystal_class.rs>
+    /// for string values.
     #[pyo3(get)]
     arithmetic_symbol: &'static str,
     // Other classifications
-    /// Geometric crystal class
+    /// Geometric crystal class.
+    ///
+    /// See <https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs>
+    /// for string values.
     #[pyo3(get)]
     geometric_crystal_class: String,
-    /// Crystal system
+    /// Crystal system.
+    ///
+    /// See <https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs>
+    /// for string values.
     #[pyo3(get)]
     crystal_system: String,
-    /// Bravais class
+    /// Bravais class.
+    ///
+    /// See <https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs>
+    /// for string values.
     #[pyo3(get)]
     bravais_class: String,
-    /// Lattice system
+    /// Lattice system.
+    ///
+    /// See <https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs>
+    /// for string values.
     #[pyo3(get)]
     lattice_system: String,
-    /// Crystal family
+    /// Crystal family.
+    ///
+    /// See <https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs>
+    /// for string values.
     #[pyo3(get)]
     crystal_family: String,
 }
@@ -99,10 +119,12 @@ impl PySpaceGroupType {
     // ------------------------------------------------------------------------
     // Serialization
     // ------------------------------------------------------------------------
+    /// Serialize this object to a JSON string.
     pub fn serialize_json(&self) -> String {
         serde_json::to_string(&self).expect("Serialization should not fail")
     }
 
+    /// Convert this object to a dictionary.
     pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
         Python::attach(|py| {
             let obj = pythonize(py, &self).expect("Python object conversion should not fail");
