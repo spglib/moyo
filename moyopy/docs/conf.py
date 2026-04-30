@@ -101,7 +101,7 @@ html_theme_options = {
     "use_repository_button": True,
     "navigation_with_keys": True,
     "globaltoc_includehidden": "true",
-    "show_toc_level": 1,
+    "show_toc_level": 2,
 }
 
 # hide sphinx footer
