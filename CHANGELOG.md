@@ -11,6 +11,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 ### moyo
 
 - Add `hall_symbol()` and `arithmetic_crystal_class()` to `MoyoDataset` (#272)
+- Fix panic in `MoyoMagneticDataset::new` when the magnetic operation set is not closed; return `MoyoError::TooLargeToleranceError` instead (#295)
 
 ### moyopy
 
