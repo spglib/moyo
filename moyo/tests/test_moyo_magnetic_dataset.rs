@@ -242,3 +242,31 @@ fn test_with_pyrochlore() {
 
     let _dataset = assert_magnetic_dataset_with_default(&magnetic_cell, symprec, action);
 }
+
+#[test]
+fn test_with_large_mag_symprec() {
+    // https://github.com/spglib/moyo/issues/295
+    // With these borderline tolerances the magnetic operation set may not be closed.
+    // The requirement is only that `MoyoMagneticDataset::new` does not panic; it may
+    // either succeed or return a `MoyoError` such as `TooLargeToleranceError`.
+    let magnetic_cell = MagneticCell::new(
+        Lattice::from_basis([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]),
+        vec![[0.0, 0.0, 0.0].into(), [0.25, 0.25, 0.25].into()],
+        vec![1, 1],
+        vec![Collinear(0.003), Collinear(0.005)],
+    );
+    let symprec = 1e-2;
+    let angle_tolerance = AngleTolerance::default();
+    let mag_symprec = 1e-2;
+    let action = RotationMagneticMomentAction::Axial;
+    let rotate_basis = false;
+
+    let _ = MoyoMagneticDataset::new(
+        &magnetic_cell,
+        symprec,
+        angle_tolerance,
+        Some(mag_symprec),
+        action,
+        rotate_basis,
+    );
+}

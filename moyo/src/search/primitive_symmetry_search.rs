@@ -273,9 +273,13 @@ impl PrimitiveMagneticSymmetrySearch {
         for mops1 in magnetic_operations.iter() {
             for mops2 in magnetic_operations.iter() {
                 let mops12 = mops1.clone() * mops2.clone();
-                let diff = (translations_map[&(mops12.operation.rotation, mops12.time_reversal)]
-                    - mops12.operation.translation)
-                    .map(|e| e - e.round());
+                let Some(expected_translation) =
+                    translations_map.get(&(mops12.operation.rotation, mops12.time_reversal))
+                else {
+                    return false;
+                };
+                let diff =
+                    (expected_translation - mops12.operation.translation).map(|e| e - e.round());
                 if lattice.cartesian_coords(&diff).norm() > symprec {
                     return false;
                 }
