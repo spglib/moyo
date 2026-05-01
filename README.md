@@ -54,10 +54,13 @@ cargo install cargo-release cargo-edit cargo-deny cargo-semver-checks
 
 ### How to release
 
+Prerequisites: `cargo install cargo-release cargo-edit cargo-deny cargo-semver-checks`
+
 1. `cargo semver-checks` to lint a new release
 1. `cargo set-version --bump patch` for patch version increment
-1. Write change log and git-commit
-1. `cargo release --execute` (If you already release the package in crates.io, run `cargo release --execute --no-publish`)
+1. Write [change log](./CHANGELOG.md) and create a pull request
+1. After merging the pull request, run `cargo release --execute` (If you already release the package in crates.io, run `cargo release --execute --no-publish`)
+   - This automatically creates a git tag and pushes it to Remote, and triggers GitHub Actions to publish the packages.
 
 ### Debugging
 

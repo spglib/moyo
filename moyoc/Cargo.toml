@@ -6,6 +6,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 version.workspace = true
+publish = false
 
 [package.metadata.release]
 release = false
@@ -15,7 +16,7 @@ name = "moyoc"
 crate-type = ["cdylib"]
 
 [dependencies]
-moyo = { path = "../moyo", version = "0.7.9" }
+moyo = { path = "../moyo", version = "0.8.0" }
 nalgebra.workspace = true
 serde.workspace = true
 serde_json.workspace = true
