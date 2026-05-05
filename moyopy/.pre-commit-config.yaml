@@ -7,6 +7,6 @@ repos:
         args: [ "--fix", "--show-fixes"]
         types_or: [python, pyi]
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.11.7  # uv version.
+    rev: 0.11.8  # uv version.
     hooks:
     - id: uv-lock
