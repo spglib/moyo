@@ -9,7 +9,7 @@ mod tolerance;
 mod transformation;
 
 pub use action::RotationMagneticMomentAction;
-pub use cell::{AtomicSpecie, Cell, Position};
+pub use cell::{AtomicSpecie, Cell, Position, validate_aperiodic_axis};
 pub use error::MoyoError;
 pub use lattice::Lattice;
 pub use magnetic_cell::{Collinear, MagneticCell, MagneticMoment, NonCollinear};
@@ -18,7 +18,7 @@ pub use operation::{
     TimeReversal, Translation,
 };
 pub use permutation::Permutation;
-pub use tolerance::AngleTolerance;
+pub use tolerance::{AngleTolerance, is_angle_within_tolerance};
 pub use transformation::{Linear, OriginShift, Transformation, UnimodularTransformation};
 
 pub(super) use cell::orbits_from_permutations;

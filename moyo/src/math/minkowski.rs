@@ -1,7 +1,8 @@
 use itertools::Itertools;
 use nalgebra::allocator::Allocator;
 use nalgebra::{
-    DMatrix, DVector, DefaultAllocator, Dim, DimName, Matrix3, OMatrix, OVector, U3, Vector3,
+    DMatrix, DVector, DefaultAllocator, Dim, DimName, Matrix2, Matrix3, OMatrix, OVector, U3,
+    Vector3,
 };
 
 use super::cycle_checker::CycleChecker;
@@ -154,14 +155,90 @@ pub fn is_minkowski_reduced(basis: &Matrix3<f64>) -> bool {
     true
 }
 
+// Lagrange-Gauss provably terminates in O(log(max norm)) steps; the bound is
+// only a defensive guard against pathological f64 inputs.
+const MINKOWSKI_2D_MAX_ITERATIONS: usize = 1024;
+
+/// Lagrange-Gauss reduction of a 2D basis (column-vector convention).
+/// Returns the reduced basis and the unimodular transformation `T` such that
+/// `basis * T == reduced` (exact under integer linear combinations of input columns).
+/// Parity is preserved (det(T) > 0). If the input is already reduced, returns
+/// `(basis, identity)`.
+#[allow(dead_code)]
+pub fn minkowski_reduce_2d(basis: &Matrix2<f64>) -> (Matrix2<f64>, Matrix2<i32>) {
+    if is_minkowski_reduced_2d(basis) {
+        return (*basis, Matrix2::<i32>::identity());
+    }
+
+    let mut b = *basis;
+    let mut t = Matrix2::<i32>::identity();
+
+    for _ in 0..MINKOWSKI_2D_MAX_ITERATIONS {
+        if b.column(0).norm() > b.column(1).norm() + EPS {
+            b.swap_columns(0, 1);
+            t = t * Matrix2::new(0, 1, 1, 0);
+        }
+
+        let denom = b.column(0).norm_squared();
+        if denom < EPS {
+            break;
+        }
+        let m = (b.column(0).dot(&b.column(1)) / denom).round() as i32;
+        if m == 0 {
+            break;
+        }
+
+        let new_b2 = b.column(1) - (m as f64) * b.column(0);
+        b.set_column(1, &new_b2);
+        t = t * Matrix2::new(1, -m, 0, 1);
+    }
+
+    // Preserve parity: det(T) > 0. In 2D, negating both columns leaves det unchanged,
+    // so flip a single column instead (negate b2 / second column of T).
+    if t.map(|e| e as f64).determinant() < 0. {
+        let new_b2 = -b.column(1);
+        b.set_column(1, &new_b2);
+        t = t * Matrix2::new(1, 0, 0, -1);
+    }
+
+    (b, t)
+}
+
+/// Lift a 2x2 unimodular transformation (acting on the in-plane axes) to a 3x3
+/// transformation that leaves the third axis untouched. Used to compose the
+/// in-plane reduction with the layer-group block form W_33 = +/- 1 (paper eq. 4).
+#[allow(dead_code)]
+pub fn lift_2d_to_3d(t: &Matrix2<i32>) -> Matrix3<i32> {
+    Matrix3::new(t[(0, 0)], t[(0, 1)], 0, t[(1, 0)], t[(1, 1)], 0, 0, 0, 1)
+}
+
+/// Returns true iff the 2D basis is Minkowski reduced
+/// (`|b1| <= |b2|` and `|2 b1 . b2| <= |b1|^2`).
+#[allow(dead_code)]
+pub fn is_minkowski_reduced_2d(basis: &Matrix2<f64>) -> bool {
+    let n1 = basis.column(0).norm();
+    let n2 = basis.column(1).norm();
+    if n1 > n2 + EPS {
+        return false;
+    }
+    let dot12 = basis.column(0).dot(&basis.column(1));
+    if 2.0 * dot12.abs() > basis.column(0).norm_squared() + EPS {
+        return false;
+    }
+    true
+}
+
 #[cfg(test)]
 mod tests {
-    use nalgebra::{Matrix3, Vector3};
+    use nalgebra::{Matrix2, Matrix3, Vector2, Vector3};
     use rand::SeedableRng;
     use rand::prelude::*;
     use rand::rngs::StdRng;
 
-    use super::{is_minkowski_reduced, minkowski_reduce};
+    use super::{
+        is_minkowski_reduced, is_minkowski_reduced_2d, lift_2d_to_3d, minkowski_reduce,
+        minkowski_reduce_2d,
+    };
 
     #[test]
     fn test_is_minkowski_reduced() {
@@ -268,5 +345,78 @@ mod tests {
 
         let (reduced_basis, _) = minkowski_reduce(&basis);
         assert_relative_eq!(reduced_basis, basis);
+    }
+
+    #[test]
+    fn test_minkowski_2d_basic() {
+        let basis = Matrix2::<f64>::from_columns(&[Vector2::new(1.0, 0.0), Vector2::new(0.0, 1.0)]);
+        let (reduced, t) = minkowski_reduce_2d(&basis);
+        assert!(is_minkowski_reduced_2d(&reduced));
+        assert_relative_eq!(reduced, basis);
+        assert_eq!(t, Matrix2::<i32>::identity());
+
+        let basis = Matrix2::<f64>::from_columns(&[Vector2::new(1.0, 0.0), Vector2::new(5.0, 1.0)]);
+        let (reduced, t) = minkowski_reduce_2d(&basis);
+        assert!(is_minkowski_reduced_2d(&reduced));
+        assert_relative_eq!(reduced, basis * t.map(|e| e as f64));
+    }
+
+    #[test]
+    fn test_minkowski_2d_random() {
+        let mut rng: StdRng = SeedableRng::from_seed([1; 32]);
+
+        for _ in 0..512 {
+            let basis = Matrix2::<f64>::new(
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+                rng.random::<i8>() as f64,
+            );
+            // Skip degenerate (rank-deficient) cases where reduction is undefined.
+            if basis.determinant().abs() < 1e-6 {
+                continue;
+            }
+            let (reduced, t) = minkowski_reduce_2d(&basis);
+            assert!(is_minkowski_reduced_2d(&reduced));
+            assert_relative_eq!(basis * t.map(|e| e as f64), reduced);
+            // Idempotence.
+            let (reduced2, t2) = minkowski_reduce_2d(&reduced);
+            assert_relative_eq!(reduced2, reduced);
+            assert_eq!(t2, Matrix2::<i32>::identity());
+            // Parity.
+            assert!(t.map(|e| e as f64).determinant() > 0.0);
+        }
+    }
+
+    #[test]
+    fn test_minkowski_2d_swap_invariance() {
+        let basis = Matrix2::<f64>::from_columns(&[Vector2::new(3.0, 0.0), Vector2::new(1.0, 2.0)]);
+        let (r1, _) = minkowski_reduce_2d(&basis);
+
+        let mut swapped = basis;
+        swapped.swap_columns(0, 1);
+        let (r2, _) = minkowski_reduce_2d(&swapped);
+        // Reduced bases agree up to column swap and column sign flip.
+        let mut equal_pair = false;
+        for s0 in [-1.0_f64, 1.0] {
+            for s1 in [-1.0_f64, 1.0] {
+                let cand = Matrix2::from_columns(&[s0 * r2.column(0), s1 * r2.column(1)]);
+                if (cand - r1).norm() < 1e-6 {
+                    equal_pair = true;
+                }
+                let cand_swap = Matrix2::from_columns(&[s0 * r2.column(1), s1 * r2.column(0)]);
+                if (cand_swap - r1).norm() < 1e-6 {
+                    equal_pair = true;
+                }
+            }
+        }
+        assert!(equal_pair);
+    }
+
+    #[test]
+    fn test_lift_2d_to_3d() {
+        let t = Matrix2::<i32>::new(2, -1, 1, 0);
+        let lifted = lift_2d_to_3d(&t);
+        assert_eq!(lifted, Matrix3::<i32>::new(2, -1, 0, 1, 0, 0, 0, 0, 1));
     }
 }

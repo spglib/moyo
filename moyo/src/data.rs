@@ -3,6 +3,9 @@ mod centering;
 mod classification;
 mod hall_symbol;
 mod hall_symbol_database;
+mod layer_arithmetic_crystal_class;
+mod layer_centering;
+mod layer_classification;
 mod magnetic_hall_symbol_database;
 mod magnetic_space_group;
 mod point_group;
@@ -18,6 +21,12 @@ pub use classification::{
 };
 pub use hall_symbol::{HallSymbol, MagneticHallSymbol};
 pub use hall_symbol_database::{HallNumber, HallSymbolEntry, Number, hall_symbol_entry};
+pub use layer_arithmetic_crystal_class::{
+    LayerArithmeticCrystalClassEntry, LayerArithmeticNumber, iter_layer_arithmetic_crystal_entry,
+    layer_arithmetic_crystal_class_entry,
+};
+pub use layer_centering::LayerCentering;
+pub use layer_classification::{LayerBravaisClass, LayerCrystalSystem, LayerLatticeSystem};
 pub use magnetic_hall_symbol_database::{MagneticHallSymbolEntry, magnetic_hall_symbol_entry};
 pub use magnetic_space_group::{
     ConstructType, MagneticSpaceGroupType, NUM_MAGNETIC_SPACE_GROUP_TYPES, UNINumber,

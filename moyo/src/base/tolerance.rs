@@ -23,6 +23,28 @@ impl Default for AngleTolerance {
     }
 }
 
+/// Returns true iff the angle deviation `dtheta` (in radians) is within
+/// tolerance, given the lengths of the two vectors involved.
+///
+/// For `AngleTolerance::Radian(r)`, returns `|dtheta| <= r`.
+/// For `AngleTolerance::Default`, applies the symprec-driven criterion
+/// `sin^2(dtheta) * len_u * len_v < symprec^2` (Eq.(7) of arXiv:1808.01590).
+pub fn is_angle_within_tolerance(
+    dtheta: f64,
+    len_u: f64,
+    len_v: f64,
+    symprec: f64,
+    angle_tolerance: AngleTolerance,
+) -> bool {
+    match angle_tolerance {
+        AngleTolerance::Radian(r) => dtheta.abs() <= r,
+        AngleTolerance::Default => {
+            let sin2 = dtheta.sin().powi(2);
+            sin2 * len_u * len_v < symprec * symprec
+        }
+    }
+}
+
 pub trait Tolerances {
     fn increase_tolerances(&self, stride: f64) -> Self;
     fn reduce_tolerances(&self, stride: f64) -> Self;

@@ -15,7 +15,7 @@ use super::{
 use crate::base::{
     AngleTolerance, Cell, EPS, Lattice, MagneticCell, MagneticMoment, MagneticOperation,
     MagneticOperations, MoyoError, Operation, Operations, Permutation, Rotation,
-    RotationMagneticMomentAction, Rotations, Transformation, traverse,
+    RotationMagneticMomentAction, Rotations, Transformation, is_angle_within_tolerance, traverse,
 };
 
 #[derive(Debug)]
@@ -451,19 +451,15 @@ fn compare_nondiagonal_matrix_tensor_element(
 ) -> bool {
     let theta_org = basis.column(col1).angle(&basis.column(col2));
     let theta_new = b1.angle(b2);
-    let cos_dtheta = theta_org.cos() * theta_new.cos() + theta_org.sin() * theta_new.sin();
-
-    match angle_tolerance {
-        AngleTolerance::Radian(angle_tolerance) => cos_dtheta.acos().abs() < angle_tolerance,
-        AngleTolerance::Default => {
-            // Eq.(7) of https://arxiv.org/pdf/1808.01590.pdf
-            let sin_dtheta2 = 1.0 - cos_dtheta.powi(2);
-            let length_ave2 = (basis.column(col1).norm() + b1.norm())
-                * (basis.column(col2).norm() + b2.norm())
-                / 4.0;
-            sin_dtheta2 * length_ave2 < symprec * symprec
-        }
-    }
+    let len_u = (basis.column(col1).norm() + b1.norm()) / 2.0;
+    let len_v = (basis.column(col2).norm() + b2.norm()) / 2.0;
+    is_angle_within_tolerance(
+        theta_new - theta_org,
+        len_u,
+        len_v,
+        symprec,
+        angle_tolerance,
+    )
 }
 
 #[cfg(test)]
