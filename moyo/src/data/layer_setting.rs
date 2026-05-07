@@ -8,19 +8,30 @@ use super::layer_hall_symbol_database::{LayerHallNumber, LayerNumber};
 /// pin a specific [`LayerHallNumber`] or pick a per-LG default (Standard or
 /// Spglib).
 ///
-/// **Standard** (paper Fu et al. 2024 Table 5 conventions):
+/// **Standard** follows the BCS Subperiodic Groups paper (de la Flor,
+/// Souvignier, Madariaga & Aroyo, *Acta Cryst.* **A77**, 559-571 (2021)
+/// §2). For each LG that ITE lists under more than one setting, the paper
+/// nominates a single "default" / "standard" choice:
 ///
-/// - Monoclinic-oblique (LGs 3-7): unique axis `c` (the aperiodic axis).
-/// - Monoclinic-rectangular (LGs 8-18): unique axis `a` (the in-plane
-///   2-fold / mirror normal sits along `a`, not `b`).
-/// - Orthorhombic (LGs 19-48): `abc` axis labelling (no `b-ac` swap).
-/// - Centrosymmetric LGs with two origin choices (LGs 52, 62, 64):
-///   origin choice 2 (inversion at the origin).
+/// - **Cell choice 1** for the two monoclinic-oblique LGs with multiple
+///   cell choices in ITE: `p11a` (LG 5) and `p112/a` (LG 7). Cell choice
+///   1 corresponds to the `setting = "c1"` row in
+///   [`super::layer_hall_symbol_entry`].
+/// - **Origin choice 2** (inversion at the origin) for the three
+///   centrosymmetric LGs `p4/n` (LG 52), `p4/nbm` (LG 62) and `p4/nmm`
+///   (LG 64). ITE's other entry for each is origin choice 1.
+///
+/// Beyond those five LGs the BCS paper is silent on which Hall to pick,
+/// since either no ambiguity exists or the choice is conventional. moyo
+/// fills the remaining slots from the database's first row per LG, which
+/// for the monoclinic-rectangular LGs 8-18 happens to be the `:a`
+/// (unique-axis-`a`) setting -- this is moyo's choice, **not** specified
+/// by the paper.
 ///
 /// **Spglib** picks the smallest [`LayerHallNumber`] for each LG -- i.e.
-/// the first row spglib's `database/layer_spg.csv` lists for that LG. For
-/// the centrosymmetric LGs above this is origin choice 1, the only point
-/// where Standard and Spglib disagree.
+/// the first row spglib's `database/layer_spg.csv` lists for that LG. The
+/// only difference from Standard is at the three centrosymmetric LGs
+/// above, where Spglib falls back to origin choice 1.
 #[derive(Debug, Copy, Clone, PartialEq, Serialize)]
 pub enum LayerSetting {
     /// A specific Hall number (1 - 116).
@@ -28,8 +39,8 @@ pub enum LayerSetting {
     /// Smallest Hall number for each LG (origin choice 1 for the
     /// centrosymmetric LGs 52, 62, 64).
     Spglib,
-    /// Paper Fu et al. 2024 Table 5 standard choice -- see the type-level
-    /// docs for the per-system rules.
+    /// BCS standard / default choice (de la Flor *et al.*, *Acta Cryst.*
+    /// A77, 559-571 (2021), §2) -- see the type-level docs.
     Standard,
 }
 
@@ -55,12 +66,13 @@ const LAYER_SPGLIB_HALL_NUMBERS: [LayerHallNumber; 80] = [
     107, 108, 109, 110, 111, 112, 113, 114, 115, 116,
 ];
 
-// Standard (Fu et al. 2024 Table 5) Hall numbers per LG. Identical to the
-// Spglib array above except for the centrosymmetric LGs 52 / 62 / 64,
-// where Standard prefers origin choice 2 (Hall numbers 86 / 97 / 100) over
-// origin choice 1 (85 / 96 / 99). Smallest-Hall-per-LG already implements
-// the other three Standard conventions: monoclinic-oblique unique axis c,
-// monoclinic-rectangular unique axis a, and orthorhombic abc -- see
+// Standard Hall numbers per LG, per BCS Subperiodic Groups paper
+// (de la Flor et al., Acta Cryst. A77, 559-571 (2021), §2). Identical to
+// LAYER_SPGLIB_HALL_NUMBERS except for the three centrosymmetric LGs
+// 52 / 62 / 64, where Standard takes origin choice 2 (Hall numbers
+// 86 / 97 / 100) over origin choice 1 (85 / 96 / 99). The cell-choice-1
+// rule for LGs 5 and 7 is already implemented by smallest-Hall-per-LG
+// (rows c1 < c2 < c3 in the database). See
 // `test_layer_standard_hall_numbers_match_conventions`.
 #[rustfmt::skip]
 const LAYER_STANDARD_HALL_NUMBERS: [LayerHallNumber; 80] = [
@@ -127,8 +139,8 @@ mod tests {
     }
 
     /// Standard differs from Spglib only at the centrosymmetric LGs 52, 62,
-    /// 64, where Standard takes origin choice 2 (paper Fu et al. 2024
-    /// Table 5).
+    /// 64, where Standard takes origin choice 2 (de la Flor *et al.* 2021,
+    /// §2 (ii)).
     #[test]
     fn test_layer_standard_hall_numbers_origin_choice() {
         for &(lg, spglib_hall, standard_hall) in &[(52, 85, 86), (62, 96, 97), (64, 99, 100)] {
@@ -161,11 +173,16 @@ mod tests {
         }
     }
 
-    /// Outside the centrosymmetric origin-choice LGs, Standard and Spglib
-    /// must agree -- monoclinic-oblique unique axis c (smallest Hall is
-    /// already the c-setting), monoclinic-rectangular unique axis a
-    /// (smallest is already :a), and orthorhombic abc (smallest is already
-    /// the empty `setting`).
+    /// Outside the centrosymmetric origin-choice LGs (52, 62, 64), Standard
+    /// and Spglib agree. Spot-check the conventions:
+    ///
+    /// - LGs 5 and 7 take cell choice 1 (`setting = "c1"`) per
+    ///   de la Flor *et al.* 2021 §2 (i).
+    /// - LGs 8-18 (monoclinic-rectangular) default to the `:a` axis
+    ///   labelling. This is **moyo's own choice**, not specified by the
+    ///   BCS paper -- it falls out of smallest-Hall-per-LG.
+    /// - LGs 19-48 (orthorhombic) take the `abc` (no-swap) row, the ITE
+    ///   default labelling.
     #[test]
     fn test_layer_standard_hall_numbers_match_conventions() {
         for lg in 1..=80 {
@@ -179,29 +196,41 @@ mod tests {
                 lg
             );
         }
-        // Spot-check the convention via the Hall entry's setting field.
-        // Monoclinic-oblique: smallest Hall has setting starting with "c".
-        for lg in 3..=7 {
+        // Cell choice 1 for the two monoclinic-oblique LGs with multiple
+        // cell choices in ITE (BCS paper §2 (i)).
+        for lg in [5, 7] {
+            let hall = LayerSetting::Standard.hall_number(lg).unwrap();
+            assert_eq!(
+                layer_hall_symbol_entry(hall).unwrap().setting,
+                "c1",
+                "LG {} expected cell choice 1 (c1)",
+                lg
+            );
+        }
+        // Remaining monoclinic-oblique LGs (3, 4, 6) have a single Hall in
+        // the database; their setting fields are "" or "c".
+        for lg in [3, 4, 6] {
             let hall = LayerSetting::Standard.hall_number(lg).unwrap();
             let s = layer_hall_symbol_entry(hall).unwrap().setting;
             assert!(
-                s.starts_with('c') || s.is_empty(),
-                "LG {} (monoclinic-oblique) standard setting {:?}",
+                s.is_empty() || s == "c",
+                "LG {} (monoclinic-oblique) setting {:?}",
                 lg,
                 s
             );
         }
-        // Monoclinic-rectangular: setting "a".
+        // moyo's choice for monoclinic-rectangular: `:a` axis labelling.
+        // Not specified by the BCS paper; matches smallest Hall in the DB.
         for lg in 8..=18 {
             let hall = LayerSetting::Standard.hall_number(lg).unwrap();
             let s = layer_hall_symbol_entry(hall).unwrap().setting;
             assert_eq!(
                 s, "a",
-                "LG {} (monoclinic-rectangular) expected unique axis a",
+                "LG {} (monoclinic-rectangular) expected :a labelling",
                 lg
             );
         }
-        // Orthorhombic: setting "" (abc).
+        // Orthorhombic: setting "" (abc, no b-ac swap).
         for lg in 19..=48 {
             let hall = LayerSetting::Standard.hall_number(lg).unwrap();
             let s = layer_hall_symbol_entry(hall).unwrap().setting;
