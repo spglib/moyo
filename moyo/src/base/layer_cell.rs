@@ -70,6 +70,20 @@ impl LayerCell {
     pub fn num_atoms(&self) -> usize {
         self.positions.len()
     }
+
+    /// Bulk `Cell` view of this layer cell, for in-crate helpers that
+    /// consume a `Cell` (the bulk symmetry search, primitive-cell finder,
+    /// transformation routines). Allocates a fresh `Cell` rather than
+    /// handing out a borrow so the layer-to-bulk crossing remains a value
+    /// boundary: bulk-only state can never be aliased back into the
+    /// `LayerCell`.
+    pub(crate) fn as_cell(&self) -> Cell {
+        Cell::new(
+            self.lattice.as_lattice(),
+            self.positions.clone(),
+            self.numbers.clone(),
+        )
+    }
 }
 
 #[cfg(test)]

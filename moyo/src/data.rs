@@ -8,6 +8,7 @@ mod layer_centering;
 mod layer_classification;
 mod layer_hall_symbol_database;
 mod layer_setting;
+mod layer_wyckoff;
 mod magnetic_hall_symbol_database;
 mod magnetic_space_group;
 mod point_group;
@@ -42,6 +43,7 @@ pub use magnetic_space_group::{
 pub use setting::Setting;
 
 pub(super) use arithmetic_crystal_class::iter_arithmetic_crystal_entry;
+pub(super) use layer_wyckoff::{LayerWyckoffPosition, iter_layer_wyckoff_positions};
 pub(super) use magnetic_space_group::uni_number_range;
 pub(super) use point_group::PointGroupRepresentative;
 pub(super) use wyckoff::{WyckoffPosition, WyckoffPositionSpace, iter_wyckoff_positions};

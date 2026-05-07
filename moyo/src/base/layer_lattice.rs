@@ -93,14 +93,23 @@ impl LayerLattice {
     /// Lattice basis matrix `[a | b | c]` (column-vector convention) with `c`
     /// the aperiodic stacking direction.
     ///
-    /// Deliberately exposes the bare matrix instead of a `&Lattice`: a
-    /// `&Lattice` is exactly the input shape bulk-pipeline helpers consume
-    /// (e.g. `search_bravais_group(lattice, ..)`), so handing one out from
-    /// `LayerLattice` would re-introduce the conflation the newtype prevents.
-    /// In-crate sites that need a `Lattice` reconstruct it explicitly via
-    /// `Lattice { basis: *ll.basis() }`.
+    /// Public callers go through this getter (rather than a `&Lattice`
+    /// accessor) so a layer-pipeline value cannot silently flow into
+    /// bulk-only entry points (e.g. `search_bravais_group(lattice, ..)`).
+    /// In-crate sites that need a bulk `Lattice` use [`Self::as_lattice`].
     pub fn basis(&self) -> &Matrix3<f64> {
         &self.inner.basis
+    }
+
+    /// Bulk `Lattice` view of the same basis, for in-crate helpers that
+    /// consume a `Lattice` (the LG-restricted Bravais filter, the
+    /// metric-tensor lattice symmetrizer). Returns a new `Lattice` rather
+    /// than a borrow so a `LayerLattice` and a `Lattice` never share a
+    /// backing object the caller could later mistake for the layer one.
+    pub(crate) fn as_lattice(&self) -> Lattice {
+        Lattice {
+            basis: self.inner.basis,
+        }
     }
 }
 

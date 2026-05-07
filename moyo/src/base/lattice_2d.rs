@@ -1,7 +1,7 @@
 use nalgebra::{Matrix2, Matrix3};
 use serde::{Deserialize, Serialize};
 
-use crate::math::{is_minkowski_reduced_2d, minkowski_reduce_2d};
+use crate::math::{is_minkowski_reduced_2d, lift_2d_to_3d, minkowski_reduce_2d};
 
 use super::error::MoyoError;
 
@@ -60,6 +60,18 @@ impl Lattice2D {
     /// True iff the basis is 2D-Minkowski-reduced.
     pub fn is_minkowski_reduced(&self) -> bool {
         is_minkowski_reduced_2d(&self.basis)
+    }
+
+    /// 2D-Minkowski-reduce the in-plane block of a 3D basis and return the
+    /// lifted unimodular `T` (with `T_33 = 1`, `T_i3 = T_3i = 0`) such that
+    /// `basis_3d * T` has its in-plane block reduced and its third axis
+    /// untouched. Used at every layer-pipeline site that needs to compose
+    /// in-plane reduction with the layer block form.
+    pub(crate) fn lift_inplane_minkowski_reduce(
+        basis_3d: &Matrix3<f64>,
+    ) -> Result<Matrix3<i32>, MoyoError> {
+        let (_, trans_mat_2d) = Self::from_inplane_of(basis_3d).minkowski_reduce()?;
+        Ok(lift_2d_to_3d(&trans_mat_2d))
     }
 }
 

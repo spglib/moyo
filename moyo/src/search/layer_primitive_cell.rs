@@ -8,15 +8,13 @@ use crate::base::{
     Cell, Lattice, Lattice2D, LayerCell, LayerLattice, Linear, MoyoError, Permutation, Translation,
     UnimodularTransformation,
 };
-use crate::math::lift_2d_to_3d;
 
 /// 2D-Minkowski-reduce `cell`'s in-plane block, leaving `c` untouched.
 /// Returns the reduced cell and the lifted 3D unimodular `T` such that
 /// `cell.lattice.basis * T == reduced.lattice.basis`. The bulk's 3D Minkowski
 /// reduction would mix `c` into a/b and break the aperiodic-axis convention.
 fn minkowski_reduce_inplane(cell: &Cell) -> Result<(Cell, Linear), MoyoError> {
-    let (_, trans_mat_2d) = Lattice2D::from_inplane_of(&cell.lattice.basis).minkowski_reduce()?;
-    let trans_mat: Linear = lift_2d_to_3d(&trans_mat_2d);
+    let trans_mat = Lattice2D::lift_inplane_minkowski_reduce(&cell.lattice.basis)?;
     let reduced = UnimodularTransformation::from_linear(trans_mat).transform_cell(cell);
     Ok((reduced, trans_mat))
 }
