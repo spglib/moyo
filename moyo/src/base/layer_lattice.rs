@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 
 use super::error::MoyoError;
 use super::lattice::Lattice;
-use super::lattice_2d::Lattice2D;
 use super::tolerance::{AngleTolerance, is_angle_within_tolerance};
 
 /// A `Lattice` whose third basis vector is the aperiodic stacking direction
@@ -81,13 +80,6 @@ impl LayerLattice {
     /// `Lattice { basis: *ll.basis() }`.
     pub fn basis(&self) -> &Matrix3<f64> {
         &self.inner.basis
-    }
-
-    /// In-plane (a, b) sublattice as a [`Lattice2D`]. Layer-pipeline routines
-    /// that operate on the 2D lattice (e.g. 2D Minkowski reduction) consume
-    /// this rather than poking at columns of `basis()` directly.
-    pub fn in_plane(&self) -> Lattice2D {
-        Lattice2D::from_inplane_of(&self.inner.basis)
     }
 }
 

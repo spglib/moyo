@@ -10,6 +10,17 @@ use crate::base::{
 };
 use crate::math::lift_2d_to_3d;
 
+/// 2D-Minkowski-reduce `cell`'s in-plane block, leaving `c` untouched.
+/// Returns the reduced cell and the lifted 3D unimodular `T` such that
+/// `cell.lattice.basis * T == reduced.lattice.basis`. The bulk's 3D Minkowski
+/// reduction would mix `c` into a/b and break the aperiodic-axis convention.
+fn minkowski_reduce_inplane(cell: &Cell) -> Result<(Cell, Linear), MoyoError> {
+    let (_, trans_mat_2d) = Lattice2D::from_inplane_of(&cell.lattice.basis).minkowski_reduce()?;
+    let trans_mat: Linear = lift_2d_to_3d(&trans_mat_2d);
+    let reduced = UnimodularTransformation::from_linear(trans_mat).transform_cell(cell);
+    Ok((reduced, trans_mat))
+}
+
 /// Result of a 2D primitive cell search for a layer system.
 /// Mirrors `PrimitiveCell` but the discovered translations are constrained to
 /// the in-plane sublattice (no `c`-direction translations).
@@ -53,15 +64,7 @@ impl LayerPrimitiveCell {
             layer_cell.numbers().to_vec(),
         );
 
-        // 2D-Minkowski-reduce the in-plane block, leaving `c` untouched.
-        // This is the layer-pipeline analogue of the 3D Minkowski reduction
-        // performed at the top of `PrimitiveCell::new` (we cannot reuse the
-        // 3D one because it would mix `c` into the in-plane block, breaking
-        // the convention that `c` is the aperiodic axis).
-        let (_, trans_mat_2d) = layer_cell.lattice().in_plane().minkowski_reduce();
-        let reduced_trans_mat: Linear = lift_2d_to_3d(&trans_mat_2d);
-        let reduced_cell =
-            UnimodularTransformation::from_linear(reduced_trans_mat).transform_cell(&owned_cell);
+        let (reduced_cell, reduced_trans_mat) = minkowski_reduce_inplane(&owned_cell)?;
 
         // Sanity-check tolerance against the *reduced* in-plane vectors.
         let reduced_basis = &reduced_cell.lattice.basis;
@@ -137,18 +140,12 @@ impl LayerPrimitiveCell {
             &permutations,
         );
 
-        // 2D-Minkowski-reduce the primitive cell's in-plane block so that the
-        // returned layer cell satisfies the precondition of downstream
-        // bulk-pipeline routines (`PrimitiveSymmetrySearch::new`,
-        // `PeriodicKdTree::new`, `search_bravais_group`) that the basis be
-        // Minkowski reduced. The 2D variant is used (instead of the bulk's
-        // 3D one at lines 124-126 of `PrimitiveCell::new`) to keep `c`
-        // unswapped on thin slabs.
-        let (_, prim_trans_mat_2d) =
-            Lattice2D::from_inplane_of(&primitive_cell.lattice.basis).minkowski_reduce();
-        let prim_trans_mat: Linear = lift_2d_to_3d(&prim_trans_mat_2d);
-        let reduced_prim_cell =
-            UnimodularTransformation::from_linear(prim_trans_mat).transform_cell(&primitive_cell);
+        // Re-reduce so the returned layer cell satisfies the Minkowski-reduced
+        // precondition of downstream bulk routines (`PrimitiveSymmetrySearch`,
+        // `PeriodicKdTree`, `search_bravais_group`). The HNF-derived primitive
+        // basis is upper-triangular, not Minkowski-reduced, so this step is
+        // required even though the input was already reduced.
+        let (reduced_prim_cell, prim_trans_mat) = minkowski_reduce_inplane(&primitive_cell)?;
 
         // (input cell)
         //    -[reduced_trans_mat]-> (reduced cell)
