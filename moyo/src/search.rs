@@ -1,3 +1,4 @@
+mod layer_bravais_group;
 mod primitive_cell;
 mod primitive_symmetry_search;
 mod solve;
