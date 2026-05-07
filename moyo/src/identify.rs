@@ -1,9 +1,11 @@
+mod layer_group;
 mod magnetic_space_group;
 mod normalizer;
 mod point_group;
 mod rotation_type;
 mod space_group;
 
+pub use layer_group::LayerGroup;
 pub use magnetic_space_group::MagneticSpaceGroup;
 pub use normalizer::integral_normalizer;
 pub use point_group::PointGroup;

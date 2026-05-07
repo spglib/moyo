@@ -33,6 +33,8 @@ pub enum MoyoError {
     ArithmeticCrystalClassIdentificationError,
     #[error("Space group type identification failed")]
     SpaceGroupTypeIdentificationError,
+    #[error("Layer group type identification failed")]
+    LayerGroupTypeIdentificationError,
     #[error("Construct type identification failed")]
     ConstructTypeIdentificationError,
     #[error("Magnetic space group type identification failed")]

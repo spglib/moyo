@@ -1,6 +1,8 @@
 [default.extend-words]
 # ba-c
 ba = "ba"
+# Author surname (Gemma de la Flor et al.)
+Flor = "Flor"
 
 [files]
 extend-exclude = ['.gitignore', '*.ipynb']

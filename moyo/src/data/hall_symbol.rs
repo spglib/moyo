@@ -6,6 +6,8 @@ use nalgebra::{Vector3, matrix};
 
 use super::centering::Centering;
 use super::hall_symbol_database::{HallNumber, hall_symbol_entry};
+use super::layer_centering::LayerCentering;
+use super::layer_hall_symbol_database::{LayerHallNumber, layer_hall_symbol_entry};
 use super::magnetic_hall_symbol_database::magnetic_hall_symbol_entry;
 use super::magnetic_space_group::UNINumber;
 use crate::base::{
@@ -238,6 +240,82 @@ impl MagneticHallSymbol {
         Transformation::from_linear(self.centering.linear())
             .inverse_transform_magnetic_operations(&self.generators)
     }
+}
+
+/// Layer-group Hall symbol (paper Fu et al. 2024 Table 5).
+///
+/// Layer Hall symbols share the bulk grammar except the lattice prefix is
+/// lowercase `p`/`c` (only those two centerings exist for layer groups,
+/// paper §3.3). `LayerHallSymbol::new` uppercases the prefix and delegates
+/// to [`HallSymbol`]; bulk `Centering::{P,C}` and `LayerCentering::{P,C}`
+/// agree on `linear()` and `lattice_points()`, so traverse and
+/// primitive-projection results are layer-correct directly.
+#[derive(Debug)]
+pub struct LayerHallSymbol {
+    inner: HallSymbol,
+    layer_centering: LayerCentering,
+}
+
+impl LayerHallSymbol {
+    pub fn new(layer_hall_symbol: &str) -> Option<Self> {
+        let upcased = upcase_layer_lattice_letter(layer_hall_symbol)?;
+        let inner = HallSymbol::new(&upcased)?;
+        let layer_centering = match inner.centering {
+            Centering::P => LayerCentering::P,
+            Centering::C => LayerCentering::C,
+            _ => return None,
+        };
+        Some(Self {
+            inner,
+            layer_centering,
+        })
+    }
+
+    pub fn from_hall_number(hall_number: LayerHallNumber) -> Option<Self> {
+        layer_hall_symbol_entry(hall_number).and_then(|entry| Self::new(entry.hall_symbol))
+    }
+
+    pub fn centering(&self) -> LayerCentering {
+        self.layer_centering
+    }
+
+    pub fn centering_translations(&self) -> &[Translation] {
+        &self.inner.centering_translations
+    }
+
+    pub fn generators(&self) -> &Operations {
+        &self.inner.generators
+    }
+
+    pub fn traverse(&self) -> Operations {
+        self.inner.traverse()
+    }
+
+    pub fn primitive_traverse(&self) -> Operations {
+        self.inner.primitive_traverse()
+    }
+
+    pub fn traverse_and_primitive_traverse(&self) -> (Operations, Operations) {
+        self.inner.traverse_and_primitive_traverse()
+    }
+
+    pub fn primitive_generators(&self) -> Operations {
+        self.inner.primitive_generators()
+    }
+}
+
+fn upcase_layer_lattice_letter(s: &str) -> Option<String> {
+    let trimmed = s.trim_start();
+    let lattice_pos = trimmed.find(|c: char| c != '-')?;
+    let lattice = trimmed.as_bytes()[lattice_pos];
+    if lattice != b'p' && lattice != b'c' {
+        return None;
+    }
+    let mut out = String::with_capacity(trimmed.len());
+    out.push_str(&trimmed[..lattice_pos]);
+    out.push((lattice as char).to_ascii_uppercase());
+    out.push_str(&trimmed[lattice_pos + 1..]);
+    Some(out)
 }
 
 /// Tokenize string by whitespaces
@@ -663,5 +741,85 @@ mod tests {
         assert_eq!(mhs.generators.len(), num_generators);
         let magnetic_operations = mhs.traverse();
         assert_eq!(magnetic_operations.len(), num_operations);
+    }
+
+    #[rstest]
+    // hall_symbol, expected centering, # centering translations,
+    // # generators, # operations of conv. cell.
+    #[case("p 1", LayerCentering::P, 0, 1, 1)] // LG 1 / hall 1
+    #[case("-p 1", LayerCentering::P, 0, 2, 2)] // LG 2 / hall 2
+    #[case("p -2", LayerCentering::P, 0, 1, 2)] // LG 4 (p11m) / hall 4
+    #[case("c 2x", LayerCentering::C, 1, 1, 2)] // LG 10 setting :a / hall 16
+    #[case("-c 2 2", LayerCentering::C, 1, 3, 8)] // LG 47 (cmmm) / hall 80
+    #[case("p 4", LayerCentering::P, 0, 1, 4)] // LG 49 (p4) / hall 82
+    #[case("-p 4 2", LayerCentering::P, 0, 3, 16)] // LG 61 (p4/mmm) / hall 95
+    #[case("p 3", LayerCentering::P, 0, 1, 3)] // LG 65 (p3) / hall 101
+    #[case("-p 6 2", LayerCentering::P, 0, 3, 24)] // LG 80 (p6/mmm) / hall 116
+    fn test_layer_hall_symbol_small(
+        #[case] hall_symbol: &str,
+        #[case] centering: LayerCentering,
+        #[case] num_centering_translations: usize,
+        #[case] num_generators: usize,
+        #[case] num_operations: usize,
+    ) {
+        let lhs = LayerHallSymbol::new(hall_symbol).unwrap();
+        assert_eq!(lhs.centering(), centering);
+        assert_eq!(
+            lhs.centering_translations().len(),
+            num_centering_translations
+        );
+        assert_eq!(lhs.generators().len(), num_generators);
+        let operations = lhs.traverse();
+        assert_eq!(operations.len(), num_operations);
+    }
+
+    #[test]
+    fn test_layer_hall_symbol_rejects_uppercase_lattice() {
+        assert!(LayerHallSymbol::new("P 1").is_none());
+        assert!(LayerHallSymbol::new("C 2x").is_none());
+    }
+
+    #[test]
+    fn test_layer_hall_symbol_rejects_non_layer_lattice() {
+        // Only p/c are valid layer centerings (paper §3.3); a/b/i/r/f exist
+        // for bulk space groups but are not part of the layer alphabet.
+        assert!(LayerHallSymbol::new("a 1").is_none());
+        assert!(LayerHallSymbol::new("i 4").is_none());
+    }
+
+    #[test]
+    fn test_layer_hall_symbol_rejects_time_reversal() {
+        // Magnetic-style time reversal in a (non-magnetic) layer Hall symbol.
+        assert!(LayerHallSymbol::new("p 2'").is_none());
+    }
+
+    /// Every Hall symbol in the layer database parses without error and
+    /// yields operations whose rotations satisfy the layer-block form (paper
+    /// eq. 4): `W_i3 = W_3i = 0` for `i = 1, 2` and `W_33 = ±1`.
+    #[test]
+    fn test_layer_hall_symbol_database_round_trip_parse() {
+        use crate::data::iter_layer_hall_symbol_entry;
+        for entry in iter_layer_hall_symbol_entry() {
+            let lhs = LayerHallSymbol::new(entry.hall_symbol).unwrap_or_else(|| {
+                panic!(
+                    "failed to parse layer hall_number {} symbol {:?}",
+                    entry.hall_number, entry.hall_symbol
+                )
+            });
+            assert_eq!(lhs.centering(), entry.centering);
+            for op in lhs.traverse() {
+                let r = op.rotation;
+                assert_eq!(r[(0, 2)], 0);
+                assert_eq!(r[(1, 2)], 0);
+                assert_eq!(r[(2, 0)], 0);
+                assert_eq!(r[(2, 1)], 0);
+                assert!(
+                    r[(2, 2)] == 1 || r[(2, 2)] == -1,
+                    "hall_number {} produced W_33 = {} not in {{+/-1}}",
+                    entry.hall_number,
+                    r[(2, 2)]
+                );
+            }
+        }
     }
 }
