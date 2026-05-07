@@ -23,7 +23,6 @@ fn minkowski_reduce_inplane(cell: &Cell) -> Result<(Cell, Linear), MoyoError> {
 /// Mirrors `PrimitiveCell` but the discovered translations are constrained to
 /// the in-plane sublattice (no `c`-direction translations).
 #[derive(Debug)]
-#[allow(dead_code)] // consumed by later layer-group milestones
 pub(crate) struct LayerPrimitiveCell {
     /// Primitive layer cell whose third basis vector equals the input `c`.
     pub layer_cell: LayerCell,
@@ -33,11 +32,13 @@ pub(crate) struct LayerPrimitiveCell {
     pub site_mapping: Vec<usize>,
     /// Pure translations in the **input** cell (all have zero `c`-component).
     pub translations: Vec<Translation>,
-    /// Permutations induced by the translations.
+    /// Permutations induced by the translations. Mirrors `PrimitiveCell` for
+    /// API parity; the layer pipeline uses `LayerPrimitiveSymmetrySearch`'s
+    /// own permutations downstream rather than this field.
+    #[allow(dead_code)]
     pub permutations: Vec<Permutation>,
 }
 
-#[allow(dead_code)] // consumed by later layer-group milestones
 impl LayerPrimitiveCell {
     /// Find the primitive cell of a 2D-periodic (layer) system.
     ///

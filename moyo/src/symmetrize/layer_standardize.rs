@@ -23,7 +23,6 @@ use crate::identify::LayerGroup;
 /// in the xy-plane, `|c_s| = |c|` is preserved from the input, and the
 /// in-plane `(a_s, b_s)` block obeys the LG crystal system's metric
 /// conditions (paper Fu et al. 2024 Figure 1 / Appendix C).
-#[allow(dead_code)] // consumed by `MoyoLayerDataset` (not yet wired up)
 pub(crate) struct StandardizedLayerCell {
     /// Primitive standardized layer cell.
     pub prim_layer_cell: LayerCell,
@@ -44,7 +43,6 @@ pub(crate) struct StandardizedLayerCell {
     pub site_mapping: Vec<usize>,
 }
 
-#[allow(dead_code)] // consumed by `MoyoLayerDataset` (not yet wired up)
 impl StandardizedLayerCell {
     /// Standardize the input **primitive** layer cell.
     ///

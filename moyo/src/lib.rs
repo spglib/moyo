@@ -93,19 +93,23 @@ mod symmetrize;
 pub use base::MoyoError as Error;
 
 use crate::base::{
-    AngleTolerance, Cell, MagneticCell, MagneticMoment, MagneticOperations, MoyoError, Operations,
-    OriginShift, RotationMagneticMomentAction,
+    AngleTolerance, Cell, LayerCell, MagneticCell, MagneticMoment, MagneticOperations, MoyoError,
+    Operation, Operations, OriginShift, RotationMagneticMomentAction, Transformation,
 };
 use crate::data::{
-    ArithmeticCrystalClassEntry, HallNumber, HallSymbolEntry, Number, Setting, UNINumber,
-    arithmetic_crystal_class_entry, hall_symbol_entry,
+    ArithmeticCrystalClassEntry, HallNumber, HallSymbolEntry, LayerArithmeticCrystalClassEntry,
+    LayerHallNumber, LayerHallSymbolEntry, LayerNumber, LayerSetting, Number, Setting, UNINumber,
+    arithmetic_crystal_class_entry, hall_symbol_entry, layer_arithmetic_crystal_class_entry,
+    layer_hall_symbol_entry,
 };
-use crate::identify::{MagneticSpaceGroup, SpaceGroup};
+use crate::identify::{LayerGroup, MagneticSpaceGroup, SpaceGroup};
 use crate::search::{
-    iterative_magnetic_symmetry_search, iterative_symmetry_search,
-    magnetic_operations_in_magnetic_cell, operations_in_cell,
+    LayerPrimitiveCell, LayerPrimitiveSymmetrySearch, iterative_magnetic_symmetry_search,
+    iterative_symmetry_search, magnetic_operations_in_magnetic_cell, operations_in_cell,
 };
-use crate::symmetrize::{StandardizedCell, StandardizedMagneticCell, orbits_in_cell};
+use crate::symmetrize::{
+    StandardizedCell, StandardizedLayerCell, StandardizedMagneticCell, orbits_in_cell,
+};
 use crate::utils::{to_3_slice, to_3x3_slice};
 
 use nalgebra::Matrix3;
@@ -348,6 +352,247 @@ impl MoyoDataset {
     pub fn arithmetic_crystal_class(&self) -> ArithmeticCrystalClassEntry {
         arithmetic_crystal_class_entry(self.hall_symbol().arithmetic_number).unwrap()
     }
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+/// A dataset containing layer-group symmetry information of the input crystal
+/// structure (a 2D-periodic system whose third basis vector is the aperiodic
+/// stacking direction; paper Fu et al. 2024 §2).
+///
+/// Mirrors [`MoyoDataset`] for the bulk space-group case, but the input must
+/// satisfy the layer-group periodicity contract (`c` perpendicular to `a, b`)
+/// enforced by [`LayerCell::new`].
+pub struct MoyoLayerDataset {
+    // ------------------------------------------------------------------------
+    // Identification
+    // ------------------------------------------------------------------------
+    /// Layer group number (1 - 80, paper Fu et al. 2024 Table 5).
+    pub number: LayerNumber,
+    /// Layer Hall symbol number (1 - 116).
+    pub hall_number: LayerHallNumber,
+    /// Hermann-Mauguin symbol in short notation.
+    pub hm_symbol: String,
+    // ------------------------------------------------------------------------
+    // Symmetry operations in the input cell
+    // ------------------------------------------------------------------------
+    /// Layer-group operations in the input cell.
+    pub operations: Operations,
+    // ------------------------------------------------------------------------
+    // Site symmetry
+    // ------------------------------------------------------------------------
+    /// The `i`th atom in the input cell is equivalent to the `orbits[i]`th atom
+    /// in the input cell. Convention matches [`MoyoDataset::orbits`].
+    pub orbits: Vec<usize>,
+    /// Wyckoff letters for each site in the input cell.
+    pub wyckoffs: Vec<char>,
+    /// Site symmetry symbols for each site in the input cell, oriented w.r.t.
+    /// the standardized cell.
+    pub site_symmetry_symbols: Vec<String>,
+    // ------------------------------------------------------------------------
+    // Standardized layer cell
+    // ------------------------------------------------------------------------
+    /// Conventional standardized layer cell. See
+    /// [`moyopy/docs/layer_standardization.md`] for the output convention.
+    pub std_cell: LayerCell,
+    /// Linear part of the transformation from the input cell to `std_cell`.
+    pub std_linear: Matrix3<f64>,
+    /// Origin shift of the transformation from the input cell to `std_cell`.
+    pub std_origin_shift: OriginShift,
+    /// Rigid rotation applied to the lattice basis when `rotate_basis = true`,
+    /// identity otherwise.
+    pub std_rotation_matrix: Matrix3<f64>,
+    /// Pearson symbol for the standardized layer cell. The first two characters
+    /// are the 2D Bravais type (`mp`, `op`, `oc`, `tp`, or `hp`).
+    pub pearson_symbol: String,
+    // ------------------------------------------------------------------------
+    // Primitive standardized layer cell
+    // ------------------------------------------------------------------------
+    /// Primitive standardized layer cell.
+    pub prim_std_cell: LayerCell,
+    /// Linear part of the transformation from the input cell to `prim_std_cell`.
+    pub prim_std_linear: Matrix3<f64>,
+    /// Origin shift of the transformation from the input cell to `prim_std_cell`.
+    pub prim_std_origin_shift: OriginShift,
+    /// Mapping sites in the input cell to those in `prim_std_cell`.
+    pub mapping_std_prim: Vec<usize>,
+    // ------------------------------------------------------------------------
+    // Final parameters
+    // ------------------------------------------------------------------------
+    /// `symprec` used for the symmetry search.
+    pub symprec: f64,
+    /// `angle_tolerance` used for the symmetry search.
+    pub angle_tolerance: AngleTolerance,
+}
+
+impl MoyoLayerDataset {
+    /// Identify the layer group of `cell` and produce a [`MoyoLayerDataset`].
+    ///
+    /// `cell` must satisfy the layer-group periodicity contract (`c`
+    /// perpendicular to `a, b`); inputs that violate it are rejected with
+    /// [`MoyoError::AperiodicAxisNotOrthogonal`].
+    pub fn new(
+        cell: &Cell,
+        symprec: f64,
+        angle_tolerance: AngleTolerance,
+        setting: LayerSetting,
+        rotate_basis: bool,
+    ) -> Result<Self, MoyoError> {
+        let layer_cell = LayerCell::new(cell.clone(), symprec, angle_tolerance)?;
+        let prim_layer = LayerPrimitiveCell::new(&layer_cell, symprec)?;
+        let symmetry_search =
+            LayerPrimitiveSymmetrySearch::new(&prim_layer.layer_cell, symprec, angle_tolerance)?;
+
+        let prim_volume = prim_layer.layer_cell.lattice().basis().determinant().abs();
+        let epsilon = symprec / prim_volume.powf(1.0 / 3.0);
+
+        let layer_group = LayerGroup::new(&symmetry_search.operations, setting, epsilon)?;
+
+        let std_layer = StandardizedLayerCell::new(
+            &prim_layer.layer_cell,
+            &symmetry_search.operations,
+            &symmetry_search.permutations,
+            &layer_group,
+            symprec,
+            epsilon,
+            rotate_basis,
+        )?;
+
+        let operations = layer_operations_in_cell(&prim_layer, &symmetry_search.operations);
+
+        // Site symmetry. `StandardizedLayerCell.prim_layer_cell` and
+        // `prim_layer.layer_cell` share the same site order (mirrors the bulk
+        // pipeline), so the prim-cell Wyckoffs are looked up via `site_mapping`.
+        let mapping_std_prim = prim_layer.site_mapping.clone();
+        let orbits = orbits_in_cell(
+            prim_layer.layer_cell.num_atoms(),
+            &symmetry_search.permutations,
+            &prim_layer.site_mapping,
+        );
+        let mut std_prim_wyckoffs = vec![None; prim_layer.layer_cell.num_atoms()];
+        for (i, wyckoff) in std_layer.wyckoffs.iter().enumerate() {
+            let j = std_layer.site_mapping[i];
+            if std_prim_wyckoffs[j].is_none() {
+                std_prim_wyckoffs[j] = Some(wyckoff.clone());
+            }
+        }
+        let wyckoffs: Option<Vec<_>> = mapping_std_prim
+            .iter()
+            .map(|&i| std_prim_wyckoffs[i].clone())
+            .collect();
+        let wyckoffs = wyckoffs.ok_or(MoyoError::WyckoffPositionAssignmentError)?;
+
+        // Compose linear maps:
+        //   cell <-(prim_layer.linear, 0)- prim_layer.layer_cell -(std_layer.transformation)-> std_layer.layer_cell
+        // (std_linear, std_origin_shift) = (prim_layer.linear^-1, 0) * std_layer.transformation
+        let prim_cell_linear_inv = prim_layer.linear.map(|e| e as f64).try_inverse().unwrap();
+        let std_linear = prim_cell_linear_inv * std_layer.transformation.linear_as_f64();
+        let std_origin_shift = prim_cell_linear_inv * std_layer.transformation.origin_shift;
+        let prim_std_linear = prim_cell_linear_inv * std_layer.prim_transformation.linear_as_f64();
+        let prim_std_origin_shift =
+            prim_cell_linear_inv * std_layer.prim_transformation.origin_shift;
+
+        let entry = layer_hall_symbol_entry(layer_group.hall_number).unwrap();
+        let layer_arith = layer_arithmetic_crystal_class_entry(entry.arithmetic_number).unwrap();
+        let pearson_symbol = format!(
+            "{}{}",
+            layer_arith.layer_bravais_class.to_string(),
+            std_layer.layer_cell.num_atoms()
+        );
+
+        Ok(Self {
+            number: layer_group.number,
+            hall_number: layer_group.hall_number,
+            hm_symbol: entry.hm_short.to_string(),
+            operations,
+            orbits,
+            wyckoffs: wyckoffs.iter().map(|w| w.letter).collect(),
+            site_symmetry_symbols: wyckoffs
+                .iter()
+                .map(|w| w.site_symmetry.to_string())
+                .collect(),
+            std_cell: std_layer.layer_cell,
+            std_linear,
+            std_origin_shift,
+            std_rotation_matrix: std_layer.rotation_matrix,
+            pearson_symbol,
+            prim_std_cell: std_layer.prim_layer_cell,
+            prim_std_linear,
+            prim_std_origin_shift,
+            mapping_std_prim,
+            symprec,
+            angle_tolerance,
+        })
+    }
+
+    /// Identify the layer group of `cell` with default parameters
+    /// ([`AngleTolerance::Default`], [`LayerSetting::Standard`],
+    /// `rotate_basis = true`).
+    pub fn with_default(cell: &Cell, symprec: f64) -> Result<Self, MoyoError> {
+        Self::new(
+            cell,
+            symprec,
+            AngleTolerance::default(),
+            LayerSetting::default(),
+            true,
+        )
+    }
+
+    /// Number of layer-group operations in the input cell.
+    pub fn num_operations(&self) -> usize {
+        self.operations.len()
+    }
+
+    /// `std_linear` as a 3x3 array.
+    pub fn std_linear_as_array(&self) -> [[f64; 3]; 3] {
+        to_3x3_slice(&self.std_linear)
+    }
+
+    /// `std_origin_shift` as a 3-array.
+    pub fn std_origin_shift_as_array(&self) -> [f64; 3] {
+        to_3_slice(&self.std_origin_shift)
+    }
+
+    /// `std_rotation_matrix` as a 3x3 array.
+    pub fn std_rotation_matrix_as_array(&self) -> [[f64; 3]; 3] {
+        to_3x3_slice(&self.std_rotation_matrix)
+    }
+
+    /// `prim_std_linear` as a 3x3 array.
+    pub fn prim_std_linear_as_array(&self) -> [[f64; 3]; 3] {
+        to_3x3_slice(&self.prim_std_linear)
+    }
+
+    /// `prim_std_origin_shift` as a 3-array.
+    pub fn prim_std_origin_shift_as_array(&self) -> [f64; 3] {
+        to_3_slice(&self.prim_std_origin_shift)
+    }
+
+    /// Hall symbol entry for the identified layer group.
+    pub fn hall_symbol(&self) -> LayerHallSymbolEntry {
+        layer_hall_symbol_entry(self.hall_number).unwrap().clone()
+    }
+
+    /// Arithmetic crystal class entry for the identified layer group.
+    pub fn arithmetic_crystal_class(&self) -> LayerArithmeticCrystalClassEntry {
+        layer_arithmetic_crystal_class_entry(self.hall_symbol().arithmetic_number).unwrap()
+    }
+}
+
+/// Lift primitive-layer-cell operations to operations in the input cell.
+/// Mirrors [`crate::search::operations_in_cell`] but consumes
+/// [`LayerPrimitiveCell`] (whose pure-translation set is in-plane only).
+fn layer_operations_in_cell(prim: &LayerPrimitiveCell, prim_operations: &Operations) -> Operations {
+    let input_operations =
+        Transformation::from_linear(prim.linear).transform_operations(prim_operations);
+    let mut operations = vec![];
+    for t1 in prim.translations.iter() {
+        for op2 in input_operations.iter() {
+            // (E, t1) (rotation, t2) = (rotation, t1 + t2)
+            let t12 = (t1 + op2.translation).map(|e| e % 1.);
+            operations.push(Operation::new(op2.rotation, t12));
+        }
+    }
+    operations
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

@@ -10,9 +10,7 @@ pub use solve::{
     PeriodicKdTree, PeriodicNeighbor, solve_correspondence, solve_correspondence_naive,
 };
 
-#[allow(unused_imports)]
 pub(crate) use layer_primitive_cell::LayerPrimitiveCell;
-#[allow(unused_imports)]
 pub use layer_symmetry_search::LayerPrimitiveSymmetrySearch;
 pub(super) use primitive_cell::{PrimitiveCell, PrimitiveMagneticCell};
 pub(super) use primitive_symmetry_search::{
