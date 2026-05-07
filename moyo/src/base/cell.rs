@@ -67,27 +67,18 @@ impl Cell {
     }
 }
 
-/// Default tolerance for the layer-group aperiodic-axis perpendicularity check
-/// when `AngleTolerance::Default` is supplied. Matches spglib's default
-/// `angle_tolerance` of 5 degrees.
-const DEFAULT_LAYER_ANGLE_TOLERANCE_RAD: f64 = 5.0 * PI / 180.0;
-
 /// Validate the layer-group convention that the third basis vector `c` is
 /// perpendicular to the in-plane axes `a` and `b` (paper Fu et al. 2024 eq. 5).
 ///
-/// Returns `Err(MoyoError::AperiodicAxisNotOrthogonal)` if either angle deviates
-/// from 90 degrees by more than `angle_tolerance`. The deviation in radians is
-/// emitted via `log::debug!` so failures can be diagnosed without changing the
-/// error type's payload (which stays `Copy`).
+/// When `angle_tolerance` is `AngleTolerance::Default`, `symprec` drives the
+/// check via the same `sin^2(dtheta) * |u| * |v| < symprec^2` form moyo uses
+/// elsewhere (see `compare_nondiagonal_matrix_tensor_element`); explicit
+/// `Radian(_)` compares the deviation directly.
 pub fn validate_aperiodic_axis(
     cell: &Cell,
+    symprec: f64,
     angle_tolerance: AngleTolerance,
 ) -> Result<(), MoyoError> {
-    let tol = match angle_tolerance {
-        AngleTolerance::Radian(r) => r,
-        AngleTolerance::Default => DEFAULT_LAYER_ANGLE_TOLERANCE_RAD,
-    };
-
     let a = cell.lattice.basis.column(0);
     let b = cell.lattice.basis.column(1);
     let c = cell.lattice.basis.column(2);
@@ -95,21 +86,33 @@ pub fn validate_aperiodic_axis(
     let na = a.norm();
     let nb = b.norm();
     let nc = c.norm();
-    if na == 0.0 || nb == 0.0 || nc == 0.0 {
-        return Err(MoyoError::AperiodicAxisNotOrthogonal);
-    }
 
     let cos_ca = (c.dot(&a) / (nc * na)).clamp(-1.0, 1.0);
     let cos_cb = (c.dot(&b) / (nc * nb)).clamp(-1.0, 1.0);
     let dev_ca = (PI / 2.0 - cos_ca.acos()).abs();
     let dev_cb = (PI / 2.0 - cos_cb.acos()).abs();
 
-    if dev_ca > tol || dev_cb > tol {
+    let ok_ca = match angle_tolerance {
+        AngleTolerance::Radian(r) => dev_ca <= r,
+        AngleTolerance::Default => {
+            let dot = c.dot(&a);
+            dot * dot <= symprec * symprec * nc * na
+        }
+    };
+    let ok_cb = match angle_tolerance {
+        AngleTolerance::Radian(r) => dev_cb <= r,
+        AngleTolerance::Default => {
+            let dot = c.dot(&b);
+            dot * dot <= symprec * symprec * nc * nb
+        }
+    };
+
+    if !ok_ca || !ok_cb {
         debug!(
-            "Aperiodic axis is not orthogonal: dev(c,a)={:.6} rad, dev(c,b)={:.6} rad, tol={:.6} rad",
-            dev_ca, dev_cb, tol
+            "Aperiodic axis is not orthogonal: dev(c,a)={:.6} rad, dev(c,b)={:.6} rad",
+            dev_ca, dev_cb
         );
-        return Err(MoyoError::AperiodicAxisNotOrthogonal);
+        return Err(MoyoError::AperiodicAxisNotOrthogonal { dev_ca, dev_cb });
     }
     Ok(())
 }
@@ -175,6 +178,8 @@ mod tests {
         assert!(result.is_err());
     }
 
+    const TEST_SYMPREC: f64 = 1e-4;
+
     #[test]
     fn test_validate_aperiodic_axis_orthogonal() {
         let lattice = Lattice::new(matrix![
@@ -183,7 +188,7 @@ mod tests {
             0.0, 0.0, 5.0;
         ]);
         let cell = Cell::new(lattice, vec![vector![0.0, 0.0, 0.0]], vec![1]);
-        assert!(validate_aperiodic_axis(&cell, AngleTolerance::Default).is_ok());
+        assert!(validate_aperiodic_axis(&cell, TEST_SYMPREC, AngleTolerance::Default).is_ok());
     }
 
     #[test]
@@ -196,7 +201,7 @@ mod tests {
             0.0, 0.0, 5.0;
         ]);
         let cell = Cell::new(lattice, vec![vector![0.0, 0.0, 0.0]], vec![1]);
-        assert!(validate_aperiodic_axis(&cell, AngleTolerance::Default).is_ok());
+        assert!(validate_aperiodic_axis(&cell, TEST_SYMPREC, AngleTolerance::Default).is_ok());
     }
 
     #[test]
@@ -208,10 +213,10 @@ mod tests {
             0.5, 0.0, 5.0;
         ]);
         let cell = Cell::new(lattice, vec![vector![0.0, 0.0, 0.0]], vec![1]);
-        assert_eq!(
-            validate_aperiodic_axis(&cell, AngleTolerance::Default),
-            Err(MoyoError::AperiodicAxisNotOrthogonal)
-        );
+        assert!(matches!(
+            validate_aperiodic_axis(&cell, TEST_SYMPREC, AngleTolerance::Default),
+            Err(MoyoError::AperiodicAxisNotOrthogonal { .. })
+        ));
     }
 
     #[test]
@@ -224,11 +229,20 @@ mod tests {
         ]);
         let cell = Cell::new(lattice, vec![vector![0.0, 0.0, 0.0]], vec![1]);
         assert!(
-            validate_aperiodic_axis(&cell, AngleTolerance::Radian(5.0_f64.to_radians())).is_ok()
+            validate_aperiodic_axis(
+                &cell,
+                TEST_SYMPREC,
+                AngleTolerance::Radian(5.0_f64.to_radians())
+            )
+            .is_ok()
         );
-        assert_eq!(
-            validate_aperiodic_axis(&cell, AngleTolerance::Radian(1.0_f64.to_radians())),
-            Err(MoyoError::AperiodicAxisNotOrthogonal)
-        );
+        assert!(matches!(
+            validate_aperiodic_axis(
+                &cell,
+                TEST_SYMPREC,
+                AngleTolerance::Radian(1.0_f64.to_radians())
+            ),
+            Err(MoyoError::AperiodicAxisNotOrthogonal { .. })
+        ));
     }
 }

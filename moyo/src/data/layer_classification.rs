@@ -73,13 +73,13 @@ impl LayerCentering {
 }
 
 /// Crystal systems applicable to layer groups.
-/// The monoclinic system is split into oblique and rectangular subcases because
-/// they differ in which axis carries the unique 2-fold (paper Figure 1).
+/// Reference: Fu et al. 2024, Table 2 (point-group classification of layer groups).
+/// The oblique-vs-rectangular distinction for monoclinic is a *lattice-system*
+/// distinction (Table 3), not a crystal-system one.
 #[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 pub enum LayerCrystalSystem {
     Triclinic,
-    MonoclinicOblique,
-    MonoclinicRectangular,
+    Monoclinic,
     Orthorhombic,
     Tetragonal,
     Trigonal,
@@ -91,8 +91,7 @@ impl ToString for LayerCrystalSystem {
     fn to_string(&self) -> String {
         match self {
             LayerCrystalSystem::Triclinic => "Triclinic".to_string(),
-            LayerCrystalSystem::MonoclinicOblique => "MonoclinicOblique".to_string(),
-            LayerCrystalSystem::MonoclinicRectangular => "MonoclinicRectangular".to_string(),
+            LayerCrystalSystem::Monoclinic => "Monoclinic".to_string(),
             LayerCrystalSystem::Orthorhombic => "Orthorhombic".to_string(),
             LayerCrystalSystem::Tetragonal => "Tetragonal".to_string(),
             LayerCrystalSystem::Trigonal => "Trigonal".to_string(),

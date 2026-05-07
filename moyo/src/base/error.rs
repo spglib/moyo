@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-#[derive(Error, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Error, Debug, PartialEq, Clone, Copy)]
 /// Error types for the **moyo** library
 pub enum MoyoError {
     // Lattice reduction errors
@@ -57,7 +57,7 @@ pub enum MoyoError {
     UnknownUNINumberError,
     // Layer-group input validation errors
     #[error(
-        "Aperiodic axis c is not perpendicular to the in-plane axes within the angle tolerance"
+        "Aperiodic axis c is not perpendicular to the in-plane axes within tolerance: dev(c,a)={dev_ca:.6} rad, dev(c,b)={dev_cb:.6} rad"
     )]
-    AperiodicAxisNotOrthogonal,
+    AperiodicAxisNotOrthogonal { dev_ca: f64, dev_cb: f64 },
 }
