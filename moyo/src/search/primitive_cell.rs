@@ -53,42 +53,7 @@ impl PrimitiveCell {
             return Err(MoyoError::TooLargeToleranceError);
         }
 
-        // Try possible translations: overlap the `src`the site to the `dst`th site
-        let pkdtree = PeriodicKdTree::new(&reduced_cell, rough_symprec);
-        let pivot_site_indices = pivot_site_indices(&reduced_cell.numbers);
-        let mut permutations_translations_tmp = vec![];
-        let src = pivot_site_indices[0];
-        for dst in pivot_site_indices.iter() {
-            let translation = reduced_cell.positions[*dst] - reduced_cell.positions[src];
-            let new_positions: Vec<Position> = reduced_cell
-                .positions
-                .iter()
-                .map(|pos| pos + translation)
-                .collect();
-
-            // Because the translation may not be optimal to minimize distance between input and acted positions,
-            // use a larger symprec (diameter of a Ball) for finding correspondence
-            if let Some(permutation) = solve_correspondence(&pkdtree, &reduced_cell, &new_positions)
-            {
-                permutations_translations_tmp.push((permutation, translation));
-            }
-        }
-
-        // Purify translations by permutations
-        let mut translations = vec![];
-        let mut permutations = vec![];
-        for (permutation, rough_translation) in permutations_translations_tmp.iter() {
-            let (translation, distance) = symmetrize_translation_from_permutation(
-                &reduced_cell,
-                permutation,
-                &Rotation::identity(),
-                rough_translation,
-            );
-            if distance < symprec {
-                translations.push(translation);
-                permutations.push(permutation.clone());
-            }
-        }
+        let (translations, permutations) = search_pure_translations(&reduced_cell, symprec);
 
         // Check number of translations
         let size = translations.len() as i32;
@@ -246,6 +211,57 @@ impl<M: MagneticMoment> PrimitiveMagneticCell<M> {
             permutations,
         })
     }
+}
+
+/// Find pure (identity-rotation) lattice translations that align atoms within
+/// `symprec`, returning the symmetrized translations and their induced
+/// permutations.
+///
+/// Precondition: `reduced_cell.lattice.basis` must be Minkowski reduced.
+/// `PeriodicKdTree::new` only enumerates periodic images for offsets in
+/// `[-1, 1]^3`, which is exact under that precondition but can miss the
+/// nearest image on a strongly skewed basis.
+pub(crate) fn search_pure_translations(
+    reduced_cell: &Cell,
+    symprec: f64,
+) -> (Vec<Translation>, Vec<Permutation>) {
+    let rough_symprec = 2.0 * symprec;
+    // Try possible translations: overlap the `src`-th site to the `dst`-th site
+    let pkdtree = PeriodicKdTree::new(reduced_cell, rough_symprec);
+    let pivot_site_indices = pivot_site_indices(&reduced_cell.numbers);
+    let mut permutations_translations_tmp = vec![];
+    let src = pivot_site_indices[0];
+    for dst in pivot_site_indices.iter() {
+        let translation = reduced_cell.positions[*dst] - reduced_cell.positions[src];
+        let new_positions: Vec<Position> = reduced_cell
+            .positions
+            .iter()
+            .map(|pos| pos + translation)
+            .collect();
+
+        // Because the translation may not be optimal to minimize distance between input and acted positions,
+        // use a larger symprec (diameter of a Ball) for finding correspondence
+        if let Some(permutation) = solve_correspondence(&pkdtree, reduced_cell, &new_positions) {
+            permutations_translations_tmp.push((permutation, translation));
+        }
+    }
+
+    // Purify translations by permutations
+    let mut translations = vec![];
+    let mut permutations = vec![];
+    for (permutation, rough_translation) in permutations_translations_tmp.iter() {
+        let (translation, distance) = symmetrize_translation_from_permutation(
+            reduced_cell,
+            permutation,
+            &Rotation::identity(),
+            rough_translation,
+        );
+        if distance < symprec {
+            translations.push(translation);
+            permutations.push(permutation.clone());
+        }
+    }
+    (translations, permutations)
 }
 
 pub(crate) fn transformation_matrix_from_translations(

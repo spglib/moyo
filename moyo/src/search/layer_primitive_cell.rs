@@ -1,16 +1,15 @@
 use log::debug;
+use nalgebra::Matrix2;
 
 use super::primitive_cell::{
-    primitive_cell_from_transformation, transformation_matrix_from_translations,
-};
-use super::solve::{
-    PeriodicKdTree, pivot_site_indices, solve_correspondence,
-    symmetrize_translation_from_permutation,
+    primitive_cell_from_transformation, search_pure_translations,
+    transformation_matrix_from_translations,
 };
 use crate::base::{
-    Cell, Lattice, LayerCell, LayerLattice, Linear, MoyoError, Permutation, Position, Rotation,
-    Translation,
+    Cell, Lattice, LayerCell, LayerLattice, Linear, MoyoError, Permutation, Translation,
+    UnimodularTransformation,
 };
+use crate::math::{is_minkowski_reduced_2d, lift_2d_to_3d, minkowski_reduce_2d};
 
 /// Result of a 2D primitive cell search for a layer system.
 /// Mirrors `PrimitiveCell` but the discovered translations are constrained to
@@ -34,15 +33,19 @@ pub(crate) struct LayerPrimitiveCell {
 impl LayerPrimitiveCell {
     /// Find the primitive cell of a 2D-periodic (layer) system.
     ///
-    /// Candidate translations whose fractional `c`-component is non-zero
-    /// (within `symprec / |c|`) are silently discarded -- the layer-group
-    /// pipeline only cares about in-plane translations. The lattice contract
-    /// (perpendicular, non-degenerate basis) is already enforced by
-    /// `LayerLattice::new`, so basis norms are not re-checked here.
+    /// In-plane axes are 2D-Minkowski-reduced before the kd-tree-based
+    /// translation search (the bulk `PeriodicKdTree` requires a Minkowski-
+    /// reduced basis for its `[-1, 1]^3` periodic-image enumeration to be
+    /// exact). The aperiodic `c` axis is left untouched, so the layer
+    /// contract is preserved. Candidate translations whose fractional
+    /// `c`-component is non-zero (within `symprec / |c|`) are discarded
+    /// after the search -- the layer pipeline only consumes in-plane
+    /// translations. The `LayerLattice::new` constructor enforces the
+    /// non-degenerate / orthogonal-`c` invariants up front, so basis norms
+    /// are not re-checked here.
     pub fn new(layer_cell: &LayerCell, symprec: f64) -> Result<Self, MoyoError> {
         // Reconstruct a bulk `Cell` once: explicit at the call site so the
-        // layer-to-bulk crossing is visible. Downstream helpers
-        // (`PeriodicKdTree`, `solve_correspondence`) take `&Cell`.
+        // layer-to-bulk crossing is visible.
         let owned_cell = Cell::new(
             Lattice {
                 basis: *layer_cell.lattice().basis(),
@@ -50,18 +53,28 @@ impl LayerPrimitiveCell {
             layer_cell.positions().to_vec(),
             layer_cell.numbers().to_vec(),
         );
-        let cell = &owned_cell;
-        // We deliberately skip the 3D Minkowski reduction used by `PrimitiveCell::new`:
-        // mixing `c` into the in-plane basis would break the convention that `c` is
-        // the aperiodic axis. 2D Minkowski reduction belongs to standardization,
-        // not the search step.
-        let basis = &cell.lattice.basis;
-        let na = basis.column(0).norm();
-        let nb = basis.column(1).norm();
-        let nc = basis.column(2).norm();
 
-        // Sanity-check tolerance against in-plane vectors only -- `c` is not a
-        // candidate lattice translation direction for layer systems.
+        // 2D-Minkowski-reduce the in-plane block, leaving `c` untouched.
+        // This is the layer-pipeline analogue of the 3D Minkowski reduction
+        // performed at the top of `PrimitiveCell::new` (we cannot reuse the
+        // 3D one because it would mix `c` into the in-plane block, breaking
+        // the convention that `c` is the aperiodic axis).
+        let basis_2d = Matrix2::new(
+            owned_cell.lattice.basis[(0, 0)],
+            owned_cell.lattice.basis[(0, 1)],
+            owned_cell.lattice.basis[(1, 0)],
+            owned_cell.lattice.basis[(1, 1)],
+        );
+        let (_, trans_mat_2d) = minkowski_reduce_2d(&basis_2d);
+        let reduced_trans_mat: Linear = lift_2d_to_3d(&trans_mat_2d);
+        let reduced_cell =
+            UnimodularTransformation::from_linear(reduced_trans_mat).transform_cell(&owned_cell);
+
+        // Sanity-check tolerance against the *reduced* in-plane vectors.
+        let reduced_basis = &reduced_cell.lattice.basis;
+        let na = reduced_basis.column(0).norm();
+        let nb = reduced_basis.column(1).norm();
+        let nc = reduced_basis.column(2).norm();
         let min_inplane_norm = na.min(nb);
         let rough_symprec = 2.0 * symprec;
         if rough_symprec > min_inplane_norm / 2.0 {
@@ -70,22 +83,30 @@ impl LayerPrimitiveCell {
             );
             return Err(MoyoError::TooLargeToleranceError);
         }
+        debug_assert!(
+            is_minkowski_reduced_2d(&Matrix2::new(
+                reduced_basis[(0, 0)],
+                reduced_basis[(0, 1)],
+                reduced_basis[(1, 0)],
+                reduced_basis[(1, 1)],
+            )),
+            "in-plane block must be 2D-Minkowski-reduced before kd-tree search"
+        );
 
-        let pkdtree = PeriodicKdTree::new(cell, rough_symprec);
-        let pivots = pivot_site_indices(&cell.numbers);
-        let src = pivots[0];
+        // Reuse the bulk pure-translation search (kd-tree + correspondence +
+        // symmetrize), which is correct on a Minkowski-reduced basis.
+        let (raw_translations, raw_permutations) = search_pure_translations(&reduced_cell, symprec);
 
-        // Tolerance on the fractional `c`-component, derived from the cartesian
-        // tolerance `symprec` divided by `|c|`.
+        // Drop translations with non-zero `c`-component: they are not
+        // in-plane lattice translations, so they do not belong to the layer
+        // group. Snap the surviving ones to `tz = 0`.
         let z_tol = symprec / nc;
-
-        let mut permutations_translations_tmp = vec![];
-        for dst in pivots.iter() {
-            let translation = cell.positions[*dst] - cell.positions[src];
-
-            // Wrap the c-component into [-0.5, 0.5] and skip candidates with a
-            // non-zero c-component before doing the (expensive) correspondence
-            // solve -- they cannot be in-plane lattice translations.
+        let mut translations = vec![];
+        let mut permutations = vec![];
+        for (mut translation, permutation) in raw_translations
+            .into_iter()
+            .zip(raw_permutations.into_iter())
+        {
             let mut tz = translation[2];
             tz -= tz.round();
             if tz.abs() > z_tol {
@@ -95,59 +116,55 @@ impl LayerPrimitiveCell {
                 );
                 continue;
             }
-
-            let new_positions: Vec<Position> =
-                cell.positions.iter().map(|pos| pos + translation).collect();
-
-            if let Some(permutation) = solve_correspondence(&pkdtree, cell, &new_positions) {
-                permutations_translations_tmp.push((permutation, translation));
-            }
-        }
-
-        // Purify translations by permutations and snap the c-component to zero.
-        let mut translations = vec![];
-        let mut permutations = vec![];
-        for (permutation, rough_translation) in permutations_translations_tmp.iter() {
-            let (mut translation, distance) = symmetrize_translation_from_permutation(
-                cell,
-                permutation,
-                &Rotation::identity(),
-                rough_translation,
-            );
-            if distance < symprec {
-                translation[2] = 0.0;
-                translations.push(translation);
-                permutations.push(permutation.clone());
-            }
+            translation[2] = 0.0;
+            translations.push(translation);
+            permutations.push(permutation);
         }
 
         let size = translations.len() as i32;
-        if (size == 0) || (cell.num_atoms() % (size as usize) != 0) {
+        if (size == 0) || (reduced_cell.num_atoms() % (size as usize) != 0) {
             debug!(
                 "Failed to properly find layer translations: {} translations in {} atoms.",
                 size,
-                cell.num_atoms()
+                reduced_cell.num_atoms()
             );
             return Err(MoyoError::TooSmallToleranceError);
         }
         debug!("Found {} pure layer translations", size);
 
-        // Build the transformation matrix from primitive (a', b', c) to input
-        // (a, b, c). Reuse the bulk 3D HNF helper: layer translations have
-        // `tz = 0` (snapped above), so the third row of the resulting basis is
-        // locked to `(0, 0, size)`, giving a `trans_mat` with the layer-group
-        // block form (`W_33 = 1`, `W_3i = W_i3 = 0`) automatically.
+        // Build the transformation matrix from primitive (a', b', c) to the
+        // 2D-reduced cell. Layer translations have `tz = 0`, so the bulk 3D
+        // HNF gives a `trans_mat` with the layer-block form (`W_33 = 1`,
+        // `W_3i = W_i3 = 0`) automatically.
         let trans_mat =
             transformation_matrix_from_translations(&translations).ok_or_else(|| {
                 debug!("Failed to find a transformation matrix for the primitive layer cell.");
                 MoyoError::TooSmallToleranceError
             })?;
 
-        // Reuse the bulk primitive-cell builder. `trans_mat` preserves the
-        // `c` column of the basis and the `z` component of fractional
-        // positions by construction, so the layer contract is preserved.
-        let (primitive_cell, site_mapping, _) =
-            primitive_cell_from_transformation(cell, &trans_mat, &translations, &permutations);
+        // Reuse the bulk primitive-cell builder. It preserves the `c` column
+        // of the basis and the `z` of fractional positions by construction
+        // (`trans_mat` has the layer-block form).
+        let (primitive_cell, site_mapping, _) = primitive_cell_from_transformation(
+            &reduced_cell,
+            &trans_mat,
+            &translations,
+            &permutations,
+        );
+
+        // (input)
+        //    -[reduced_trans_mat]-> (reduced)
+        //    <-[trans_mat]- (primitive)
+        // Skip the second 3D Minkowski step from `PrimitiveCell::new` -- it
+        // would risk swapping the (already-orthogonal) `c` axis on thin slabs.
+        let inv_reduced_trans_mat = reduced_trans_mat.map(|e| e as f64).try_inverse().unwrap();
+        let linear: Linear =
+            (trans_mat.map(|e| e as f64) * inv_reduced_trans_mat).map(|e| e.round() as i32);
+
+        let translations_in_input = translations
+            .iter()
+            .map(|t| reduced_trans_mat.map(|e| e as f64) * t)
+            .collect::<Vec<_>>();
 
         let Cell {
             lattice: prim_lattice,
@@ -160,9 +177,9 @@ impl LayerPrimitiveCell {
                 prim_positions,
                 prim_numbers,
             ),
-            linear: trans_mat,
+            linear,
             site_mapping,
-            translations,
+            translations: translations_in_input,
             permutations,
         })
     }
@@ -197,7 +214,7 @@ mod tests {
         assert_eq!(result.layer_cell.num_atoms(), 1);
         assert_eq!(result.translations.len(), 1);
         assert_relative_eq!(result.translations[0], Vector3::new(0.0, 0.0, 0.0));
-        // Lattice is unchanged.
+        // Lattice is unchanged (input was already 2D-Minkowski-reduced).
         assert_relative_eq!(
             *result.layer_cell.lattice().basis(),
             input_basis,
@@ -303,5 +320,33 @@ mod tests {
             input_basis,
             epsilon = 1e-12
         );
+    }
+
+    #[test]
+    fn test_layer_skewed_in_plane_basis_is_reduced() {
+        // Skewed in-plane basis: a = (1, 0, 0), b = (4, 1, 0), c along z.
+        // Without 2D Minkowski reduction the kd-tree's [-1, 1]^3 image search
+        // can miss the true nearest periodic image. After reduction the
+        // primitive cell finder still returns a single trivial translation
+        // for a one-atom cell, and the linear field correctly maps the input
+        // basis back to the primitive (= input, here) basis.
+        let cell = Cell::new(
+            Lattice::new(matrix![
+                1.0, 4.0, 0.0;
+                0.0, 1.0, 0.0;
+                0.0, 0.0, 5.0;
+            ]),
+            vec![Vector3::new(0.0, 0.0, 0.1)],
+            vec![1],
+        );
+        let input_basis = cell.lattice.basis;
+        let layer = make_layer(cell);
+        let result = LayerPrimitiveCell::new(&layer, 1e-4).unwrap();
+        assert_eq!(result.layer_cell.num_atoms(), 1);
+        assert_eq!(result.translations.len(), 1);
+        // primitive_basis * linear == input_basis (reconstruct the input basis
+        // through the reported transform; no claim on whether basis equals input).
+        let reconstructed = result.layer_cell.lattice().basis() * result.linear.map(|e| e as f64);
+        assert_relative_eq!(reconstructed, input_basis, epsilon = 1e-8);
     }
 }
