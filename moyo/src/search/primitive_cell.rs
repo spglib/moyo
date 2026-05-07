@@ -248,7 +248,9 @@ impl<M: MagneticMoment> PrimitiveMagneticCell<M> {
     }
 }
 
-fn transformation_matrix_from_translations(translations: &[Translation]) -> Option<Linear> {
+pub(crate) fn transformation_matrix_from_translations(
+    translations: &[Translation],
+) -> Option<Linear> {
     let size = translations.len() as i32;
     let mut columns: Vec<Vector3<i32>> = vec![
         Vector3::new(size, 0, 0),
@@ -279,7 +281,7 @@ fn transformation_matrix_from_translations(translations: &[Translation]) -> Opti
 }
 
 /// Transform `cell` to a primitive cell by inverse of `trans_mat`
-fn primitive_cell_from_transformation(
+pub(crate) fn primitive_cell_from_transformation(
     cell: &Cell,
     trans_mat: &Linear,
     translations: &[Translation],
@@ -339,7 +341,7 @@ fn primitive_magnetic_cell_from_transformation<M: MagneticMoment>(
     (primitive_magnetic_cell, site_mapping)
 }
 
-fn site_mapping_from_orbits(orbits: &[usize]) -> Vec<usize> {
+pub(crate) fn site_mapping_from_orbits(orbits: &[usize]) -> Vec<usize> {
     let mut mapping = BTreeMap::new();
     let mut count = 0;
     for ri in orbits.iter() {
