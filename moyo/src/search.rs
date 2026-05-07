@@ -1,3 +1,6 @@
+mod layer_bravais_group;
+mod layer_primitive_cell;
+mod layer_symmetry_search;
 mod primitive_cell;
 mod primitive_symmetry_search;
 mod solve;
@@ -7,6 +10,10 @@ pub use solve::{
     PeriodicKdTree, PeriodicNeighbor, solve_correspondence, solve_correspondence_naive,
 };
 
+#[allow(unused_imports)]
+pub(crate) use layer_primitive_cell::LayerPrimitiveCell;
+#[allow(unused_imports)]
+pub use layer_symmetry_search::LayerPrimitiveSymmetrySearch;
 pub(super) use primitive_cell::{PrimitiveCell, PrimitiveMagneticCell};
 pub(super) use primitive_symmetry_search::{
     PrimitiveMagneticSymmetrySearch, magnetic_operations_in_magnetic_cell, operations_in_cell,

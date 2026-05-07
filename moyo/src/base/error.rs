@@ -56,8 +56,14 @@ pub enum MoyoError {
     #[error("Unknown uni_number")]
     UnknownUNINumberError,
     // Layer-group input validation errors
+    #[error("Lattice basis vector has zero norm")]
+    DegenerateLattice,
     #[error(
         "Aperiodic axis c is not perpendicular to the in-plane axes within tolerance: dev(c,a)={dev_ca:.6} rad, dev(c,b)={dev_cb:.6} rad"
     )]
     AperiodicAxisNotOrthogonal { dev_ca: f64, dev_cb: f64 },
+    #[error(
+        "In-plane axes a, b are not in the xy-plane within tolerance: dev(a,xy)={dev_az:.6} rad, dev(b,xy)={dev_bz:.6} rad"
+    )]
+    InPlaneAxesNotInXY { dev_az: f64, dev_bz: f64 },
 }
