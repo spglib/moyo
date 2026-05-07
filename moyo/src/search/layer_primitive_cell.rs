@@ -305,11 +305,7 @@ mod tests {
         assert_eq!(result.translations.len(), 1);
         assert_relative_eq!(result.translations[0], Vector3::new(0.0, 0.0, 0.0));
         // Lattice is unchanged.
-        assert_relative_eq!(
-            result.layer_cell.lattice().basis,
-            input_basis,
-            epsilon = 1e-8
-        );
+        assert_relative_eq!(*result.layer_cell.basis(), input_basis, epsilon = 1e-8);
         // The atom z-coordinate carries through unchanged.
         assert_relative_eq!(result.layer_cell.positions()[0][2], 0.2, epsilon = 1e-12);
     }
@@ -342,12 +338,12 @@ mod tests {
         }
         // Primitive cell halves along `a` and preserves `c`.
         assert_relative_eq!(
-            result.layer_cell.lattice().basis.column(0).into_owned(),
+            result.layer_cell.basis().column(0).into_owned(),
             Vector3::new(0.5, 0.0, 0.0),
             epsilon = 1e-8
         );
         assert_relative_eq!(
-            result.layer_cell.lattice().basis.column(2).into_owned(),
+            result.layer_cell.basis().column(2).into_owned(),
             input_c,
             epsilon = 1e-12
         );
@@ -396,10 +392,6 @@ mod tests {
         assert_eq!(result.translations.len(), 1);
         assert_relative_eq!(result.translations[0], Vector3::new(0.0, 0.0, 0.0));
         assert_eq!(result.layer_cell.num_atoms(), 2);
-        assert_relative_eq!(
-            result.layer_cell.lattice().basis,
-            input_basis,
-            epsilon = 1e-12
-        );
+        assert_relative_eq!(*result.layer_cell.basis(), input_basis, epsilon = 1e-12);
     }
 }

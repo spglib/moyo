@@ -1,8 +1,8 @@
+use nalgebra::Matrix3;
 use serde::{Deserialize, Serialize};
 
 use super::cell::{AtomicSpecie, Cell, Position, validate_aperiodic_axis};
 use super::error::MoyoError;
-use super::lattice::Lattice;
 use super::tolerance::AngleTolerance;
 
 /// A `Cell` whose third basis vector is the aperiodic stacking direction
@@ -42,14 +42,20 @@ impl LayerCell {
     ///
     /// Deliberately `pub(crate)`: a layer cell must not be downgradeable to a
     /// bulk `Cell` from outside the crate, otherwise the bulk pipeline could
-    /// silently accept a layer-shaped input. Use the field-level getters
-    /// (`lattice`, `positions`, `numbers`) for read-only inspection.
+    /// silently accept a layer-shaped input.
     pub(crate) fn cell(&self) -> &Cell {
         &self.inner
     }
 
-    pub fn lattice(&self) -> &Lattice {
-        &self.inner.lattice
+    /// Lattice basis matrix `[a | b | c]` (column-vector convention) with `c`
+    /// the aperiodic stacking direction.
+    ///
+    /// Deliberately exposes the bare matrix instead of a `&Lattice`: a
+    /// `&Lattice` is exactly the input shape bulk-pipeline helpers consume
+    /// (e.g. `search_bravais_group(lattice, ..)`), so handing one out from
+    /// `LayerCell` would re-introduce the conflation the newtype prevents.
+    pub fn basis(&self) -> &Matrix3<f64> {
+        &self.inner.lattice.basis
     }
 
     pub fn positions(&self) -> &[Position] {
