@@ -1,10 +1,14 @@
 use log::debug;
 use serde::Serialize;
 
+use super::point_group::PointGroup;
 use super::space_group::match_origin_shift;
-use crate::base::{MoyoError, Operations, UnimodularLinear, UnimodularTransformation};
+use crate::base::{
+    MoyoError, Operations, UnimodularLinear, UnimodularTransformation, project_rotations,
+};
 use crate::data::{
-    LayerHallNumber, LayerHallSymbol, LayerNumber, LayerSetting, layer_hall_symbol_entry,
+    LayerHallNumber, LayerHallSymbol, LayerNumber, LayerSetting, arithmetic_crystal_class_entry,
+    layer_arithmetic_crystal_class_entry, layer_hall_symbol_entry,
 };
 
 /// Identified layer-group type for a primitive layer cell.
@@ -15,12 +19,14 @@ use crate::data::{
 /// `UnimodularTransformation` that maps the input primitive layer cell to
 /// the database canonical for that Hall.
 ///
-/// **v1 scope.** [`LayerGroup::new`] performs an identity-basis match
-/// only -- it does not yet search over `prim_trans_mat` candidates the way
-/// `SpaceGroup::new` does. This is sufficient for the M3 round-trip tests
-/// (which feed inputs already in canonical layer basis) and for callers who
-/// pre-orient their `LayerCell`. Generalised matching with axis-swap
-/// candidates and an arithmetic-class pre-filter is deferred to M5.
+/// **v1 scope.** [`LayerGroup::new`] runs the bulk [`PointGroup::new`] to
+/// extract the geometric crystal class and uses it to pre-filter Hall
+/// candidates, then attempts an identity-basis `match_origin_shift` against
+/// each survivor. Sufficient for inputs already in the layer-canonical
+/// basis (the M3 round-trip tests, and callers who pre-orient their
+/// `LayerCell`). Search over basis-correction transformation matrices --
+/// the layer analogue of `SpaceGroup::new`'s correction-matrix loop -- is
+/// deferred to M5.
 #[derive(Debug, Clone, Serialize)]
 pub struct LayerGroup {
     pub number: LayerNumber,
@@ -32,30 +38,38 @@ pub struct LayerGroup {
 
 impl LayerGroup {
     /// Identify a layer group from primitive layer-cell operations.
-    ///
-    /// Iterates the Hall numbers in `setting` and returns the first one
-    /// whose database generators match `prim_layer_operations` modulo an
-    /// origin shift. See the type-level docs for the v1 scope (no basis
-    /// search).
     pub fn new(
         prim_layer_operations: &Operations,
         setting: LayerSetting,
         epsilon: f64,
     ) -> Result<Self, MoyoError> {
-        let input_order = prim_layer_operations.len();
-        for hall_number in setting.hall_numbers() {
-            let lh_symbol = LayerHallSymbol::from_hall_number(hall_number)
-                .ok_or(MoyoError::LayerGroupTypeIdentificationError)?;
+        // Identify the bulk point group first (mirrors `SpaceGroup::new`).
+        // Only the geometric crystal class is consumed -- the bulk arithmetic
+        // class assumes a 3D-canonical orientation that does not preserve
+        // the layer's c-axis identity, so we do not feed `prim_trans_mat`
+        // into `match_origin_shift` (every layer Hall in the database is
+        // already in the layer-canonical basis with c aperiodic).
+        let prim_rotations = project_rotations(prim_layer_operations);
+        let point_group = PointGroup::new(&prim_rotations)?;
+        let geometric_crystal_class = arithmetic_crystal_class_entry(point_group.arithmetic_number)
+            .ok_or(MoyoError::LayerGroupTypeIdentificationError)?
+            .geometric_crystal_class;
+        debug!(
+            "Layer point group: geometric crystal class {:?}",
+            geometric_crystal_class
+        );
 
-            // Skip groups of the wrong order: without the bulk pipeline's
-            // arithmetic-class pre-filter, smaller groups (e.g. LG 1 = p1)
-            // would otherwise spuriously match larger inputs since their
-            // generators are a strict subset.
-            let db_prim_operations = lh_symbol.primitive_traverse();
-            if db_prim_operations.len() != input_order {
+        for hall_number in setting.hall_numbers() {
+            let entry = layer_hall_symbol_entry(hall_number)
+                .ok_or(MoyoError::LayerGroupTypeIdentificationError)?;
+            let layer_arith = layer_arithmetic_crystal_class_entry(entry.arithmetic_number)
+                .ok_or(MoyoError::LayerGroupTypeIdentificationError)?;
+            if layer_arith.geometric_crystal_class != geometric_crystal_class {
                 continue;
             }
 
+            let lh_symbol = LayerHallSymbol::from_hall_number(hall_number)
+                .ok_or(MoyoError::LayerGroupTypeIdentificationError)?;
             let db_prim_generators = lh_symbol.primitive_generators();
             if let Some(origin_shift) = match_origin_shift(
                 prim_layer_operations,
@@ -63,8 +77,6 @@ impl LayerGroup {
                 &db_prim_generators,
                 epsilon,
             ) {
-                let entry = layer_hall_symbol_entry(hall_number)
-                    .ok_or(MoyoError::LayerGroupTypeIdentificationError)?;
                 debug!(
                     "Matched layer Hall number {} (LG {})",
                     hall_number, entry.number
