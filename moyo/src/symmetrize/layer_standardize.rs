@@ -1,10 +1,10 @@
-use std::collections::HashMap;
-
-use log::debug;
 use nalgebra::Matrix3;
 use nalgebra::linalg::QR;
 
-use super::standardize::{match_wyckoff_coordinates, orbits_in_cell, symmetrize_positions};
+use super::standardize::{
+    align_primitive_permutations, assign_wyckoffs_by_orbit, group_sites_by_orbit,
+    match_wyckoff_coordinates, symmetrize_positions,
+};
 use crate::base::{
     EPS, Lattice, Lattice2D, LayerCell, LayerLattice, Linear, MoyoError, Operations, Permutation,
     Rotations, Transformation, UnimodularTransformation, project_rotations,
@@ -153,24 +153,14 @@ impl StandardizedLayerCell {
         // Symmetrize positions in the primitive standardized cell using the
         // refined LG operations from the Hall symbol. Permutations from the
         // primitive symmetry search are ordered differently than the
-        // database traversal -- align them by rotation key before reuse.
-        let mut permutation_mapping = HashMap::new();
-        let prim_rotations =
-            project_rotations(&prim_transformation.transform_operations(prim_layer_operations));
-        for (prim_rotation, permutation) in
-            prim_rotations.iter().zip(prim_layer_permutations.iter())
-        {
-            permutation_mapping.insert(*prim_rotation, permutation.clone());
-        }
-        let prim_std_permutations = prim_std_operations
-            .iter()
-            .map(|ops| {
-                permutation_mapping
-                    .get(&ops.rotation)
-                    .cloned()
-                    .ok_or(MoyoError::StandardizationError)
-            })
-            .collect::<Result<Vec<_>, _>>()?;
+        // database traversal; the shared `align_primitive_permutations`
+        // matches them by rotation key.
+        let prim_std_permutations = align_primitive_permutations(
+            &prim_transformation,
+            prim_layer_operations,
+            prim_layer_permutations,
+            &prim_std_operations,
+        )?;
         let new_prim_std_positions = symmetrize_positions(
             prim_std_cell_tmp.positions(),
             &prim_std_operations,
@@ -251,65 +241,18 @@ impl StandardizedLayerCell {
         hall_number: LayerHallNumber,
         symprec: f64,
     ) -> Result<Vec<LayerWyckoffPosition>, MoyoError> {
-        // Group sites in the conventional cell by crystallographic orbit.
-        let orbits = orbits_in_cell(
+        let group = group_sites_by_orbit(
             prim_std_cell.num_atoms(),
             prim_std_permutations,
             site_mapping,
+            std_cell.num_atoms(),
         );
-        let mut num_orbits = 0;
-        let mut mapping = vec![0; std_cell.num_atoms()];
-        let mut remapping = vec![];
-        for i in 0..std_cell.num_atoms() {
-            if orbits[i] == i {
-                mapping[i] = num_orbits;
-                remapping.push(i);
-                num_orbits += 1;
-            } else {
-                mapping[i] = mapping[orbits[i]];
-            }
-        }
-
-        let mut multiplicities = vec![0; num_orbits];
-        for i in 0..std_cell.num_atoms() {
-            multiplicities[mapping[i]] += 1;
-        }
-
-        let mut representative_wyckoffs: Vec<Option<LayerWyckoffPosition>> = vec![None; num_orbits];
         let lattice = std_cell.lattice().as_lattice();
-        for (i, position) in std_cell.positions().iter().enumerate() {
-            let orbit = mapping[i];
-            if representative_wyckoffs[orbit].is_some() {
-                continue;
-            }
-            if let Ok(wyckoff) = assign_layer_wyckoff_position(
-                position,
-                multiplicities[orbit],
-                hall_number,
-                &lattice,
-                symprec,
-            ) {
-                representative_wyckoffs[orbit] = Some(wyckoff);
-            }
-        }
-
-        for (i, wyckoff) in representative_wyckoffs.iter().enumerate() {
-            if wyckoff.is_none() {
-                debug!(
-                    "Failed to assign layer Wyckoff position with multiplicity {} (representative site {})",
-                    multiplicities[i], remapping[i]
-                );
-            }
-        }
-        let representative_wyckoffs = representative_wyckoffs
-            .into_iter()
-            .map(|w| w.ok_or(MoyoError::WyckoffPositionAssignmentError))
-            .collect::<Result<Vec<_>, _>>()?;
-
-        let wyckoffs = (0..std_cell.num_atoms())
-            .map(|i| representative_wyckoffs[mapping[orbits[i]]].clone())
-            .collect::<Vec<_>>();
-        Ok(wyckoffs)
+        assign_wyckoffs_by_orbit(&group, std_cell.positions(), |position, multiplicity| {
+            iter_layer_wyckoff_positions(hall_number, multiplicity)
+                .find(|w| match_wyckoff_coordinates(position, w.coordinates, &lattice, symprec))
+                .cloned()
+        })
     }
 }
 
@@ -414,25 +357,10 @@ fn symmetrize_layer_lattice(lattice: &Lattice, rotations: &Rotations) -> (Lattic
     (Lattice { basis: new_basis }, rotation_matrix)
 }
 
-/// Assign a layer Wyckoff position by solving for a compatible integer
-/// offset. Thin wrapper over the shared
-/// [`super::standardize::match_wyckoff_coordinates`]: the only layer-specific
-/// part is the database the candidates come from
-/// (`iter_layer_wyckoff_positions`).
-fn assign_layer_wyckoff_position(
-    position: &crate::base::Position,
-    multiplicity: usize,
-    hall_number: LayerHallNumber,
-    lattice: &Lattice,
-    symprec: f64,
-) -> Result<LayerWyckoffPosition, MoyoError> {
-    for wyckoff in iter_layer_wyckoff_positions(hall_number, multiplicity) {
-        if match_wyckoff_coordinates(position, wyckoff.coordinates, lattice, symprec) {
-            return Ok(wyckoff.clone());
-        }
-    }
-    Err(MoyoError::WyckoffPositionAssignmentError)
-}
+// `assign_layer_wyckoff_position` was a thin wrapper over the shared
+// `match_wyckoff_coordinates`; it is now inlined into `assign_wyckoffs`
+// via `iter_layer_wyckoff_positions(...).find(...)` and the shared
+// `assign_wyckoffs_by_orbit`.
 
 #[cfg(test)]
 mod tests {
