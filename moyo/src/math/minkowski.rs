@@ -155,19 +155,25 @@ pub fn is_minkowski_reduced(basis: &Matrix3<f64>) -> bool {
     true
 }
 
+// Lagrange-Gauss provably terminates in O(log(max norm)) steps; the bound is
+// only a defensive guard against pathological f64 inputs.
+const MINKOWSKI_2D_MAX_ITERATIONS: usize = 1024;
+
 /// Lagrange-Gauss reduction of a 2D basis (column-vector convention).
 /// Returns the reduced basis and the unimodular transformation `T` such that
 /// `basis * T == reduced` (exact under integer linear combinations of input columns).
-/// Parity is preserved (det(T) > 0).
+/// Parity is preserved (det(T) > 0). If the input is already reduced, returns
+/// `(basis, identity)`.
 #[allow(dead_code)]
 pub fn minkowski_reduce_2d(basis: &Matrix2<f64>) -> (Matrix2<f64>, Matrix2<i32>) {
+    if is_minkowski_reduced_2d(basis) {
+        return (*basis, Matrix2::<i32>::identity());
+    }
+
     let mut b = *basis;
     let mut t = Matrix2::<i32>::identity();
 
-    // Lagrange-Gauss: provably terminates in O(log(max norm)) steps; no cycle
-    // check needed. We bound iterations defensively to avoid infinite loops on
-    // pathological f64 inputs.
-    for _ in 0..1024 {
+    for _ in 0..MINKOWSKI_2D_MAX_ITERATIONS {
         if b.column(0).norm() > b.column(1).norm() + EPS {
             b.swap_columns(0, 1);
             t = t * Matrix2::new(0, 1, 1, 0);

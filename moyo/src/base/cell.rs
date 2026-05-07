@@ -11,7 +11,7 @@ use union_find::{QuickFindUf, UnionByRank, UnionFind};
 use super::error::MoyoError;
 use super::lattice::Lattice;
 use super::permutation::Permutation;
-use super::tolerance::AngleTolerance;
+use super::tolerance::{AngleTolerance, is_angle_within_tolerance};
 
 /// Fractional coordinates
 pub type Position = Vector3<f64>;
@@ -70,10 +70,8 @@ impl Cell {
 /// Validate the layer-group convention that the third basis vector `c` is
 /// perpendicular to the in-plane axes `a` and `b` (paper Fu et al. 2024 eq. 5).
 ///
-/// When `angle_tolerance` is `AngleTolerance::Default`, `symprec` drives the
-/// check via the same `sin^2(dtheta) * |u| * |v| < symprec^2` form moyo uses
-/// elsewhere (see `compare_nondiagonal_matrix_tensor_element`); explicit
-/// `Radian(_)` compares the deviation directly.
+/// Defers to `is_angle_within_tolerance` so the `(symprec, angle_tolerance)`
+/// pair is interpreted exactly as in the rest of the symmetry pipeline.
 pub fn validate_aperiodic_axis(
     cell: &Cell,
     symprec: f64,
@@ -83,36 +81,21 @@ pub fn validate_aperiodic_axis(
     let b = cell.lattice.basis.column(1);
     let c = cell.lattice.basis.column(2);
 
-    let na = a.norm();
-    let nb = b.norm();
-    let nc = c.norm();
+    let dev_ca = c.angle(&a) - PI / 2.0;
+    let dev_cb = c.angle(&b) - PI / 2.0;
 
-    let cos_ca = (c.dot(&a) / (nc * na)).clamp(-1.0, 1.0);
-    let cos_cb = (c.dot(&b) / (nc * nb)).clamp(-1.0, 1.0);
-    let dev_ca = (PI / 2.0 - cos_ca.acos()).abs();
-    let dev_cb = (PI / 2.0 - cos_cb.acos()).abs();
-
-    let ok_ca = match angle_tolerance {
-        AngleTolerance::Radian(r) => dev_ca <= r,
-        AngleTolerance::Default => {
-            let dot = c.dot(&a);
-            dot * dot <= symprec * symprec * nc * na
-        }
-    };
-    let ok_cb = match angle_tolerance {
-        AngleTolerance::Radian(r) => dev_cb <= r,
-        AngleTolerance::Default => {
-            let dot = c.dot(&b);
-            dot * dot <= symprec * symprec * nc * nb
-        }
-    };
+    let ok_ca = is_angle_within_tolerance(dev_ca, c.norm(), a.norm(), symprec, angle_tolerance);
+    let ok_cb = is_angle_within_tolerance(dev_cb, c.norm(), b.norm(), symprec, angle_tolerance);
 
     if !ok_ca || !ok_cb {
         debug!(
             "Aperiodic axis is not orthogonal: dev(c,a)={:.6} rad, dev(c,b)={:.6} rad",
             dev_ca, dev_cb
         );
-        return Err(MoyoError::AperiodicAxisNotOrthogonal { dev_ca, dev_cb });
+        return Err(MoyoError::AperiodicAxisNotOrthogonal {
+            dev_ca: dev_ca.abs(),
+            dev_cb: dev_cb.abs(),
+        });
     }
     Ok(())
 }
