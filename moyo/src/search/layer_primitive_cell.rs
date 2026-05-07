@@ -8,7 +8,7 @@ use super::solve::{
     symmetrize_translation_from_permutation,
 };
 use crate::base::{
-    Cell, EPS, Lattice, Linear, MoyoError, Permutation, Position, Rotation, Translation,
+    Cell, EPS, Lattice, LayerCell, Linear, MoyoError, Permutation, Position, Rotation, Translation,
     orbits_from_permutations,
 };
 use crate::math::HNF;
@@ -20,7 +20,7 @@ use crate::math::HNF;
 #[allow(dead_code)] // consumed by later layer-group milestones
 pub(crate) struct LayerPrimitiveCell {
     /// Primitive layer cell whose third basis vector equals the input `c`.
-    pub cell: Cell,
+    pub layer_cell: LayerCell,
     /// Transformation matrix from the **primitive** cell to the input cell.
     pub linear: Linear,
     /// Mapping from sites of the input cell to those of the primitive cell (many-to-one).
@@ -40,7 +40,8 @@ impl LayerPrimitiveCell {
     /// A non-trivial candidate (one that aligns atoms) with a non-zero
     /// `c`-component falsifies the layer-group hypothesis and yields
     /// `MoyoError::SpuriousAperiodicTranslation`.
-    pub fn new(cell: &Cell, symprec: f64) -> Result<Self, MoyoError> {
+    pub fn new(layer_cell: &LayerCell, symprec: f64) -> Result<Self, MoyoError> {
+        let cell = layer_cell.cell();
         // We deliberately skip the 3D Minkowski reduction used by `PrimitiveCell::new`:
         // mixing `c` into the in-plane basis would invalidate the §3.1 axis convention,
         // and the in-plane 2D Minkowski reduction is part of the M4 standardization
@@ -147,8 +148,10 @@ impl LayerPrimitiveCell {
         // The relation `cell.lattice.basis * trans_mat^{-1}.cols * size = primitive.basis`
         // (modulo the in-plane block) is satisfied by construction; no further reduction
         // is performed here -- standardization (M4) handles 2D Minkowski reduction.
+        // The primitive cell inherits the input's `c` axis, so the layer contract
+        // (c perpendicular to a, b) is preserved by construction.
         Ok(Self {
-            cell: primitive_cell,
+            layer_cell: LayerCell::new_unchecked(primitive_cell),
             linear: trans_mat,
             site_mapping,
             translations,
@@ -277,7 +280,11 @@ mod tests {
     use nalgebra::{Vector3, matrix};
 
     use super::LayerPrimitiveCell;
-    use crate::base::{Cell, Lattice, MoyoError};
+    use crate::base::{AngleTolerance, Cell, Lattice, LayerCell, MoyoError};
+
+    fn make_layer(cell: Cell) -> LayerCell {
+        LayerCell::new(cell, 1e-4, AngleTolerance::Default).unwrap()
+    }
 
     #[test]
     fn test_layer_p1_single_atom() {
@@ -291,18 +298,20 @@ mod tests {
             vec![Vector3::new(0.3, 0.4, 0.2)],
             vec![1],
         );
-        let result = LayerPrimitiveCell::new(&cell, 1e-4).unwrap();
-        assert_eq!(result.cell.num_atoms(), 1);
+        let input_basis = cell.lattice.basis;
+        let layer = make_layer(cell);
+        let result = LayerPrimitiveCell::new(&layer, 1e-4).unwrap();
+        assert_eq!(result.layer_cell.num_atoms(), 1);
         assert_eq!(result.translations.len(), 1);
         assert_relative_eq!(result.translations[0], Vector3::new(0.0, 0.0, 0.0));
         // Lattice is unchanged.
         assert_relative_eq!(
-            result.cell.lattice.basis,
-            cell.lattice.basis,
+            result.layer_cell.lattice().basis,
+            input_basis,
             epsilon = 1e-8
         );
         // The atom z-coordinate carries through unchanged.
-        assert_relative_eq!(result.cell.positions[0][2], 0.2, epsilon = 1e-12);
+        assert_relative_eq!(result.layer_cell.positions()[0][2], 0.2, epsilon = 1e-12);
     }
 
     #[test]
@@ -318,7 +327,9 @@ mod tests {
             vec![Vector3::new(0.0, 0.0, 0.1), Vector3::new(0.5, 0.0, 0.1)],
             vec![1, 1],
         );
-        let result = LayerPrimitiveCell::new(&cell, 1e-4).unwrap();
+        let input_c = cell.lattice.basis.column(2).into_owned();
+        let layer = make_layer(cell);
+        let result = LayerPrimitiveCell::new(&layer, 1e-4).unwrap();
         assert_eq!(result.translations.len(), 2);
         // One of the translations must be (1/2, 0, 0); both must have zero z.
         let has_half = result
@@ -331,17 +342,17 @@ mod tests {
         }
         // Primitive cell halves along `a` and preserves `c`.
         assert_relative_eq!(
-            result.cell.lattice.basis.column(0).into_owned(),
+            result.layer_cell.lattice().basis.column(0).into_owned(),
             Vector3::new(0.5, 0.0, 0.0),
             epsilon = 1e-8
         );
         assert_relative_eq!(
-            result.cell.lattice.basis.column(2).into_owned(),
-            cell.lattice.basis.column(2).into_owned(),
+            result.layer_cell.lattice().basis.column(2).into_owned(),
+            input_c,
             epsilon = 1e-12
         );
-        assert_eq!(result.cell.num_atoms(), 1);
-        assert_relative_eq!(result.cell.positions[0][2], 0.1, epsilon = 1e-12);
+        assert_eq!(result.layer_cell.num_atoms(), 1);
+        assert_relative_eq!(result.layer_cell.positions()[0][2], 0.1, epsilon = 1e-12);
     }
 
     #[test]
@@ -357,8 +368,9 @@ mod tests {
             vec![Vector3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 0.5)],
             vec![1, 1],
         );
-        let err = LayerPrimitiveCell::new(&cell, 1e-4).unwrap_err();
-        assert_eq!(err, MoyoError::SpuriousAperiodicTranslation);
+        let layer = make_layer(cell);
+        let err = LayerPrimitiveCell::new(&layer, 1e-4).unwrap_err();
+        assert!(matches!(err, MoyoError::SpuriousAperiodicTranslation));
     }
 
     #[test]
@@ -378,13 +390,15 @@ mod tests {
             ],
             vec![1, 1],
         );
-        let result = LayerPrimitiveCell::new(&cell, 1e-4).unwrap();
+        let input_basis = cell.lattice.basis;
+        let layer = make_layer(cell);
+        let result = LayerPrimitiveCell::new(&layer, 1e-4).unwrap();
         assert_eq!(result.translations.len(), 1);
         assert_relative_eq!(result.translations[0], Vector3::new(0.0, 0.0, 0.0));
-        assert_eq!(result.cell.num_atoms(), 2);
+        assert_eq!(result.layer_cell.num_atoms(), 2);
         assert_relative_eq!(
-            result.cell.lattice.basis,
-            cell.lattice.basis,
+            result.layer_cell.lattice().basis,
+            input_basis,
             epsilon = 1e-12
         );
     }

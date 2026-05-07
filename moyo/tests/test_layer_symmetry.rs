@@ -1,7 +1,7 @@
 use nalgebra::{Vector3, matrix};
 use test_log::test;
 
-use moyo::base::{AngleTolerance, Cell, Lattice, Rotation};
+use moyo::base::{AngleTolerance, Cell, Lattice, LayerCell, Rotation};
 use moyo::search::LayerPrimitiveSymmetrySearch;
 
 const SYMPREC: f64 = 1e-4;
@@ -37,8 +37,9 @@ fn test_layer_p1_round_trip() {
         vec![1, 1],
     );
 
+    let layer = LayerCell::new(cell, SYMPREC, AngleTolerance::Radian(1e-2)).unwrap();
     let result =
-        LayerPrimitiveSymmetrySearch::new(&cell, SYMPREC, AngleTolerance::Radian(1e-2)).unwrap();
+        LayerPrimitiveSymmetrySearch::new(&layer, SYMPREC, AngleTolerance::Radian(1e-2)).unwrap();
 
     // Order of LG 1 is 1 (identity only).
     assert_eq!(result.operations.len(), 1);
@@ -69,8 +70,9 @@ fn test_layer_p2_round_trip() {
         vec![1, 1],
     );
 
+    let layer = LayerCell::new(cell, SYMPREC, AngleTolerance::Radian(1e-2)).unwrap();
     let result =
-        LayerPrimitiveSymmetrySearch::new(&cell, SYMPREC, AngleTolerance::Radian(1e-2)).unwrap();
+        LayerPrimitiveSymmetrySearch::new(&layer, SYMPREC, AngleTolerance::Radian(1e-2)).unwrap();
 
     // Order of LG 3 (p112) is 2.
     assert_eq!(result.operations.len(), 2);
@@ -101,8 +103,9 @@ fn test_layer_p4mm_round_trip() {
         vec![1],
     );
 
+    let layer = LayerCell::new(cell, SYMPREC, AngleTolerance::Radian(1e-2)).unwrap();
     let result =
-        LayerPrimitiveSymmetrySearch::new(&cell, SYMPREC, AngleTolerance::Radian(1e-2)).unwrap();
+        LayerPrimitiveSymmetrySearch::new(&layer, SYMPREC, AngleTolerance::Radian(1e-2)).unwrap();
 
     assert_eq!(result.operations.len(), 8);
     for op in result.operations.iter() {

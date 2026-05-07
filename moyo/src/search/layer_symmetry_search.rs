@@ -7,7 +7,9 @@ use super::solve::{
     PeriodicKdTree, pivot_site_indices, solve_correspondence,
     symmetrize_translation_from_permutation,
 };
-use crate::base::{AngleTolerance, Cell, Lattice, MoyoError, Operation, Operations, Permutation};
+use crate::base::{
+    AngleTolerance, Lattice, LayerCell, MoyoError, Operation, Operations, Permutation,
+};
 
 /// Coset representatives of the layer group of a primitive layer cell.
 ///
@@ -32,13 +34,14 @@ impl LayerPrimitiveSymmetrySearch {
     /// `c` and its in-plane block is unreduced -- 2D Minkowski reduction is
     /// deferred to standardization).
     pub fn new(
-        primitive_layer_cell: &Cell,
+        primitive_layer_cell: &LayerCell,
         symprec: f64,
         angle_tolerance: AngleTolerance,
     ) -> Result<Self, MoyoError> {
+        let inner_cell = primitive_layer_cell.cell();
         // Tolerance sanity check against the in-plane basis only -- `c` is not
         // a candidate translation direction for layer systems.
-        let basis = &primitive_layer_cell.lattice.basis;
+        let basis = &inner_cell.lattice.basis;
         let min_inplane_norm = basis.column(0).norm().min(basis.column(1).norm());
         let rough_symprec = 2.0 * symprec;
         if rough_symprec > min_inplane_norm / 2.0 {
@@ -48,28 +51,28 @@ impl LayerPrimitiveSymmetrySearch {
             return Err(MoyoError::TooLargeToleranceError);
         }
 
-        let pkdtree = PeriodicKdTree::new(primitive_layer_cell, rough_symprec);
+        let pkdtree = PeriodicKdTree::new(inner_cell, rough_symprec);
         let bravais_group =
-            search_layer_bravais_group(&primitive_layer_cell.lattice, symprec, angle_tolerance)?;
-        let pivot_site_indices = pivot_site_indices(&primitive_layer_cell.numbers);
+            search_layer_bravais_group(&inner_cell.lattice, symprec, angle_tolerance)?;
+        let pivot_site_indices = pivot_site_indices(&inner_cell.numbers);
         let mut symmetries_tmp = vec![];
         let src = pivot_site_indices[0];
         for rotation in bravais_group.iter() {
-            let rotated_positions = primitive_layer_cell
+            let rotated_positions = inner_cell
                 .positions
                 .iter()
                 .map(|pos| rotation.map(|e| e as f64) * pos)
                 .collect::<Vec<_>>();
             for dst in pivot_site_indices.iter() {
                 // Try to overlap the `src`-th site to the `dst`-th site.
-                let translation = primitive_layer_cell.positions[*dst] - rotated_positions[src];
+                let translation = inner_cell.positions[*dst] - rotated_positions[src];
                 let new_positions = rotated_positions
                     .iter()
                     .map(|pos| pos + translation)
                     .collect::<Vec<_>>();
 
                 if let Some(permutation) =
-                    solve_correspondence(&pkdtree, primitive_layer_cell, &new_positions)
+                    solve_correspondence(&pkdtree, inner_cell, &new_positions)
                 {
                     symmetries_tmp.push((*rotation, translation, permutation));
                     // WHY: keep all candidates -- multiple translations may match within rough tolerance.
@@ -94,7 +97,7 @@ impl LayerPrimitiveSymmetrySearch {
         let mut operations_and_permutations = vec![];
         for (rotation, rough_translation, permutation) in symmetries_tmp.iter() {
             let (mut translation, distance) = symmetrize_translation_from_permutation(
-                primitive_layer_cell,
+                inner_cell,
                 permutation,
                 rotation,
                 rough_translation,
@@ -125,7 +128,7 @@ impl LayerPrimitiveSymmetrySearch {
         let mut permutations = vec![];
         queue.push_back((
             Operation::identity(),
-            Permutation::identity(primitive_layer_cell.num_atoms()),
+            Permutation::identity(inner_cell.num_atoms()),
         ));
         while !queue.is_empty() {
             let (ops_lhs, permutation_lhs) = queue.pop_front().unwrap();
@@ -150,7 +153,7 @@ impl LayerPrimitiveSymmetrySearch {
             return Err(MoyoError::TooLargeToleranceError);
         }
 
-        if !Self::check_closure(&operations, &primitive_layer_cell.lattice, rough_symprec) {
+        if !Self::check_closure(&operations, &inner_cell.lattice, rough_symprec) {
             debug!(
                 "Some centering translations are missing. Consider reducing symprec and angle_tolerance."
             );
