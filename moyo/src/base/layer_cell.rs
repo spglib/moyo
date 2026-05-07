@@ -6,12 +6,12 @@ use super::layer_lattice::LayerLattice;
 use super::tolerance::AngleTolerance;
 
 /// A cell whose third basis vector is the aperiodic stacking direction
-/// of a layer system (paper Fu et al. 2024 §2; plan §2.3).
+/// of a layer system (paper Fu et al. 2024 §2).
 ///
 /// Internally a tuple of `(LayerLattice, positions, numbers)` rather than a
 /// wrapped `Cell`, so neither `LayerCell` nor `LayerLattice` hands out a borrow
 /// of the bulk type at any visibility. In-crate sites that need a `Cell`
-/// reconstruct one explicitly (see `to_cell`).
+/// reconstruct one explicitly.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LayerCell {
     lattice: LayerLattice,
@@ -21,7 +21,7 @@ pub struct LayerCell {
 
 impl LayerCell {
     /// Validate `cell.lattice` against the layer-group periodicity contract
-    /// (§3.2) and decompose `cell` into a `LayerCell`.
+    /// (`c` perpendicular to `a, b`) and decompose `cell` into a `LayerCell`.
     pub fn new(
         cell: Cell,
         symprec: f64,

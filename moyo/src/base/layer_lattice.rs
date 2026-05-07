@@ -8,7 +8,7 @@ use super::tolerance::AngleTolerance;
 
 /// A `Lattice` whose third basis vector is the aperiodic stacking direction
 /// of a layer system, with `c` perpendicular to `a, b` (paper Fu et al. 2024
-/// eq. 5; plan §3.2).
+/// eq. 5).
 ///
 /// Construction via [`LayerLattice::new`] runs the perpendicularity check up
 /// front, so any function taking `&LayerLattice` can rely on `c . a = 0` and
@@ -20,9 +20,10 @@ pub struct LayerLattice {
 }
 
 impl LayerLattice {
-    /// Validate `lattice` against the layer-group periodicity contract (§3.2)
-    /// and wrap it. Returns `Err(MoyoError::AperiodicAxisNotOrthogonal { .. })`
-    /// when `c` is not perpendicular to the in-plane axes within tolerance.
+    /// Validate `lattice` against the layer-group periodicity contract
+    /// (`c` perpendicular to `a, b`) and wrap it. Returns
+    /// `Err(MoyoError::AperiodicAxisNotOrthogonal { .. })` when `c` is not
+    /// perpendicular to the in-plane axes within tolerance.
     pub fn new(
         lattice: Lattice,
         symprec: f64,

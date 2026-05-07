@@ -35,10 +35,10 @@ pub(crate) struct LayerPrimitiveCell {
 impl LayerPrimitiveCell {
     /// Find the primitive cell of a 2D-periodic (layer) system.
     ///
-    /// Per the layer-group plan §4.2, candidate translations are filtered to
-    /// those whose fractional `c`-component is zero within `symprec / |c|`.
-    /// A non-trivial candidate (one that aligns atoms) with a non-zero
-    /// `c`-component falsifies the layer-group hypothesis and yields
+    /// Candidate translations are filtered to those whose fractional
+    /// `c`-component is zero within `symprec / |c|`. A non-trivial candidate
+    /// (one that aligns atoms) with a non-zero `c`-component falsifies the
+    /// layer-group hypothesis and yields
     /// `MoyoError::SpuriousAperiodicTranslation`.
     pub fn new(layer_cell: &LayerCell, symprec: f64) -> Result<Self, MoyoError> {
         // Reconstruct a bulk `Cell` once: explicit at the call site so the
@@ -53,9 +53,9 @@ impl LayerPrimitiveCell {
         );
         let cell = &owned_cell;
         // We deliberately skip the 3D Minkowski reduction used by `PrimitiveCell::new`:
-        // mixing `c` into the in-plane basis would invalidate the §3.1 axis convention,
-        // and the in-plane 2D Minkowski reduction is part of the M4 standardization
-        // pipeline, not the search step.
+        // mixing `c` into the in-plane basis would break the convention that `c` is
+        // the aperiodic axis. 2D Minkowski reduction belongs to standardization,
+        // not the search step.
         let basis = &cell.lattice.basis;
         let na = basis.column(0).norm();
         let nb = basis.column(1).norm();
@@ -157,7 +157,7 @@ impl LayerPrimitiveCell {
 
         // The relation `cell.lattice.basis * trans_mat^{-1}.cols * size = primitive.basis`
         // (modulo the in-plane block) is satisfied by construction; no further reduction
-        // is performed here -- standardization (M4) handles 2D Minkowski reduction.
+        // is performed here -- standardization handles 2D Minkowski reduction.
         // The primitive cell inherits the input's `c` axis, so the layer contract
         // (c perpendicular to a, b) is preserved by construction.
         let Cell {
