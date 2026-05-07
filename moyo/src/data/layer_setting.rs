@@ -8,30 +8,32 @@ use super::layer_hall_symbol_database::{LayerHallNumber, LayerNumber};
 /// pin a specific [`LayerHallNumber`] or pick a per-LG default (Standard or
 /// Spglib).
 ///
-/// **Standard** follows the BCS Subperiodic Groups paper (de la Flor,
-/// Souvignier, Madariaga & Aroyo, *Acta Cryst.* **A77**, 559-571 (2021)
-/// §2). For each LG that ITE lists under more than one setting, the paper
-/// nominates a single "default" / "standard" choice:
+/// **Standard** is the BCS / ITE convention for layer groups, with the
+/// per-system rules:
 ///
-/// - **Cell choice 1** for the two monoclinic-oblique LGs with multiple
-///   cell choices in ITE: `p11a` (LG 5) and `p112/a` (LG 7). Cell choice
-///   1 corresponds to the `setting = "c1"` row in
-///   [`super::layer_hall_symbol_entry`].
-/// - **Origin choice 2** (inversion at the origin) for the three
-///   centrosymmetric LGs `p4/n` (LG 52), `p4/nbm` (LG 62) and `p4/nmm`
-///   (LG 64). ITE's other entry for each is origin choice 1.
+/// - **Monoclinic-oblique** (LGs 3-7): unique axis `c` (the aperiodic
+///   axis), which is the only LG-monoclinic-oblique convention in ITE
+///   and in Fu *et al.* (paper Table 5). For LGs 5 and 7 with multiple
+///   ITE cell choices, Standard takes **cell choice 1** (`setting =
+///   "c1"`) per de la Flor *et al.* §2 (i).
+/// - **Monoclinic-rectangular** (LGs 8-18): unique axis `a` (`setting =
+///   "a"`). Follows Fu *et al.* (paper Table 5) and ITE, which only
+///   shows the `:a` diagram for these LGs.
+/// - **Orthorhombic** (LGs 19-48): `abc` axis labelling (`setting = ""`,
+///   no `b-ac` swap), the ITE default.
+/// - **Centrosymmetric** with two ITE origins (LGs 52, 62, 64): **origin
+///   choice 2** (inversion at the origin) per de la Flor *et al.* §2
+///   (ii). ITE's other entry for each is origin choice 1.
 ///
-/// Beyond those five LGs the BCS paper is silent on which Hall to pick,
-/// since either no ambiguity exists or the choice is conventional. moyo
-/// fills the remaining slots from the database's first row per LG, which
-/// for the monoclinic-rectangular LGs 8-18 happens to be the `:a`
-/// (unique-axis-`a`) setting -- this is moyo's choice, **not** specified
-/// by the paper.
+/// Reference: de la Flor, Souvignier, Madariaga & Aroyo, *Acta Cryst.*
+/// **A77**, 559-571 (2021), §2. For the monoclinic-rectangular axis
+/// labelling -- which the BCS paper does not call out explicitly --
+/// Fu *et al.* 2024 Table 5 and ITE provide the convention.
 ///
 /// **Spglib** picks the smallest [`LayerHallNumber`] for each LG -- i.e.
-/// the first row spglib's `database/layer_spg.csv` lists for that LG. The
-/// only difference from Standard is at the three centrosymmetric LGs
-/// above, where Spglib falls back to origin choice 1.
+/// the first row spglib's `database/layer_spg.csv` lists for that LG.
+/// This matches Standard for every LG **except** the centrosymmetric
+/// trio (52, 62, 64), where Spglib falls back to origin choice 1.
 #[derive(Debug, Copy, Clone, PartialEq, Serialize)]
 pub enum LayerSetting {
     /// A specific Hall number (1 - 116).
@@ -178,9 +180,9 @@ mod tests {
     ///
     /// - LGs 5 and 7 take cell choice 1 (`setting = "c1"`) per
     ///   de la Flor *et al.* 2021 §2 (i).
-    /// - LGs 8-18 (monoclinic-rectangular) default to the `:a` axis
-    ///   labelling. This is **moyo's own choice**, not specified by the
-    ///   BCS paper -- it falls out of smallest-Hall-per-LG.
+    /// - LGs 8-18 (monoclinic-rectangular) take the `:a` axis labelling
+    ///   per Fu *et al.* 2024 Table 5 / ITE (which only shows the `:a`
+    ///   diagram for these LGs).
     /// - LGs 19-48 (orthorhombic) take the `abc` (no-swap) row, the ITE
     ///   default labelling.
     #[test]
@@ -219,8 +221,8 @@ mod tests {
                 s
             );
         }
-        // moyo's choice for monoclinic-rectangular: `:a` axis labelling.
-        // Not specified by the BCS paper; matches smallest Hall in the DB.
+        // Monoclinic-rectangular: `:a` axis labelling, per Fu et al. 2024
+        // Table 5 / ITE (which only depicts the :a diagram for these LGs).
         for lg in 8..=18 {
             let hall = LayerSetting::Standard.hall_number(lg).unwrap();
             let s = layer_hall_symbol_entry(hall).unwrap().setting;
