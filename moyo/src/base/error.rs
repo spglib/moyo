@@ -55,4 +55,9 @@ pub enum MoyoError {
     UnknownArithmeticNumberError,
     #[error("Unknown uni_number")]
     UnknownUNINumberError,
+    // Layer-group input validation errors
+    #[error(
+        "Aperiodic axis c is not perpendicular to the in-plane axes within the angle tolerance"
+    )]
+    AperiodicAxisNotOrthogonal,
 }
