@@ -35,11 +35,11 @@ pub(crate) struct LayerPrimitiveCell {
 impl LayerPrimitiveCell {
     /// Find the primitive cell of a 2D-periodic (layer) system.
     ///
-    /// Candidate translations are filtered to those whose fractional
-    /// `c`-component is zero within `symprec / |c|`. A non-trivial candidate
-    /// (one that aligns atoms) with a non-zero `c`-component falsifies the
-    /// layer-group hypothesis and yields
-    /// `MoyoError::SpuriousAperiodicTranslation`.
+    /// Candidate translations whose fractional `c`-component is non-zero
+    /// (within `symprec / |c|`) are silently discarded -- the layer-group
+    /// pipeline only cares about in-plane translations. The lattice contract
+    /// (perpendicular, non-degenerate basis) is already enforced by
+    /// `LayerLattice::new`, so basis norms are not re-checked here.
     pub fn new(layer_cell: &LayerCell, symprec: f64) -> Result<Self, MoyoError> {
         // Reconstruct a bulk `Cell` once: explicit at the call site so the
         // layer-to-bulk crossing is visible. Downstream helpers
@@ -60,9 +60,6 @@ impl LayerPrimitiveCell {
         let na = basis.column(0).norm();
         let nb = basis.column(1).norm();
         let nc = basis.column(2).norm();
-        if na == 0.0 || nb == 0.0 || nc == 0.0 {
-            return Err(MoyoError::PrimitiveCellError);
-        }
 
         // Sanity-check tolerance against in-plane vectors only -- `c` is not a
         // candidate lattice translation direction for layer systems.
@@ -97,13 +94,13 @@ impl LayerPrimitiveCell {
             if let Some(permutation) = solve_correspondence(&pkdtree, cell, &new_positions) {
                 if tz.abs() > z_tol {
                     // The candidate aligns atoms but has a non-zero c-component:
-                    // this means the input has a true lattice translation along the
-                    // aperiodic axis, contradicting the layer-group hypothesis.
+                    // it is not an in-plane lattice translation, so it does not
+                    // belong to the layer group. Skip it.
                     debug!(
-                        "Spurious aperiodic translation found: tz={:.6} (tol={:.6})",
+                        "Skipping translation with non-zero c-component: tz={:.6} (tol={:.6})",
                         tz, z_tol
                     );
-                    return Err(MoyoError::SpuriousAperiodicTranslation);
+                    continue;
                 }
                 permutations_translations_tmp.push((permutation, translation));
             }
@@ -299,7 +296,7 @@ mod tests {
     use nalgebra::{Vector3, matrix};
 
     use super::LayerPrimitiveCell;
-    use crate::base::{AngleTolerance, Cell, Lattice, LayerCell, MoyoError};
+    use crate::base::{AngleTolerance, Cell, Lattice, LayerCell};
 
     fn make_layer(cell: Cell) -> LayerCell {
         LayerCell::new(cell, 1e-4, AngleTolerance::Default).unwrap()
@@ -375,9 +372,10 @@ mod tests {
     }
 
     #[test]
-    fn test_layer_spurious_stacking_rejected() {
-        // Atoms at (0,0,0) and (0,0,1/2): a (0,0,1/2) translation aligns atoms,
-        // so the layer-group hypothesis is falsified.
+    fn test_layer_along_c_translation_discarded() {
+        // Atoms at (0,0,0) and (0,0,1/2): the (0,0,1/2) candidate aligns atoms
+        // but is not an in-plane lattice translation, so it is silently discarded.
+        // The cell is treated as already primitive with two distinct atoms.
         let cell = Cell::new(
             Lattice::new(matrix![
                 1.0, 0.0, 0.0;
@@ -387,9 +385,17 @@ mod tests {
             vec![Vector3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 0.5)],
             vec![1, 1],
         );
+        let input_basis = cell.lattice.basis;
         let layer = make_layer(cell);
-        let err = LayerPrimitiveCell::new(&layer, 1e-4).unwrap_err();
-        assert!(matches!(err, MoyoError::SpuriousAperiodicTranslation));
+        let result = LayerPrimitiveCell::new(&layer, 1e-4).unwrap();
+        assert_eq!(result.translations.len(), 1);
+        assert_relative_eq!(result.translations[0], Vector3::new(0.0, 0.0, 0.0));
+        assert_eq!(result.layer_cell.num_atoms(), 2);
+        assert_relative_eq!(
+            *result.layer_cell.lattice().basis(),
+            input_basis,
+            epsilon = 1e-12
+        );
     }
 
     #[test]

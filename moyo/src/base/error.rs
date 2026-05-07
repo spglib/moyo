@@ -56,12 +56,10 @@ pub enum MoyoError {
     #[error("Unknown uni_number")]
     UnknownUNINumberError,
     // Layer-group input validation errors
+    #[error("Lattice basis vector has zero norm")]
+    DegenerateLattice,
     #[error(
         "Aperiodic axis c is not perpendicular to the in-plane axes within tolerance: dev(c,a)={dev_ca:.6} rad, dev(c,b)={dev_cb:.6} rad"
     )]
     AperiodicAxisNotOrthogonal { dev_ca: f64, dev_cb: f64 },
-    #[error(
-        "Spurious lattice translation along the aperiodic axis c falsifies the layer-group hypothesis"
-    )]
-    SpuriousAperiodicTranslation,
 }
