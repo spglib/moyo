@@ -1,21 +1,21 @@
 use std::collections::HashMap;
 
-use log::{debug, warn};
+use log::debug;
+use nalgebra::Matrix3;
 use nalgebra::linalg::QR;
-use nalgebra::{Matrix3, Vector3};
 
-use super::standardize::orbits_in_cell;
+use super::standardize::{match_wyckoff_coordinates, orbits_in_cell, symmetrize_positions};
 use crate::base::{
-    Cell, EPS, Lattice, Lattice2D, LayerCell, LayerLattice, Linear, MoyoError, Operations,
-    Permutation, Position, Rotations, Transformation, UnimodularTransformation, project_rotations,
+    EPS, Lattice, Lattice2D, LayerCell, LayerLattice, Linear, MoyoError, Operations, Permutation,
+    Rotations, Transformation, UnimodularTransformation, project_rotations,
 };
 use crate::data::{
     LayerArithmeticNumber, LayerHallNumber, LayerHallSymbol, LayerLatticeSystem,
-    LayerWyckoffPosition, WyckoffPositionSpace, iter_layer_wyckoff_positions,
-    layer_arithmetic_crystal_class_entry, layer_hall_symbol_entry,
+    LayerWyckoffPosition, iter_layer_wyckoff_positions, layer_arithmetic_crystal_class_entry,
+    layer_hall_symbol_entry,
 };
 use crate::identify::LayerGroup;
-use crate::math::{SNF, lift_2d_to_3d};
+use crate::math::lift_2d_to_3d;
 
 /// Standardized cell for a layer-group setting.
 ///
@@ -148,13 +148,12 @@ impl StandardizedLayerCell {
             _ => layer_group.transformation.clone(),
         };
 
-        let prim_std_cell_tmp =
-            transform_layer_cell_unimodular(prim_layer_cell, &prim_transformation);
+        let prim_std_cell_tmp = prim_transformation.transform_layer_cell(prim_layer_cell);
 
         // Symmetrize positions in the primitive standardized cell using the
-        // refined LG operations from the Hall symbol. Permutations come
-        // from the M2 search, which uses a different operation order than
-        // the database traversal -- align them by rotation key.
+        // refined LG operations from the Hall symbol. Permutations from the
+        // primitive symmetry search are ordered differently than the
+        // database traversal -- align them by rotation key before reuse.
         let mut permutation_mapping = HashMap::new();
         let prim_rotations =
             project_rotations(&prim_transformation.transform_operations(prim_layer_operations));
@@ -173,7 +172,7 @@ impl StandardizedLayerCell {
             })
             .collect::<Result<Vec<_>, _>>()?;
         let new_prim_std_positions = symmetrize_positions(
-            &prim_std_cell_tmp,
+            prim_std_cell_tmp.positions(),
             &prim_std_operations,
             &prim_std_permutations,
             epsilon,
@@ -189,10 +188,8 @@ impl StandardizedLayerCell {
         // the in-plane block; the (1,1) entry on the aperiodic axis means
         // the conventional cell is not extended along c.
         let conv_trans_linear: Linear = entry.centering.linear();
-        let (std_cell, site_mapping) = transform_layer_cell_centering(
-            &prim_std_cell,
-            &Transformation::from_linear(conv_trans_linear),
-        );
+        let (std_cell, site_mapping) =
+            Transformation::from_linear(conv_trans_linear).transform_layer_cell(&prim_std_cell);
 
         // prim_transformation * (conv_trans_linear, 0)
         let transformation = Transformation::new(
@@ -350,41 +347,6 @@ fn inner_lattice(cell: &LayerCell) -> Lattice {
     }
 }
 
-fn transform_layer_cell_unimodular(
-    cell: &LayerCell,
-    transformation: &UnimodularTransformation,
-) -> LayerCell {
-    let bulk = Cell::new(
-        inner_lattice(cell),
-        cell.positions().to_vec(),
-        cell.numbers().to_vec(),
-    );
-    let new_bulk = transformation.transform_cell(&bulk);
-    LayerCell::new_unchecked(
-        LayerLattice::new_unchecked(new_bulk.lattice),
-        new_bulk.positions,
-        new_bulk.numbers,
-    )
-}
-
-fn transform_layer_cell_centering(
-    cell: &LayerCell,
-    transformation: &Transformation,
-) -> (LayerCell, Vec<usize>) {
-    let bulk = Cell::new(
-        inner_lattice(cell),
-        cell.positions().to_vec(),
-        cell.numbers().to_vec(),
-    );
-    let (new_bulk, site_mapping) = transformation.transform_cell(&bulk);
-    let new_layer = LayerCell::new_unchecked(
-        LayerLattice::new_unchecked(new_bulk.lattice),
-        new_bulk.positions,
-        new_bulk.numbers,
-    );
-    (new_layer, site_mapping)
-}
-
 /// Symmetrize the in-plane block of a layer lattice with `c` along z.
 ///
 /// The averaged metric tensor of layer-block rotations decouples the
@@ -440,78 +402,21 @@ fn symmetrize_layer_lattice(lattice: &Lattice, rotations: &Rotations) -> (Lattic
     (Lattice { basis: new_basis }, rotation_matrix)
 }
 
-/// Symmetrize fractional positions by their LG site-symmetry orbits. Same
-/// formula as the bulk `symmetrize_positions` -- the layer pipeline just
-/// passes layer operations.
-fn symmetrize_positions(
-    cell: &LayerCell,
-    operations: &Operations,
-    permutations: &[Permutation],
-    epsilon: f64,
-) -> Vec<Position> {
-    let inverse_permutations = permutations
-        .iter()
-        .map(|permutation| permutation.inverse())
-        .collect::<Vec<_>>();
-
-    (0..cell.num_atoms())
-        .map(|i| {
-            let mut acc = Vector3::zeros();
-            for (inv_perm, operation) in inverse_permutations.iter().zip(operations.iter()) {
-                let mut frac_displacements = operation.rotation.map(|e| e as f64)
-                    * cell.positions()[inv_perm.apply(i)]
-                    + operation.translation
-                    - cell.positions()[i];
-                frac_displacements -= frac_displacements.map(|e| e.round());
-                acc += frac_displacements;
-            }
-            acc /= permutations.len() as f64;
-            if acc.abs().max() > epsilon {
-                warn!(
-                    "Large displacement during layer symmetrization: {:?} for site {}",
-                    acc, i
-                );
-            }
-            cell.positions()[i] + acc
-        })
-        .collect::<Vec<_>>()
-}
-
 /// Assign a layer Wyckoff position by solving for a compatible integer
-/// offset. Mirrors the bulk `assign_wyckoff_position`; the only difference
-/// is the database it consults (`iter_layer_wyckoff_positions`).
+/// offset. Thin wrapper over the shared
+/// [`super::standardize::match_wyckoff_coordinates`]: the only layer-specific
+/// part is the database the candidates come from
+/// (`iter_layer_wyckoff_positions`).
 fn assign_layer_wyckoff_position(
-    position: &Position,
+    position: &crate::base::Position,
     multiplicity: usize,
     hall_number: LayerHallNumber,
     lattice: &Lattice,
     symprec: f64,
 ) -> Result<LayerWyckoffPosition, MoyoError> {
-    use itertools::iproduct;
-
     for wyckoff in iter_layer_wyckoff_positions(hall_number, multiplicity) {
-        let space = WyckoffPositionSpace::new(wyckoff.coordinates);
-        let snf = SNF::new(&space.linear);
-
-        let iter_multi_1 = iproduct!(-1..=1, -1..=1, -1..=1);
-        let iter_multi_2 = iproduct!(-2_i32..=2_i32, -2_i32..=2_i32, -2_i32..=2_i32)
-            .filter(|&(n1, n2, n3)| n1.abs() == 2 || n2.abs() == 2 || n3.abs() == 2);
-
-        for offset in iter_multi_1.chain(iter_multi_2) {
-            let offset = Vector3::new(offset.0 as f64, offset.1 as f64, offset.2 as f64);
-            let b = snf.l.map(|e| e as f64) * (offset + position - space.origin);
-            let mut rinvy = Vector3::zeros();
-            for i in 0..3 {
-                if snf.d[(i, i)] != 0 {
-                    rinvy[i] = b[i] / snf.d[(i, i)] as f64;
-                }
-            }
-
-            let y = snf.r.map(|e| e as f64) * rinvy;
-            let diff = space.linear.map(|e| e as f64) * y + space.origin - position - offset;
-            if lattice.cartesian_coords(&diff).norm() < symprec {
-                return Ok(wyckoff.clone());
-            }
+        if match_wyckoff_coordinates(position, wyckoff.coordinates, lattice, symprec) {
+            return Ok(wyckoff.clone());
         }
     }
     Err(MoyoError::WyckoffPositionAssignmentError)
