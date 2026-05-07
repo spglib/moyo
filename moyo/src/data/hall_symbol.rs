@@ -244,23 +244,16 @@ impl MagneticHallSymbol {
 
 /// Layer-group Hall symbol (paper Fu et al. 2024 Table 5).
 ///
-/// Layer Hall symbols use the same grammar as bulk Hall symbols except for
-/// a lowercase `p`/`c` lattice prefix (only those two centerings exist for
-/// layer groups, paper §3.3) and the implicit constraint that all
-/// generators have the layer block form `W_i3 = W_3i = 0, W_33 = ±1` (paper
-/// eq. 4). Implementation: uppercase the lattice letter and delegate to
-/// [`HallSymbol`]. The bulk `Centering::{P,C}` and the layer
-/// `LayerCentering::{P,C}` agree on `linear()` and `lattice_points()`, so
-/// every traverse / primitive-projection result is correct without a parallel
-/// pipeline.
+/// Layer Hall symbols share the bulk grammar except the lattice prefix is
+/// lowercase `p`/`c` (only those two centerings exist for layer groups,
+/// paper §3.3). `LayerHallSymbol::new` uppercases the prefix and delegates
+/// to [`HallSymbol`]; bulk `Centering::{P,C}` and `LayerCentering::{P,C}`
+/// agree on `linear()` and `lattice_points()`, so traverse and
+/// primitive-projection results are layer-correct directly.
 #[derive(Debug)]
 pub struct LayerHallSymbol {
     inner: HallSymbol,
     layer_centering: LayerCentering,
-    /// Original Hall symbol string with the lowercase `p`/`c` prefix the
-    /// caller passed in (the inner [`HallSymbol`] keeps the uppercased
-    /// form as a parser implementation detail).
-    layer_hall_symbol: String,
 }
 
 impl LayerHallSymbol {
@@ -270,28 +263,16 @@ impl LayerHallSymbol {
         let layer_centering = match inner.centering {
             Centering::P => LayerCentering::P,
             Centering::C => LayerCentering::C,
-            _ => {
-                debug!(
-                    "Layer Hall symbol {:?} resolved to non-layer centering {:?}",
-                    layer_hall_symbol, inner.centering
-                );
-                return None;
-            }
+            _ => return None,
         };
         Some(Self {
             inner,
             layer_centering,
-            layer_hall_symbol: layer_hall_symbol.to_string(),
         })
     }
 
     pub fn from_hall_number(hall_number: LayerHallNumber) -> Option<Self> {
         layer_hall_symbol_entry(hall_number).and_then(|entry| Self::new(entry.hall_symbol))
-    }
-
-    /// Original Hall symbol string with the lowercase layer prefix.
-    pub fn hall_symbol(&self) -> &str {
-        &self.layer_hall_symbol
     }
 
     pub fn centering(&self) -> LayerCentering {
@@ -323,26 +304,18 @@ impl LayerHallSymbol {
     }
 }
 
-/// Convert a layer Hall symbol's lowercase `p`/`c` lattice prefix to the
-/// uppercase form the bulk Hall parser expects. Returns `None` if the
-/// lattice letter is missing or not in `{p, c}`.
 fn upcase_layer_lattice_letter(s: &str) -> Option<String> {
     let trimmed = s.trim_start();
-    let (prefix, rest) = match trimmed.strip_prefix('-') {
-        Some(rest) => ("-", rest),
-        None => ("", trimmed),
-    };
-    let mut chars = rest.chars();
-    let lattice_char = chars.next()?;
-    if !matches!(lattice_char, 'p' | 'c') {
+    let lattice_pos = trimmed.find(|c: char| c != '-')?;
+    let lattice = trimmed.as_bytes()[lattice_pos];
+    if lattice != b'p' && lattice != b'c' {
         return None;
     }
-    Some(format!(
-        "{}{}{}",
-        prefix,
-        lattice_char.to_ascii_uppercase(),
-        chars.as_str()
-    ))
+    let mut out = String::with_capacity(trimmed.len());
+    out.push_str(&trimmed[..lattice_pos]);
+    out.push((lattice as char).to_ascii_uppercase());
+    out.push_str(&trimmed[lattice_pos + 1..]);
+    Some(out)
 }
 
 /// Tokenize string by whitespaces

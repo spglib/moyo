@@ -11,6 +11,28 @@ use crate::data::{
     layer_arithmetic_crystal_class_entry, layer_hall_symbol_entry,
 };
 
+// In-plane normalizer corrections (besides identity) that preserve the
+// layer block form `W_i3 = W_3i = 0, W_33 = ±1` (paper Fu et al. 2024
+// eq. 4). The single non-identity entry, `b a -c`, is the in-plane
+// `a` ↔ `b` swap paired with a `c` sign-flip; it covers
+// monoclinic-rectangular `:b` ↔ `:a` and orthorhombic `b-ac` ↔ `abc`
+// alignment when the input lies in a non-canonical Hall basis. For
+// `c`-centered LGs the same conjugation reduces to a group-internal
+// rotation in the primitive basis -- those need a separate
+// centering-aware correction (future work).
+const LAYER_CORRECTION_MATRICES: [UnimodularLinear; 2] = [
+    UnimodularLinear::new(
+        1, 0, 0, //
+        0, 1, 0, //
+        0, 0, 1, //
+    ),
+    UnimodularLinear::new(
+        0, 1, 0, //
+        1, 0, 0, //
+        0, 0, -1, //
+    ),
+];
+
 /// Identified layer-group type for a primitive layer cell.
 ///
 /// Mirrors [`super::SpaceGroup`] for the bulk space-group case: result
@@ -42,38 +64,33 @@ impl LayerGroup {
         setting: LayerSetting,
         epsilon: f64,
     ) -> Result<Self, MoyoError> {
-        // Identify the bulk point group first (mirrors `SpaceGroup::new`).
-        // Only the geometric crystal class is consumed: the bulk arithmetic
-        // class would normalise to a 3D-canonical orientation that does
-        // not preserve the layer's c-axis identity, so its `prim_trans_mat`
-        // is not fed into `match_origin_shift` (every layer Hall in the
-        // database is stored in the layer-canonical basis with c aperiodic).
+        // Mirror `SpaceGroup::new` but consume only the geometric class:
+        // the bulk arithmetic class normalises to a 3D-canonical orientation
+        // that re-labels the layer's c-axis, so its `prim_trans_mat` is not
+        // re-used here.
         let prim_rotations = project_rotations(prim_layer_operations);
         let point_group = PointGroup::new(&prim_rotations)?;
         let geometric_crystal_class = arithmetic_crystal_class_entry(point_group.arithmetic_number)
-            .ok_or(MoyoError::LayerGroupTypeIdentificationError)?
+            .unwrap()
             .geometric_crystal_class;
         debug!(
             "Layer point group: geometric crystal class {:?}",
             geometric_crystal_class
         );
 
-        let corrections = layer_correction_matrices();
-
         for hall_number in setting.hall_numbers() {
-            let entry = layer_hall_symbol_entry(hall_number)
-                .ok_or(MoyoError::LayerGroupTypeIdentificationError)?;
-            let layer_arith = layer_arithmetic_crystal_class_entry(entry.arithmetic_number)
-                .ok_or(MoyoError::LayerGroupTypeIdentificationError)?;
+            let entry = layer_hall_symbol_entry(hall_number).unwrap();
+            let layer_arith =
+                layer_arithmetic_crystal_class_entry(entry.arithmetic_number).unwrap();
             if layer_arith.geometric_crystal_class != geometric_crystal_class {
                 continue;
             }
 
-            let lh_symbol = LayerHallSymbol::from_hall_number(hall_number)
+            let lh_symbol = LayerHallSymbol::new(entry.hall_symbol)
                 .ok_or(MoyoError::LayerGroupTypeIdentificationError)?;
             let db_prim_generators = lh_symbol.primitive_generators();
 
-            for trans_mat in &corrections {
+            for trans_mat in &LAYER_CORRECTION_MATRICES {
                 if let Some(origin_shift) = match_origin_shift(
                     prim_layer_operations,
                     trans_mat,
@@ -94,30 +111,6 @@ impl LayerGroup {
         }
         Err(MoyoError::LayerGroupTypeIdentificationError)
     }
-}
-
-/// Layer-allowed normalizer transformations for the basis search in
-/// [`LayerGroup::new`]. Both elements preserve the layer block form
-/// `W_i3 = W_3i = 0, W_33 = ±1` (paper Fu et al. 2024 eq. 4), so feeding
-/// them into [`match_origin_shift`] does not break the c-aperiodic
-/// invariant.
-///
-/// - `identity`: input already in the canonical layer basis.
-/// - `b a -c`: in-plane `a` ↔ `b` swap, paired with a c sign-flip to keep
-///   the determinant equal to +1. Covers the monoclinic-rectangular
-///   `:a` vs `:b` axis labelling and the orthorhombic `abc` vs `b-ac`
-///   axis swap. For tetragonal / hexagonal point groups the swap is
-///   already an element of the point group, so the second candidate is
-///   redundant but harmless (it will fall through to the next Hall).
-fn layer_correction_matrices() -> [UnimodularLinear; 2] {
-    [
-        UnimodularLinear::identity(),
-        UnimodularLinear::new(
-            0, 1, 0, //
-            1, 0, 0, //
-            0, 0, -1, //
-        ),
-    ]
 }
 
 #[cfg(test)]
