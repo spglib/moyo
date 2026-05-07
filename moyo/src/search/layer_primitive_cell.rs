@@ -1,15 +1,14 @@
 use log::debug;
-use nalgebra::Matrix2;
 
 use super::primitive_cell::{
     primitive_cell_from_transformation, search_pure_translations,
     transformation_matrix_from_translations,
 };
 use crate::base::{
-    Cell, Lattice, LayerCell, LayerLattice, Linear, MoyoError, Permutation, Translation,
+    Cell, Lattice, Lattice2D, LayerCell, LayerLattice, Linear, MoyoError, Permutation, Translation,
     UnimodularTransformation,
 };
-use crate::math::{is_minkowski_reduced_2d, lift_2d_to_3d, minkowski_reduce_2d};
+use crate::math::lift_2d_to_3d;
 
 /// Result of a 2D primitive cell search for a layer system.
 /// Mirrors `PrimitiveCell` but the discovered translations are constrained to
@@ -59,23 +58,18 @@ impl LayerPrimitiveCell {
         // performed at the top of `PrimitiveCell::new` (we cannot reuse the
         // 3D one because it would mix `c` into the in-plane block, breaking
         // the convention that `c` is the aperiodic axis).
-        let basis_2d = Matrix2::new(
-            owned_cell.lattice.basis[(0, 0)],
-            owned_cell.lattice.basis[(0, 1)],
-            owned_cell.lattice.basis[(1, 0)],
-            owned_cell.lattice.basis[(1, 1)],
-        );
-        let (_, trans_mat_2d) = minkowski_reduce_2d(&basis_2d);
+        let (_, trans_mat_2d) = layer_cell.lattice().in_plane().minkowski_reduce();
         let reduced_trans_mat: Linear = lift_2d_to_3d(&trans_mat_2d);
         let reduced_cell =
             UnimodularTransformation::from_linear(reduced_trans_mat).transform_cell(&owned_cell);
 
         // Sanity-check tolerance against the *reduced* in-plane vectors.
         let reduced_basis = &reduced_cell.lattice.basis;
-        let na = reduced_basis.column(0).norm();
-        let nb = reduced_basis.column(1).norm();
         let nc = reduced_basis.column(2).norm();
-        let min_inplane_norm = na.min(nb);
+        let min_inplane_norm = reduced_basis
+            .column(0)
+            .norm()
+            .min(reduced_basis.column(1).norm());
         let rough_symprec = 2.0 * symprec;
         if rough_symprec > min_inplane_norm / 2.0 {
             debug!(
@@ -83,15 +77,6 @@ impl LayerPrimitiveCell {
             );
             return Err(MoyoError::TooLargeToleranceError);
         }
-        debug_assert!(
-            is_minkowski_reduced_2d(&Matrix2::new(
-                reduced_basis[(0, 0)],
-                reduced_basis[(0, 1)],
-                reduced_basis[(1, 0)],
-                reduced_basis[(1, 1)],
-            )),
-            "in-plane block must be 2D-Minkowski-reduced before kd-tree search"
-        );
 
         // Reuse the bulk pure-translation search (kd-tree + correspondence +
         // symmetrize), which is correct on a Minkowski-reduced basis.
@@ -152,14 +137,32 @@ impl LayerPrimitiveCell {
             &permutations,
         );
 
-        // (input)
-        //    -[reduced_trans_mat]-> (reduced)
-        //    <-[trans_mat]- (primitive)
-        // Skip the second 3D Minkowski step from `PrimitiveCell::new` -- it
-        // would risk swapping the (already-orthogonal) `c` axis on thin slabs.
+        // 2D-Minkowski-reduce the primitive cell's in-plane block so that the
+        // returned layer cell satisfies the precondition of downstream
+        // bulk-pipeline routines (`PrimitiveSymmetrySearch::new`,
+        // `PeriodicKdTree::new`, `search_bravais_group`) that the basis be
+        // Minkowski reduced. The 2D variant is used (instead of the bulk's
+        // 3D one at lines 124-126 of `PrimitiveCell::new`) to keep `c`
+        // unswapped on thin slabs.
+        let (_, prim_trans_mat_2d) =
+            Lattice2D::from_inplane_of(&primitive_cell.lattice.basis).minkowski_reduce();
+        let prim_trans_mat: Linear = lift_2d_to_3d(&prim_trans_mat_2d);
+        let reduced_prim_cell =
+            UnimodularTransformation::from_linear(prim_trans_mat).transform_cell(&primitive_cell);
+
+        // (input cell)
+        //    -[reduced_trans_mat]-> (reduced cell)
+        //    <-[trans_mat]- (primitive cell)
+        //    -[prim_trans_mat]-> (reduced primitive cell)
+        let inv_prim_trans_mat = prim_trans_mat
+            .map(|e| e as f64)
+            .try_inverse()
+            .unwrap()
+            .map(|e| e.round() as i32);
         let inv_reduced_trans_mat = reduced_trans_mat.map(|e| e as f64).try_inverse().unwrap();
-        let linear: Linear =
-            (trans_mat.map(|e| e as f64) * inv_reduced_trans_mat).map(|e| e.round() as i32);
+        let linear: Linear = ((inv_prim_trans_mat * trans_mat).map(|e| e as f64)
+            * inv_reduced_trans_mat)
+            .map(|e| e.round() as i32);
 
         let translations_in_input = translations
             .iter()
@@ -170,7 +173,7 @@ impl LayerPrimitiveCell {
             lattice: prim_lattice,
             positions: prim_positions,
             numbers: prim_numbers,
-        } = primitive_cell;
+        } = reduced_prim_cell;
         Ok(Self {
             layer_cell: LayerCell::new_unchecked(
                 LayerLattice::new_unchecked(prim_lattice),
