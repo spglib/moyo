@@ -8,7 +8,7 @@ use super::solve::{
     symmetrize_translation_from_permutation,
 };
 use crate::base::{
-    AngleTolerance, Lattice, LayerCell, MoyoError, Operation, Operations, Permutation,
+    AngleTolerance, Cell, Lattice, LayerCell, MoyoError, Operation, Operations, Permutation,
 };
 
 /// Coset representatives of the layer group of a primitive layer cell.
@@ -38,7 +38,17 @@ impl LayerPrimitiveSymmetrySearch {
         symprec: f64,
         angle_tolerance: AngleTolerance,
     ) -> Result<Self, MoyoError> {
-        let inner_cell = primitive_layer_cell.cell();
+        // Reconstruct a bulk `Cell` once: the layer-to-bulk crossing is
+        // visible at the call site. Downstream helpers (`PeriodicKdTree`,
+        // `solve_correspondence`) take `&Cell`.
+        let owned_cell = Cell::new(
+            Lattice {
+                basis: *primitive_layer_cell.lattice().basis(),
+            },
+            primitive_layer_cell.positions().to_vec(),
+            primitive_layer_cell.numbers().to_vec(),
+        );
+        let inner_cell = &owned_cell;
         // Tolerance sanity check against the in-plane basis only -- `c` is not
         // a candidate translation direction for layer systems.
         let basis = &inner_cell.lattice.basis;
@@ -53,7 +63,7 @@ impl LayerPrimitiveSymmetrySearch {
 
         let pkdtree = PeriodicKdTree::new(inner_cell, rough_symprec);
         let bravais_group =
-            search_layer_bravais_group(&inner_cell.lattice, symprec, angle_tolerance)?;
+            search_layer_bravais_group(primitive_layer_cell.lattice(), symprec, angle_tolerance)?;
         let pivot_site_indices = pivot_site_indices(&inner_cell.numbers);
         let mut symmetries_tmp = vec![];
         let src = pivot_site_indices[0];

@@ -77,9 +77,20 @@ pub fn validate_aperiodic_axis(
     symprec: f64,
     angle_tolerance: AngleTolerance,
 ) -> Result<(), MoyoError> {
-    let a = cell.lattice.basis.column(0);
-    let b = cell.lattice.basis.column(1);
-    let c = cell.lattice.basis.column(2);
+    validate_lattice_aperiodic_axis(&cell.lattice, symprec, angle_tolerance)
+}
+
+/// Lattice-level half of `validate_aperiodic_axis`. The cell-level wrapper
+/// delegates here; `LayerLattice::new` calls this directly without needing a
+/// `Cell` to wrap.
+pub fn validate_lattice_aperiodic_axis(
+    lattice: &Lattice,
+    symprec: f64,
+    angle_tolerance: AngleTolerance,
+) -> Result<(), MoyoError> {
+    let a = lattice.basis.column(0);
+    let b = lattice.basis.column(1);
+    let c = lattice.basis.column(2);
 
     let dev_ca = c.angle(&a) - PI / 2.0;
     let dev_cb = c.angle(&b) - PI / 2.0;

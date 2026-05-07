@@ -1,5 +1,5 @@
 use super::primitive_symmetry_search::search_bravais_group;
-use crate::base::{AngleTolerance, Lattice, MoyoError, Rotation, Rotations};
+use crate::base::{AngleTolerance, Lattice, LayerLattice, MoyoError, Rotation, Rotations};
 
 /// Search the Bravais group restricted to layer-group form.
 ///
@@ -9,11 +9,16 @@ use crate::base::{AngleTolerance, Lattice, MoyoError, Rotation, Rotations};
 /// This excludes cubic point groups and any in-plane / out-of-plane mixing.
 #[allow(dead_code)] // wired up by later layer-group milestones
 pub(crate) fn search_layer_bravais_group(
-    minkowski_lattice: &Lattice,
+    minkowski_lattice: &LayerLattice,
     symprec: f64,
     angle_tolerance: AngleTolerance,
 ) -> Result<Rotations, MoyoError> {
-    let rotations = search_bravais_group(minkowski_lattice, symprec, angle_tolerance)?;
+    // Reconstruct a bulk `Lattice` to feed `search_bravais_group`. Explicit at
+    // the call site so the layer-to-bulk crossing is visible.
+    let bulk_lattice = Lattice {
+        basis: *minkowski_lattice.basis(),
+    };
+    let rotations = search_bravais_group(&bulk_lattice, symprec, angle_tolerance)?;
     Ok(rotations.into_iter().filter(is_layer_block_form).collect())
 }
 
@@ -32,7 +37,7 @@ mod tests {
     use test_log::test;
 
     use super::{is_layer_block_form, search_layer_bravais_group};
-    use crate::base::{AngleTolerance, Lattice};
+    use crate::base::{AngleTolerance, Lattice, LayerLattice};
 
     #[test]
     fn test_square_lattice() {
@@ -42,8 +47,9 @@ mod tests {
             0.0, 1.0, 0.0;
             0.0, 0.0, 2.0;
         ]);
+        let layer_lattice = LayerLattice::new(lattice, 1e-4, AngleTolerance::Default).unwrap();
         let rotations =
-            search_layer_bravais_group(&lattice, 1e-4, AngleTolerance::Radian(1e-2)).unwrap();
+            search_layer_bravais_group(&layer_lattice, 1e-4, AngleTolerance::Radian(1e-2)).unwrap();
         // WHY: 4/mmm has order 16 and every element already fixes the c-axis (W_33 = ±1) with no in/out mixing.
         assert_eq!(rotations.len(), 16);
         for rotation in &rotations {
@@ -59,8 +65,9 @@ mod tests {
             0.0, 1.0, 0.0;
             0.0, 0.0, 1.0;
         ]);
+        let layer_lattice = LayerLattice::new(lattice, 1e-4, AngleTolerance::Default).unwrap();
         let rotations =
-            search_layer_bravais_group(&lattice, 1e-4, AngleTolerance::Radian(1e-2)).unwrap();
+            search_layer_bravais_group(&layer_lattice, 1e-4, AngleTolerance::Radian(1e-2)).unwrap();
         // WHY: m-3m restricted to elements fixing the z-axis is the 4/mmm site stabilizer (order 16).
         assert_eq!(rotations.len(), 16);
         for rotation in &rotations {
@@ -76,8 +83,9 @@ mod tests {
             -0.5, f64::sqrt(3.0) / 2.0, 0.0;
             0.0, 0.0, 1.0;
         ]);
+        let layer_lattice = LayerLattice::new(lattice, 1e-4, AngleTolerance::Default).unwrap();
         let rotations =
-            search_layer_bravais_group(&lattice, 1e-4, AngleTolerance::default()).unwrap();
+            search_layer_bravais_group(&layer_lattice, 1e-4, AngleTolerance::default()).unwrap();
         // WHY: 6/mmm has order 24 and every element fixes the c-axis (the 6-fold is along c), so the LG filter is a no-op.
         assert_eq!(rotations.len(), 24);
         for rotation in &rotations {

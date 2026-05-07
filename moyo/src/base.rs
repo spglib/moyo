@@ -3,6 +3,7 @@ mod cell;
 mod error;
 mod lattice;
 mod layer_cell;
+mod layer_lattice;
 mod magnetic_cell;
 mod operation;
 mod permutation;
@@ -14,6 +15,7 @@ pub use cell::{AtomicSpecie, Cell, Position, validate_aperiodic_axis};
 pub use error::MoyoError;
 pub use lattice::Lattice;
 pub use layer_cell::LayerCell;
+pub use layer_lattice::LayerLattice;
 pub use magnetic_cell::{Collinear, MagneticCell, MagneticMoment, NonCollinear};
 pub use operation::{
     MagneticOperation, MagneticOperations, Operation, Operations, Rotation, Rotations,

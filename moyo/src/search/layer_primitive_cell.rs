@@ -8,8 +8,8 @@ use super::solve::{
     symmetrize_translation_from_permutation,
 };
 use crate::base::{
-    Cell, EPS, Lattice, LayerCell, Linear, MoyoError, Permutation, Position, Rotation, Translation,
-    orbits_from_permutations,
+    Cell, EPS, Lattice, LayerCell, LayerLattice, Linear, MoyoError, Permutation, Position,
+    Rotation, Translation, orbits_from_permutations,
 };
 use crate::math::HNF;
 
@@ -41,7 +41,17 @@ impl LayerPrimitiveCell {
     /// `c`-component falsifies the layer-group hypothesis and yields
     /// `MoyoError::SpuriousAperiodicTranslation`.
     pub fn new(layer_cell: &LayerCell, symprec: f64) -> Result<Self, MoyoError> {
-        let cell = layer_cell.cell();
+        // Reconstruct a bulk `Cell` once: explicit at the call site so the
+        // layer-to-bulk crossing is visible. Downstream helpers
+        // (`PeriodicKdTree`, `solve_correspondence`) take `&Cell`.
+        let owned_cell = Cell::new(
+            Lattice {
+                basis: *layer_cell.lattice().basis(),
+            },
+            layer_cell.positions().to_vec(),
+            layer_cell.numbers().to_vec(),
+        );
+        let cell = &owned_cell;
         // We deliberately skip the 3D Minkowski reduction used by `PrimitiveCell::new`:
         // mixing `c` into the in-plane basis would invalidate the §3.1 axis convention,
         // and the in-plane 2D Minkowski reduction is part of the M4 standardization
@@ -150,8 +160,17 @@ impl LayerPrimitiveCell {
         // is performed here -- standardization (M4) handles 2D Minkowski reduction.
         // The primitive cell inherits the input's `c` axis, so the layer contract
         // (c perpendicular to a, b) is preserved by construction.
+        let Cell {
+            lattice: prim_lattice,
+            positions: prim_positions,
+            numbers: prim_numbers,
+        } = primitive_cell;
         Ok(Self {
-            layer_cell: LayerCell::new_unchecked(primitive_cell),
+            layer_cell: LayerCell::new_unchecked(
+                LayerLattice::new_unchecked(prim_lattice),
+                prim_positions,
+                prim_numbers,
+            ),
             linear: trans_mat,
             site_mapping,
             translations,
@@ -305,7 +324,11 @@ mod tests {
         assert_eq!(result.translations.len(), 1);
         assert_relative_eq!(result.translations[0], Vector3::new(0.0, 0.0, 0.0));
         // Lattice is unchanged.
-        assert_relative_eq!(*result.layer_cell.basis(), input_basis, epsilon = 1e-8);
+        assert_relative_eq!(
+            *result.layer_cell.lattice().basis(),
+            input_basis,
+            epsilon = 1e-8
+        );
         // The atom z-coordinate carries through unchanged.
         assert_relative_eq!(result.layer_cell.positions()[0][2], 0.2, epsilon = 1e-12);
     }
@@ -338,12 +361,12 @@ mod tests {
         }
         // Primitive cell halves along `a` and preserves `c`.
         assert_relative_eq!(
-            result.layer_cell.basis().column(0).into_owned(),
+            result.layer_cell.lattice().basis().column(0).into_owned(),
             Vector3::new(0.5, 0.0, 0.0),
             epsilon = 1e-8
         );
         assert_relative_eq!(
-            result.layer_cell.basis().column(2).into_owned(),
+            result.layer_cell.lattice().basis().column(2).into_owned(),
             input_c,
             epsilon = 1e-12
         );
@@ -392,6 +415,10 @@ mod tests {
         assert_eq!(result.translations.len(), 1);
         assert_relative_eq!(result.translations[0], Vector3::new(0.0, 0.0, 0.0));
         assert_eq!(result.layer_cell.num_atoms(), 2);
-        assert_relative_eq!(*result.layer_cell.basis(), input_basis, epsilon = 1e-12);
+        assert_relative_eq!(
+            *result.layer_cell.lattice().basis(),
+            input_basis,
+            epsilon = 1e-12
+        );
     }
 }
