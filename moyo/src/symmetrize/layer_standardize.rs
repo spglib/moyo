@@ -203,10 +203,13 @@ impl StandardizedLayerCell {
             // construction of `LayerHallSymbol`).
             let layer_rotations = project_rotations(&conv_std_operations);
             let (new_inner_lattice, rotation_matrix) =
-                symmetrize_layer_lattice(&inner_lattice(&std_cell), &layer_rotations);
+                symmetrize_layer_lattice(&std_cell.lattice().as_lattice(), &layer_rotations);
 
             // Apply the same rigid rotation to the primitive cell.
-            let new_prim_inner_lattice = inner_lattice(&prim_std_cell).rotate(&rotation_matrix);
+            let new_prim_inner_lattice = prim_std_cell
+                .lattice()
+                .as_lattice()
+                .rotate(&rotation_matrix);
 
             let prim_rotated = LayerCell::new_unchecked(
                 LayerLattice::new_unchecked(new_prim_inner_lattice),
@@ -273,7 +276,7 @@ impl StandardizedLayerCell {
         }
 
         let mut representative_wyckoffs: Vec<Option<LayerWyckoffPosition>> = vec![None; num_orbits];
-        let lattice = inner_lattice(std_cell);
+        let lattice = std_cell.lattice().as_lattice();
         for (i, position) in std_cell.positions().iter().enumerate() {
             let orbit = mapping[i];
             if representative_wyckoffs[orbit].is_some() {
@@ -323,10 +326,8 @@ fn standardize_oblique_layer_cell(
     prim_layer_cell: &LayerCell,
     transformation_to_prim_std: &UnimodularTransformation,
 ) -> UnimodularTransformation {
-    let bulk_lattice = Lattice {
-        basis: *prim_layer_cell.lattice().basis(),
-    };
-    let lattice_after = transformation_to_prim_std.transform_lattice(&bulk_lattice);
+    let lattice_after =
+        transformation_to_prim_std.transform_lattice(&prim_layer_cell.lattice().as_lattice());
     let inplane = Lattice2D::from_inplane_of(&lattice_after.basis);
     let (_, trans_mat_2d) = match inplane.minkowski_reduce() {
         Ok(t) => t,
@@ -341,19 +342,20 @@ fn standardize_oblique_layer_cell(
     )
 }
 
-fn inner_lattice(cell: &LayerCell) -> Lattice {
-    Lattice {
-        basis: *cell.lattice().basis(),
-    }
-}
-
 /// Symmetrize the in-plane block of a layer lattice with `c` along z.
 ///
 /// The averaged metric tensor of layer-block rotations decouples the
 /// in-plane block from the aperiodic axis (`g_13 = g_23 = 0`). Cholesky on
 /// the in-plane 2x2 block then produces the layer-canonical orientation
-/// `a` along x, `b` in the xy-plane, with `|c|` and the c-axis direction
-/// preserved up to the rigid rotation returned alongside.
+/// `a` along x, `b` in the xy-plane, with `|c|` preserved.
+///
+/// Handedness: the standardized basis matches the input handedness. For a
+/// right-handed input, `c_z = +sqrt(g33)`; for a left-handed input,
+/// `c_z = -sqrt(g33)`. Either way `|c_s| = |c|`. This mirrors the bulk
+/// `symmetrize_lattice` and keeps the recovered `rotation_matrix` a proper
+/// rotation (det = +1), so that the relation
+/// `new_basis = rotation_matrix * old_basis` holds without an extra sign
+/// flip on the basis side.
 fn symmetrize_layer_lattice(lattice: &Lattice, rotations: &Rotations) -> (Lattice, Matrix3<f64>) {
     let metric_tensor = lattice.metric_tensor();
     let mut sym_metric: Matrix3<f64> = rotations
@@ -381,19 +383,29 @@ fn symmetrize_layer_lattice(lattice: &Lattice, rotations: &Rotations) -> (Lattic
     let ax = g11.sqrt();
     let bx = if ax.abs() > EPS { g12 / ax } else { 0.0 };
     let by = (g22 - bx * bx).max(0.0).sqrt();
-    let cz = g33.sqrt();
+    // Match input handedness: det(new_basis) = ax * by * cz must agree in
+    // sign with det(input_basis), so the recovered rotation is proper.
+    let cz_mag = g33.sqrt();
+    let cz = if lattice.basis.determinant() < 0.0 {
+        -cz_mag
+    } else {
+        cz_mag
+    };
 
     // Layer-canonical basis (column-vector convention):
     //   col 0 = a = (ax, 0, 0)   along x
     //   col 1 = b = (bx, by, 0)  in xy
-    //   col 2 = c = (0,  0,  cz) along z
+    //   col 2 = c = (0,  0,  cz) along z (sign matches input handedness)
     let new_basis = Matrix3::new(
         ax, bx, 0.0, //
         0.0, by, 0.0, //
         0.0, 0.0, cz,
     );
 
-    // Rotation = new_basis * old_basis^-1, projected to the orthogonal group.
+    // Rotation = new_basis * old_basis^-1, projected to the orthogonal
+    // group. With the cz-sign fix above, the QR-derived rotation is already
+    // proper (det = +1) up to floating-point noise; the final fallback flip
+    // is just QR's sign indeterminacy guard.
     let mut rotation_matrix = QR::new(new_basis * lattice.basis.try_inverse().unwrap()).q();
     if rotation_matrix.determinant() < 0.0 {
         rotation_matrix *= -1.0;
@@ -628,6 +640,39 @@ mod tests {
         assert_eq!(std.wyckoffs[0].letter, std.wyckoffs[1].letter);
         assert_eq!(std.wyckoffs[0].multiplicity, 2);
         let _ = vector![0.0_f64, 0.0, 0.0];
+    }
+
+    /// Left-handed input must produce a left-handed standardized basis with
+    /// `c_z` negative (matching the user-doc footnote "$c < 0$ for
+    /// left-handed input basis vectors") and a proper-rotation
+    /// `std_rotation_matrix` (det = +1). A right-handed input must produce
+    /// `c_z > 0` and the same proper rotation.
+    #[test]
+    fn test_symmetrize_layer_lattice_preserves_handedness() {
+        // Right-handed: positive a_x, b_y, c_z; identity rotations OK because
+        // C1 has only the identity, and we just want to check the basis sign.
+        let lattice_rh = Lattice::new(matrix![
+            1.0, 0.0, 0.0;
+            0.0, 1.0, 0.0;
+            0.0, 0.0, 5.0;
+        ]);
+        assert!(lattice_rh.basis.determinant() > 0.0);
+        let rotations = vec![nalgebra::Matrix3::<i32>::identity()];
+        let (std_rh, rot_rh) = symmetrize_layer_lattice(&lattice_rh, &rotations);
+        assert!(std_rh.basis[(2, 2)] > 0.0);
+        assert_relative_eq!(rot_rh.determinant(), 1.0, epsilon = 1e-10);
+
+        // Left-handed: flip the c-vector.
+        let lattice_lh = Lattice::new(matrix![
+            1.0, 0.0, 0.0;
+            0.0, 1.0, 0.0;
+            0.0, 0.0, -5.0;
+        ]);
+        assert!(lattice_lh.basis.determinant() < 0.0);
+        let (std_lh, rot_lh) = symmetrize_layer_lattice(&lattice_lh, &rotations);
+        assert!(std_lh.basis[(2, 2)] < 0.0);
+        assert_relative_eq!(std_lh.basis[(2, 2)].abs(), 5.0, epsilon = 1e-10);
+        assert_relative_eq!(rot_lh.determinant(), 1.0, epsilon = 1e-10);
     }
 
     #[test]
