@@ -242,59 +242,46 @@ impl MagneticHallSymbol {
     }
 }
 
-// Layer-group Hall symbol (paper Fu et al. 2024 Table 5). Grammar matches the
-// bulk Hall symbol exactly except that the lattice prefix is lowercase
-// `p`/`c` (only those two centerings exist for layer groups, paper §3.3) and
-// the operations are constrained to the layer block form `W_i3 = W_3i = 0,
-// W_33 = +/-1` (paper eq. 4) -- though the parser does not enforce that
-// constraint, since by construction every Hall symbol in
-// LAYER_HALL_SYMBOL_DATABASE expands to operations satisfying it.
+/// Layer-group Hall symbol (paper Fu et al. 2024 Table 5).
+///
+/// Layer Hall symbols use the same grammar as bulk Hall symbols except for
+/// a lowercase `p`/`c` lattice prefix (only those two centerings exist for
+/// layer groups, paper §3.3) and the implicit constraint that all
+/// generators have the layer block form `W_i3 = W_3i = 0, W_33 = ±1` (paper
+/// eq. 4). Implementation: uppercase the lattice letter and delegate to
+/// [`HallSymbol`]. The bulk `Centering::{P,C}` and the layer
+/// `LayerCentering::{P,C}` agree on `linear()` and `lattice_points()`, so
+/// every traverse / primitive-projection result is correct without a parallel
+/// pipeline.
 #[derive(Debug)]
 pub struct LayerHallSymbol {
-    pub hall_symbol: String,
-    pub centering: LayerCentering,
-    pub centering_translations: Vec<Translation>,
-    /// Generators of the layer group except pure translations, in the
-    /// conventional (centered) basis.
-    pub generators: Operations,
+    inner: HallSymbol,
+    layer_centering: LayerCentering,
+    /// Original Hall symbol string with the lowercase `p`/`c` prefix the
+    /// caller passed in (the inner [`HallSymbol`] keeps the uppercased
+    /// form as a parser implementation detail).
+    layer_hall_symbol: String,
 }
 
 impl LayerHallSymbol {
-    pub fn new(hall_symbol: &str) -> Option<Self> {
-        let tokens = tokenize(hall_symbol);
-        if tokens.is_empty() {
-            return None;
-        }
-        let (inversion_at_origin, layer_centering) = parse_layer_lattice(tokens[0])?;
-        let (ns, origin_shift) = parse_operations_after_lattice(&tokens)?;
-
-        let centering_translations = layer_centering
-            .lattice_points()
-            .iter()
-            .filter(|&&t| relative_ne!(t, Translation::zeros(), epsilon = EPS))
-            .cloned()
-            .collect::<Vec<_>>();
-
-        let mut generators = vec![];
-        if inversion_at_origin {
-            generators.push(Operation::new(-Rotation::identity(), 2.0 * origin_shift));
-        }
-        for (rotation, translation, time_reversal) in ns {
-            if time_reversal {
-                debug!("Time reversal not allowed in a (non-magnetic) layer Hall symbol.");
+    pub fn new(layer_hall_symbol: &str) -> Option<Self> {
+        let upcased = upcase_layer_lattice_letter(layer_hall_symbol)?;
+        let inner = HallSymbol::new(&upcased)?;
+        let layer_centering = match inner.centering {
+            Centering::P => LayerCentering::P,
+            Centering::C => LayerCentering::C,
+            _ => {
+                debug!(
+                    "Layer Hall symbol {:?} resolved to non-layer centering {:?}",
+                    layer_hall_symbol, inner.centering
+                );
                 return None;
             }
-            let translation_mod1 = (translation + origin_shift
-                - rotation.map(|e| e as f64) * origin_shift)
-                .map(|e| e.rem_euclid(1.0));
-            generators.push(Operation::new(rotation, translation_mod1));
-        }
-
+        };
         Some(Self {
-            hall_symbol: hall_symbol.to_string(),
-            centering: layer_centering,
-            centering_translations,
-            generators,
+            inner,
+            layer_centering,
+            layer_hall_symbol: layer_hall_symbol.to_string(),
         })
     }
 
@@ -302,54 +289,60 @@ impl LayerHallSymbol {
         layer_hall_symbol_entry(hall_number).and_then(|entry| Self::new(entry.hall_symbol))
     }
 
-    /// Traverse all operations up to translations of the conventional layer
-    /// cell. Mirrors [`HallSymbol::traverse`] -- the algorithm is purely on
-    /// generators and translations mod 1, so it is identical for layer
-    /// groups.
+    /// Original Hall symbol string with the lowercase layer prefix.
+    pub fn hall_symbol(&self) -> &str {
+        &self.layer_hall_symbol
+    }
+
+    pub fn centering(&self) -> LayerCentering {
+        self.layer_centering
+    }
+
+    pub fn centering_translations(&self) -> &[Translation] {
+        &self.inner.centering_translations
+    }
+
+    pub fn generators(&self) -> &Operations {
+        &self.inner.generators
+    }
+
     pub fn traverse(&self) -> Operations {
-        let mut queue = VecDeque::new();
-        let mut hm_translations = HashMap::new();
-        let mut operations = vec![];
-
-        queue.push_back(Operation::identity());
-
-        while !queue.is_empty() {
-            let ops_lhs = queue.pop_front().unwrap();
-            let entry = hm_translations.entry(ops_lhs.rotation);
-            if let Entry::Occupied(_) = entry {
-                continue;
-            }
-            entry.or_insert(ops_lhs.translation);
-            operations.push(ops_lhs.clone());
-
-            for rhs in self.generators.iter() {
-                let new_ops = ops_lhs.clone() * rhs.clone();
-                if !hm_translations.contains_key(&new_ops.rotation) {
-                    let new_translation_mod1 = purify_translation_mod1(&new_ops.translation);
-                    queue.push_back(Operation::new(new_ops.rotation, new_translation_mod1));
-                }
-            }
-        }
-
-        operations
+        self.inner.traverse()
     }
 
     pub fn primitive_traverse(&self) -> Operations {
-        let (_, primitive_operations) = self.traverse_and_primitive_traverse();
-        primitive_operations
+        self.inner.primitive_traverse()
     }
 
     pub fn traverse_and_primitive_traverse(&self) -> (Operations, Operations) {
-        let operations = self.traverse();
-        let primitive_operations = Transformation::from_linear(self.centering.linear())
-            .inverse_transform_operations(&operations);
-        (operations, primitive_operations)
+        self.inner.traverse_and_primitive_traverse()
     }
 
     pub fn primitive_generators(&self) -> Operations {
-        Transformation::from_linear(self.centering.linear())
-            .inverse_transform_operations(&self.generators)
+        self.inner.primitive_generators()
     }
+}
+
+/// Convert a layer Hall symbol's lowercase `p`/`c` lattice prefix to the
+/// uppercase form the bulk Hall parser expects. Returns `None` if the
+/// lattice letter is missing or not in `{p, c}`.
+fn upcase_layer_lattice_letter(s: &str) -> Option<String> {
+    let trimmed = s.trim_start();
+    let (prefix, rest) = match trimmed.strip_prefix('-') {
+        Some(rest) => ("-", rest),
+        None => ("", trimmed),
+    };
+    let mut chars = rest.chars();
+    let lattice_char = chars.next()?;
+    if !matches!(lattice_char, 'p' | 'c') {
+        return None;
+    }
+    Some(format!(
+        "{}{}{}",
+        prefix,
+        lattice_char.to_ascii_uppercase(),
+        chars.as_str()
+    ))
 }
 
 /// Tokenize string by whitespaces
@@ -370,14 +363,7 @@ fn parse(
     OriginShift,
 )> {
     let (inversion_at_origin, lattice_symbol) = parse_lattice(tokens[0])?;
-    let (ns, origin_shift) = parse_operations_after_lattice(tokens)?;
-    Some((inversion_at_origin, lattice_symbol, ns, origin_shift))
-}
 
-#[allow(clippy::type_complexity)]
-fn parse_operations_after_lattice(
-    tokens: &Vec<&str>,
-) -> Option<(Vec<(Rotation, Translation, TimeReversal)>, OriginShift)> {
     let mut ns = vec![];
     let mut rotation_count = 0;
     let mut origin_shift = Vector3::<f64>::zeros();
@@ -401,7 +387,7 @@ fn parse_operations_after_lattice(
         }
     }
 
-    Some((ns, origin_shift))
+    Some((inversion_at_origin, lattice_symbol, ns, origin_shift))
 }
 
 fn parse_lattice(token: &str) -> Option<(bool, Centering)> {
@@ -424,23 +410,6 @@ fn parse_lattice(token: &str) -> Option<(bool, Centering)> {
         _ => return None,
     };
     Some((inversion_at_origin, lattice_symbol))
-}
-
-fn parse_layer_lattice(token: &str) -> Option<(bool, LayerCentering)> {
-    let mut pos = 0;
-    let inversion_at_origin = match token.chars().nth(pos)? {
-        '-' => {
-            pos += 1;
-            true
-        }
-        _ => false,
-    };
-    let layer_centering = match token.chars().nth(pos)? {
-        'p' => LayerCentering::P,
-        'c' => LayerCentering::C,
-        _ => return None,
-    };
-    Some((inversion_at_origin, layer_centering))
 }
 
 fn parse_origin_shift(tokens: Vec<&str>) -> Option<Vector3<f64>> {
@@ -821,9 +790,12 @@ mod tests {
         #[case] num_operations: usize,
     ) {
         let lhs = LayerHallSymbol::new(hall_symbol).unwrap();
-        assert_eq!(lhs.centering, centering);
-        assert_eq!(lhs.centering_translations.len(), num_centering_translations);
-        assert_eq!(lhs.generators.len(), num_generators);
+        assert_eq!(lhs.centering(), centering);
+        assert_eq!(
+            lhs.centering_translations().len(),
+            num_centering_translations
+        );
+        assert_eq!(lhs.generators().len(), num_generators);
         let operations = lhs.traverse();
         assert_eq!(operations.len(), num_operations);
     }
@@ -861,7 +833,7 @@ mod tests {
                     entry.hall_number, entry.hall_symbol
                 )
             });
-            assert_eq!(lhs.centering, entry.centering);
+            assert_eq!(lhs.centering(), entry.centering);
             for op in lhs.traverse() {
                 let r = op.rotation;
                 assert_eq!(r[(0, 2)], 0);
