@@ -15,14 +15,14 @@ use crate::data::{
 /// `UnimodularTransformation` that maps the input primitive layer cell to
 /// the database canonical for that Hall.
 ///
-/// **v1 scope.** [`LayerSpaceGroup::new`] performs an identity-basis match
+/// **v1 scope.** [`LayerGroup::new`] performs an identity-basis match
 /// only -- it does not yet search over `prim_trans_mat` candidates the way
 /// `SpaceGroup::new` does. This is sufficient for the M3 round-trip tests
 /// (which feed inputs already in canonical layer basis) and for callers who
 /// pre-orient their `LayerCell`. Generalised matching with axis-swap
 /// candidates and an arithmetic-class pre-filter is deferred to M5.
 #[derive(Debug, Clone, Serialize)]
-pub struct LayerSpaceGroup {
+pub struct LayerGroup {
     pub number: LayerNumber,
     pub hall_number: LayerHallNumber,
     /// Transformation from the input primitive basis to the canonical
@@ -30,7 +30,7 @@ pub struct LayerSpaceGroup {
     pub transformation: UnimodularTransformation,
 }
 
-impl LayerSpaceGroup {
+impl LayerGroup {
     /// Identify a layer group from primitive layer-cell operations.
     ///
     /// Iterates the Hall numbers in `setting` and returns the first one
@@ -94,7 +94,7 @@ mod tests {
 
     /// Round-trip: for every Hall number in LAYER_HALL_SYMBOL_DATABASE,
     /// expand its symbol to primitive operations and pass them through
-    /// `LayerSpaceGroup::new`; the returned `(number, hall_number)` must
+    /// `LayerGroup::new`; the returned `(number, hall_number)` must
     /// match the database entry, and the identified transformation must
     /// be unimodular and recover the same operations modulo translation.
     #[test]
@@ -103,7 +103,7 @@ mod tests {
             let lh_symbol = LayerHallSymbol::from_hall_number(entry.hall_number).unwrap();
             let prim_operations = lh_symbol.primitive_traverse();
 
-            let identified = LayerSpaceGroup::new(
+            let identified = LayerGroup::new(
                 &prim_operations,
                 LayerSetting::HallNumber(entry.hall_number),
                 1e-8,
@@ -178,7 +178,7 @@ mod tests {
             let lh_symbol = LayerHallSymbol::from_hall_number(hall_number).unwrap();
             let prim_operations = lh_symbol.primitive_traverse();
             let identified =
-                LayerSpaceGroup::new(&prim_operations, LayerSetting::Standard, 1e-8).unwrap();
+                LayerGroup::new(&prim_operations, LayerSetting::Standard, 1e-8).unwrap();
             assert_eq!(identified.hall_number, hall_number);
         }
     }
