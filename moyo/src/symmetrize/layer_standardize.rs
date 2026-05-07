@@ -20,12 +20,11 @@ use crate::math::{SNF, lift_2d_to_3d};
 /// Standardized cell for a layer-group setting.
 ///
 /// Mirrors [`super::StandardizedCell`] for the bulk space-group case.
-/// The output satisfies the contract documented in the layer-group plan
-/// §2.2: `c_s` aperiodic and along cartesian z (when `rotate_basis = true`),
-/// `a_s` along cartesian x, `b_s` in the xy-plane, `|c_s| = |c|` preserved
-/// from the input, and the in-plane `(a_s, b_s)` block obeys the metric
-/// conditions of the LG crystal system (paper Fu et al. 2024 Figure 1 /
-/// Appendix C).
+/// Output contract: `c_s` is the aperiodic axis along cartesian z
+/// (when `rotate_basis = true`), `a_s` is along cartesian x, `b_s` lies
+/// in the xy-plane, `|c_s| = |c|` is preserved from the input, and the
+/// in-plane `(a_s, b_s)` block obeys the LG crystal system's metric
+/// conditions (paper Fu et al. 2024 Figure 1 / Appendix C).
 #[allow(dead_code)] // wired up by M5 (`MoyoLayerDataset`)
 pub(crate) struct StandardizedLayerCell {
     /// Primitive standardized layer cell.
