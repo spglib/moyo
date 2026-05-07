@@ -6,6 +6,8 @@ use nalgebra::{Vector3, matrix};
 
 use super::centering::Centering;
 use super::hall_symbol_database::{HallNumber, hall_symbol_entry};
+use super::layer_centering::LayerCentering;
+use super::layer_hall_symbol_database::{LayerHallNumber, layer_hall_symbol_entry};
 use super::magnetic_hall_symbol_database::magnetic_hall_symbol_entry;
 use super::magnetic_space_group::UNINumber;
 use crate::base::{
@@ -240,6 +242,116 @@ impl MagneticHallSymbol {
     }
 }
 
+// Layer-group Hall symbol (paper Fu et al. 2024 Table 5). Grammar matches the
+// bulk Hall symbol exactly except that the lattice prefix is lowercase
+// `p`/`c` (only those two centerings exist for layer groups, paper §3.3) and
+// the operations are constrained to the layer block form `W_i3 = W_3i = 0,
+// W_33 = +/-1` (paper eq. 4) -- though the parser does not enforce that
+// constraint, since by construction every Hall symbol in
+// LAYER_HALL_SYMBOL_DATABASE expands to operations satisfying it.
+#[derive(Debug)]
+pub struct LayerHallSymbol {
+    pub hall_symbol: String,
+    pub centering: LayerCentering,
+    pub centering_translations: Vec<Translation>,
+    /// Generators of the layer group except pure translations, in the
+    /// conventional (centered) basis.
+    pub generators: Operations,
+}
+
+impl LayerHallSymbol {
+    pub fn new(hall_symbol: &str) -> Option<Self> {
+        let tokens = tokenize(hall_symbol);
+        if tokens.is_empty() {
+            return None;
+        }
+        let (inversion_at_origin, layer_centering) = parse_layer_lattice(tokens[0])?;
+        let (ns, origin_shift) = parse_operations_after_lattice(&tokens)?;
+
+        let centering_translations = layer_centering
+            .lattice_points()
+            .iter()
+            .filter(|&&t| relative_ne!(t, Translation::zeros(), epsilon = EPS))
+            .cloned()
+            .collect::<Vec<_>>();
+
+        let mut generators = vec![];
+        if inversion_at_origin {
+            generators.push(Operation::new(-Rotation::identity(), 2.0 * origin_shift));
+        }
+        for (rotation, translation, time_reversal) in ns {
+            if time_reversal {
+                debug!("Time reversal not allowed in a (non-magnetic) layer Hall symbol.");
+                return None;
+            }
+            let translation_mod1 = (translation + origin_shift
+                - rotation.map(|e| e as f64) * origin_shift)
+                .map(|e| e.rem_euclid(1.0));
+            generators.push(Operation::new(rotation, translation_mod1));
+        }
+
+        Some(Self {
+            hall_symbol: hall_symbol.to_string(),
+            centering: layer_centering,
+            centering_translations,
+            generators,
+        })
+    }
+
+    pub fn from_hall_number(hall_number: LayerHallNumber) -> Option<Self> {
+        layer_hall_symbol_entry(hall_number).and_then(|entry| Self::new(entry.hall_symbol))
+    }
+
+    /// Traverse all operations up to translations of the conventional layer
+    /// cell. Mirrors [`HallSymbol::traverse`] -- the algorithm is purely on
+    /// generators and translations mod 1, so it is identical for layer
+    /// groups.
+    pub fn traverse(&self) -> Operations {
+        let mut queue = VecDeque::new();
+        let mut hm_translations = HashMap::new();
+        let mut operations = vec![];
+
+        queue.push_back(Operation::identity());
+
+        while !queue.is_empty() {
+            let ops_lhs = queue.pop_front().unwrap();
+            let entry = hm_translations.entry(ops_lhs.rotation);
+            if let Entry::Occupied(_) = entry {
+                continue;
+            }
+            entry.or_insert(ops_lhs.translation);
+            operations.push(ops_lhs.clone());
+
+            for rhs in self.generators.iter() {
+                let new_ops = ops_lhs.clone() * rhs.clone();
+                if !hm_translations.contains_key(&new_ops.rotation) {
+                    let new_translation_mod1 = purify_translation_mod1(&new_ops.translation);
+                    queue.push_back(Operation::new(new_ops.rotation, new_translation_mod1));
+                }
+            }
+        }
+
+        operations
+    }
+
+    pub fn primitive_traverse(&self) -> Operations {
+        let (_, primitive_operations) = self.traverse_and_primitive_traverse();
+        primitive_operations
+    }
+
+    pub fn traverse_and_primitive_traverse(&self) -> (Operations, Operations) {
+        let operations = self.traverse();
+        let primitive_operations = Transformation::from_linear(self.centering.linear())
+            .inverse_transform_operations(&operations);
+        (operations, primitive_operations)
+    }
+
+    pub fn primitive_generators(&self) -> Operations {
+        Transformation::from_linear(self.centering.linear())
+            .inverse_transform_operations(&self.generators)
+    }
+}
+
 /// Tokenize string by whitespaces
 fn tokenize(hall_symbol: &str) -> Vec<&str> {
     hall_symbol
@@ -258,7 +370,14 @@ fn parse(
     OriginShift,
 )> {
     let (inversion_at_origin, lattice_symbol) = parse_lattice(tokens[0])?;
+    let (ns, origin_shift) = parse_operations_after_lattice(tokens)?;
+    Some((inversion_at_origin, lattice_symbol, ns, origin_shift))
+}
 
+#[allow(clippy::type_complexity)]
+fn parse_operations_after_lattice(
+    tokens: &Vec<&str>,
+) -> Option<(Vec<(Rotation, Translation, TimeReversal)>, OriginShift)> {
     let mut ns = vec![];
     let mut rotation_count = 0;
     let mut origin_shift = Vector3::<f64>::zeros();
@@ -282,7 +401,7 @@ fn parse(
         }
     }
 
-    Some((inversion_at_origin, lattice_symbol, ns, origin_shift))
+    Some((ns, origin_shift))
 }
 
 fn parse_lattice(token: &str) -> Option<(bool, Centering)> {
@@ -305,6 +424,23 @@ fn parse_lattice(token: &str) -> Option<(bool, Centering)> {
         _ => return None,
     };
     Some((inversion_at_origin, lattice_symbol))
+}
+
+fn parse_layer_lattice(token: &str) -> Option<(bool, LayerCentering)> {
+    let mut pos = 0;
+    let inversion_at_origin = match token.chars().nth(pos)? {
+        '-' => {
+            pos += 1;
+            true
+        }
+        _ => false,
+    };
+    let layer_centering = match token.chars().nth(pos)? {
+        'p' => LayerCentering::P,
+        'c' => LayerCentering::C,
+        _ => return None,
+    };
+    Some((inversion_at_origin, layer_centering))
 }
 
 fn parse_origin_shift(tokens: Vec<&str>) -> Option<Vector3<f64>> {
@@ -663,5 +799,82 @@ mod tests {
         assert_eq!(mhs.generators.len(), num_generators);
         let magnetic_operations = mhs.traverse();
         assert_eq!(magnetic_operations.len(), num_operations);
+    }
+
+    #[rstest]
+    // hall_symbol, expected centering, # centering translations,
+    // # generators, # operations of conv. cell.
+    #[case("p 1", LayerCentering::P, 0, 1, 1)] // LG 1 / hall 1
+    #[case("-p 1", LayerCentering::P, 0, 2, 2)] // LG 2 / hall 2
+    #[case("p -2", LayerCentering::P, 0, 1, 2)] // LG 4 (p11m) / hall 4
+    #[case("c 2x", LayerCentering::C, 1, 1, 2)] // LG 10 setting :a / hall 16
+    #[case("-c 2 2", LayerCentering::C, 1, 3, 8)] // LG 47 (cmmm) / hall 80
+    #[case("p 4", LayerCentering::P, 0, 1, 4)] // LG 49 (p4) / hall 82
+    #[case("-p 4 2", LayerCentering::P, 0, 3, 16)] // LG 61 (p4/mmm) / hall 95
+    #[case("p 3", LayerCentering::P, 0, 1, 3)] // LG 65 (p3) / hall 101
+    #[case("-p 6 2", LayerCentering::P, 0, 3, 24)] // LG 80 (p6/mmm) / hall 116
+    fn test_layer_hall_symbol_small(
+        #[case] hall_symbol: &str,
+        #[case] centering: LayerCentering,
+        #[case] num_centering_translations: usize,
+        #[case] num_generators: usize,
+        #[case] num_operations: usize,
+    ) {
+        let lhs = LayerHallSymbol::new(hall_symbol).unwrap();
+        assert_eq!(lhs.centering, centering);
+        assert_eq!(lhs.centering_translations.len(), num_centering_translations);
+        assert_eq!(lhs.generators.len(), num_generators);
+        let operations = lhs.traverse();
+        assert_eq!(operations.len(), num_operations);
+    }
+
+    #[test]
+    fn test_layer_hall_symbol_rejects_uppercase_lattice() {
+        assert!(LayerHallSymbol::new("P 1").is_none());
+        assert!(LayerHallSymbol::new("C 2x").is_none());
+    }
+
+    #[test]
+    fn test_layer_hall_symbol_rejects_non_layer_lattice() {
+        // Only p/c are valid layer centerings (paper §3.3); a/b/i/r/f exist
+        // for bulk space groups but are not part of the layer alphabet.
+        assert!(LayerHallSymbol::new("a 1").is_none());
+        assert!(LayerHallSymbol::new("i 4").is_none());
+    }
+
+    #[test]
+    fn test_layer_hall_symbol_rejects_time_reversal() {
+        // Magnetic-style time reversal in a (non-magnetic) layer Hall symbol.
+        assert!(LayerHallSymbol::new("p 2'").is_none());
+    }
+
+    /// Every Hall symbol in the layer database parses without error and
+    /// yields operations whose rotations satisfy the layer-block form (paper
+    /// eq. 4): `W_i3 = W_3i = 0` for `i = 1, 2` and `W_33 = ±1`.
+    #[test]
+    fn test_layer_hall_symbol_database_round_trip_parse() {
+        use crate::data::iter_layer_hall_symbol_entry;
+        for entry in iter_layer_hall_symbol_entry() {
+            let lhs = LayerHallSymbol::new(entry.hall_symbol).unwrap_or_else(|| {
+                panic!(
+                    "failed to parse layer hall_number {} symbol {:?}",
+                    entry.hall_number, entry.hall_symbol
+                )
+            });
+            assert_eq!(lhs.centering, entry.centering);
+            for op in lhs.traverse() {
+                let r = op.rotation;
+                assert_eq!(r[(0, 2)], 0);
+                assert_eq!(r[(1, 2)], 0);
+                assert_eq!(r[(2, 0)], 0);
+                assert_eq!(r[(2, 1)], 0);
+                assert!(
+                    r[(2, 2)] == 1 || r[(2, 2)] == -1,
+                    "hall_number {} produced W_33 = {} not in {{+/-1}}",
+                    entry.hall_number,
+                    r[(2, 2)]
+                );
+            }
+        }
     }
 }

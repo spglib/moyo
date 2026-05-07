@@ -20,7 +20,7 @@ pub use centering::Centering;
 pub use classification::{
     BravaisClass, CrystalFamily, CrystalSystem, GeometricCrystalClass, LatticeSystem,
 };
-pub use hall_symbol::{HallSymbol, MagneticHallSymbol};
+pub use hall_symbol::{HallSymbol, LayerHallSymbol, MagneticHallSymbol};
 pub use hall_symbol_database::{HallNumber, HallSymbolEntry, Number, hall_symbol_entry};
 pub use layer_arithmetic_crystal_class::{
     LayerArithmeticCrystalClassEntry, LayerArithmeticNumber, iter_layer_arithmetic_crystal_entry,
