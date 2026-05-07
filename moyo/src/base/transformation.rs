@@ -363,9 +363,22 @@ impl Transformation {
     /// pipeline's centering / standardization helpers only.
     pub(crate) fn transform_layer_cell(&self, cell: &LayerCell) -> (LayerCell, Vec<usize>) {
         let (new_bulk, site_mapping) = self.transform_cell(&cell.as_cell());
+
+        // Bulk `transform_cell` reduces every fractional component by `% 1.`,
+        // which would clip aperiodic stacking heights. Restore each
+        // transformed `z` from the source site: the layer block form
+        // (`W_i3 = W_3i = 0`, `|W_33| = 1`) forces `D_2 = 1` in the SNF,
+        // so the sublattice points have `z = 0` and the z-projection is
+        // `new_z = (1/W_33) * old_z = +/- old_z`.
+        let w33_inv = 1.0 / (self.linear[(2, 2)] as f64);
+        let mut new_positions = new_bulk.positions;
+        for (new_pos, &orig_idx) in new_positions.iter_mut().zip(site_mapping.iter()) {
+            new_pos[2] = w33_inv * cell.positions()[orig_idx][2];
+        }
+
         let new_layer = LayerCell::new_unchecked(
             LayerLattice::new_unchecked(new_bulk.lattice),
-            new_bulk.positions,
+            new_positions,
             new_bulk.numbers,
         );
         (new_layer, site_mapping)
@@ -417,9 +430,11 @@ fn transform_operation_as_f64(
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::matrix;
+    use nalgebra::{matrix, vector};
 
-    use super::Transformation;
+    use super::{Lattice, LayerCell, Transformation};
+    use crate::base::AngleTolerance;
+    use crate::base::cell::Cell;
     use crate::base::operation::{Operation, Translation};
 
     #[test]
@@ -439,5 +454,36 @@ mod tests {
             Translation::zeros(),
         );
         assert!(transformation.transform_operation(&operation).is_none());
+    }
+
+    #[test]
+    fn test_transform_layer_cell_preserves_aperiodic_z() {
+        // Centering transform with layer block form (`W_33 = 1`,
+        // `W_i3 = W_3i = 0`). The third axis is aperiodic for layer cells, so
+        // z must be preserved verbatim even when it lies outside `[0, 1)`.
+        let centering = matrix![
+            1, -1, 0;
+            1,  1, 0;
+            0,  0, 1;
+        ];
+        let lattice = Lattice::new(matrix![
+            1.0, 0.0, 0.0;
+            0.0, 1.0, 0.0;
+            0.0, 0.0, 5.0;
+        ]);
+        // z = 1.7 is outside `[0, 1)` -- a thicker slab. Bulk transform's
+        // `% 1.` would fold it to 0.7.
+        let z_outside = 1.7;
+        let cell = Cell::new(lattice, vec![vector![0.1, 0.2, z_outside]], vec![1]);
+        let layer_cell = LayerCell::new(cell, 1e-4, AngleTolerance::Default).unwrap();
+
+        let (transformed, _) =
+            Transformation::from_linear(centering).transform_layer_cell(&layer_cell);
+
+        // Centered -> primitive doubles the cell, so each input atom maps to
+        // two output sites; both must keep `z = 1.7`.
+        for pos in transformed.positions() {
+            assert!((pos[2] - z_outside).abs() < 1e-12, "z wrapped: {}", pos[2]);
+        }
     }
 }
