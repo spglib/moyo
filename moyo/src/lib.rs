@@ -491,7 +491,6 @@ impl MoyoLayerDataset {
         let prim_std_origin_shift =
             prim_cell_linear_inv * std_layer.prim_transformation.origin_shift;
 
-        // Pearson symbol: 2D Bravais type + standardized atom count.
         let entry = layer_hall_symbol_entry(layer_group.hall_number).unwrap();
         let layer_arith = layer_arithmetic_crystal_class_entry(entry.arithmetic_number).unwrap();
         let pearson_symbol = format!(
