@@ -13,14 +13,12 @@ use crate::base::{
 /// resulting subset is a subgroup of the bulk space group, hence still
 /// closed; no separate closure check is needed here.
 #[derive(Debug)]
-#[allow(dead_code)] // wired up by later layer-group milestones
 pub struct LayerPrimitiveSymmetrySearch {
     /// Layer-group operations in the given primitive layer cell.
     pub operations: Operations,
     pub permutations: Vec<Permutation>,
 }
 
-#[allow(dead_code)] // wired up by later layer-group milestones
 impl LayerPrimitiveSymmetrySearch {
     /// Search layer-group coset representatives for a primitive layer cell.
     ///
