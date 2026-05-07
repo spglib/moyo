@@ -78,9 +78,9 @@ impl LayerLattice {
     /// Public read-only view of the basis matrix.
     pub fn basis(&self) -> &Matrix3<f64>;
     pub(crate) fn new_unchecked(lattice: Lattice) -> Self;
-    // No `lattice() -> &Lattice` accessor, even pub(crate). In-crate sites
-    // that need a `&Lattice` (e.g. to call `search_bravais_group`) construct
-    // one explicitly via `Lattice { basis: *ll.basis() }`.
+    /// Bulk `Lattice` view, by value. `pub(crate)` so it cannot leak the
+    /// layer-to-bulk crossing into a public API.
+    pub(crate) fn as_lattice(&self) -> Lattice;
 }
 
 pub struct LayerCell {
@@ -98,12 +98,15 @@ impl LayerCell {
     pub fn numbers(&self) -> &[AtomicSpecie];
     pub fn num_atoms(&self) -> usize;
     pub(crate) fn new_unchecked(lattice: LayerLattice, positions: Vec<Position>, numbers: Vec<AtomicSpecie>) -> Self;
+    /// Bulk `Cell` view, by value. `pub(crate)` so it cannot leak the
+    /// layer-to-bulk crossing into a public API.
+    pub(crate) fn as_cell(&self) -> Cell;
 }
 ```
 
 - `LayerLattice::new` and `LayerCell::new` validate the perpendicularity contract. Construction is the only public way to get either newtype, so any function taking `&LayerLattice` / `&LayerCell` can rely on the invariant.
-- **Conversion is one-way, with no in-crate shortcut.** `Lattice -> LayerLattice` and `Cell -> LayerCell` are allowed (via the validating constructors); the reverse is **not** part of the public surface, **and not even available `pub(crate)`**. Neither newtype hands out a borrow of the wrapped bulk type at any visibility. In-crate sites that need a `Cell` reconstruct one as `Cell::new(Lattice { basis: *lc.lattice().basis() }, lc.positions().to_vec(), lc.numbers().to_vec())`. The reconstruction is a one-line conversion at a handful of call sites and makes the layer-to-bulk crossing visible everywhere it occurs. No `into_inner()`, no `Deref`, no `From<LayerCell> for Cell` / `From<LayerLattice> for Lattice`.
-- **`LayerCell::lattice()` returns `&LayerLattice`, not `&Lattice`.** This is safe because `LayerLattice` is itself a layer-only type that bulk helpers cannot consume. Public callers needing the bare 3x3 matrix go through `layer_cell.lattice().basis()`.
+- **Public conversion is one-way.** `Lattice -> LayerLattice` and `Cell -> LayerCell` go through the validating constructors. The reverse is **not** part of the public surface; in-crate helpers that genuinely need a bulk `Cell` / `Lattice` (the bulk symmetry search, primitive-cell finder, transformation routines) call `LayerCell::as_cell()` / `LayerLattice::as_lattice()` (`pub(crate)`). Both methods allocate a fresh value rather than handing out a borrow, so the layer-to-bulk crossing remains a value boundary: bulk-only state can never be aliased back into the `LayerCell`. No `Deref`, no `From<LayerCell> for Cell`, and the methods are never `pub`.
+- **`LayerCell::lattice()` returns `&LayerLattice`, not `&Lattice`.** This is safe because `LayerLattice` is itself a layer-only type that bulk helpers cannot consume. Public callers needing the bare 3x3 matrix go through `layer_cell.lattice().basis()`; in-crate helpers that need a bulk `Lattice` use `layer_cell.lattice().as_lattice()`.
 - All layer-pipeline entry points take the newtypes: `MoyoLayerDataset::new(&LayerCell, ..)`, `LayerPrimitiveCell::new(&LayerCell, ..)`, `LayerPrimitiveSymmetrySearch::new(&LayerCell, ..)`, `search_layer_bravais_group(&LayerLattice, ..)`.
 - Plain getters rather than `Deref`: `Deref<Target = Cell>` / `Deref<Target = Lattice>` would let the newtypes silently impersonate the bulk types and re-introduce the conflation we are trying to prevent. Explicit `.lattice()` / `.positions()` keeps the abstraction visible at call sites.
 

@@ -131,14 +131,7 @@ impl UnimodularTransformation {
     /// helpers, which know the linear part has the layer block form
     /// `W_i3 = W_3i = 0`, `|W_33| = 1`, can call it.
     pub(crate) fn transform_layer_cell(&self, cell: &LayerCell) -> LayerCell {
-        let bulk = Cell::new(
-            Lattice {
-                basis: *cell.lattice().basis(),
-            },
-            cell.positions().to_vec(),
-            cell.numbers().to_vec(),
-        );
-        let new_bulk = self.transform_cell(&bulk);
+        let new_bulk = self.transform_cell(&cell.as_cell());
         LayerCell::new_unchecked(
             LayerLattice::new_unchecked(new_bulk.lattice),
             new_bulk.positions,
@@ -369,14 +362,7 @@ impl Transformation {
     /// responsibility, so this is `pub(crate)` and meant for the layer
     /// pipeline's centering / standardization helpers only.
     pub(crate) fn transform_layer_cell(&self, cell: &LayerCell) -> (LayerCell, Vec<usize>) {
-        let bulk = Cell::new(
-            Lattice {
-                basis: *cell.lattice().basis(),
-            },
-            cell.positions().to_vec(),
-            cell.numbers().to_vec(),
-        );
-        let (new_bulk, site_mapping) = self.transform_cell(&bulk);
+        let (new_bulk, site_mapping) = self.transform_cell(&cell.as_cell());
         let new_layer = LayerCell::new_unchecked(
             LayerLattice::new_unchecked(new_bulk.lattice),
             new_bulk.positions,
