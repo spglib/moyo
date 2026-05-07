@@ -9,7 +9,7 @@ use super::layer_hall_symbol_database::LayerHallNumber;
 /// caller (`assign_layer_wyckoff_position`) recovers the orbit by an integer
 /// offset search, so the secondary coordinates are not needed.
 #[derive(Debug, Clone)]
-#[allow(dead_code)] // `letter` and `site_symmetry` are read by M5 (`MoyoLayerDataset`).
+#[allow(dead_code)] // `letter` and `site_symmetry` are read by `MoyoLayerDataset` (not yet wired up).
 pub struct LayerWyckoffPosition {
     pub hall_number: LayerHallNumber,
     /// Multiplicity in the conventional layer cell.

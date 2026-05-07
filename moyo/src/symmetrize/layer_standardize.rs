@@ -10,12 +10,10 @@ use crate::base::{
     Rotations, Transformation, UnimodularTransformation, project_rotations,
 };
 use crate::data::{
-    LayerArithmeticNumber, LayerHallNumber, LayerHallSymbol, LayerLatticeSystem,
-    LayerWyckoffPosition, iter_layer_wyckoff_positions, layer_arithmetic_crystal_class_entry,
-    layer_hall_symbol_entry,
+    LayerHallNumber, LayerHallSymbol, LayerLatticeSystem, LayerWyckoffPosition,
+    iter_layer_wyckoff_positions, layer_arithmetic_crystal_class_entry, layer_hall_symbol_entry,
 };
 use crate::identify::LayerGroup;
-use crate::math::lift_2d_to_3d;
 
 /// Standardized cell for a layer-group setting.
 ///
@@ -25,7 +23,7 @@ use crate::math::lift_2d_to_3d;
 /// in the xy-plane, `|c_s| = |c|` is preserved from the input, and the
 /// in-plane `(a_s, b_s)` block obeys the LG crystal system's metric
 /// conditions (paper Fu et al. 2024 Figure 1 / Appendix C).
-#[allow(dead_code)] // wired up by M5 (`MoyoLayerDataset`)
+#[allow(dead_code)] // consumed by `MoyoLayerDataset` (not yet wired up)
 pub(crate) struct StandardizedLayerCell {
     /// Primitive standardized layer cell.
     pub prim_layer_cell: LayerCell,
@@ -46,7 +44,7 @@ pub(crate) struct StandardizedLayerCell {
     pub site_mapping: Vec<usize>,
 }
 
-#[allow(dead_code)] // wired up by M5 (`MoyoLayerDataset`)
+#[allow(dead_code)] // consumed by `MoyoLayerDataset` (not yet wired up)
 impl StandardizedLayerCell {
     /// Standardize the input **primitive** layer cell.
     ///
@@ -139,8 +137,9 @@ impl StandardizedLayerCell {
         // For the constrained crystal systems (rectangular, square,
         // hexagonal) the in-plane metric is already pinned by the LG, so
         // the bare LG transformation suffices.
-        let lattice_system = layer_lattice_system_for(entry.arithmetic_number)
-            .ok_or(MoyoError::StandardizationError)?;
+        let lattice_system = layer_arithmetic_crystal_class_entry(entry.arithmetic_number)
+            .ok_or(MoyoError::StandardizationError)?
+            .layer_lattice_system();
         let prim_transformation = match lattice_system {
             LayerLatticeSystem::Oblique => {
                 standardize_oblique_layer_cell(prim_layer_cell, &layer_group.transformation)
@@ -256,29 +255,22 @@ impl StandardizedLayerCell {
     }
 }
 
-fn layer_lattice_system_for(
-    arithmetic_number: LayerArithmeticNumber,
-) -> Option<LayerLatticeSystem> {
-    layer_arithmetic_crystal_class_entry(arithmetic_number).map(|e| e.layer_lattice_system())
-}
-
 /// 2D-Minkowski-reduce the in-plane block *after* applying
 /// `transformation_to_prim_std`. Mirrors `standardize_triclinic_cell` for the
-/// bulk case, except the third basis vector is left untouched.
+/// bulk case, except the third basis vector is left untouched. Reduction
+/// failure (degenerate basis) is mapped to identity rather than an error so
+/// standardization remains total over the inputs the LG identification
+/// already accepted.
 fn standardize_oblique_layer_cell(
     prim_layer_cell: &LayerCell,
     transformation_to_prim_std: &UnimodularTransformation,
 ) -> UnimodularTransformation {
     let lattice_after =
         transformation_to_prim_std.transform_lattice(&prim_layer_cell.lattice().as_lattice());
-    let inplane = Lattice2D::from_inplane_of(&lattice_after.basis);
-    let (_, trans_mat_2d) = match inplane.minkowski_reduce() {
+    let lifted: Linear = match Lattice2D::lift_inplane_minkowski_reduce(&lattice_after.basis) {
         Ok(t) => t,
-        // 2D Minkowski reduction is total over non-degenerate inputs; if it
-        // fails, fall back to identity rather than aborting standardization.
         Err(_) => return transformation_to_prim_std.clone(),
     };
-    let lifted: Linear = lift_2d_to_3d(&trans_mat_2d);
     UnimodularTransformation::new(
         lifted * transformation_to_prim_std.linear,
         transformation_to_prim_std.origin_shift,
@@ -335,10 +327,6 @@ fn symmetrize_layer_lattice(lattice: &Lattice, rotations: &Rotations) -> (Lattic
         cz_mag
     };
 
-    // Layer-canonical basis (column-vector convention):
-    //   col 0 = a = (ax, 0, 0)   along x
-    //   col 1 = b = (bx, by, 0)  in xy
-    //   col 2 = c = (0,  0,  cz) along z (sign matches input handedness)
     let new_basis = Matrix3::new(
         ax, bx, 0.0, //
         0.0, by, 0.0, //
@@ -357,14 +345,9 @@ fn symmetrize_layer_lattice(lattice: &Lattice, rotations: &Rotations) -> (Lattic
     (Lattice { basis: new_basis }, rotation_matrix)
 }
 
-// `assign_layer_wyckoff_position` was a thin wrapper over the shared
-// `match_wyckoff_coordinates`; it is now inlined into `assign_wyckoffs`
-// via `iter_layer_wyckoff_positions(...).find(...)` and the shared
-// `assign_wyckoffs_by_orbit`.
-
 #[cfg(test)]
 mod tests {
-    use nalgebra::{Vector3, matrix, vector};
+    use nalgebra::{Vector3, matrix};
 
     use super::*;
     use crate::base::{AngleTolerance, Cell, Lattice, traverse};
@@ -373,9 +356,10 @@ mod tests {
 
     const SYMPREC: f64 = 1e-4;
 
-    /// Build a layer cell, run the M2 + M3 + M4 pipeline, and return the
-    /// resulting `StandardizedLayerCell` plus the identified `LayerGroup`.
-    /// Tests below assert on the standardized output.
+    /// Build a layer cell, run primitive search + symmetry search +
+    /// identification + standardization, and return the resulting
+    /// `StandardizedLayerCell` plus the identified `LayerGroup`. Tests below
+    /// assert on the standardized output.
     fn run_layer_pipeline(
         cell: Cell,
         setting: LayerSetting,
@@ -388,10 +372,8 @@ mod tests {
             AngleTolerance::Default,
         )
         .unwrap();
-        let nc = primitive.layer_cell.lattice().basis().column(2).norm();
         let volume = primitive.layer_cell.lattice().basis().determinant().abs();
         let epsilon = SYMPREC / volume.powf(1.0 / 3.0);
-        let _ = nc;
         let layer_group =
             LayerGroup::new(&symmetry.operations, setting, epsilon).expect("identification failed");
         let standardized = StandardizedLayerCell::new(
@@ -567,7 +549,6 @@ mod tests {
         // Both atoms in the same orbit (one Wyckoff letter, multiplicity 2).
         assert_eq!(std.wyckoffs[0].letter, std.wyckoffs[1].letter);
         assert_eq!(std.wyckoffs[0].multiplicity, 2);
-        let _ = vector![0.0_f64, 0.0, 0.0];
     }
 
     /// Left-handed input must produce a left-handed standardized basis with
