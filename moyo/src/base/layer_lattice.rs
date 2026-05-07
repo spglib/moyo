@@ -1,7 +1,7 @@
 use std::f64::consts::PI;
 
 use log::debug;
-use nalgebra::Matrix3;
+use nalgebra::{Matrix3, Vector3};
 use serde::{Deserialize, Serialize};
 
 use super::error::MoyoError;
@@ -9,14 +9,14 @@ use super::lattice::Lattice;
 use super::tolerance::{AngleTolerance, is_angle_within_tolerance};
 
 /// A `Lattice` whose third basis vector is the aperiodic stacking direction
-/// of a layer system, with `c` perpendicular to `a, b` (paper Fu et al. 2024
-/// eq. 5).
+/// of a layer system, with `c` along the z-axis and `a, b` in the xy-plane
+/// (paper Fu et al. 2024 eq. 5).
 ///
-/// Construction via [`LayerLattice::new`] runs the perpendicularity check up
-/// front, so any function taking `&LayerLattice` can rely on `c . a = 0` and
-/// `c . b = 0` within tolerance, plus all three basis vectors being non-zero.
-/// The newtype prevents bulk-pipeline `Lattice` values from being passed where
-/// the layer pipeline expects them.
+/// Construction via [`LayerLattice::new`] enforces this orientation up front,
+/// so any function taking `&LayerLattice` can rely on `a_z = b_z = 0` (and
+/// hence `c . a = c . b = 0`) within tolerance, plus all three basis vectors
+/// being non-zero. The newtype prevents bulk-pipeline `Lattice` values from
+/// being passed where the layer pipeline expects them.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LayerLattice {
     inner: Lattice,
@@ -24,7 +24,8 @@ pub struct LayerLattice {
 
 impl LayerLattice {
     /// Validate `lattice` against the layer-group periodicity contract
-    /// (`c` perpendicular to `a, b`, all basis vectors non-zero) and wrap it.
+    /// (`c` along z, `a, b` in the xy-plane, all basis vectors non-zero) and
+    /// wrap it.
     pub fn new(
         lattice: Lattice,
         symprec: f64,
@@ -55,6 +56,26 @@ impl LayerLattice {
             return Err(MoyoError::AperiodicAxisNotOrthogonal {
                 dev_ca: dev_ca.abs(),
                 dev_cb: dev_cb.abs(),
+            });
+        }
+
+        // Reject globally-rotated layer cells: `c . a = c . b = 0` alone admits
+        // any 3D rotation of the slab, but the in-plane block extracted by
+        // `Lattice2D::from_inplane_of` only retains the upper-left 2x2 of the
+        // basis. Require `a, b` in the xy-plane so that extraction is exact.
+        let z_axis = Vector3::new(0.0_f64, 0.0, 1.0);
+        let dev_az = a.angle(&z_axis) - PI / 2.0;
+        let dev_bz = b.angle(&z_axis) - PI / 2.0;
+        let ok_az = is_angle_within_tolerance(dev_az, na, 1.0, symprec, angle_tolerance);
+        let ok_bz = is_angle_within_tolerance(dev_bz, nb, 1.0, symprec, angle_tolerance);
+        if !ok_az || !ok_bz {
+            debug!(
+                "In-plane axes are not in the xy-plane: dev(a,xy)={:.6} rad, dev(b,xy)={:.6} rad",
+                dev_az, dev_bz
+            );
+            return Err(MoyoError::InPlaneAxesNotInXY {
+                dev_az: dev_az.abs(),
+                dev_bz: dev_bz.abs(),
             });
         }
         Ok(Self { inner: lattice })
@@ -151,6 +172,24 @@ mod tests {
                 AngleTolerance::Radian(1.0_f64.to_radians()),
             ),
             Err(MoyoError::AperiodicAxisNotOrthogonal { .. })
+        ));
+    }
+
+    #[test]
+    fn test_layer_lattice_new_rejects_globally_rotated() {
+        // A globally-rotated valid layer cell: c is still perpendicular to a,b
+        // (so the orthogonality check passes) but a, b have non-zero z-components.
+        // The 2x2 in-plane extraction would silently drop those z-components, so
+        // construction must reject this case.
+        let s = (0.5_f64).sqrt();
+        let lattice = Lattice::new(matrix![
+            s, 0.0, -s;
+            0.0, 1.0, 0.0;
+            s, 0.0, s;
+        ]);
+        assert!(matches!(
+            LayerLattice::new(lattice, TEST_SYMPREC, AngleTolerance::Default),
+            Err(MoyoError::InPlaneAxesNotInXY { .. })
         ));
     }
 

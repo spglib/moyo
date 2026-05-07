@@ -20,9 +20,20 @@ impl Lattice2D {
     }
 
     /// Construct from the upper-left 2x2 in-plane block of a 3D column-basis
-    /// matrix. Layer cells satisfy `c . a = c . b = 0` (paper Fu et al. 2024
-    /// eq. 5), so the third row and column are irrelevant to in-plane work.
+    /// matrix.
+    ///
+    /// Caller must ensure the in-plane axes lie in the xy-plane (i.e. the
+    /// third row of `basis_3d` is zero). [`crate::base::LayerLattice::new`]
+    /// validates this; a `debug_assert!` here catches direct callers that
+    /// forget. A non-zero third row would silently drop information --
+    /// see PR #304 review comment 3198817773.
     pub fn from_inplane_of(basis_3d: &Matrix3<f64>) -> Self {
+        debug_assert!(
+            basis_3d[(2, 0)].abs() < 1e-6 && basis_3d[(2, 1)].abs() < 1e-6,
+            "in-plane axes must be in the xy-plane (a_z = b_z = 0); got a_z={}, b_z={}",
+            basis_3d[(2, 0)],
+            basis_3d[(2, 1)],
+        );
         Self::from_basis(Matrix2::new(
             basis_3d[(0, 0)],
             basis_3d[(0, 1)],
@@ -60,10 +71,12 @@ mod tests {
 
     #[test]
     fn test_from_inplane_of_extracts_upper_left_block() {
+        // Third column (aperiodic axis) can be arbitrary; third row must be
+        // zero to satisfy the layer-pipeline contract enforced by `LayerLattice`.
         let basis_3d: Matrix3<f64> = matrix![
             1.0, 2.0, 99.0;
             3.0, 4.0, 99.0;
-            99.0, 99.0, 99.0;
+            0.0, 0.0, 99.0;
         ];
         let l = Lattice2D::from_inplane_of(&basis_3d);
         assert_eq!(l.basis, Matrix2::new(1.0, 2.0, 3.0, 4.0));
