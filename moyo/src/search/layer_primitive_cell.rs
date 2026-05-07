@@ -1,17 +1,16 @@
-use std::collections::BTreeMap;
-
 use log::debug;
-use nalgebra::{Dyn, Matrix2, Matrix3, OMatrix, U2, Vector2, Vector3};
 
+use super::primitive_cell::{
+    primitive_cell_from_transformation, transformation_matrix_from_translations,
+};
 use super::solve::{
     PeriodicKdTree, pivot_site_indices, solve_correspondence,
     symmetrize_translation_from_permutation,
 };
 use crate::base::{
-    Cell, EPS, Lattice, LayerCell, LayerLattice, Linear, MoyoError, Permutation, Position,
-    Rotation, Translation, orbits_from_permutations,
+    Cell, Lattice, LayerCell, LayerLattice, Linear, MoyoError, Permutation, Position, Rotation,
+    Translation,
 };
-use crate::math::HNF;
 
 /// Result of a 2D primitive cell search for a layer system.
 /// Mirrors `PrimitiveCell` but the discovered translations are constrained to
@@ -84,24 +83,23 @@ impl LayerPrimitiveCell {
         for dst in pivots.iter() {
             let translation = cell.positions[*dst] - cell.positions[src];
 
-            // Wrap the c-component into [-0.5, 0.5] before testing the layer constraint.
+            // Wrap the c-component into [-0.5, 0.5] and skip candidates with a
+            // non-zero c-component before doing the (expensive) correspondence
+            // solve -- they cannot be in-plane lattice translations.
             let mut tz = translation[2];
             tz -= tz.round();
+            if tz.abs() > z_tol {
+                debug!(
+                    "Skipping translation with non-zero c-component: tz={:.6} (tol={:.6})",
+                    tz, z_tol
+                );
+                continue;
+            }
 
             let new_positions: Vec<Position> =
                 cell.positions.iter().map(|pos| pos + translation).collect();
 
             if let Some(permutation) = solve_correspondence(&pkdtree, cell, &new_positions) {
-                if tz.abs() > z_tol {
-                    // The candidate aligns atoms but has a non-zero c-component:
-                    // it is not an in-plane lattice translation, so it does not
-                    // belong to the layer group. Skip it.
-                    debug!(
-                        "Skipping translation with non-zero c-component: tz={:.6} (tol={:.6})",
-                        tz, z_tol
-                    );
-                    continue;
-                }
                 permutations_translations_tmp.push((permutation, translation));
             }
         }
@@ -134,29 +132,23 @@ impl LayerPrimitiveCell {
         }
         debug!("Found {} pure layer translations", size);
 
-        // Build the 2D transformation matrix from primitive (a', b') to input (a, b),
-        // then lift to 3D with the c-axis fixed.
-        let trans_mat_2d =
-            if let Some(m) = transformation_matrix_from_inplane_translations(&translations) {
-                m
-            } else {
-                debug!("Failed to find a 2D transformation matrix for the primitive layer cell.");
-                return Err(MoyoError::TooSmallToleranceError);
-            };
-        let trans_mat: Linear = lift_2d_to_3d(&trans_mat_2d);
+        // Build the transformation matrix from primitive (a', b', c) to input
+        // (a, b, c). Reuse the bulk 3D HNF helper: layer translations have
+        // `tz = 0` (snapped above), so the third row of the resulting basis is
+        // locked to `(0, 0, size)`, giving a `trans_mat` with the layer-group
+        // block form (`W_33 = 1`, `W_3i = W_i3 = 0`) automatically.
+        let trans_mat =
+            transformation_matrix_from_translations(&translations).ok_or_else(|| {
+                debug!("Failed to find a transformation matrix for the primitive layer cell.");
+                MoyoError::TooSmallToleranceError
+            })?;
 
-        let (primitive_cell, site_mapping, _) = primitive_layer_cell_from_transformation(
-            cell,
-            &trans_mat,
-            &translations,
-            &permutations,
-        );
+        // Reuse the bulk primitive-cell builder. `trans_mat` preserves the
+        // `c` column of the basis and the `z` component of fractional
+        // positions by construction, so the layer contract is preserved.
+        let (primitive_cell, site_mapping, _) =
+            primitive_cell_from_transformation(cell, &trans_mat, &translations, &permutations);
 
-        // The relation `cell.lattice.basis * trans_mat^{-1}.cols * size = primitive.basis`
-        // (modulo the in-plane block) is satisfied by construction; no further reduction
-        // is performed here -- standardization handles 2D Minkowski reduction.
-        // The primitive cell inherits the input's `c` axis, so the layer contract
-        // (c perpendicular to a, b) is preserved by construction.
         let Cell {
             lattice: prim_lattice,
             positions: prim_positions,
@@ -174,121 +166,6 @@ impl LayerPrimitiveCell {
             permutations,
         })
     }
-}
-
-/// Build the 2D HNF transformation matrix from a set of in-plane translations.
-/// The c-component of each translation is assumed to already be zero (or
-/// negligible).
-fn transformation_matrix_from_inplane_translations(
-    translations: &[Translation],
-) -> Option<Matrix2<i32>> {
-    let size = translations.len() as i32;
-    let mut columns: Vec<Vector2<i32>> = vec![Vector2::new(size, 0), Vector2::new(0, size)];
-    for translation in translations.iter() {
-        let scaled = Vector2::new(
-            (translation[0] * size as f64).round() as i32,
-            (translation[1] * size as f64).round() as i32,
-        );
-        columns.push(scaled);
-    }
-    let basis = OMatrix::<i32, U2, Dyn>::from_columns(&columns);
-    let hnf = HNF::new(&basis);
-    let trans_mat_inv = Matrix2::<i32>::from_columns(&[hnf.h.column(0), hnf.h.column(1)])
-        .map(|e| e as f64)
-        / (size as f64);
-    let trans_mat = trans_mat_inv.try_inverse()?.map(|e| e.round() as i32);
-
-    if relative_ne!(
-        trans_mat.map(|e| e as f64).determinant(),
-        size as f64,
-        epsilon = EPS
-    ) {
-        return None;
-    }
-    Some(trans_mat)
-}
-
-/// Lift a 2x2 in-plane integer transformation into the 3x3 layer-group block
-/// form `[[A, 0], [0, 1]]` (paper eq. 4 with `W_33 = 1`).
-fn lift_2d_to_3d(m: &Matrix2<i32>) -> Linear {
-    Matrix3::<i32>::new(
-        m[(0, 0)],
-        m[(0, 1)],
-        0, //
-        m[(1, 0)],
-        m[(1, 1)],
-        0, //
-        0,
-        0,
-        1,
-    )
-}
-
-/// Transform `cell` to a primitive layer cell by inverse of `trans_mat`,
-/// preserving the input `c` axis and the fractional `z` coordinates.
-fn primitive_layer_cell_from_transformation(
-    cell: &Cell,
-    trans_mat: &Linear,
-    translations: &[Translation],
-    permutations: &[Permutation],
-) -> (Cell, Vec<usize>, Vec<usize>) {
-    // Build the new lattice with the in-plane block transformed and `c` carried through.
-    let new_basis_inplane = cell.lattice.basis * trans_mat.map(|e| e as f64).try_inverse().unwrap();
-    let new_basis = Matrix3::from_columns(&[
-        new_basis_inplane.column(0),
-        new_basis_inplane.column(1),
-        cell.lattice.basis.column(2),
-    ]);
-    // The c-column inferred from the transform agrees with the input c by construction
-    // because `trans_mat` has the layer-block form (paper eq. 4 with `W_33 = 1`).
-    let new_lattice = Lattice { basis: new_basis };
-
-    let num_atoms = cell.num_atoms();
-    let orbits = orbits_from_permutations(num_atoms, permutations);
-    let representatives = (0..num_atoms)
-        .filter(|&i| orbits[i] == i)
-        .collect::<Vec<_>>();
-
-    let mut new_positions = vec![Vector3::zeros(); representatives.len()];
-    let mut new_numbers = vec![0; representatives.len()];
-    let inverse_permutations = permutations
-        .iter()
-        .map(|permutation| permutation.inverse())
-        .collect::<Vec<_>>();
-    // Eq. (25) of https://arxiv.org/pdf/2211.15008.pdf, with `c`-axis pinned: the
-    // averaged in-plane shift is transformed but `z` stays equal to the input.
-    for (i, &orbit_i) in representatives.iter().enumerate() {
-        let mut acc = Vector3::zeros();
-        for (inv_perm, translation) in inverse_permutations.iter().zip(translations.iter()) {
-            let mut frac_displacements =
-                cell.positions[inv_perm.apply(orbit_i)] + translation - cell.positions[orbit_i];
-            frac_displacements -= frac_displacements.map(|e| e.round());
-            acc += frac_displacements;
-        }
-        let averaged = cell.positions[orbit_i] + acc / (translations.len() as f64);
-        let mut new_pos = trans_mat.map(|e| e as f64) * averaged;
-        // Force the z-component to equal the input z exactly (no rescaling along c).
-        new_pos[2] = cell.positions[orbit_i][2];
-        new_positions[i] = new_pos;
-        new_numbers[i] = cell.numbers[orbit_i];
-    }
-
-    let primitive_cell = Cell::new(new_lattice, new_positions, new_numbers);
-    let site_mapping = site_mapping_from_orbits(&orbits);
-    (primitive_cell, site_mapping, representatives)
-}
-
-fn site_mapping_from_orbits(orbits: &[usize]) -> Vec<usize> {
-    let mut mapping = BTreeMap::new();
-    let mut count = 0;
-    for ri in orbits.iter() {
-        mapping.entry(ri).or_insert_with(|| {
-            let value = count;
-            count += 1;
-            value
-        });
-    }
-    orbits.iter().map(|ri| *mapping.get(&ri).unwrap()).collect()
 }
 
 #[cfg(test)]
