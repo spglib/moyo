@@ -492,16 +492,33 @@ Each is one-time data ingest with cross-checking against an independent source.
 
 ### 5.5 Layer Wyckoff position database
 
-- [x] Approved
+- [x] Approved (shipped in M4)
 
-- Source: spglib ships a complete LG Wyckoff CSV at `database/layer_Wyckoff.csv` on the `develop` branch (covers all 80 LGs).
-  Format: LG header rows `<num>:<HM symbol>:::::::` interleaved with Wyckoff rows `::<multiplicity>:<letter>:<site_symmetry>:<coord1>:<coord2>:<coord3>:<coord4>`.
-  Upstream traces back to Kopsky-Litvin *International Tables for Crystallography vol. E*.
+- **628 entries** ingested from spglib's `database/layer_Wyckoff.csv`,
+  pinned to commit `12355c77fb7c505a55f52cae36341d73b781a065`. The CSV
+  is keyed by spglib's layer Hall number (1-116, same numbering as
+  `database/layer_spg.csv`), so moyo's `LayerHallNumber` carries over
+  directly. Upstream traces back to Kopsky-Litvin *International Tables
+  for Crystallography vol. E*.
 
-- Ingest plan: vendor the CSV into moyo at build time and parse it into `WyckoffPosition` / `WyckoffPositionSpace` (the coordinate parser already in moyo accepts spglib's format unchanged).
-  Track the upstream commit SHA in a sidecar file so we can re-pull cleanly.
+- Schema (`LayerWyckoffPosition`): `hall_number: LayerHallNumber`,
+  `multiplicity: usize`, `letter: char`, `site_symmetry: &'static str`,
+  `coordinates: &'static str` (representative `coord1` only -- the orbit
+  is recovered by integer-offset search in `assign_layer_wyckoff_position`,
+  mirroring the bulk pipeline). The reused parser
+  \[`WyckoffPositionSpace`\] consumes `coordinates` unchanged.
 
-- Cross-check: regenerate orbits from the Hall-symbol-expanded operations (§5.4) and confirm they match the CSV's multiplicities and site symmetries.
+- Ingest workflow:
+
+  1. `scripts/layer_wyckoff.py` fetches `database/layer_Wyckoff.csv`
+     over HTTP from a pinned spglib commit and emits the
+     `LAYER_WYCKOFF_DATABASE` Rust source.
+  1. Cross-checks (verified in unit tests):
+     - `test_every_layer_hall_has_wyckoffs`: every of the 116 Hall
+       numbers has at least one Wyckoff position.
+     - `test_wyckoff_letters_unique_per_hall`: Wyckoff letters within a
+       single Hall number are unique (each letter labels exactly one
+       orbit).
 
 ### 5.6 Where they live
 
@@ -587,9 +604,25 @@ under `LayerSetting::Standard`.
 
 ### M4: Standardization + Wyckoff
 
-- `StandardizedLayerCell` with the metric-condition pipeline (paper figure 1).
-- Wyckoff database ingest from Bilbao.
-- Site-symmetry symbol assignment.
+**Shipped** (branch `feat/layer-group-m4-standardize`).
+
+- [x] 628-entry `LAYER_WYCKOFF_DATABASE` ingested from spglib's
+  `database/layer_Wyckoff.csv` (pinned commit `12355c77`); script at
+  `scripts/layer_wyckoff.py`. Keyed by `LayerHallNumber` (1-116).
+- [x] `LayerWyckoffPosition` parser reuses `WyckoffPositionSpace`; the
+  representative coordinate (`coord1`) is stored per entry, and the orbit
+  is recovered by integer-offset search inside
+  `assign_layer_wyckoff_position` (mirrors the bulk pipeline).
+- [x] `StandardizedLayerCell` (`moyo/src/symmetrize/layer_standardize.rs`):
+  produces the LG-canonical conventional layer cell with `|c|` preserved,
+  `c` along z, `a` along x (when `rotate_basis = true`); applies
+  `LayerCentering::linear()` for `c`-centered LGs; symmetrizes the in-plane
+  metric via Cholesky on the layer-block-averaged metric tensor and pins
+  `g_13 = g_23 = 0` exactly to keep the aperiodic axis decoupled.
+- [x] Site-symmetry symbol + Wyckoff letter assignment per atom in the
+  conventional cell.
+- [x] Round-trip tests on synthetic LG 1, 3, 55 cells; in-plane skew
+  removal test; multi-atom orbit collapse test.
 
 ### M5: Public API + bindings
 
