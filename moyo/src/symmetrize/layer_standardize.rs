@@ -1,5 +1,6 @@
-use nalgebra::Matrix3;
+use log::debug;
 use nalgebra::linalg::QR;
+use nalgebra::{Matrix3, Vector3};
 
 use super::standardize::{
     align_primitive_permutations, assign_wyckoffs_by_orbit, group_sites_by_orbit,
@@ -54,6 +55,59 @@ impl StandardizedLayerCell {
     /// symmetrization (Cholesky on the layer-block metric tensor) so the
     /// output's third axis stays the aperiodic stacking direction.
     pub fn new(
+        prim_layer_cell: &LayerCell,
+        prim_layer_operations: &Operations,
+        prim_layer_permutations: &[Permutation],
+        layer_group: &LayerGroup,
+        symprec: f64,
+        epsilon: f64,
+        rotate_basis: bool,
+    ) -> Result<Self, MoyoError> {
+        // Try the LG identifier's reported origin shift first.
+        match Self::try_with_layer_group(
+            prim_layer_cell,
+            prim_layer_operations,
+            prim_layer_permutations,
+            layer_group,
+            symprec,
+            epsilon,
+            rotate_basis,
+        ) {
+            Ok(result) => Ok(result),
+            // The bulk-style symmetry search reduces all translation
+            // components mod 1, including the aperiodic c. For LGs with
+            // c-flipping generators (W[2,2] = -1) the origin-shift equation
+            // in s_z, `-2 s_z = b_z (mod 1)`, has two solutions differing
+            // by 1/2; both satisfy the operation match, but only one places
+            // the layer's special-z atoms onto the LG Wyckoff database
+            // entries (which are stored at z = 0). When the first attempt
+            // landed on the wrong branch we retry with `s_z += 1/2` and the
+            // assignment then succeeds.
+            Err(MoyoError::WyckoffPositionAssignmentError) => {
+                debug!(
+                    "Wyckoff assignment failed at LG origin shift {:?}; retrying with +1/2 c-shift",
+                    layer_group.transformation.origin_shift
+                );
+                let mut retried = layer_group.clone();
+                retried.transformation = UnimodularTransformation::new(
+                    layer_group.transformation.linear,
+                    layer_group.transformation.origin_shift + Vector3::new(0.0, 0.0, 0.5),
+                );
+                Self::try_with_layer_group(
+                    prim_layer_cell,
+                    prim_layer_operations,
+                    prim_layer_permutations,
+                    &retried,
+                    symprec,
+                    epsilon,
+                    rotate_basis,
+                )
+            }
+            Err(other) => Err(other),
+        }
+    }
+
+    fn try_with_layer_group(
         prim_layer_cell: &LayerCell,
         prim_layer_operations: &Operations,
         prim_layer_permutations: &[Permutation],
