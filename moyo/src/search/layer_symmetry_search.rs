@@ -6,9 +6,9 @@ use crate::base::{
 
 /// Coset representatives of the layer group of a primitive layer cell.
 ///
-/// Wraps [`PrimitiveSymmetrySearch::new`] and post-filters its operations to
+/// Wraps `PrimitiveSymmetrySearch::new` and post-filters its operations to
 /// the layer-group ones: rotations satisfying paper Fu et al. 2024 eq. 4
-/// (block form, in/out separated; see [`is_layer_block_form`]) and
+/// (block form, in/out separated; see `is_layer_block_form`) and
 /// translations whose `c`-component is zero within `symprec / |c|`. The
 /// resulting subset is a subgroup of the bulk space group, hence still
 /// closed; no separate closure check is needed here.
@@ -23,7 +23,7 @@ impl LayerPrimitiveSymmetrySearch {
     /// Search layer-group coset representatives for a primitive layer cell.
     ///
     /// Assumes `primitive_layer_cell` is the output of
-    /// [`super::LayerPrimitiveCell`] (its third basis vector equals the input
+    /// `super::LayerPrimitiveCell` (its third basis vector equals the input
     /// `c` and its in-plane block is unreduced -- 2D Minkowski reduction is
     /// deferred to standardization).
     pub fn new(

@@ -84,11 +84,11 @@ fn derive_small_generators(prim_operations: &[Operation]) -> PyResult<Vec<Operat
 ///
 /// Parameters
 /// ----------
-/// prim_rotations : list[list[list[int]]]
+/// prim_rotations : list\[list\[list\[int\]\]\]
 ///     Rotation matrices of the symmetry operations of the primitive cell.
-/// prim_translations : list[list[float]]
+/// prim_translations : list\[list\[float\]\]
 ///     Translation vectors of the symmetry operations of the primitive cell.
-/// prim_generators : list[int] | None
+/// prim_generators : list\[int\] | None
 ///     Optional indices of operations to use as generators. If ``None``, a small generating
 ///     set is derived automatically.
 /// epsilon : float
@@ -151,9 +151,9 @@ impl PyPointGroup {
     ///
     /// Parameters
     /// ----------
-    /// prim_rotations : list[list[list[int]]]
+    /// prim_rotations : list\[list\[list\[int\]\]\]
     ///     Rotation matrices in the primitive cell.
-    /// basis : list[list[float]] | None
+    /// basis : list\[list\[float\]\] | None
     ///     Row-wise basis vectors of the primitive lattice. If ``None``, an identity basis
     ///     is assumed.
     #[new]
@@ -237,11 +237,11 @@ impl PySpaceGroup {
     ///
     /// Parameters
     /// ----------
-    /// prim_rotations : list[list[list[int]]]
+    /// prim_rotations : list\[list\[list\[int\]\]\]
     ///     Rotation matrices of the symmetry operations of the primitive cell.
-    /// prim_translations : list[list[float]]
+    /// prim_translations : list\[list\[float\]\]
     ///     Translation vectors of the symmetry operations of the primitive cell.
-    /// basis : list[list[float]] | None
+    /// basis : list\[list\[float\]\] | None
     ///     Row-wise basis vectors of the primitive lattice. If ``None``, an identity basis
     ///     is assumed.
     /// setting : Setting | None
@@ -356,13 +356,13 @@ impl PyMagneticSpaceGroup {
     ///
     /// Parameters
     /// ----------
-    /// prim_rotations : list[list[list[int]]]
+    /// prim_rotations : list\[list\[list\[int\]\]\]
     ///     Rotation matrices of the magnetic operations of the primitive cell.
-    /// prim_translations : list[list[float]]
+    /// prim_translations : list\[list\[float\]\]
     ///     Translation vectors of the magnetic operations of the primitive cell.
-    /// prim_time_reversals : list[bool]
+    /// prim_time_reversals : list\[bool\]
     ///     Time-reversal flag for each magnetic operation of the primitive cell.
-    /// basis : list[list[float]] | None
+    /// basis : list\[list\[float\]\] | None
     ///     Row-wise basis vectors of the primitive lattice. If ``None``, an identity basis
     ///     is assumed.
     /// epsilon : float
