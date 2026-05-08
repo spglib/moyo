@@ -93,8 +93,9 @@ mod symmetrize;
 pub use base::MoyoError as Error;
 
 use crate::base::{
-    AngleTolerance, Cell, LayerCell, MagneticCell, MagneticMoment, MagneticOperations, MoyoError,
-    Operation, Operations, OriginShift, RotationMagneticMomentAction, Transformation,
+    AngleTolerance, Cell, LayerCell, Linear, MagneticCell, MagneticMoment, MagneticOperations,
+    MoyoError, Operation, Operations, OriginShift, RotationMagneticMomentAction, Transformation,
+    UnimodularTransformation,
 };
 use crate::data::{
     ArithmeticCrystalClassEntry, HallNumber, HallSymbolEntry, LayerArithmeticCrystalClassEntry,
@@ -239,29 +240,19 @@ impl MoyoDataset {
         );
         // StandardizedCell.prim_cell and prim_cell have the same site order
         let mapping_std_prim = prim_cell.site_mapping.clone();
-        let mut std_prim_wyckoffs = vec![None; prim_cell.cell.num_atoms()];
-        for (i, wyckoff) in std_cell.wyckoffs.iter().enumerate() {
-            let j = std_cell.site_mapping[i];
-            if std_prim_wyckoffs[j].is_none() {
-                std_prim_wyckoffs[j] = Some(wyckoff.clone());
-            }
-        }
-        let wyckoffs: Option<Vec<_>> = mapping_std_prim
-            .iter()
-            .map(|&i| std_prim_wyckoffs[i].clone())
-            .collect();
-        let wyckoffs = wyckoffs.ok_or(MoyoError::WyckoffPositionAssignmentError)?;
+        let wyckoffs = lift_wyckoffs_to_input_cell(
+            prim_cell.cell.num_atoms(),
+            &std_cell.wyckoffs,
+            &std_cell.site_mapping,
+            &mapping_std_prim,
+        )?;
 
-        // cell <-(prim_cell.linear, 0)- prim_cell.cell -(std_cell.transformation)-> std_cell.cell
-        // (std_linear, std_origin_shift) = (prim_cell.linear^-1, 0) * std_cell.transformation
-        let prim_cell_linear_inv = prim_cell.linear.map(|e| e as f64).try_inverse().unwrap();
-        let std_linear = prim_cell_linear_inv * std_cell.transformation.linear_as_f64();
-        let std_origin_shift = prim_cell_linear_inv * std_cell.transformation.origin_shift;
-
-        // (prim_std_linear, prim_std_origin_shift) = (prim_cell.linear^-1, 0) * std_cell.prim_transformation
-        let prim_std_linear = prim_cell_linear_inv * std_cell.prim_transformation.linear_as_f64();
-        let prim_std_origin_shift =
-            prim_cell_linear_inv * std_cell.prim_transformation.origin_shift;
+        let (std_linear, std_origin_shift, prim_std_linear, prim_std_origin_shift) =
+            compose_std_transformations(
+                prim_cell.linear,
+                &std_cell.transformation,
+                &std_cell.prim_transformation,
+            );
 
         // Pearson symbol
         let hall_symbol = hall_symbol_entry(space_group.hall_number).unwrap();
@@ -459,37 +450,28 @@ impl MoyoLayerDataset {
 
         let operations = layer_operations_in_cell(&prim_layer, &symmetry_search.operations);
 
-        // Site symmetry. `StandardizedLayerCell.prim_layer_cell` and
-        // `prim_layer.layer_cell` share the same site order (mirrors the bulk
-        // pipeline), so the prim-cell Wyckoffs are looked up via `site_mapping`.
+        // `StandardizedLayerCell.prim_layer_cell` and `prim_layer.layer_cell`
+        // share the same site order (mirrors the bulk pipeline), so the
+        // prim-cell Wyckoffs are looked up via `site_mapping`.
         let mapping_std_prim = prim_layer.site_mapping.clone();
         let orbits = orbits_in_cell(
             prim_layer.layer_cell.num_atoms(),
             &symmetry_search.permutations,
             &prim_layer.site_mapping,
         );
-        let mut std_prim_wyckoffs = vec![None; prim_layer.layer_cell.num_atoms()];
-        for (i, wyckoff) in std_layer.wyckoffs.iter().enumerate() {
-            let j = std_layer.site_mapping[i];
-            if std_prim_wyckoffs[j].is_none() {
-                std_prim_wyckoffs[j] = Some(wyckoff.clone());
-            }
-        }
-        let wyckoffs: Option<Vec<_>> = mapping_std_prim
-            .iter()
-            .map(|&i| std_prim_wyckoffs[i].clone())
-            .collect();
-        let wyckoffs = wyckoffs.ok_or(MoyoError::WyckoffPositionAssignmentError)?;
+        let wyckoffs = lift_wyckoffs_to_input_cell(
+            prim_layer.layer_cell.num_atoms(),
+            &std_layer.wyckoffs,
+            &std_layer.site_mapping,
+            &mapping_std_prim,
+        )?;
 
-        // Compose linear maps:
-        //   cell <-(prim_layer.linear, 0)- prim_layer.layer_cell -(std_layer.transformation)-> std_layer.layer_cell
-        // (std_linear, std_origin_shift) = (prim_layer.linear^-1, 0) * std_layer.transformation
-        let prim_cell_linear_inv = prim_layer.linear.map(|e| e as f64).try_inverse().unwrap();
-        let std_linear = prim_cell_linear_inv * std_layer.transformation.linear_as_f64();
-        let std_origin_shift = prim_cell_linear_inv * std_layer.transformation.origin_shift;
-        let prim_std_linear = prim_cell_linear_inv * std_layer.prim_transformation.linear_as_f64();
-        let prim_std_origin_shift =
-            prim_cell_linear_inv * std_layer.prim_transformation.origin_shift;
+        let (std_linear, std_origin_shift, prim_std_linear, prim_std_origin_shift) =
+            compose_std_transformations(
+                prim_layer.linear,
+                &std_layer.transformation,
+                &std_layer.prim_transformation,
+            );
 
         let entry = layer_hall_symbol_entry(layer_group.hall_number).unwrap();
         let layer_arith = layer_arithmetic_crystal_class_entry(entry.arithmetic_number).unwrap();
@@ -593,6 +575,57 @@ fn layer_operations_in_cell(prim: &LayerPrimitiveCell, prim_operations: &Operati
         }
     }
     operations
+}
+
+/// Lift Wyckoff assignments from the standardized cell back to the input cell.
+///
+/// The standardized cell and the input primitive cell share the same site order
+/// (the standardize step preserves it), so per-orbit Wyckoffs collected in
+/// `std_site_mapping` order can be re-indexed by `input_to_prim_mapping` to
+/// produce one Wyckoff per input-cell site. Returns
+/// [`MoyoError::WyckoffPositionAssignmentError`] if any primitive site is left
+/// without a Wyckoff (which would mean the standardize step missed an orbit).
+fn lift_wyckoffs_to_input_cell<W: Clone>(
+    prim_num_atoms: usize,
+    std_wyckoffs: &[W],
+    std_site_mapping: &[usize],
+    input_to_prim_mapping: &[usize],
+) -> Result<Vec<W>, MoyoError> {
+    let mut prim_wyckoffs: Vec<Option<W>> = vec![None; prim_num_atoms];
+    for (i, wyckoff) in std_wyckoffs.iter().enumerate() {
+        let j = std_site_mapping[i];
+        if prim_wyckoffs[j].is_none() {
+            prim_wyckoffs[j] = Some(wyckoff.clone());
+        }
+    }
+    let lifted: Option<Vec<W>> = input_to_prim_mapping
+        .iter()
+        .map(|&i| prim_wyckoffs[i].clone())
+        .collect();
+    lifted.ok_or(MoyoError::WyckoffPositionAssignmentError)
+}
+
+/// Compose the (input -> primitive) and (primitive -> standardized) maps into
+/// the (input -> conventional std) and (input -> primitive std) transformations
+/// reported on the dataset. Returns
+/// `(std_linear, std_origin_shift, prim_std_linear, prim_std_origin_shift)`.
+///
+/// `prim_linear` is the primitive-to-input matrix (`PrimitiveCell::linear` for
+/// bulk, `LayerPrimitiveCell::linear` for layer); inverting it yields the
+/// input-to-primitive map that the standardized transformations are then
+/// composed with.
+fn compose_std_transformations(
+    prim_linear: Linear,
+    std_transformation: &Transformation,
+    prim_std_transformation: &UnimodularTransformation,
+) -> (Matrix3<f64>, OriginShift, Matrix3<f64>, OriginShift) {
+    let prim_inv = prim_linear.map(|e| e as f64).try_inverse().unwrap();
+    (
+        prim_inv * std_transformation.linear_as_f64(),
+        prim_inv * std_transformation.origin_shift,
+        prim_inv * prim_std_transformation.linear_as_f64(),
+        prim_inv * prim_std_transformation.origin_shift,
+    )
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
