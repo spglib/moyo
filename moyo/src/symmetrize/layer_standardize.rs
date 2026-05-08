@@ -393,7 +393,7 @@ mod tests {
     /// off-origin inversion has a non-zero intrinsic-free t_z; both atoms
     /// share the general Wyckoff 'e' with multiplicity 2.
     #[test]
-    fn test_layer_p1_standardize_round_trip() {
+    fn test_layer_p_minus_1_standardize_round_trip() {
         let gamma = 80.0_f64.to_radians();
         let a = 1.0;
         let b = 1.5;
@@ -443,7 +443,7 @@ mod tests {
     /// Wyckoff 'a' with site symmetry "2/m" -- the off-origin m_z and
     /// inversion both have intrinsic-free t_z and are accepted.
     #[test]
-    fn test_layer_p112_standardize_origin_atom() {
+    fn test_layer_p2_per_m_standardize_origin_atom() {
         let gamma = 80.0_f64.to_radians();
         let a = 1.0;
         let b = 1.5;
@@ -468,7 +468,7 @@ mod tests {
     /// 4mm point symmetry the site symmetry is 4/mmm. The standardized
     /// cell must be square (a = b) with c along z preserved.
     #[test]
-    fn test_layer_p4mm_standardize_high_symmetry_site() {
+    fn test_layer_p4_per_mmm_standardize_high_symmetry_site() {
         let cell = Cell::new(
             Lattice::new(matrix![
                 1.0, 0.0, 0.0;
@@ -525,7 +525,7 @@ mod tests {
     /// to LG 6 (p2/m); the orbit and Wyckoff-letter equality assertions
     /// still hold.
     #[test]
-    fn test_layer_p112_two_atoms_share_wyckoff() {
+    fn test_layer_p2_per_m_two_atoms_share_wyckoff() {
         let cell = Cell::new(
             Lattice::new(matrix![
                 1.0, 0.2, 0.0;
