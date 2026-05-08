@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use super::cell::{AtomicSpecie, Cell, Position};
-use super::error::MoyoError;
+use super::super::cell::{AtomicSpecie, Cell, Position};
+use super::super::error::MoyoError;
+use super::super::tolerance::AngleTolerance;
 use super::layer_lattice::LayerLattice;
-use super::tolerance::AngleTolerance;
 
 /// A cell whose third basis vector is the aperiodic stacking direction
 /// of a layer system (paper Fu et al. 2024 §2).

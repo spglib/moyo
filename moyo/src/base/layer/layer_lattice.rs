@@ -4,9 +4,9 @@ use log::debug;
 use nalgebra::{Matrix3, Vector3};
 use serde::{Deserialize, Serialize};
 
-use super::error::MoyoError;
-use super::lattice::Lattice;
-use super::tolerance::{AngleTolerance, is_angle_within_tolerance};
+use super::super::error::MoyoError;
+use super::super::lattice::Lattice;
+use super::super::tolerance::{AngleTolerance, is_angle_within_tolerance};
 
 /// A `Lattice` whose third basis vector is the aperiodic stacking direction
 /// of a layer system, with `c` along the z-axis and `a, b` in the xy-plane

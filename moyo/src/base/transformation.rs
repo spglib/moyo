@@ -6,8 +6,7 @@ use serde::Serialize;
 
 use super::cell::Cell;
 use super::lattice::Lattice;
-use super::layer_cell::LayerCell;
-use super::layer_lattice::LayerLattice;
+use super::layer::{LayerCell, LayerLattice};
 use super::magnetic_cell::{MagneticCell, MagneticMoment};
 use super::operation::{MagneticOperation, Operation};
 use crate::math::SNF;
