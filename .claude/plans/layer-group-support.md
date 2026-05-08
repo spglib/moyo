@@ -93,6 +93,8 @@ Each milestone produces a passing test suite and is shippable independently.
 
 - `MoyoLayerDataset` and `detect_layer_group`.
 - moyopy and moyoc bindings.
+  - [x] moyopy: `MoyoLayerDataset` + `LayerSetting` Python classes, stubs, and tests.
+  - [ ] moyoc bindings.
 - README / docs update.
 
 ### M6 (deferred): Magnetic layer groups

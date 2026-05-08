@@ -11,11 +11,13 @@ use crate::base::{
     PyOperations, PyStructure, PyUnimodularTransformation,
 };
 use crate::data::{
-    PyArithmeticCrystalClass, PyCentering, PyHallSymbolEntry, PyMagneticSpaceGroupType, PySetting,
-    PySpaceGroupType, magnetic_operations_from_uni_number, operations_from_number,
+    PyArithmeticCrystalClass, PyCentering, PyHallSymbolEntry, PyLayerSetting,
+    PyMagneticSpaceGroupType, PySetting, PySpaceGroupType, magnetic_operations_from_uni_number,
+    operations_from_number,
 };
 use crate::dataset::{
-    PyMoyoCollinearMagneticDataset, PyMoyoDataset, PyMoyoNonCollinearMagneticDataset,
+    PyMoyoCollinearMagneticDataset, PyMoyoDataset, PyMoyoLayerDataset,
+    PyMoyoNonCollinearMagneticDataset,
 };
 use crate::identify::{PyMagneticSpaceGroup, PyPointGroup, PySpaceGroup, integral_normalizer};
 
@@ -45,6 +47,7 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // dataset
     m.add_class::<PyMoyoDataset>()?;
+    m.add_class::<PyMoyoLayerDataset>()?;
     m.add_class::<PyMoyoCollinearMagneticDataset>()?;
     m.add_class::<PyMoyoNonCollinearMagneticDataset>()?;
 
@@ -59,6 +62,7 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // data: Hall symbol data
     m.add_class::<PySetting>()?;
+    m.add_class::<PyLayerSetting>()?;
     m.add_class::<PyCentering>()?;
     m.add_class::<PyHallSymbolEntry>()?;
     // data: Group data

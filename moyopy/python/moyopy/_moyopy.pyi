@@ -10,6 +10,7 @@ from moyopy._data import (
     ArithmeticCrystalClass,
     Centering,
     HallSymbolEntry,
+    LayerSetting,
     MagneticSpaceGroupType,
     Setting,
     SpaceGroupType,
@@ -19,6 +20,7 @@ from moyopy._data import (
 from moyopy._dataset import (
     MoyoCollinearMagneticDataset,
     MoyoDataset,
+    MoyoLayerDataset,
     MoyoNonCollinearMagneticDataset,
 )  # noqa: F401
 from moyopy._identify import (  # noqa: F401
@@ -40,6 +42,7 @@ __all__ = [
     "UnimodularTransformation",
     # data
     "Setting",
+    "LayerSetting",
     "Centering",
     "HallSymbolEntry",
     "SpaceGroupType",
@@ -49,6 +52,7 @@ __all__ = [
     "magnetic_operations_from_uni_number",
     # dataset
     "MoyoDataset",
+    "MoyoLayerDataset",
     "MoyoCollinearMagneticDataset",
     "MoyoNonCollinearMagneticDataset",
     # identify
