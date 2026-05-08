@@ -464,7 +464,7 @@ mod tests {
             for ops2 in expect.iter() {
                 let translation1 = hm_translation.get(&ops2.rotation).unwrap();
                 let diff = ops2.translation - translation1;
-                assert_relative_eq!(diff.map(|e| (e - e.round().abs())).max(), 0.0);
+                assert_relative_eq!(diff.map(|e| e - e.round().abs()).max(), 0.0);
             }
         }
     }
