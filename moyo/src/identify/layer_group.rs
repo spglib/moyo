@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use log::debug;
 use serde::Serialize;
 
@@ -91,12 +93,40 @@ impl LayerGroup {
             let db_prim_generators = lh_symbol.primitive_generators();
 
             for trans_mat in &LAYER_CORRECTION_MATRICES {
-                if let Some(origin_shift) = match_origin_shift(
+                if let Some(mut origin_shift) = match_origin_shift(
                     prim_layer_operations,
                     trans_mat,
                     &db_prim_generators,
                     epsilon,
                 ) {
+                    // The c-axis is aperiodic, but `match_origin_shift` solves
+                    // its modular system in all three components. For LGs
+                    // with c-flipping generators (`W[2,2] = -1`) the c-row
+                    // reduces to `-2 s_z = b_z (mod 1)` and admits two valid
+                    // branches differing by 1/2; the modular solver returns
+                    // either, but only one places the layer's special-z
+                    // atoms onto the LG Wyckoff database orbits (stored at
+                    // `z = 0` -- there is no `z = 1/2` counterpart for
+                    // layer groups). The layer search step now produces
+                    // operations whose `t_z` is exact (no mod-1 reduction),
+                    // so we can recover `s_z` directly from the c-row of any
+                    // c-flipping generator without going through `% 1`.
+                    //
+                    // For any layer-block W with `W[2,2] = -1`, `(W - E)`
+                    // has c-row `(0, 0, -2)`, so `-2 s_z = t_db_z - t_target_z`
+                    // and `s_z = (t_target_z - t_db_z) / 2` exactly.
+                    // `LAYER_CORRECTION_MATRICES` are block-diagonal in c
+                    // (`trans_mat[2,0] = trans_mat[2,1] = 0`,
+                    // `trans_mat[2,2] in {+1, -1}`) so the c-component of
+                    // `trans_mat * s` is `trans_mat[2,2] * s_z`.
+                    if let Some(exact_s_z) = layer_exact_s_z(
+                        prim_layer_operations,
+                        trans_mat,
+                        &db_prim_generators,
+                        epsilon,
+                    ) {
+                        origin_shift[2] = trans_mat[(2, 2)] as f64 * exact_s_z;
+                    }
                     debug!(
                         "Matched layer Hall number {} (LG {}) via correction {:?}",
                         hall_number, entry.number, trans_mat
@@ -111,6 +141,55 @@ impl LayerGroup {
         }
         Err(MoyoError::LayerGroupTypeIdentificationError)
     }
+}
+
+/// Recover the exact `s_z` (origin-shift c-component) by reading any
+/// c-flipping generator's c-row of the matching equation.
+///
+/// Returns `None` when no c-flipping generator exists in the input ops or
+/// the database (e.g. LG 1-5 oblique without inversion / horizontal
+/// mirror), in which case `s_z` is genuinely unconstrained and the modular
+/// solver's `s_z = 0` answer is correct.
+///
+/// When multiple c-flipping generators exist a debug-assert checks that
+/// they yield the same `s_z` (a group-consistency invariant).
+fn layer_exact_s_z(
+    prim_layer_operations: &Operations,
+    trans_mat: &UnimodularLinear,
+    db_prim_generators: &Operations,
+    epsilon: f64,
+) -> Option<f64> {
+    // Mirror the front of `match_origin_shift`: apply `trans_mat` to the
+    // input ops and index by rotation so we can look up `t_target` per
+    // generator.
+    let new_prim_operations = UnimodularTransformation::from_linear(*trans_mat)
+        .transform_operations(prim_layer_operations);
+    let mut hm_translations = HashMap::new();
+    for op in new_prim_operations.iter() {
+        hm_translations.insert(op.rotation, op.translation);
+    }
+
+    let mut chosen: Option<f64> = None;
+    for db_op in db_prim_generators.iter() {
+        if db_op.rotation[(2, 2)] != -1 {
+            continue;
+        }
+        let target_t = hm_translations.get(&db_op.rotation)?;
+        // (W - E) c-row for any layer-block W with W[2,2] = -1 is
+        // (0, 0, -2); so -2 s_z = t_db_z - t_target_z, i.e.
+        // s_z = (t_target_z - t_db_z) / 2.
+        let s_z = (target_t[2] - db_op.translation[2]) / 2.0;
+        match chosen {
+            None => chosen = Some(s_z),
+            Some(prev) => debug_assert!(
+                (prev - s_z - (prev - s_z).round()).abs() < epsilon.max(1e-6),
+                "c-flipping generators disagree on s_z (prev={}, new={})",
+                prev,
+                s_z
+            ),
+        }
+    }
+    chosen
 }
 
 #[cfg(test)]
