@@ -140,6 +140,59 @@ fn test_layer_dataset_coo2_jvasp_14441() {
     assert_eq!(dataset.number, 72);
 }
 
+/// RhO2 monolayer (JARVIS jid=JVASP-77581), bulk parent space group P-3m1
+/// (no. 164). The layer is centrosymmetric (D_3d): inversion through the
+/// origin maps Rh -> Rh and the two O atoms onto each other. moyo
+/// correctly recovers the full LG 72 (p-3m1) of order 12; spglib's
+/// `get_symmetry_layerdataset` returns only the c-fixing C_3v subset for
+/// this structure (number=69, 6 ops), missing the inversion. This test
+/// pins moyo to the centrosymmetric answer.
+#[test]
+fn test_layer_dataset_rho2_jvasp_77581() {
+    let cell = Cell::new(
+        Lattice::new(matrix![
+            3.077561866713373,   -5.5895361638e-06,  0.0;
+            -1.538785277570888,  2.665244603795193,  0.0;
+            0.0,                 0.0,                21.887078;
+        ]),
+        vec![
+            Vector3::new(3.98962103e-08, -1.0507825500000001e-08, 2.690075935e-07),
+            Vector3::new(0.33333345542078574, 0.6666665498487259, 0.0424523285784089),
+            Vector3::new(0.6666665046829969, 0.33333346065909963, 0.9575474024139978),
+        ],
+        vec![45, 8, 8],
+    );
+
+    let dataset = MoyoLayerDataset::with_default(&cell, SYMPREC).unwrap();
+    assert_eq!(dataset.number, 72);
+    assert_eq!(dataset.num_operations(), 12);
+}
+
+/// Repro for the moyopy "Wyckoff position assignment failed" crash on a
+/// centrosymmetric LG 72 (p-3m1) layer with the inversion center placed at
+/// z = 0.3 (rather than z = 0). The structure is the same as RhO2 above
+/// modulo an origin shift of z by 0.3; the layer group is unchanged.
+#[test]
+fn test_layer_dataset_rho2_off_origin() {
+    let a = 3.077561866713373;
+    let cell = Cell::new(
+        Lattice::new(matrix![
+            a,        0.0,                              0.0;
+            -0.5 * a, a * 0.866025403784438646763_f64,  0.0;
+            0.0,      0.0,                              21.887078;
+        ]),
+        vec![
+            Vector3::new(0.0, 0.0, 0.3),
+            Vector3::new(2.0 / 3.0, 1.0 / 3.0, 0.3 + 0.0425),
+            Vector3::new(1.0 / 3.0, 2.0 / 3.0, 0.3 - 0.0425),
+        ],
+        vec![45, 8, 8],
+    );
+
+    let dataset = MoyoLayerDataset::with_default(&cell, SYMPREC).unwrap();
+    assert_eq!(dataset.number, 72);
+}
+
 /// Tilted-c input must be rejected by the layer-cell constructor.
 #[test]
 fn test_layer_dataset_rejects_tilted_c() {
