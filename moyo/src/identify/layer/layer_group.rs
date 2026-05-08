@@ -10,7 +10,7 @@ use crate::data::{
 
 /// Identified layer-group type for a primitive layer cell.
 ///
-/// Mirrors [`super::SpaceGroup`] for the bulk space-group case: result
+/// Mirrors [`crate::identify::SpaceGroup`] for the bulk space-group case: result
 /// carries the layer-group number (1..=80, paper Fu et al. 2024 Table 4)
 /// and a representative [`LayerHallNumber`] (1..=116) along with the
 /// `UnimodularTransformation` that maps the input primitive layer cell to
