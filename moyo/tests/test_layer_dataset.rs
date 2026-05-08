@@ -193,6 +193,31 @@ fn test_layer_dataset_rho2_off_origin() {
     assert_eq!(dataset.number, 72);
 }
 
+/// Bi2Pt monolayer (JARVIS jid=JVASP-76516), bulk parent SG 164 P-3m1.
+/// The inversion center sits at the Pt site, z = 0.0626 -- not at z = 0
+/// nor at z = 1/2. spglib finds LG 72 / 12 ops; bulk MoyoDataset finds
+/// SG 164 / 12 ops; the layer identifier should agree.
+#[test]
+fn test_layer_dataset_bi2pt_jvasp_76516() {
+    let cell = Cell::new(
+        Lattice::new(matrix![
+            3.631374852245063,    -2.0965748614627038, 0.0;
+            0.0,                   4.1931497229254076, 0.0;
+            0.0,                   0.0,                22.860029;
+        ]),
+        vec![
+            Vector3::new(0.33333300000000315, 0.6666669999999968, 0.122798185664739),
+            Vector3::new(0.6666669999999968, 0.3333330000000032, 0.0023118143352603),
+            Vector3::new(0.0, 0.0, 0.0625550000000032),
+        ],
+        vec![83, 83, 78],
+    );
+
+    let dataset = MoyoLayerDataset::with_default(&cell, SYMPREC).unwrap();
+    assert_eq!(dataset.number, 72);
+    assert_eq!(dataset.num_operations(), 12);
+}
+
 /// Tilted-c input must be rejected by the layer-cell constructor.
 #[test]
 fn test_layer_dataset_rejects_tilted_c() {

@@ -15,14 +15,28 @@ use crate::data::{
 
 // In-plane normalizer corrections (besides identity) that preserve the
 // layer block form `W_i3 = W_3i = 0, W_33 = ±1` (paper Fu et al. 2024
-// eq. 4). The single non-identity entry, `b a -c`, is the in-plane
-// `a` ↔ `b` swap paired with a `c` sign-flip; it covers
-// monoclinic-rectangular `:b` ↔ `:a` and orthorhombic `b-ac` ↔ `abc`
-// alignment when the input lies in a non-canonical Hall basis. For
-// `c`-centered LGs the same conjugation reduces to a group-internal
-// rotation in the primitive basis -- those need a separate
-// centering-aware correction (future work).
-const LAYER_CORRECTION_MATRICES: [UnimodularLinear; 2] = [
+// eq. 4).
+//
+// * `b a -c` is the in-plane `a` ↔ `b` swap paired with a `c` sign-flip;
+//   it covers monoclinic-rectangular `:b` ↔ `:a` and orthorhombic
+//   `b-ac` ↔ `abc` alignment when the input lies in a non-canonical
+//   Hall basis.
+// * `-a b -c` covers the trigonal / hexagonal axis-orientation
+//   ambiguity: a hexagonal in-plane lattice has two inequivalent
+//   choices of (a, b) that share the same lengths and 120 deg angle,
+//   and conjugation by `diag(-1, +1, -1)` swaps the two 3-fold
+//   conventions (`[[0, -1, 0], [1, -1, 0], [0, 0, 1]]` vs
+//   `[[0, 1, 0], [-1, -1, 0], [0, 0, 1]]`). Without this correction LG
+//   71 / 72 (and their hexagonal supergroups) silently fail to
+//   identify on inputs whose primitive basis matches the "other" hex
+//   convention -- the dominant failure on JARVIS dft_2d trigonal
+//   monolayers (e.g. JVASP-76516 Bi2Pt).
+//
+// For `c`-centered LGs the conjugation of `b a -c` by the centering
+// transform reduces to a group-internal rotation in the primitive
+// basis -- those need a separate centering-aware correction (future
+// work).
+const LAYER_CORRECTION_MATRICES: [UnimodularLinear; 3] = [
     UnimodularLinear::new(
         1, 0, 0, //
         0, 1, 0, //
@@ -31,6 +45,11 @@ const LAYER_CORRECTION_MATRICES: [UnimodularLinear; 2] = [
     UnimodularLinear::new(
         0, 1, 0, //
         1, 0, 0, //
+        0, 0, -1, //
+    ),
+    UnimodularLinear::new(
+        -1, 0, 0, //
+        0, 1, 0, //
         0, 0, -1, //
     ),
 ];
