@@ -53,10 +53,14 @@ result.
 .. autoapisummary::
 
    moyopy.MoyoDataset
+   moyopy.MoyoLayerDataset
    moyopy.MoyoCollinearMagneticDataset
    moyopy.MoyoNonCollinearMagneticDataset
 
 .. autoapiclass:: moyopy.MoyoDataset
+   :members:
+
+.. autoapiclass:: moyopy.MoyoLayerDataset
    :members:
 
 .. autoapiclass:: moyopy.MoyoCollinearMagneticDataset
@@ -75,6 +79,7 @@ operations by ITA / UNI number.
 .. autoapisummary::
 
    moyopy.Setting
+   moyopy.LayerSetting
    moyopy.Centering
    moyopy.HallSymbolEntry
    moyopy.SpaceGroupType
@@ -84,6 +89,9 @@ operations by ITA / UNI number.
    moyopy.magnetic_operations_from_uni_number
 
 .. autoapiclass:: moyopy.Setting
+   :members:
+
+.. autoapiclass:: moyopy.LayerSetting
    :members:
 
 .. autoapiclass:: moyopy.Centering
