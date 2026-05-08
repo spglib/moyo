@@ -28,6 +28,44 @@ A fast and robust crystal symmetry finder, written in Rust.
 - [C](moyoc/README.md): C binding
 - [JavaScript](moyo-wasm/README.md): JavaScript and WebAssembly binding
 
+The functionality categories below mirror the sections of the [moyopy API
+reference](https://spglib.github.io/moyo/python/api.html).
+
+Legend: ✅ supported · 🟡 partial · ❌ not exposed · ➖ not applicable.
+
+| Category             | Functionality        | Rust (`moyo`) | Python (`moyopy`) | C (`moyoc`) | JS/WASM (`moyo-wasm`) |
+| -------------------- | -------------------- | ------------- | ----------------- | ----------- | --------------------- |
+| Shared               | Core types           | ✅            | ✅                | 🟡          | 🟡                    |
+| Space group          | Dataset from cell    | ✅            | ✅                | ✅          | ✅                    |
+| Space group          | Data access          | ✅            | ✅                | ❌          | ❌                    |
+| Space group          | Group identification | ✅            | ✅                | ❌          | ❌                    |
+| Layer group          | Dataset from cell    | ✅            | ✅                | ❌          | ❌                    |
+| Layer group          | Data access          | ✅            | 🟡                | ❌          | ❌                    |
+| Layer group          | Group identification | ➖            | ➖                | ➖          | ➖                    |
+| Magnetic space group | Dataset from cell    | ✅            | ✅                | ❌          | ❌                    |
+| Magnetic space group | Data access          | ✅            | ✅                | ❌          | ❌                    |
+| Magnetic space group | Group identification | ✅            | ✅                | ❌          | ❌                    |
+
+Notes:
+
+- Core types are `Cell`, `Operations`, and `UnimodularTransformation`. C and
+  WASM expose only `Cell` and (implicitly) `Operations` via the dataset
+  output; `UnimodularTransformation` is not bound.
+- "Dataset from cell" is the main symmetry-analysis entry point
+  (`MoyoDataset`, `MoyoLayerDataset`, `MoyoCollinearMagneticDataset`,
+  `MoyoNonCollinearMagneticDataset`).
+- "Data access" covers classification tables and lookup helpers (e.g.
+  `Setting`, `Centering`, `HallSymbolEntry`, `SpaceGroupType`,
+  `ArithmeticCrystalClass`, `operations_from_number`, `LayerSetting`,
+  `MagneticSpaceGroupType`, `magnetic_operations_from_uni_number`).
+  Layer-group data access is partial in Python: only `LayerSetting` is
+  re-exported through `moyopy`. The Rust core exposes the full set of
+  layer-group classification tables.
+- "Group identification" recovers a group label from a primitive list of
+  symmetry operations (`PointGroup` + `SpaceGroup` + `integral_normalizer`,
+  `MagneticSpaceGroup`). moyo does not expose a standalone layer-group
+  identifier; layer-group analysis goes through `MoyoLayerDataset`.
+
 ## How to cite moyo and its interfaces
 
 If you use moyo or its interfaces in your work, please cite the following figshare entry.
