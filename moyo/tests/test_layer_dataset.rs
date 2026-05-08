@@ -193,6 +193,84 @@ fn test_layer_dataset_rho2_off_origin() {
     assert_eq!(dataset.number, 72);
 }
 
+/// Bi2Pt monolayer (JARVIS jid=JVASP-76516), bulk parent SG 164 P-3m1.
+/// The inversion center sits at the Pt site, z = 0.0626 -- not at z = 0
+/// nor at z = 1/2. spglib finds LG 72 / 12 ops; bulk MoyoDataset finds
+/// SG 164 / 12 ops; the layer identifier should agree.
+#[test]
+fn test_layer_dataset_bi2pt_jvasp_76516() {
+    let cell = Cell::new(
+        Lattice::new(matrix![
+            3.631374852245063,    -2.0965748614627038, 0.0;
+            0.0,                   4.1931497229254076, 0.0;
+            0.0,                   0.0,                22.860029;
+        ]),
+        vec![
+            Vector3::new(0.33333300000000315, 0.6666669999999968, 0.122798185664739),
+            Vector3::new(0.6666669999999968, 0.3333330000000032, 0.0023118143352603),
+            Vector3::new(0.0, 0.0, 0.0625550000000032),
+        ],
+        vec![83, 83, 78],
+    );
+
+    let dataset = MoyoLayerDataset::with_default(&cell, SYMPREC).unwrap();
+    assert_eq!(dataset.number, 72);
+    assert_eq!(dataset.num_operations(), 12);
+}
+
+/// SiP monolayer (JARVIS jid=JVASP-27741), bulk parent SG 12 C2/m.
+/// Pins the C-centered monoclinic LG identification (LG 18, c 2/m 1 1)
+/// after the three-stage flow (`LayerPointGroup::new` +
+/// `integral_normalizer_2_1`) replaced the static
+/// `LAYER_CORRECTION_MATRICES`. Stage 2's normalizer enumerates the
+/// in-plane shear that aligns the input primitive cell with the db's
+/// canonical primitive cell -- previously the dominant JARVIS bench
+/// failure mode (SG 12 / 21 / 65 monolayers).
+#[test]
+fn test_layer_dataset_sip_jvasp_27741() {
+    let cell = Cell::new(
+        Lattice::new(matrix![
+            3.544338948503597,    0.0,                  0.0;
+            0.0,                  20.623454619019398,   0.0;
+            0.0,                  0.0,                  27.611119;
+        ]),
+        vec![
+            Vector3::new(0.5, 0.7018568074325104, 0.099345553246816),
+            Vector3::new(0.5, 0.0670975874506597, 0.193051629621707),
+            Vector3::new(0.5, 0.7051327661543786, 0.18505817140897843),
+            Vector3::new(0.0, 0.20513276615437862, 0.18505817140897843),
+            Vector3::new(0.0, 0.9397388688497569, 0.1571337073357672),
+            Vector3::new(0.5, 0.43973886884975705, 0.1571337073357672),
+            Vector3::new(0.0, 0.5670975874506596, 0.193051629621707),
+            Vector3::new(0.0, 0.8292144252409636, 0.1352653645591983),
+            Vector3::new(0.5, 0.0638204858451885, 0.1073385088143841),
+            Vector3::new(0.0, 0.5638204858451881, 0.1073385088143841),
+            Vector3::new(0.0, 0.20185680743251064, 0.099345553246816),
+            Vector3::new(0.5, 0.32921442524096395, 0.1352653645591983),
+            Vector3::new(0.0, 0.4582284213727509, 0.208414460112573),
+            Vector3::new(0.5, 0.9582284213727511, 0.208414460112573),
+            Vector3::new(0.5, 0.26954783797573045, 0.2064242218219204),
+            Vector3::new(0.0, 0.7695478379757302, 0.2064242218219204),
+            Vector3::new(0.5, 0.49940495566583837, 0.0859734338638388),
+            Vector3::new(0.0, 0.3107261843718542, 0.08398562506008961),
+            Vector3::new(0.5, 0.8107261843718538, 0.08398562506008961),
+            Vector3::new(0.0, 0.6549806360416701, 0.0603195954060404),
+            Vector3::new(0.5, 0.15498063604167003, 0.0603195954060404),
+            Vector3::new(0.0, 0.1139740235986913, 0.23207872874868993),
+            Vector3::new(0.0, 0.9994049556658384, 0.0859734338638388),
+            Vector3::new(0.5, 0.6139740235986916, 0.23207872874868993),
+        ],
+        vec![
+            14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
+            15, 15,
+        ],
+    );
+
+    let dataset = MoyoLayerDataset::with_default(&cell, SYMPREC).unwrap();
+    assert_eq!(dataset.number, 18);
+    assert_eq!(dataset.num_operations(), 8);
+}
+
 /// Tilted-c input must be rejected by the layer-cell constructor.
 #[test]
 fn test_layer_dataset_rejects_tilted_c() {

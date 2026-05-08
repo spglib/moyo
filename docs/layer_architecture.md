@@ -190,14 +190,162 @@ Rationale for post-filter rather than re-derivation: the existing search already
 
 ### Layer-group identification
 
-Mirrors `SpaceGroup::new`:
+Mirrors `SpaceGroup::new` and the Type-III branch of `MagneticSpaceGroup::new`. **Three stages: (1) match the layer arithmetic crystal class to fix the point-group-level basis, (2) enumerate the integral normalizer of the matched arithmetic class to cover within-class basis ambiguity, (3) solve for the origin shift against each candidate Hall.**
 
-1. From primitive layer operations, project rotations and run the bulk `PointGroup::new` to get the **geometric crystal class** (only). The bulk routine's `arithmetic_number` and `prim_trans_mat` are *not* reused: the bulk normalization re-orients the layer's `c`-axis (a layer `pm2m` and a layer `pmm2` both project to the same 3D arithmetic class but differ by which in-plane axis carries the 2-fold).
-1. For each candidate Hall number returned by `LayerSetting::hall_numbers()`, filter by matching geometric crystal class via the layer arithmetic class (`layer_arithmetic_crystal_class_entry`).
-1. For each survivor, sweep a small layer-valid normalizer set (`LAYER_CORRECTION_MATRICES`: identity and `b a -c`, the in-plane `a` ↔ `b` swap with `c` sign-flip) and call `match_origin_shift`.
-1. Return the matched LG number, Hall number, and `UnimodularTransformation`.
+A static normalizer-correction list (the previous `LAYER_CORRECTION_MATRICES`) is **not** sufficient to cover all layer-group inputs. C-centered Bravais lattices (`oc`) admit equivalent primitive-cell choices that differ by GL(2, Z) shears of unbounded order, so any finite hand-coded list silently misses some inputs (notably JARVIS bulk SGs 12 / 21 / 65 monolayers, e.g. SiP). Instead, we synthesize corrections on the fly using the same Sylvester-based machinery the bulk pipeline already exercises in `identify::point_group::PointGroup::new` and `identify::normalizer::integral_normalizer`.
 
-`LayerGroup::new` lives at `moyo/src/identify/layer_group.rs`.
+#### Stage 1: arithmetic-class match (`LayerPointGroup::new`)
+
+Lives at `moyo/src/identify/layer_point_group.rs`. Mirrors the bulk `identify::point_group::PointGroup::new` but iterates the **layer** arithmetic classes (43, paper Table 4) instead of the bulk ones (73), with canonical generators in the layer convention (the aperiodic axis is always `c`, see [Crystallographic conventions](#crystallographic-conventions)).
+
+```rust
+pub struct LayerPointGroup {
+    pub arithmetic_number: LayerArithmeticNumber,
+    /// Maps the input primitive layer basis onto the canonical primitive
+    /// basis of `arithmetic_number`. Layer-block-preserving by
+    /// construction (input rotations are layer-block, db rotations are
+    /// layer-block, the conjugating `prim_trans_mat` therefore is too).
+    pub prim_trans_mat: UnimodularLinear,
+}
+
+impl LayerPointGroup {
+    pub fn new(prim_rotations: &Rotations) -> Result<Self, MoyoError>;
+}
+```
+
+Algorithm:
+
+1. Identify the geometric crystal class via the existing rotation-type-count lookup (reuses `identify::point_group::identify_geometric_crystal_class`; the layer-allowed classes are a subset of the bulk's 32, dropping the cubic ones).
+1. For each `LayerArithmeticCrystalClassEntry` whose `geometric_crystal_class` matches, look up its canonical primitive generators via a new `LayerPointGroupRepresentative` table (analog of the existing bulk `PointGroupRepresentative` in `data/point_group.rs`, keyed by `LayerArithmeticNumber` 1..=43; entry stores the layer Hall number whose primitive generators define the canonical basis for that class).
+1. Try the identity transformation first: if every db generator is already in `prim_rotations`, return `prim_trans_mat = I`.
+1. Otherwise, reuse `identify::point_group::iter_trans_mat_basis` (Sylvester-style integer linear system over `prim_rotations` vs the db generators) and `iter_unimodular_trans_mat` (bounded `[-2, 2]` integer-combination search), but **post-filter** the enumeration output to keep only matrices in **layer-block form** (`T[0,2] = T[1,2] = T[2,0] = T[2,1] = 0`, `T[2,2] = ±1`); return the first survivor.
+1. The layer-block filter is required: `iter_unimodular_trans_mat` enumerates `[-1, 1]^k` then `[-2, 2]^k` integer combinations of the Sylvester basis, and although input + db rotations are individually layer-block, an unconstrained linear combination of mixed-form basis matrices can produce a `prim_trans_mat` that rotates `c` into an in-plane axis. Such a `prim_trans_mat` is unimodular and conjugates rotations correctly at the matrix level, but breaks the periodicity contract enforced by `LayerLattice` / `LayerCell`. Without the filter the layer pipeline silently leaks bulk-only conjugators.
+
+Why a separate `LayerPointGroup` rather than calling bulk `PointGroup::new` and projecting the result:
+
+- The bulk classification matches against bulk arithmetic classes whose canonical orientation places the monoclinic unique axis along `b` (cell choice 1). For LG 3-7 (monoclinic-**oblique**, where the 2-fold or mirror normal coincides with the layer's aperiodic `c`), the bulk's canonical orientation rotates `c → b`, breaking layer-block form. We avoid this by matching against canonicals where `c` is always the aperiodic axis, by construction.
+- Layer-block-preservation is impossible for some bulk-canonical conjugations: layer-block `T` preserves `W[2,2]`, so an input rotation with `W[2,2] = +1` cannot be conjugated to a bulk-canonical with `W[2,2] = -1` via any layer-block `T`. Bulk would happily return a non-layer-block `prim_trans_mat`; layer cannot use it.
+- The 73 → 43 collapse is not a clean projection: bulk classes with `c`-direction centerings (`A`, `I`, `F`, `R`) have no layer counterpart, and several bulk classes that differ only by 3D-orientation labels merge into a single layer class (e.g. `mm2` orientations).
+- Keeping a self-contained layer table makes the `LayerHallNumber` ↔ `LayerArithmeticNumber` correspondence transparent: each layer arithmetic class points at exactly one representative Hall, and the database round-trip is local to the layer pipeline.
+
+#### Stage 2: integral-normalizer corrections (`integral_normalizer_2_1`)
+
+Naming: `_2_1` denotes the (2 + 1)-dimensional layer convention -- two periodic in-plane axes plus one aperiodic c-axis. Layer cells are still 3D structures, so `_2d` would be misleading.
+
+The `prim_trans_mat` from Stage 1 fixes one specific point-group-level basis match. The arithmetic class still contains within-class ambiguity that affects the **space-group** match (different in-plane axis settings, monoclinic cell choices, the C-centered shear family between equivalent primitive cells of an `oc` lattice). To cover these, enumerate the **integral normalizer** of the matched arithmetic class up to its centralizer, exactly the way `MagneticSpaceGroup::new` enumerates Type-III conjugators against the family space group.
+
+The bulk `identify::normalizer::integral_normalizer(prim_operations, prim_generators, epsilon)` returns every `(P, p)` such that `(P, p)^-1 * prim_operations * (P, p)` covers `prim_generators`, but it enumerates over the full 3D `UnimodularLinear` lattice and **does not constrain the aperiodic axis**. Run on a layer-block input, it cheerfully returns conjugators that rotate `c` into the in-plane block (e.g. for an oblique LG with a 2-fold along `c`, any 3D `(P, p)` permuting `c` with `a` or `b` is in the integral normalizer of the rotation set). Those conjugators are correct as bulk normalizer elements but invalid for the layer pipeline.
+
+We add a layer-aware variant `identify::normalizer::integral_normalizer_2_1` that mirrors the bulk function with one extra filter:
+
+```rust
+pub fn integral_normalizer_2_1(
+    prim_operations: &Operations,
+    prim_generators: &Operations,
+    epsilon: f64,
+) -> Vec<UnimodularTransformation> {
+    let prim_rotations = project_rotations(prim_operations);
+    let prim_rotation_generators = project_rotations(prim_generators);
+    let rotation_types = prim_rotations
+        .iter()
+        .map(identify_rotation_type)
+        .collect::<Vec<_>>();
+
+    let mut conjugators = vec![];
+    for trans_mat_basis in
+        iter_trans_mat_basis(prim_rotations, rotation_types, prim_rotation_generators)
+    {
+        for prim_trans_mat in iter_unimodular_trans_mat(trans_mat_basis) {
+            // Layer-block filter: keep only conjugators preserving the
+            // aperiodic c-axis convention `T[0,2] = T[1,2] = T[2,0] = T[2,1] = 0`,
+            // `T[2,2] = +/- 1` (paper Fu et al. 2024 eq. 4).
+            if !is_layer_block_form(&prim_trans_mat) {
+                continue;
+            }
+            if let Some(origin_shift) =
+                match_origin_shift(prim_operations, &prim_trans_mat, prim_generators, epsilon)
+            {
+                conjugators.push(UnimodularTransformation::new(prim_trans_mat, origin_shift));
+                break;
+            }
+        }
+    }
+    conjugators
+}
+```
+
+Reuses the existing `is_layer_block_form` predicate from `search::layer_bravais_group`. The filter is applied at the `iter_unimodular_trans_mat` output rather than baked into the Sylvester basis: the layer-block-form constraint is a linear constraint on `T`'s entries, so it could in principle be added to the integer linear system, but post-filtering is simpler and the `[-2, 2]` window is small enough that the cost difference is negligible.
+
+Properties of the filter:
+
+- **Layer-block matrices form a subgroup of GL(3, Z).** Composition and inverse of layer-block matrices stay layer-block, so the filtered output set is closed under group operations -- the integral normalizer of the layer arithmetic class.
+- **Linear combinations of layer-block basis matrices are layer-block.** Since `is_layer_block_form` is a linear constraint, integer combinations `sum c_i M_i` of layer-block `M_i` are layer-block. Mixed combinations (some layer-block + some not) may or may not be; those are the cases the filter discards.
+- **Rotation-level correctness is unchanged.** The Sylvester step already guarantees `T^-1 W_input T = W_db` for the rotation generators; the filter only restricts `T` itself.
+
+Apply `integral_normalizer_2_1` to the **arithmetic class's representative Hall** -- not to the input directly -- so the result is a per-class table that can be cached or precomputed. For each layer arithmetic class, pick the smallest `LayerHallNumber` with that arithmetic number as the class representative; compute `integral_normalizer_2_1(rep_hall_prim_operations, rep_hall_prim_generators, epsilon)` once. The returned list has at most a few dozen entries (mirrors bulk magnetic-SG cardinality, minus the c-rotating elements the filter discards).
+
+#### Stage 3: origin shift per Hall (`LayerGroup::new`)
+
+```rust
+pub struct LayerGroup {
+    pub number: LayerNumber,
+    pub hall_number: LayerHallNumber,
+    pub transformation: UnimodularTransformation,
+}
+
+impl LayerGroup {
+    pub fn new(
+        prim_layer_operations: &Operations,
+        setting: LayerSetting,
+        epsilon: f64,
+    ) -> Result<Self, MoyoError>;
+}
+```
+
+1. Project rotations from `prim_layer_operations` and call `LayerPointGroup::new(&prim_rotations)` to get `(arithmetic_number, prim_trans_mat_arith)`.
+1. Look up Stage 2's normalizer list `class_normalizers` for `arithmetic_number` (per-class precomputed; or compute once on first use).
+1. For each `hall_number in setting.hall_numbers()` whose `LayerArithmeticCrystalClassEntry::arithmetic_number == arithmetic_number`:
+   - Load `db_prim_generators` for that Hall.
+   - For each `n in class_normalizers` (start with the identity normalizer):
+     - Compose `(P, p) = (prim_trans_mat_arith, 0) ∘ n`.
+     - Call `match_origin_shift(prim_layer_operations, &P, &db_prim_generators, epsilon)`. If it returns `Some(p_origin)`, the full transformation is `(P, p + P * p_origin)` (mod 1 in-plane, exact in `c`); return.
+1. If no `(hall, normalizer)` pair matches, return `MoyoError::LayerGroupTypeIdentificationError`.
+1. Apply the existing layer-specific exact-`s_z` override on the c-component of the returned origin shift (see `layer_exact_s_z` in `identify/layer_group.rs`; addresses the aperiodic-c branch ambiguity covered in [Standardization](#standardization)).
+
+`LayerGroup::new` is a thin wrapper that delegates the heavy lifting to `LayerPointGroup`, `integral_normalizer_2_1`, and `match_origin_shift`. The static `LAYER_CORRECTION_MATRICES` constant is **removed**: Stage 2's normalizer enumeration replaces it, automatically covering monoclinic-rectangular axis swaps, orthorhombic `b-ac` swaps, the trigonal axis-flip, **and** the C-centered shear family that the static list could not.
+
+#### Why this works for previously-broken cases
+
+- **Trigonal / hexagonal axis-orientation ambiguity** (the JARVIS bulk SG 164 / 187 / 156 / 162 layers; closed by the previous `diag(-1, +1, -1)` patch): the two `(a, b)` conventions differ by one specific element of the layer arithmetic class's normalizer. `integral_normalizer` enumerates it.
+- **C-centered monoclinic / orthorhombic** (JARVIS bulk SG 12 / 21 / 65 layers, e.g. SiP, currently failing): the GL(2, Z) shear conjugating an input primitive 2-fold to the db's canonical 2-fold has entries `[[1, 0, 0], [-1, 1, 0], [0, 0, 1]]` -- inside the `[-2, 2]` window. `integral_normalizer` enumerates it (and its powers up to that bound).
+- **Monoclinic-rectangular `:b` ↔ `:a` and orthorhombic `b-ac` ↔ `abc` axis swaps**: the previously hand-coded `b a -c` matrix is the same `n in class_normalizers` Stage 2 produces; nothing new for the user, but no longer a dead-end when the structure also needs a centering-aware shear.
+
+#### Alternative considered: filtering bulk's `correction_transformation_matrices`
+
+`identify::space_group::correction_transformation_matrices(arithmetic_number)` (used by `SpaceGroup::new`) returns a small static list of unimodular conventional-cell axis permutations (3 for monoclinic, 6 for orthorhombic, 2 for Th) projected through the bulk centering. Filtering its output for layer-block form (`W_i3 = W_3i = 0`, `W_33 = ±1`) is tempting -- it is cheaper than `integral_normalizer` and reuses an already-debugged code path -- but it is **strictly weaker** for the layer pipeline:
+
+| Class                                         | Surviving conv list after layer-block filter                                                             |
+| --------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Monoclinic                                    | `[identity]` (the `b2_to_b1` and `b3_to_b1` convs both rotate `c` into an in-plane axis)                 |
+| Orthorhombic                                  | `[identity, b a -c]` (the four `c`-rotating permutations are filtered out)                               |
+| Trigonal / hexagonal / tetragonal / triclinic | `[identity]` (bulk lists no convs for these classes; bulk handles them via multiple Hall numbers per SG) |
+| Cubic Th                                      | n/a (no cubic layer groups)                                                                              |
+
+This is exactly the pre-PR #313 static set and misses two real failure modes:
+
+- **Trigonal axis-flip `diag(-1, +1, -1)`** (PR #313 closed this for the JARVIS bulk SG 164 / 187 / 156 / 162 layers). Bulk lists no trigonal/hex convs, so the filtered list provides nothing here.
+- **C-centered shear `[[1, 0, 0], [-1, 1, 0], [0, 0, 1]]`** (the SiP / JARVIS bulk SG 12 / 21 / 65 case). The bulk monoclinic convs that *would* yield this after centering projection have non-trivial `c`-mixing entries, and `(LayerCentering::C.linear() * conv) * LayerCentering::C.inverse()` collapses them to non-unimodular matrices (`det = 0` for `b2_to_b1`).
+
+`integral_normalizer`'s `[-2, 2]` enumeration covers both of these without hand-derivation. The cost of the broader search is offset by per-class caching and the Sylvester step's natural short-circuit on the identity transformation (most well-conditioned inputs return at the first iteration).
+
+#### Performance and caching
+
+`integral_normalizer` is the most expensive step (it solves a Sylvester system per Hall candidate it inspects). Two optimizations apply, both already accepted in the bulk pipeline:
+
+1. **Precompute per-class.** The normalizer is a property of the arithmetic class, not of the input. Cache `class_normalizers[arithmetic_number]` once on first use; subsequent inputs in the same class skip the computation.
+1. **Short-circuit on identity.** Try the identity normalizer first (Stage 3 step 3); the vast majority of inputs that already lie in canonical basis after Stage 1 succeed there and never enter the enumeration loop.
+
+The combined cost on the JARVIS dft_2d sweep is dominated by the long tail of structurally-irregular inputs (~300 of 1103); the well-conditioned majority hit the identity short-circuit at sub-microsecond cost.
 
 #### Hall symbol parser
 
@@ -217,9 +365,9 @@ Variants mirror the bulk `Setting`:
 
 `Default` for `LayerSetting` is `Standard`.
 
-#### Known v1 gap
+#### Migration from v1 (`LAYER_CORRECTION_MATRICES`)
 
-The basis-correction sweep covers only the `p`-centered axis-swap cases (monoclinic-rectangular `:a` ↔ `:b` and orthorhombic `abc` ↔ `b-ac`). For `c`-centered LGs (10, 13, 18, 26, 35, 36, 47, 48) the conjugation of `b a -c` by the centering reduces to a group-internal rotation in the primitive basis; alignment for those needs a centering-aware correction matrix. Tracked as future work; existing round-trip tests pin specific Hall numbers to avoid exercising this path.
+The earlier static-list approach (identity, `b a -c`, `diag(-1, +1, -1)`) is replaced by the three-stage flow above. Behavior on the cases the static list already covered is unchanged: those matrices are specific elements of the integral normalizer Stage 2 enumerates, and Stage 3 picks the same one in the same loop order (identity first; non-identity normalizer elements ordered by `iter_unimodular_trans_mat`'s `[-1, 1]` then `[-2, 2]` shells). Cases the static list could not cover -- `c`-centered LGs (LG 10, 13, 18, 22, 26, 36, 38, 43, ...; corresponding bulk parents SG 12, 21, 65, ...) -- now identify directly through Stage 2's broader enumeration.
 
 ### Standardization
 
