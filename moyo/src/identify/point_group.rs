@@ -197,7 +197,7 @@ fn match_with_point_group(
 }
 
 /// Use look up table in Table 6 of https://arxiv.org/pdf/1808.01590.pdf
-fn identify_geometric_crystal_class(
+pub(super) fn identify_geometric_crystal_class(
     rotation_types: &Vec<RotationType>,
 ) -> Result<GeometricCrystalClass, MoyoError> {
     // count RotationTypes in point_group

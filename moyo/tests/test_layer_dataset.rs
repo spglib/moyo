@@ -219,16 +219,14 @@ fn test_layer_dataset_bi2pt_jvasp_76516() {
 }
 
 /// SiP monolayer (JARVIS jid=JVASP-27741), bulk parent SG 12 C2/m.
-/// spglib finds LG 18 / 8 ops; moyo's `LayerGroup::new` currently fails
-/// because the C-centered primitive-basis ambiguity needs a
-/// centering-aware correction (the GL(2, Z) shears between equivalent
-/// primitive cells of an oc Bravais lattice are infinite-order, so a
-/// static finite list of correction matrices cannot cover them).
-/// Marked `#[ignore]` until the centering-aware correction
-/// machinery (analogue of bulk `correction_transformation_matrices`)
-/// lands. JARVIS bench bucket: dominant in SG 12 / 21 / 65.
+/// Pins the C-centered monoclinic LG identification (LG 18, c 2/m 1 1)
+/// after the three-stage flow (`LayerPointGroup::new` +
+/// `integral_normalizer_2_1`) replaced the static
+/// `LAYER_CORRECTION_MATRICES`. Stage 2's normalizer enumerates the
+/// in-plane shear that aligns the input primitive cell with the db's
+/// canonical primitive cell -- previously the dominant JARVIS bench
+/// failure mode (SG 12 / 21 / 65 monolayers).
 #[test]
-#[ignore]
 fn test_layer_dataset_sip_jvasp_27741() {
     let cell = Cell::new(
         Lattice::new(matrix![

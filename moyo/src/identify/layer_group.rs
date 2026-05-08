@@ -3,60 +3,14 @@ use std::collections::HashMap;
 use log::debug;
 use serde::Serialize;
 
-use super::point_group::PointGroup;
-use super::space_group::match_origin_shift;
+use super::layer_point_group::LayerPointGroup;
+use super::normalizer::integral_normalizer_2_1;
 use crate::base::{
     MoyoError, Operations, UnimodularLinear, UnimodularTransformation, project_rotations,
 };
 use crate::data::{
-    LayerHallNumber, LayerHallSymbol, LayerNumber, LayerSetting, arithmetic_crystal_class_entry,
-    layer_arithmetic_crystal_class_entry, layer_hall_symbol_entry,
+    LayerHallNumber, LayerHallSymbol, LayerNumber, LayerSetting, layer_hall_symbol_entry,
 };
-
-// In-plane normalizer corrections (besides identity) that preserve the
-// layer block form `W_i3 = W_3i = 0, W_33 = ±1` (paper Fu et al. 2024
-// eq. 4).
-//
-// * `b a -c` is the in-plane `a` ↔ `b` swap paired with a `c` sign-flip;
-//   it covers monoclinic-rectangular `:b` ↔ `:a` and orthorhombic
-//   `b-ac` ↔ `abc` alignment when the input lies in a non-canonical
-//   Hall basis.
-// * `-a b -c` covers the trigonal / hexagonal axis-orientation
-//   ambiguity: a hexagonal in-plane lattice has two inequivalent
-//   choices of (a, b) that share the same lengths and 120 deg angle,
-//   and conjugation by `diag(-1, +1, -1)` swaps the two 3-fold
-//   conventions (`[[0, -1, 0], [1, -1, 0], [0, 0, 1]]` vs
-//   `[[0, 1, 0], [-1, -1, 0], [0, 0, 1]]`). Without this correction LG
-//   71 / 72 (and their hexagonal supergroups) silently fail to
-//   identify on inputs whose primitive basis matches the "other" hex
-//   convention.
-//
-// For `c`-centered layer Bravais classes (`oc`) the primitive cell of
-// a C-centered conventional admits multiple equivalent choices that
-// differ by an in-plane shear of infinite order in GL(2, Z); a
-// finite correction-matrix list cannot cover this. The proper fix
-// mirrors the bulk `correction_transformation_matrices` flow --
-// take the bulk monoclinic / orthorhombic conventional `convs` and
-// conjugate them by the layer centering transform -- and is left as
-// future work. JARVIS bench failures dominated by SG 12 / 21 / 65
-// (LG 18, LG 22, LG 26, ...) hit this gap.
-const LAYER_CORRECTION_MATRICES: [UnimodularLinear; 3] = [
-    UnimodularLinear::new(
-        1, 0, 0, //
-        0, 1, 0, //
-        0, 0, 1, //
-    ),
-    UnimodularLinear::new(
-        0, 1, 0, //
-        1, 0, 0, //
-        0, 0, -1, //
-    ),
-    UnimodularLinear::new(
-        -1, 0, 0, //
-        0, 1, 0, //
-        0, 0, -1, //
-    ),
-];
 
 /// Identified layer-group type for a primitive layer cell.
 ///
@@ -66,13 +20,29 @@ const LAYER_CORRECTION_MATRICES: [UnimodularLinear; 3] = [
 /// `UnimodularTransformation` that maps the input primitive layer cell to
 /// the database canonical for that Hall.
 ///
-/// [`LayerGroup::new`] runs the bulk [`PointGroup::new`] to extract the
-/// geometric crystal class, uses it to pre-filter Hall candidates, and for
-/// each survivor sweeps a small set of layer-valid normalizer corrections
-/// (`identity` and an in-plane `a` ↔ `b` swap) before attempting
-/// `match_origin_shift`. This handles the common axis-labelling
-/// ambiguities -- monoclinic-rectangular `:a` vs `:b` and orthorhombic
-/// `abc` vs `b-ac` -- when the input lies in a non-canonical basis.
+/// [`LayerGroup::new`] is the three-stage pipeline described in
+/// `docs/layer_architecture.md`:
+///
+/// 1. [`super::LayerPointGroup::new`] matches the layer arithmetic
+///    crystal class (1..=43) and synthesises a layer-block-form
+///    `prim_trans_mat` that aligns the input primitive basis with the
+///    canonical primitive basis of the matched class.
+/// 2. [`super::integral_normalizer_2_1`] enumerates within-class
+///    layer-block conjugators (axis settings, monoclinic cell choices,
+///    C-centered shears, the trigonal axis-flip) using the same
+///    Sylvester + `match_origin_shift` flow that the bulk
+///    `MagneticSpaceGroup::new` Type-III branch uses.
+/// 3. For each candidate Hall in `setting.hall_numbers()` whose
+///    arithmetic class matches Stage 1, pick the first conjugator
+///    Stage 2 returned and post-fix its c-component via
+///    [`layer_exact_s_z`] (handles the aperiodic-c branch ambiguity in
+///    `match_origin_shift`'s c-row).
+///
+/// The static `LAYER_CORRECTION_MATRICES` constant from earlier
+/// iterations is gone: every correction it covered (identity,
+/// `b a -c`, `diag(-1, +1, -1)`) is a specific element of the
+/// integral normalizer Stage 2 enumerates, plus Stage 2 covers the
+/// C-centered shear cases that no finite static list could.
 #[derive(Debug, Clone, Serialize)]
 pub struct LayerGroup {
     pub number: LayerNumber,
@@ -89,78 +59,61 @@ impl LayerGroup {
         setting: LayerSetting,
         epsilon: f64,
     ) -> Result<Self, MoyoError> {
-        // Mirror `SpaceGroup::new` but consume only the geometric class:
-        // the bulk arithmetic class normalises to a 3D-canonical orientation
-        // that re-labels the layer's c-axis, so its `prim_trans_mat` is not
-        // re-used here.
+        // Stage 1: match the layer arithmetic crystal class.
         let prim_rotations = project_rotations(prim_layer_operations);
-        let point_group = PointGroup::new(&prim_rotations)?;
-        let geometric_crystal_class = arithmetic_crystal_class_entry(point_group.arithmetic_number)
-            .unwrap()
-            .geometric_crystal_class;
+        let layer_point_group = LayerPointGroup::new(&prim_rotations)?;
         debug!(
-            "Layer point group: geometric crystal class {:?}",
-            geometric_crystal_class
+            "Layer point group: arithmetic_number={}",
+            layer_point_group.arithmetic_number
         );
 
+        // Stages 2 + 3: for each candidate Hall, enumerate layer-block
+        // normalizer conjugators that complete the SG-level match, and
+        // post-fix the aperiodic-c branch ambiguity.
         for hall_number in setting.hall_numbers() {
             let entry = layer_hall_symbol_entry(hall_number).unwrap();
-            let layer_arith =
-                layer_arithmetic_crystal_class_entry(entry.arithmetic_number).unwrap();
-            if layer_arith.geometric_crystal_class != geometric_crystal_class {
+            if entry.arithmetic_number != layer_point_group.arithmetic_number {
                 continue;
             }
 
-            let lh_symbol = LayerHallSymbol::new(entry.hall_symbol)
+            let lh_symbol = LayerHallSymbol::from_hall_number(hall_number)
                 .ok_or(MoyoError::LayerGroupTypeIdentificationError)?;
             let db_prim_generators = lh_symbol.primitive_generators();
 
-            for trans_mat in &LAYER_CORRECTION_MATRICES {
-                if let Some(mut origin_shift) = match_origin_shift(
-                    prim_layer_operations,
-                    trans_mat,
-                    &db_prim_generators,
-                    epsilon,
-                ) {
-                    // The c-axis is aperiodic, but `match_origin_shift` solves
-                    // its modular system in all three components. For LGs
-                    // with c-flipping generators (`W[2,2] = -1`) the c-row
-                    // reduces to `-2 s_z = b_z (mod 1)` and admits two valid
-                    // branches differing by 1/2; the modular solver returns
-                    // either, but only one places the layer's special-z
-                    // atoms onto the LG Wyckoff database orbits (stored at
-                    // `z = 0` -- there is no `z = 1/2` counterpart for
-                    // layer groups). The layer search step now produces
-                    // operations whose `t_z` is exact (no mod-1 reduction),
-                    // so we can recover `s_z` directly from the c-row of any
-                    // c-flipping generator without going through `% 1`.
-                    //
-                    // For any layer-block W with `W[2,2] = -1`, `(W - E)`
-                    // has c-row `(0, 0, -2)`, so `-2 s_z = t_db_z - t_target_z`
-                    // and `s_z = (t_target_z - t_db_z) / 2` exactly.
-                    // `LAYER_CORRECTION_MATRICES` are block-diagonal in c
-                    // (`trans_mat[2,0] = trans_mat[2,1] = 0`,
-                    // `trans_mat[2,2] in {+1, -1}`) so the c-component of
-                    // `trans_mat * s` is `trans_mat[2,2] * s_z`.
-                    if let Some(exact_s_z) = layer_exact_s_z(
-                        prim_layer_operations,
-                        trans_mat,
-                        &db_prim_generators,
-                        epsilon,
-                    ) {
-                        origin_shift[2] = trans_mat[(2, 2)] as f64 * exact_s_z;
-                    }
-                    debug!(
-                        "Matched layer Hall number {} (LG {}) via correction {:?}",
-                        hall_number, entry.number, trans_mat
-                    );
-                    return Ok(Self {
-                        number: entry.number,
-                        hall_number,
-                        transformation: UnimodularTransformation::new(*trans_mat, origin_shift),
-                    });
-                }
+            let conjugators =
+                integral_normalizer_2_1(prim_layer_operations, &db_prim_generators, epsilon);
+            let Some(transformation) = conjugators.into_iter().next() else {
+                continue;
+            };
+
+            // Override the c-component of the origin shift with the exact
+            // value derived from a c-flipping generator. `match_origin_shift`
+            // solves modulo 1 in all three components, so the c-row's
+            // `-2 s_z = b_z (mod 1)` admits two valid branches differing by
+            // 1/2; only one places the layer's special-z atoms onto the LG
+            // Wyckoff orbits (stored at z = 0, with no z = 1/2 counterpart).
+            // The layer search step now produces operations whose `t_z` is
+            // exact (no mod-1 reduction), so we can recover `s_z` directly
+            // from the c-row of any c-flipping generator without going
+            // through `% 1`. See `layer_exact_s_z` for the derivation.
+            let mut origin_shift = transformation.origin_shift;
+            if let Some(exact_s_z) = layer_exact_s_z(
+                prim_layer_operations,
+                &transformation.linear,
+                &db_prim_generators,
+                epsilon,
+            ) {
+                origin_shift[2] = transformation.linear[(2, 2)] as f64 * exact_s_z;
             }
+            debug!(
+                "Matched layer Hall number {} (LG {}) via prim_trans_mat {:?}",
+                hall_number, entry.number, transformation.linear
+            );
+            return Ok(Self {
+                number: entry.number,
+                hall_number,
+                transformation: UnimodularTransformation::new(transformation.linear, origin_shift),
+            });
         }
         Err(MoyoError::LayerGroupTypeIdentificationError)
     }
@@ -317,17 +270,10 @@ mod tests {
 
     /// Inputs in a non-canonical basis (the `:b` axis labelling for
     /// monoclinic-rectangular, the `b-ac` axis swap for orthorhombic)
-    /// should round-trip to the LG's Standard Hall via the in-plane
-    /// `a` ↔ `b` correction matrix in [`layer_correction_matrices`].
-    /// The reported Hall number is the Standard one (i.e. the canonical
-    /// `:a` / `abc` row), not the input Hall, since identification chose
-    /// the canonical-basis match.
-    ///
-    /// Restricted to **`p`-centered** Halls. For `c`-centered LGs the
-    /// conjugation of `b a -c` by the centering transform reduces to a
-    /// group-internal rotation in the primitive basis, so the
-    /// non-canonical-basis alignment for those LGs needs a different
-    /// (centering-aware) correction matrix; tracked as future work.
+    /// should round-trip to the LG's Standard Hall via the integral
+    /// normalizer enumeration. The reported Hall number is the Standard
+    /// one (i.e. the canonical `:a` / `abc` row), not the input Hall,
+    /// since identification chose the canonical-basis match.
     #[test]
     fn test_normalizer_aligns_non_canonical_basis() {
         let cases = [
