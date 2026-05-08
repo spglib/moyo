@@ -112,6 +112,29 @@ fn test_layer_dataset_p4mm() {
     assert_eq!(dataset.pearson_symbol, "tp1");
 }
 
+/// CoO2 monolayer (JARVIS jid=JVASP-14441), exfoliated 2D structure with
+/// c orthogonal to the in-plane vectors. spglib reports LG 72; this test
+/// pins moyo to the same answer.
+#[test]
+fn test_layer_dataset_coo2_jvasp_14441() {
+    let cell = Cell::new(
+        Lattice::new(matrix![
+            2.8173501021142346,  0.0,                0.0;
+            -1.4086750510571173, 2.439896157530945,  0.0;
+            0.0,                 0.0,                24.551775;
+        ]),
+        vec![
+            Vector3::new(0.2690539999999971, 0.9290120000000003, 0.0926970000000011),
+            Vector3::new(0.6023870000000002, 0.595678999999997, 0.1307621356947131),
+            Vector3::new(0.9357210000000009, 0.26234500000000344, 0.0546328643052866),
+        ],
+        vec![27, 8, 8],
+    );
+
+    let dataset = MoyoLayerDataset::with_default(&cell, SYMPREC).unwrap();
+    assert_eq!(dataset.number, 72);
+}
+
 /// Tilted-c input must be rejected by the layer-cell constructor.
 #[test]
 fn test_layer_dataset_rejects_tilted_c() {
