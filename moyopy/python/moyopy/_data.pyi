@@ -24,6 +24,23 @@ class Setting:
     def as_dict(self) -> dict[str, Any]:
         """Convert an object to a dictionary"""
 
+class LayerSetting:
+    """Preference for the Hall setting of a layer group."""
+    @classmethod
+    def spglib(cls) -> LayerSetting:
+        """The setting with the smallest layer Hall number for each layer group."""
+    @classmethod
+    def standard(cls) -> LayerSetting:
+        """BCS / ITE standard setting per de la Flor et al., Acta Cryst. A77, 559-571 (2021)."""
+    @classmethod
+    def hall_number(cls, hall_number: int) -> LayerSetting:
+        """Specific layer Hall number from 1 to 116."""
+    # Serialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
+
 class Centering:
     @property
     def order(self) -> int:

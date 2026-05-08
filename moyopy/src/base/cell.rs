@@ -21,11 +21,11 @@ impl PyStructure {
     ///
     /// Parameters
     /// ----------
-    /// basis : list[list[float]]
+    /// basis : list\[list\[float\]\]
     ///     Row-wise basis vectors of the lattice. ``basis[i]`` is the i-th basis vector.
-    /// positions : list[list[float]]
+    /// positions : list\[list\[float\]\]
     ///     Fractional coordinates of each site.
-    /// numbers : list[int]
+    /// numbers : list\[int\]
     ///     Atomic number of each site. Must have the same length as ``positions``.
     #[new]
     pub fn new(

@@ -33,13 +33,13 @@ impl PyCollinearMagneticCell {
     ///
     /// Parameters
     /// ----------
-    /// basis : list[list[float]]
+    /// basis : list\[list\[float\]\]
     ///     Row-wise basis vectors of the lattice.
-    /// positions : list[list[float]]
+    /// positions : list\[list\[float\]\]
     ///     Fractional coordinates of each site.
-    /// numbers : list[int]
+    /// numbers : list\[int\]
     ///     Atomic number of each site.
-    /// magnetic_moments : list[float]
+    /// magnetic_moments : list\[float\]
     ///     Scalar magnetic moment of each site (collinear).
     #[new]
     pub fn new(
@@ -165,13 +165,13 @@ impl PyNonCollinearMagneticCell {
     ///
     /// Parameters
     /// ----------
-    /// basis : list[list[float]]
+    /// basis : list\[list\[float\]\]
     ///     Row-wise basis vectors of the lattice.
-    /// positions : list[list[float]]
+    /// positions : list\[list\[float\]\]
     ///     Fractional coordinates of each site.
-    /// numbers : list[int]
+    /// numbers : list\[int\]
     ///     Atomic number of each site.
-    /// magnetic_moments : list[list[float]]
+    /// magnetic_moments : list\[list\[float\]\]
     ///     Three-component magnetic moment vector of each site.
     #[new]
     pub fn new(

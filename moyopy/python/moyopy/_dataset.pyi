@@ -10,6 +10,7 @@ from moyopy._base import (
     Operations,
 )
 from moyopy._data import (
+    LayerSetting,
     Setting,
 )
 
@@ -257,6 +258,117 @@ class MoyoCollinearMagneticDataset:
     @property
     def mag_symprec(self) -> float | None:
         """Actually used ``mag_symprec`` in iterative symmetry search."""
+    # Serialization and deserialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string."""
+    @classmethod
+    def deserialize_json(cls, json_str: str) -> Self:
+        """Deserialize an object from a JSON string."""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary."""
+    @classmethod
+    def from_dict(cls, obj: dict[str, Any]) -> Self:
+        """Create an object from a dictionary."""
+
+class MoyoLayerDataset:
+    """A dataset containing layer-group symmetry information of the input crystal structure
+    (a 2D-periodic system whose third basis vector is the aperiodic stacking direction)."""
+    def __init__(
+        self,
+        cell: Cell,
+        *,
+        symprec: float = 1e-4,
+        angle_tolerance: float | None = None,
+        setting: LayerSetting | None = None,
+        rotate_basis: bool = True,
+    ):
+        """
+        Parameters
+        ----------
+        cell: Cell
+            Input crystal structure. The third basis vector ``c`` must be the
+            aperiodic stacking direction and perpendicular to ``a, b``;
+            ``a, b`` must lie in the xy-plane.
+        symprec: float
+            Symmetry search tolerance in the unit of cell.basis.
+        angle_tolerance: float | None
+            Symmetry search tolerance in the unit of radians.
+        setting: LayerSetting | None
+            Preference for the Hall setting of the layer group.
+        rotate_basis: bool
+            Whether to rotate the basis vectors of the input cell to those of the
+            standardized cell.
+        """
+    # Layer-group type
+    @property
+    def number(self) -> int:
+        """Layer group number (1 - 80)."""
+    @property
+    def hall_number(self) -> int:
+        """Layer Hall symbol number (1 - 116)."""
+    # Symmetry operations in the input cell
+    @property
+    def operations(self) -> Operations:
+        """Layer-group operations in the input cell."""
+    # Site symmetry
+    @property
+    def orbits(self) -> list[int]:
+        """The ``i``-th atom in the input cell is equivalent to the ``orbits[i]``-th atom in the
+        **input** cell."""
+    @property
+    def wyckoffs(self) -> list[str]:
+        """Wyckoff letters for each site in the input cell."""
+    @property
+    def site_symmetry_symbols(self) -> list[str]:
+        """Site symmetry symbols for each site in the input cell.
+
+        The orientation of the site symmetry is w.r.t. the standardized cell.
+        """
+    # Standardized layer cell
+    @property
+    def std_cell(self) -> Cell:
+        """Conventional standardized layer cell.
+
+        The input cell is related to the standardized cell by
+        ``(std_linear, std_origin_shift)`` and ``std_rotation_matrix``::
+
+            std_cell.basis.T = std_rotation_matrix @ cell.basis.T @ std_linear
+            x_std = np.linalg.inv(std_linear) @ (x_input - std_origin_shift)
+        """
+    @property
+    def std_linear(self) -> list[list[float]]:
+        """Linear part of transformation from the input cell to the standardized layer cell."""
+    @property
+    def std_origin_shift(self) -> list[float]:
+        """Origin shift of transformation from the input cell to the standardized layer cell."""
+    @property
+    def std_rotation_matrix(self) -> list[list[float]]:
+        """Rigid rotation (orthogonal matrix) applied to the lattice basis."""
+    @property
+    def pearson_symbol(self) -> str:
+        """Pearson symbol for the standardized layer cell."""
+    # Primitive standardized layer cell
+    @property
+    def prim_std_cell(self) -> Cell:
+        """Primitive standardized layer cell."""
+    @property
+    def prim_std_linear(self) -> list[list[float]]:
+        """Linear part of transformation from the input cell to the primitive standardized layer
+        cell."""
+    @property
+    def prim_std_origin_shift(self) -> list[float]:
+        """Origin shift of transformation from the input cell to the primitive standardized layer
+        cell."""
+    @property
+    def mapping_std_prim(self) -> list[int]:
+        """Mapping sites in the input cell to those in the primitive standardized layer cell."""
+    # Final parameters
+    @property
+    def symprec(self) -> float:
+        """Actually used ``symprec`` in the symmetry search."""
+    @property
+    def angle_tolerance(self) -> float | None:
+        """Actually used ``angle_tolerance`` in the symmetry search."""
     # Serialization and deserialization
     def serialize_json(self) -> str:
         """Serialize an object to a JSON string."""

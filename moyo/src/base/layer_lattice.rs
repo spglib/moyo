@@ -96,7 +96,7 @@ impl LayerLattice {
     /// Public callers go through this getter (rather than a `&Lattice`
     /// accessor) so a layer-pipeline value cannot silently flow into
     /// bulk-only entry points (e.g. `search_bravais_group(lattice, ..)`).
-    /// In-crate sites that need a bulk `Lattice` use [`Self::as_lattice`].
+    /// In-crate sites that need a bulk `Lattice` use `Self::as_lattice`.
     pub fn basis(&self) -> &Matrix3<f64> {
         &self.inner.basis
     }

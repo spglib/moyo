@@ -19,7 +19,7 @@ The basic usage of **moyo** is to create a [`moyo::base::Cell`](Cell) representi
 The [`moyo::MoyoDataset`](MoyoDataset) contains symmetry information of the input crystal structure: for example, the space group number, symmetry operations, and standardized cell.
 
 Magnetic symmetry is also supported in **moyo**.
-Magnetic moments are represented by a struct implementing the [`moyo::base::MagneticMoment`](MagneticMoment) trait: for example, [`moyo::base::Collinear`](Collinear) or [`moyo::base::NonCollinear`](NonCollinear).
+Magnetic moments are represented by a struct implementing the [`moyo::base::MagneticMoment`](MagneticMoment) trait: for example, [`moyo::base::Collinear`](base::Collinear) or [`moyo::base::NonCollinear`](base::NonCollinear).
 Magnetic cell is represented by a [`moyo::base::MagneticCell`](MagneticCell) struct.
 The [`moyo::MoyoMagneticDataset`](MoyoMagneticDataset) contains magnetic symmetry information of the input magnetic cell: for example, the magnetic space-group type, magnetic symmetry operations, and standardized magnetic cell.
 
@@ -383,7 +383,7 @@ pub struct MoyoLayerDataset {
     // Standardized layer cell
     // ------------------------------------------------------------------------
     /// Conventional standardized layer cell. See
-    /// [`moyopy/docs/layer_standardization.md`] for the output convention.
+    /// `moyopy/docs/layer_standardization.md` for the output convention.
     pub std_cell: LayerCell,
     /// Linear part of the transformation from the input cell to `std_cell`.
     pub std_linear: Matrix3<f64>,
