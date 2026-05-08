@@ -1,0 +1,26 @@
+[project]
+name = "moyo-bench"
+version = "0.0.0"
+description = "Benchmark scripts comparing moyopy and spglib on real datasets."
+requires-python = ">=3.11"
+dependencies = [
+    "click",
+    "pandas",
+    "tqdm",
+    "spglib",
+    "pymatgen",
+    "pymatviz",
+    "matbench-discovery==1.3.1",
+    "mp-api",
+    "jarvis-tools",
+    "python-dotenv",
+    "moyopy[interface]",
+    # analysis notebooks
+    "ipykernel",
+    "matplotlib",
+    "seaborn",
+    "numpy",
+]
+
+[tool.uv.sources]
+moyopy = { path = "../moyopy", editable = true }

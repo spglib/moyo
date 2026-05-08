@@ -7,11 +7,16 @@ use crate::base::{
 /// Coset representatives of the layer group of a primitive layer cell.
 ///
 /// Wraps `PrimitiveSymmetrySearch::new` and post-filters its operations to
-/// the layer-group ones: rotations satisfying paper Fu et al. 2024 eq. 4
-/// (block form, in/out separated; see `is_layer_block_form`) and
-/// translations whose `c`-component is zero within `symprec / |c|`. The
-/// resulting subset is a subgroup of the bulk space group, hence still
-/// closed; no separate closure check is needed here.
+/// the layer-group ones: rotations must satisfy paper Fu et al. 2024 eq. 4
+/// (block form, in/out separated; see `is_layer_block_form`) and the
+/// intrinsic c-translation must vanish. The intrinsic c-translation is the
+/// component of `t` along the c invariant subspace of `W`: for `W[2,2] = +1`
+/// it is `t_3` itself (so a non-zero `t_3` is a c-axis screw, forbidden in
+/// a layer group), while for `W[2,2] = -1` it averages to zero by
+/// construction (`(t_3 + (-t_3))/2 = 0`), leaving `t_3` as a free origin
+/// shift along the aperiodic axis. The resulting subset is a subgroup of
+/// the bulk space group, hence still closed; no separate closure check is
+/// needed here.
 #[derive(Debug)]
 pub struct LayerPrimitiveSymmetrySearch {
     /// Layer-group operations in the given primitive layer cell.
@@ -55,17 +60,18 @@ impl LayerPrimitiveSymmetrySearch {
             if !is_layer_block_form(&op.rotation) {
                 continue;
             }
-            // Layer-group operations have `t_3 = 0` (paper eq. 4). A
-            // non-zero z-component would belong to a 3D-only space group
-            // element (e.g. a screw along c).
-            let mut tz = op.translation[2];
-            tz -= tz.round();
-            if tz.abs() > z_tol {
-                continue;
+            // Reject c-axis screws: when W[2,2] = +1 the intrinsic z-translation
+            // is t_3 itself and must vanish. For W[2,2] = -1 the intrinsic part
+            // is automatically zero, so t_3 is just the location of the
+            // symmetry center along the aperiodic c direction.
+            if op.rotation[(2, 2)] == 1 {
+                let mut tz = op.translation[2];
+                tz -= tz.round();
+                if tz.abs() > z_tol {
+                    continue;
+                }
             }
-            let mut translation = op.translation;
-            translation[2] = 0.0;
-            operations.push(Operation::new(op.rotation, translation));
+            operations.push(Operation::new(op.rotation, op.translation));
             permutations.push(perm.clone());
         }
 

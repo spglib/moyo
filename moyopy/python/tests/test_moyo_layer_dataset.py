@@ -40,12 +40,15 @@ def p4mm_layer_cell() -> Cell:
 
 
 def test_moyo_layer_dataset_p1(p1_layer_cell: Cell):
+    # The two atoms accidentally land at inversion-related general positions
+    # through (0.2, 0.35, 0.15), so the layer group is LG 2 (p-1) rather
+    # than LG 1; the off-origin inversion has a non-zero free t_z.
     dataset = MoyoLayerDataset(p1_layer_cell)
-    assert dataset.number == 1
-    assert dataset.hall_number == 1
+    assert dataset.number == 2
+    assert dataset.hall_number == 2
     assert dataset.pearson_symbol == "mp2"
-    assert dataset.orbits == [0, 1]
-    assert dataset.wyckoffs == ["a", "a"]
+    assert dataset.orbits == [0, 0]
+    assert dataset.wyckoffs == ["e", "e"]
     # |c| preserved and c along z in std_cell.
     std_basis = dataset.std_cell.basis
     assert std_basis[2][2] == pytest.approx(5.0)
@@ -54,8 +57,11 @@ def test_moyo_layer_dataset_p1(p1_layer_cell: Cell):
 
 
 def test_moyo_layer_dataset_p4mm(p4mm_layer_cell: Cell):
+    # A single atom at (0, 0, 0.1) sits on a horizontal mirror plane, so
+    # the layer group is the centro-symmetric supergroup LG 61 (p4/mmm),
+    # not LG 55 (p4mm).
     dataset = MoyoLayerDataset(p4mm_layer_cell, setting=LayerSetting.standard())
-    assert dataset.number == 55
+    assert dataset.number == 61
     assert dataset.pearson_symbol.startswith("tp")
 
 
