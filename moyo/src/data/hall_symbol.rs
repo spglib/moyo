@@ -6,10 +6,10 @@ use nalgebra::{Vector3, matrix};
 
 use super::centering::Centering;
 use super::hall_symbol_database::{HallNumber, hall_symbol_entry};
-use super::layer_centering::LayerCentering;
-use super::layer_hall_symbol_database::{LayerHallNumber, layer_hall_symbol_entry};
-use super::magnetic_hall_symbol_database::magnetic_hall_symbol_entry;
-use super::magnetic_space_group::UNINumber;
+use super::layer::layer_centering::LayerCentering;
+use super::layer::layer_hall_symbol_database::{LayerHallNumber, layer_hall_symbol_entry};
+use super::magnetic::magnetic_hall_symbol_database::magnetic_hall_symbol_entry;
+use super::magnetic::magnetic_space_group::UNINumber;
 use crate::base::{
     EPS, MagneticOperation, MagneticOperations, Operation, Operations, OriginShift, Rotation,
     TimeReversal, Transformation, Translation,

@@ -1,4 +1,4 @@
-use super::hall_symbol::LayerHallSymbol;
+use super::super::hall_symbol::LayerHallSymbol;
 use super::layer_arithmetic_crystal_class::LayerArithmeticNumber;
 use super::layer_centering::LayerCentering;
 use super::layer_hall_symbol_database::iter_layer_hall_symbol_entry;
@@ -68,9 +68,9 @@ impl LayerPointGroupRepresentative {
 
 #[cfg(test)]
 mod tests {
+    use super::super::layer_arithmetic_crystal_class::iter_layer_arithmetic_crystal_entry;
     use super::*;
     use crate::base::traverse;
-    use crate::data::layer_arithmetic_crystal_class::iter_layer_arithmetic_crystal_entry;
 
     /// Round-trip: every layer arithmetic class (1..=43) produces a
     /// representative whose primitive generators reconstruct a finite

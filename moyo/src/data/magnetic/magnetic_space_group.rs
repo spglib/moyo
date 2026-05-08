@@ -3,7 +3,7 @@ use std::ops::RangeInclusive;
 use once_cell::sync::Lazy;
 use serde::Serialize;
 
-use super::hall_symbol_database::Number;
+use super::super::hall_symbol_database::Number;
 
 pub const NUM_MAGNETIC_SPACE_GROUP_TYPES: usize = 1651;
 

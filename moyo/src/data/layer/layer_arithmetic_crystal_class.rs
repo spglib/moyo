@@ -1,4 +1,4 @@
-use super::classification::GeometricCrystalClass;
+use super::super::classification::GeometricCrystalClass;
 use super::layer_classification::{LayerBravaisClass, LayerLatticeSystem};
 
 pub type LayerArithmeticNumber = i32;

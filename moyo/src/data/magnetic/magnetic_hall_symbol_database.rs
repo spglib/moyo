@@ -1,8 +1,8 @@
-use super::hall_symbol_database::HallNumber;
+use super::super::hall_symbol_database::HallNumber;
+use super::super::setting::Setting;
 use super::magnetic_space_group::{
     ConstructType, NUM_MAGNETIC_SPACE_GROUP_TYPES, UNINumber, get_magnetic_space_group_type,
 };
-use super::setting::Setting;
 
 #[derive(Debug, Clone)]
 pub struct MagneticHallSymbolEntry {
