@@ -387,10 +387,11 @@ mod tests {
         (standardized, layer_group)
     }
 
-    /// LG 1 (p1): triclinic-oblique in-plane lattice with two generic atoms
-    /// kills every higher-symmetry candidate (mirrors the LG 1 fixture in
-    /// `tests/test_layer_symmetry.rs`). Standardized cell preserves the
-    /// c-axis length and the two Wyckoff letters match (both 'a').
+    /// LG 2 (p-1): triclinic-oblique in-plane lattice with two atoms placed
+    /// at inversion-related general positions through (0.2, 0.35, 0.15)
+    /// (mirrors the LG 2 fixture in `tests/test_layer_symmetry.rs`). The
+    /// off-origin inversion has a non-zero intrinsic-free t_z; both atoms
+    /// share the general Wyckoff 'e' with multiplicity 2.
     #[test]
     fn test_layer_p1_standardize_round_trip() {
         let gamma = 80.0_f64.to_radians();
@@ -406,7 +407,7 @@ mod tests {
             vec![1, 1],
         );
         let (std, lg) = run_layer_pipeline(cell, LayerSetting::Standard);
-        assert_eq!(lg.number, 1);
+        assert_eq!(lg.number, 2);
         // |c| preserved.
         assert_relative_eq!(
             std.layer_cell.lattice().basis().column(2).norm(),
@@ -429,24 +430,18 @@ mod tests {
             0.0,
             epsilon = 1e-10
         );
-        assert_relative_eq!(
-            std.layer_cell.lattice().basis()[(1, 0)],
-            0.0,
-            epsilon = 1e-10
-        );
-        // LG 1 has only Wyckoff 'a' with multiplicity 1, site symmetry "1".
+        // LG 2 general Wyckoff 'e' has multiplicity 2 and site symmetry "1".
         assert_eq!(std.wyckoffs.len(), 2);
         for w in std.wyckoffs.iter() {
-            assert_eq!(w.letter, 'a');
-            assert_eq!(w.multiplicity, 1);
+            assert_eq!(w.letter, 'e');
+            assert_eq!(w.multiplicity, 2);
             assert_eq!(w.site_symmetry, "1");
         }
     }
 
-    /// LG 3 (p112): primitive monoclinic-oblique with 2-fold along c. An
-    /// atom on the c-axis with z != 0, ±1/2 sits at Wyckoff 'a'
-    /// (multiplicity 1, site symmetry "2"). Choosing z != 0 avoids picking
-    /// up an extra m_z that would promote LG 3 to LG 6 (p112/m).
+    /// LG 6 (p2/m): single atom on the c-axis at (0, 0, 0.13) sits on
+    /// Wyckoff 'a' with site symmetry "2/m" -- the off-origin m_z and
+    /// inversion both have intrinsic-free t_z and are accepted.
     #[test]
     fn test_layer_p112_standardize_origin_atom() {
         let gamma = 80.0_f64.to_radians();
@@ -462,15 +457,16 @@ mod tests {
             vec![1],
         );
         let (std, lg) = run_layer_pipeline(cell, LayerSetting::Standard);
-        assert_eq!(lg.number, 3);
+        assert_eq!(lg.number, 6);
         assert_eq!(std.wyckoffs.len(), 1);
         assert_eq!(std.wyckoffs[0].letter, 'a');
-        assert_eq!(std.wyckoffs[0].site_symmetry, "2");
+        assert_eq!(std.wyckoffs[0].site_symmetry, "2/m");
     }
 
-    /// LG 55 (p4mm): single atom at the 4mm site (origin) with z != 0, ±1/2.
-    /// The standardized cell must be square (a = b) with c along z preserved.
-    /// The atom lands on Wyckoff 'a' (site symmetry "4mm").
+    /// LG 61 (p4/mmm): single atom at the 4/mmm site (origin) with z = 0.1.
+    /// The atom's own z plane carries m_z, and combined with the in-plane
+    /// 4mm point symmetry the site symmetry is 4/mmm. The standardized
+    /// cell must be square (a = b) with c along z preserved.
     #[test]
     fn test_layer_p4mm_standardize_high_symmetry_site() {
         let cell = Cell::new(
@@ -483,7 +479,7 @@ mod tests {
             vec![1],
         );
         let (std, lg) = run_layer_pipeline(cell, LayerSetting::Standard);
-        assert_eq!(lg.number, 55);
+        assert_eq!(lg.number, 61);
         // Square: a = b.
         let a = std.layer_cell.lattice().basis().column(0).norm();
         let b = std.layer_cell.lattice().basis().column(1).norm();
@@ -493,10 +489,10 @@ mod tests {
             5.0,
             epsilon = 1e-10
         );
-        // High-symmetry site: site_symmetry contains "4mm".
+        // High-symmetry site: site_symmetry is the full holohedry "4/mmm".
         assert_eq!(std.wyckoffs.len(), 1);
         assert_eq!(std.wyckoffs[0].letter, 'a');
-        assert!(std.wyckoffs[0].site_symmetry.contains("4mm"));
+        assert_eq!(std.wyckoffs[0].site_symmetry, "4/mmm");
     }
 
     /// In-plane skew should be removed by the standardize pass: feeding a
@@ -524,8 +520,10 @@ mod tests {
         assert_relative_eq!(basis[(1, 2)], 0.0, epsilon = 1e-10);
     }
 
-    /// Two equivalent atoms (related by 2-fold along c) collapse to one
-    /// orbit and share a Wyckoff letter.
+    /// Two equivalent atoms on a shared z plane collapse to one orbit. The
+    /// shared z = 0.07 plane carries m_z, lifting the layer group from p112
+    /// to LG 6 (p2/m); the orbit and Wyckoff-letter equality assertions
+    /// still hold.
     #[test]
     fn test_layer_p112_two_atoms_share_wyckoff() {
         let cell = Cell::new(
@@ -541,7 +539,7 @@ mod tests {
             vec![1, 1],
         );
         let (std, lg) = run_layer_pipeline(cell, LayerSetting::Standard);
-        assert_eq!(lg.number, 3);
+        assert_eq!(lg.number, 6);
         assert_eq!(std.layer_cell.num_atoms(), 2);
         assert_eq!(std.wyckoffs.len(), 2);
         // Both atoms in the same orbit (one Wyckoff letter, multiplicity 2).
