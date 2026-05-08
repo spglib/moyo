@@ -190,7 +190,7 @@ Rationale for post-filter rather than re-derivation: the existing search already
 
 ### Layer-group identification
 
-Mirrors `SpaceGroup::new` and the Type-III branch of `MagneticSpaceGroup::new`. **Three stages: (1) match the layer arithmetic crystal class to fix the point-group-level basis, (2) enumerate the integral normalizer of the matched arithmetic class to cover within-class basis ambiguity, (3) solve for the origin shift against each candidate Hall.**
+Mirrors `SpaceGroup::new` and the Type-III branch of `MagneticSpaceGroup::new`. **Two stages: (1) match the layer arithmetic crystal class to fix the point-group-level basis, (2) enumerate the integral normalizer of the matched arithmetic class to cover within-class basis ambiguity, solve for the origin shift, and bake the aperiodic-c origin-shift correction into each returned conjugator. `LayerGroup::new` then iterates candidate Halls and picks the first matching conjugator.**
 
 A static normalizer-correction list (the previous `LAYER_CORRECTION_MATRICES`) is **not** sufficient to cover all layer-group inputs. C-centered Bravais lattices (`oc`) admit equivalent primitive-cell choices that differ by GL(2, Z) shears of unbounded order, so any finite hand-coded list silently misses some inputs (notably JARVIS bulk SGs 12 / 21 / 65 monolayers, e.g. SiP). Instead, we synthesize corrections on the fly using the same Sylvester-based machinery the bulk pipeline already exercises in `identify::point_group::PointGroup::new` and `identify::normalizer::integral_normalizer`.
 
@@ -262,9 +262,18 @@ pub fn integral_normalizer_2_1(
             if !is_layer_block_form(&prim_trans_mat) {
                 continue;
             }
-            if let Some(origin_shift) =
+            if let Some(mut origin_shift) =
                 match_origin_shift(prim_operations, &prim_trans_mat, prim_generators, epsilon)
             {
+                // `match_origin_shift` -> `solve_mod1` reduces mod 1 on
+                // all three components. The layer cell's c-axis is
+                // aperiodic, so override the c-component with the exact
+                // value derived from a c-flipping generator's c-row.
+                if let Some(exact_s_z) = layer_exact_s_z(
+                    prim_operations, &prim_trans_mat, prim_generators, epsilon,
+                ) {
+                    origin_shift[2] = prim_trans_mat[(2, 2)] as f64 * exact_s_z;
+                }
                 conjugators.push(UnimodularTransformation::new(prim_trans_mat, origin_shift));
                 break;
             }
@@ -276,6 +285,8 @@ pub fn integral_normalizer_2_1(
 
 Reuses the existing `is_layer_block_form` predicate from `search::layer_bravais_group`. The filter is applied at the `iter_unimodular_trans_mat` output rather than baked into the Sylvester basis: the layer-block-form constraint is a linear constraint on `T`'s entries, so it could in principle be added to the integer linear system, but post-filtering is simpler and the `[-2, 2]` window is small enough that the cost difference is negligible.
 
+The `layer_exact_s_z` post-step lives next to `integral_normalizer_2_1` rather than at the caller, so every returned conjugator carries an exact, non-mod-1 `s_z`. For any layer-block W with `W[2,2] = -1`, `(W - E)[2,*] = (0, 0, -2)`, so a single c-flipping generator pins `s_z = (t_target_z - t_db_z) / 2`. When no c-flipping generator exists (LG 1-5: oblique without inversion or m_z), `s_z` is genuinely unconstrained and the modular solver's `s_z = 0` answer is kept.
+
 Properties of the filter:
 
 - **Layer-block matrices form a subgroup of GL(3, Z).** Composition and inverse of layer-block matrices stay layer-block, so the filtered output set is closed under group operations -- the integral normalizer of the layer arithmetic class.
@@ -284,7 +295,7 @@ Properties of the filter:
 
 Apply `integral_normalizer_2_1` to the **arithmetic class's representative Hall** -- not to the input directly -- so the result is a per-class table that can be cached or precomputed. For each layer arithmetic class, pick the smallest `LayerHallNumber` with that arithmetic number as the class representative; compute `integral_normalizer_2_1(rep_hall_prim_operations, rep_hall_prim_generators, epsilon)` once. The returned list has at most a few dozen entries (mirrors bulk magnetic-SG cardinality, minus the c-rotating elements the filter discards).
 
-#### Stage 3: origin shift per Hall (`LayerGroup::new`)
+#### Hall iteration (`LayerGroup::new`)
 
 ```rust
 pub struct LayerGroup {
@@ -303,16 +314,12 @@ impl LayerGroup {
 ```
 
 1. Project rotations from `prim_layer_operations` and call `LayerPointGroup::new(&prim_rotations)` to get `(arithmetic_number, prim_trans_mat_arith)`.
-1. Look up Stage 2's normalizer list `class_normalizers` for `arithmetic_number` (per-class precomputed; or compute once on first use).
 1. For each `hall_number in setting.hall_numbers()` whose `LayerArithmeticCrystalClassEntry::arithmetic_number == arithmetic_number`:
    - Load `db_prim_generators` for that Hall.
-   - For each `n in class_normalizers` (start with the identity normalizer):
-     - Compose `(P, p) = (prim_trans_mat_arith, 0) ∘ n`.
-     - Call `match_origin_shift(prim_layer_operations, &P, &db_prim_generators, epsilon)`. If it returns `Some(p_origin)`, the full transformation is `(P, p + P * p_origin)` (mod 1 in-plane, exact in `c`); return.
-1. If no `(hall, normalizer)` pair matches, return `MoyoError::LayerGroupTypeIdentificationError`.
-1. Apply the existing layer-specific exact-`s_z` override on the c-component of the returned origin shift (see `layer_exact_s_z` in `identify/layer_group.rs`; addresses the aperiodic-c branch ambiguity covered in [Standardization](#standardization)).
+   - Call `integral_normalizer_2_1(prim_layer_operations, &db_prim_generators, epsilon)`. Each returned conjugator already carries the aperiodic-c-aware `origin_shift` (see Stage 2). Take the first conjugator and return.
+1. If no candidate Hall matches, return `MoyoError::LayerGroupTypeIdentificationError`.
 
-`LayerGroup::new` is a thin wrapper that delegates the heavy lifting to `LayerPointGroup`, `integral_normalizer_2_1`, and `match_origin_shift`. The static `LAYER_CORRECTION_MATRICES` constant is **removed**: Stage 2's normalizer enumeration replaces it, automatically covering monoclinic-rectangular axis swaps, orthorhombic `b-ac` swaps, the trigonal axis-flip, **and** the C-centered shear family that the static list could not.
+`LayerGroup::new` is a thin wrapper that delegates the heavy lifting to `LayerPointGroup` and `integral_normalizer_2_1`. The static `LAYER_CORRECTION_MATRICES` constant is **removed**: Stage 2's normalizer enumeration replaces it, automatically covering monoclinic-rectangular axis swaps, orthorhombic `b-ac` swaps, the trigonal axis-flip, **and** the C-centered shear family that the static list could not.
 
 #### Why this works for previously-broken cases
 
@@ -343,7 +350,7 @@ This is exactly the pre-PR #313 static set and misses two real failure modes:
 `integral_normalizer` is the most expensive step (it solves a Sylvester system per Hall candidate it inspects). Two optimizations apply, both already accepted in the bulk pipeline:
 
 1. **Precompute per-class.** The normalizer is a property of the arithmetic class, not of the input. Cache `class_normalizers[arithmetic_number]` once on first use; subsequent inputs in the same class skip the computation.
-1. **Short-circuit on identity.** Try the identity normalizer first (Stage 3 step 3); the vast majority of inputs that already lie in canonical basis after Stage 1 succeed there and never enter the enumeration loop.
+1. **Short-circuit on identity.** `iter_unimodular_trans_mat` yields the identity first; the vast majority of inputs that already lie in canonical basis after Stage 1 succeed there and never enter the enumeration loop.
 
 The combined cost on the JARVIS dft_2d sweep is dominated by the long tail of structurally-irregular inputs (~300 of 1103); the well-conditioned majority hit the identity short-circuit at sub-microsecond cost.
 
@@ -367,7 +374,7 @@ Variants mirror the bulk `Setting`:
 
 #### Migration from v1 (`LAYER_CORRECTION_MATRICES`)
 
-The earlier static-list approach (identity, `b a -c`, `diag(-1, +1, -1)`) is replaced by the three-stage flow above. Behavior on the cases the static list already covered is unchanged: those matrices are specific elements of the integral normalizer Stage 2 enumerates, and Stage 3 picks the same one in the same loop order (identity first; non-identity normalizer elements ordered by `iter_unimodular_trans_mat`'s `[-1, 1]` then `[-2, 2]` shells). Cases the static list could not cover -- `c`-centered LGs (LG 10, 13, 18, 22, 26, 36, 38, 43, ...; corresponding bulk parents SG 12, 21, 65, ...) -- now identify directly through Stage 2's broader enumeration.
+The earlier static-list approach (identity, `b a -c`, `diag(-1, +1, -1)`) is replaced by the two-stage flow above. Behavior on the cases the static list already covered is unchanged: those matrices are specific elements of the integral normalizer Stage 2 enumerates, picked in the same loop order (identity first; non-identity normalizer elements ordered by `iter_unimodular_trans_mat`'s `[-1, 1]` then `[-2, 2]` shells). Cases the static list could not cover -- `c`-centered LGs (LG 10, 13, 18, 22, 26, 36, 38, 43, ...; corresponding bulk parents SG 12, 21, 65, ...) -- now identify directly through Stage 2's broader enumeration.
 
 ### Standardization
 
