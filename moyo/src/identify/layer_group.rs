@@ -29,13 +29,17 @@ use crate::data::{
 //   `[[0, 1, 0], [-1, -1, 0], [0, 0, 1]]`). Without this correction LG
 //   71 / 72 (and their hexagonal supergroups) silently fail to
 //   identify on inputs whose primitive basis matches the "other" hex
-//   convention -- the dominant failure on JARVIS dft_2d trigonal
-//   monolayers (e.g. JVASP-76516 Bi2Pt).
+//   convention.
 //
-// For `c`-centered LGs the conjugation of `b a -c` by the centering
-// transform reduces to a group-internal rotation in the primitive
-// basis -- those need a separate centering-aware correction (future
-// work).
+// For `c`-centered layer Bravais classes (`oc`) the primitive cell of
+// a C-centered conventional admits multiple equivalent choices that
+// differ by an in-plane shear of infinite order in GL(2, Z); a
+// finite correction-matrix list cannot cover this. The proper fix
+// mirrors the bulk `correction_transformation_matrices` flow --
+// take the bulk monoclinic / orthorhombic conventional `convs` and
+// conjugate them by the layer centering transform -- and is left as
+// future work. JARVIS bench failures dominated by SG 12 / 21 / 65
+// (LG 18, LG 22, LG 26, ...) hit this gap.
 const LAYER_CORRECTION_MATRICES: [UnimodularLinear; 3] = [
     UnimodularLinear::new(
         1, 0, 0, //
