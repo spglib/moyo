@@ -143,7 +143,11 @@
 <li class="toctree-l1"><a class="reference internal" href="../../examples/index.html">    Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../standardization.html">    Standardization of Crystal Structures</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../migration.html">    Migration Guide from spglib</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html">    API Reference</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api.html">    API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api_layer_group.html">Layer Group</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api_magnetic_space_group.html">Magnetic Space Group</a></li>
+</ul>
+</details></li>
 </ul>
 
     </div>
@@ -414,11 +418,11 @@
 
 
 <div class="viewcode-block" id="MoyoNonCollinearMagneticAdapter">
-<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoNonCollinearMagneticAdapter">[docs]</a>
+<a class="viewcode-back" href="../../api_magnetic_space_group.html#moyopy.interface.MoyoNonCollinearMagneticAdapter">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">MoyoNonCollinearMagneticAdapter</span><span class="p">:</span>
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="MoyoNonCollinearMagneticAdapter.get_structure">
-<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.get_structure">[docs]</a>
+<a class="viewcode-back" href="../../api_magnetic_space_group.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.get_structure">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_structure</span><span class="p">(</span>
         <span class="n">magnetic_cell</span><span class="p">:</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">NonCollinearMagneticCell</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
@@ -455,7 +459,7 @@
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="MoyoNonCollinearMagneticAdapter.from_structure">
-<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.from_structure">[docs]</a>
+<a class="viewcode-back" href="../../api_magnetic_space_group.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.from_structure">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_structure</span><span class="p">(</span><span class="n">structure</span><span class="p">:</span> <span class="n">Structure</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">moyopy</span><span class="o">.</span><span class="n">NonCollinearMagneticCell</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert a pymatgen Structure with non-collinear magnetic moments to a Moyo</span>
 <span class="sd">        NonCollinearMagneticCell.&quot;&quot;&quot;</span>
@@ -487,7 +491,7 @@
 
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="MoyoNonCollinearMagneticAdapter.from_disordered_structure">
-<a class="viewcode-back" href="../../api.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.from_disordered_structure">[docs]</a>
+<a class="viewcode-back" href="../../api_magnetic_space_group.html#moyopy.interface.MoyoNonCollinearMagneticAdapter.from_disordered_structure">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_disordered_structure</span><span class="p">(</span>
         <span class="n">structure</span><span class="p">:</span> <span class="n">Structure</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">moyopy</span><span class="o">.</span><span class="n">NonCollinearMagneticCell</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Composition</span><span class="p">]]:</span>
