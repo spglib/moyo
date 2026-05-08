@@ -6,9 +6,9 @@
 
 Magnetic crystal structures, symmetry analysis, classification tables, and
 group identification for the 1,651 magnetic space groups. Shared types such
-as :class:`moyopy.Cell`, :class:`moyopy.Operations`,
-:class:`moyopy.UnimodularTransformation`, and :class:`moyopy.PointGroup` are
-documented on the [API Reference](api.md) hub.
+as {py:class}`moyopy.Cell`, {py:class}`moyopy.Operations`,
+{py:class}`moyopy.UnimodularTransformation`, and {py:class}`moyopy.PointGroup`
+are documented on the [API Reference](api.md) hub.
 
 ## Magnetic core types
 
@@ -81,7 +81,7 @@ operations.
 
 ## Adapters
 
-Convert between :class:`moyopy.NonCollinearMagneticCell` and pymatgen
+Convert between {py:class}`moyopy.NonCollinearMagneticCell` and pymatgen
 `Structure` / ASE `Atoms`. Requires the optional dependencies installed via
 `pip install moyopy[interface]`.
 

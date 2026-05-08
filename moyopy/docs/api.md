@@ -7,8 +7,8 @@
 The public API mirrors the Rust crate layout: `base` (crystal structures and
 operation containers), `dataset` (symmetry analysis results), `data`
 (crystallographic classification tables), and `identify` (group identification
-primitives). The :mod:`moyopy.interface` adapters provide conversion helpers
-to/from pymatgen and ASE.
+primitives). The {py:mod}`moyopy.interface` adapters provide conversion
+helpers to/from pymatgen and ASE.
 
 This page documents the core types and the space-group API. Layer-group and
 magnetic-space-group APIs live on additional pages:
@@ -45,7 +45,7 @@ transformation type used across all group families.
 
 ## Symmetry datasets
 
-Run a symmetry analysis on a :class:`Cell` and inspect the result.
+Run a symmetry analysis on a {py:class}`moyopy.Cell` and inspect the result.
 
 ```{eval-rst}
 .. autoapisummary::
@@ -112,10 +112,10 @@ operations.
 
 ## Adapters
 
-Convert between :class:`moyopy.Cell` and pymatgen `Structure` / ASE `Atoms`.
-Requires the optional dependencies installed via
+Convert between {py:class}`moyopy.Cell` and pymatgen `Structure` / ASE
+`Atoms`. Requires the optional dependencies installed via
 `pip install moyopy[interface]`. The magnetic counterpart
-:class:`moyopy.interface.MoyoNonCollinearMagneticAdapter` lives on the
+{py:class}`moyopy.interface.MoyoNonCollinearMagneticAdapter` lives on the
 [Magnetic Space Group](api_magnetic_space_group.md) page.
 
 ```{eval-rst}
