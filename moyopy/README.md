@@ -20,4 +20,4 @@ pip install moyopy[interface]
 
 ## How to cite moyopy
 
-See the citation information in [the root README](../README.md)
+See the citation information in [the root README](https://github.com/spglib/moyo/blob/main/README.md)
