@@ -1,8 +1,8 @@
 use log::debug;
 
-use super::primitive_cell::{
-    primitive_cell_from_transformation, search_pure_translations,
-    transformation_matrix_from_translations,
+use super::super::primitive_cell::{
+    compose_input_to_reduced_prim_linear, primitive_cell_from_pure_translations,
+    search_pure_translations,
 };
 use crate::base::{
     Cell, Lattice, Lattice2D, LayerCell, LayerLattice, Linear, MoyoError, Permutation, Translation,
@@ -108,36 +108,13 @@ impl LayerPrimitiveCell {
             permutations.push(permutation);
         }
 
-        let size = translations.len() as i32;
-        if (size == 0) || (reduced_cell.num_atoms() % (size as usize) != 0) {
-            debug!(
-                "Failed to properly find layer translations: {} translations in {} atoms.",
-                size,
-                reduced_cell.num_atoms()
-            );
-            return Err(MoyoError::TooSmallToleranceError);
-        }
-        debug!("Found {} pure layer translations", size);
-
-        // Build the transformation matrix from primitive (a', b', c) to the
-        // 2D-reduced cell. Layer translations have `tz = 0`, so the bulk 3D
-        // HNF gives a `trans_mat` with the layer-block form (`W_33 = 1`,
-        // `W_3i = W_i3 = 0`) automatically.
-        let trans_mat =
-            transformation_matrix_from_translations(&translations).ok_or_else(|| {
-                debug!("Failed to find a transformation matrix for the primitive layer cell.");
-                MoyoError::TooSmallToleranceError
-            })?;
-
-        // Reuse the bulk primitive-cell builder. It preserves the `c` column
-        // of the basis and the `z` of fractional positions by construction
-        // (`trans_mat` has the layer-block form).
-        let (primitive_cell, site_mapping, _) = primitive_cell_from_transformation(
-            &reduced_cell,
-            &trans_mat,
-            &translations,
-            &permutations,
-        );
+        // Layer translations have `tz = 0`, so the shared post-search core
+        // (size check + 3D HNF + primitive-cell build) yields a `trans_mat`
+        // in layer-block form (`W_33 = 1`, `W_3i = W_i3 = 0`) automatically,
+        // and the primitive-cell builder preserves the `c` column of the
+        // basis and the `z` of fractional positions by construction.
+        let (primitive_cell, trans_mat, site_mapping) =
+            primitive_cell_from_pure_translations(&reduced_cell, &translations, &permutations)?;
 
         // Re-reduce so the returned layer cell satisfies the Minkowski-reduced
         // precondition of downstream bulk routines (`PrimitiveSymmetrySearch`,
@@ -150,15 +127,8 @@ impl LayerPrimitiveCell {
         //    -[reduced_trans_mat]-> (reduced cell)
         //    <-[trans_mat]- (primitive cell)
         //    -[prim_trans_mat]-> (reduced primitive cell)
-        let inv_prim_trans_mat = prim_trans_mat
-            .map(|e| e as f64)
-            .try_inverse()
-            .unwrap()
-            .map(|e| e.round() as i32);
-        let inv_reduced_trans_mat = reduced_trans_mat.map(|e| e as f64).try_inverse().unwrap();
-        let linear: Linear = ((inv_prim_trans_mat * trans_mat).map(|e| e as f64)
-            * inv_reduced_trans_mat)
-            .map(|e| e.round() as i32);
+        let linear: Linear =
+            compose_input_to_reduced_prim_linear(reduced_trans_mat, trans_mat, prim_trans_mat);
 
         let translations_in_input = translations
             .iter()

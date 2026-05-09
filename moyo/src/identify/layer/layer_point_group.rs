@@ -1,10 +1,10 @@
 use log::debug;
 use serde::{Deserialize, Serialize};
 
-use super::point_group::{
+use super::super::point_group::{
     identify_geometric_crystal_class, iter_trans_mat_basis, iter_unimodular_trans_mat,
 };
-use super::rotation_type::identify_rotation_type;
+use super::super::rotation_type::identify_rotation_type;
 use crate::base::{MoyoError, Rotations, UnimodularLinear};
 use crate::data::{
     LayerArithmeticNumber, LayerPointGroupRepresentative, iter_layer_arithmetic_crystal_entry,

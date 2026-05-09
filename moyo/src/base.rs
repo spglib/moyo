@@ -2,9 +2,7 @@ mod action;
 mod cell;
 mod error;
 mod lattice;
-mod lattice_2d;
-mod layer_cell;
-mod layer_lattice;
+mod layer;
 mod magnetic_cell;
 mod operation;
 mod permutation;
@@ -15,9 +13,7 @@ pub use action::RotationMagneticMomentAction;
 pub use cell::{AtomicSpecie, Cell, Position};
 pub use error::MoyoError;
 pub use lattice::Lattice;
-pub use lattice_2d::Lattice2D;
-pub use layer_cell::LayerCell;
-pub use layer_lattice::LayerLattice;
+pub use layer::{Lattice2D, LayerCell, LayerLattice};
 pub use magnetic_cell::{Collinear, MagneticCell, MagneticMoment, NonCollinear};
 pub use operation::{
     MagneticOperation, MagneticOperations, Operation, Operations, Rotation, Rotations,

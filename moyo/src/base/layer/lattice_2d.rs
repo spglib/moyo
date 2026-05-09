@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::math::{is_minkowski_reduced_2d, lift_2d_to_3d, minkowski_reduce_2d};
 
-use super::error::MoyoError;
+use super::super::error::MoyoError;
 
 /// Two-dimensional lattice (column-vector basis convention) used by the
 /// layer-group pipeline for the in-plane block of a [`super::LayerLattice`].

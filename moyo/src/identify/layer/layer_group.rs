@@ -1,26 +1,22 @@
-use std::collections::HashMap;
-
 use log::debug;
 use serde::Serialize;
 
 use super::layer_point_group::LayerPointGroup;
 use super::normalizer::integral_normalizer_2_1;
-use crate::base::{
-    MoyoError, Operations, UnimodularLinear, UnimodularTransformation, project_rotations,
-};
+use crate::base::{MoyoError, Operations, UnimodularTransformation, project_rotations};
 use crate::data::{
     LayerHallNumber, LayerHallSymbol, LayerNumber, LayerSetting, layer_hall_symbol_entry,
 };
 
 /// Identified layer-group type for a primitive layer cell.
 ///
-/// Mirrors [`super::SpaceGroup`] for the bulk space-group case: result
+/// Mirrors [`crate::identify::SpaceGroup`] for the bulk space-group case: result
 /// carries the layer-group number (1..=80, paper Fu et al. 2024 Table 4)
 /// and a representative [`LayerHallNumber`] (1..=116) along with the
 /// `UnimodularTransformation` that maps the input primitive layer cell to
 /// the database canonical for that Hall.
 ///
-/// [`LayerGroup::new`] is the three-stage pipeline described in
+/// [`LayerGroup::new`] is the two-stage pipeline described in
 /// `docs/layer_architecture.md`:
 ///
 /// 1. [`super::LayerPointGroup::new`] matches the layer arithmetic
@@ -31,12 +27,11 @@ use crate::data::{
 ///    layer-block conjugators (axis settings, monoclinic cell choices,
 ///    C-centered shears, the trigonal axis-flip) using the same
 ///    Sylvester + `match_origin_shift` flow that the bulk
-///    `MagneticSpaceGroup::new` Type-III branch uses.
-/// 3. For each candidate Hall in `setting.hall_numbers()` whose
-///    arithmetic class matches Stage 1, pick the first conjugator
-///    Stage 2 returned and post-fix its c-component via
-///    [`layer_exact_s_z`] (handles the aperiodic-c branch ambiguity in
-///    `match_origin_shift`'s c-row).
+///    `MagneticSpaceGroup::new` Type-III branch uses, and bakes the
+///    aperiodic-c origin-shift correction into each returned
+///    conjugator. For each candidate Hall in `setting.hall_numbers()`
+///    whose arithmetic class matches Stage 1, the first conjugator
+///    returned is the answer.
 ///
 /// The static `LAYER_CORRECTION_MATRICES` constant from earlier
 /// iterations is gone: every correction it covered (identity,
@@ -85,26 +80,6 @@ impl LayerGroup {
             let Some(transformation) = conjugators.into_iter().next() else {
                 continue;
             };
-
-            // Override the c-component of the origin shift with the exact
-            // value derived from a c-flipping generator. `match_origin_shift`
-            // solves modulo 1 in all three components, so the c-row's
-            // `-2 s_z = b_z (mod 1)` admits two valid branches differing by
-            // 1/2; only one places the layer's special-z atoms onto the LG
-            // Wyckoff orbits (stored at z = 0, with no z = 1/2 counterpart).
-            // The layer search step now produces operations whose `t_z` is
-            // exact (no mod-1 reduction), so we can recover `s_z` directly
-            // from the c-row of any c-flipping generator without going
-            // through `% 1`. See `layer_exact_s_z` for the derivation.
-            let mut origin_shift = transformation.origin_shift;
-            if let Some(exact_s_z) = layer_exact_s_z(
-                prim_layer_operations,
-                &transformation.linear,
-                &db_prim_generators,
-                epsilon,
-            ) {
-                origin_shift[2] = transformation.linear[(2, 2)] as f64 * exact_s_z;
-            }
             debug!(
                 "Matched layer Hall number {} (LG {}) via prim_trans_mat {:?}",
                 hall_number, entry.number, transformation.linear
@@ -112,60 +87,11 @@ impl LayerGroup {
             return Ok(Self {
                 number: entry.number,
                 hall_number,
-                transformation: UnimodularTransformation::new(transformation.linear, origin_shift),
+                transformation,
             });
         }
         Err(MoyoError::LayerGroupTypeIdentificationError)
     }
-}
-
-/// Recover the exact `s_z` (origin-shift c-component) by reading any
-/// c-flipping generator's c-row of the matching equation.
-///
-/// Returns `None` when no c-flipping generator exists in the input ops or
-/// the database (e.g. LG 1-5 oblique without inversion / horizontal
-/// mirror), in which case `s_z` is genuinely unconstrained and the modular
-/// solver's `s_z = 0` answer is correct.
-///
-/// When multiple c-flipping generators exist a debug-assert checks that
-/// they yield the same `s_z` (a group-consistency invariant).
-fn layer_exact_s_z(
-    prim_layer_operations: &Operations,
-    trans_mat: &UnimodularLinear,
-    db_prim_generators: &Operations,
-    epsilon: f64,
-) -> Option<f64> {
-    // Mirror the front of `match_origin_shift`: apply `trans_mat` to the
-    // input ops and index by rotation so we can look up `t_target` per
-    // generator.
-    let new_prim_operations = UnimodularTransformation::from_linear(*trans_mat)
-        .transform_operations(prim_layer_operations);
-    let mut hm_translations = HashMap::new();
-    for op in new_prim_operations.iter() {
-        hm_translations.insert(op.rotation, op.translation);
-    }
-
-    let mut chosen: Option<f64> = None;
-    for db_op in db_prim_generators.iter() {
-        if db_op.rotation[(2, 2)] != -1 {
-            continue;
-        }
-        let target_t = hm_translations.get(&db_op.rotation)?;
-        // (W - E) c-row for any layer-block W with W[2,2] = -1 is
-        // (0, 0, -2); so -2 s_z = t_db_z - t_target_z, i.e.
-        // s_z = (t_target_z - t_db_z) / 2.
-        let s_z = (target_t[2] - db_op.translation[2]) / 2.0;
-        match chosen {
-            None => chosen = Some(s_z),
-            Some(prev) => debug_assert!(
-                (prev - s_z - (prev - s_z).round()).abs() < epsilon.max(1e-6),
-                "c-flipping generators disagree on s_z (prev={}, new={})",
-                prev,
-                s_z
-            ),
-        }
-    }
-    chosen
 }
 
 #[cfg(test)]
