@@ -55,37 +55,8 @@ impl PrimitiveCell {
 
         let (translations, permutations) = search_pure_translations(&reduced_cell, symprec);
 
-        // Check number of translations
-        let size = translations.len() as i32;
-        if (size == 0) || (reduced_cell.num_atoms() % (size as usize) != 0) {
-            debug!(
-                "Failed to properly find translations: {} translations in {} atoms. Consider increasing symprec.",
-                size,
-                reduced_cell.num_atoms()
-            );
-            return Err(MoyoError::TooSmallToleranceError);
-        }
-        debug!("Found {} pure translations", size);
-
-        // Recover a transformation matrix from primitive to input cell
-        let trans_mat = if let Some(trans_mat) =
-            transformation_matrix_from_translations(&translations)
-        {
-            trans_mat
-        } else {
-            debug!(
-                "Failed to find a transformation matrix for a primitive cell. Consider increasing symprec."
-            );
-            return Err(MoyoError::TooSmallToleranceError);
-        };
-
-        // Primitive cell
-        let (primitive_cell, site_mapping, _) = primitive_cell_from_transformation(
-            &reduced_cell,
-            &trans_mat,
-            &translations,
-            &permutations,
-        );
+        let (primitive_cell, trans_mat, site_mapping) =
+            primitive_cell_from_pure_translations(&reduced_cell, &translations, &permutations)?;
         let (_, prim_trans_mat) = primitive_cell.lattice.minkowski_reduce()?;
         let reduced_prim_cell =
             UnimodularTransformation::from_linear(prim_trans_mat).transform_cell(&primitive_cell);
@@ -94,16 +65,13 @@ impl PrimitiveCell {
         //    -[reduced_trans_mat]-> (reduced cell)
         //    <-[trans_mat]- (primitive cell)
         //    -[prim_trans_mat]-> (reduced primitive cell)
-        let inv_prim_trans_mat = prim_trans_mat
-            .map(|e| e as f64)
-            .try_inverse()
-            .unwrap()
-            .map(|e| e.round() as i32);
-        let inv_reduced_trans_mat = reduced_trans_mat.map(|e| e as f64).try_inverse().unwrap();
         Ok(Self {
             cell: reduced_prim_cell,
-            linear: ((inv_prim_trans_mat * trans_mat).map(|e| e as f64) * inv_reduced_trans_mat)
-                .map(|e| e.round() as i32),
+            linear: compose_input_to_reduced_prim_linear(
+                reduced_trans_mat,
+                trans_mat,
+                prim_trans_mat,
+            ),
             site_mapping,
             translations: translations
                 .iter()
@@ -262,6 +230,58 @@ pub(crate) fn search_pure_translations(
         }
     }
     (translations, permutations)
+}
+
+/// Validate the pure-translation count and build the primitive sub-cell.
+/// Shared post-search core of `PrimitiveCell::new` and
+/// `LayerPrimitiveCell::new`. Callers pass already-filtered
+/// translations + permutations (the bulk caller filters not at all;
+/// the layer caller drops translations with non-zero `tz` first).
+pub(crate) fn primitive_cell_from_pure_translations(
+    reduced_cell: &Cell,
+    translations: &[Translation],
+    permutations: &[Permutation],
+) -> Result<(Cell, Linear, Vec<usize>), MoyoError> {
+    let size = translations.len() as i32;
+    if (size == 0) || (reduced_cell.num_atoms() % (size as usize) != 0) {
+        debug!(
+            "Failed to properly find translations: {} translations in {} atoms. Consider increasing symprec.",
+            size,
+            reduced_cell.num_atoms()
+        );
+        return Err(MoyoError::TooSmallToleranceError);
+    }
+    debug!("Found {} pure translations", size);
+
+    let trans_mat = transformation_matrix_from_translations(translations).ok_or_else(|| {
+        debug!(
+            "Failed to find a transformation matrix for a primitive cell. Consider increasing symprec."
+        );
+        MoyoError::TooSmallToleranceError
+    })?;
+    let (primitive_cell, site_mapping, _) =
+        primitive_cell_from_transformation(reduced_cell, &trans_mat, translations, permutations);
+    Ok((primitive_cell, trans_mat, site_mapping))
+}
+
+/// Compose `linear: reduced_prim_cell -> input_cell` from the chain
+/// (input -> reduced) -> (primitive <- reduced) -> (primitive -> reduced_prim).
+/// Shared between `PrimitiveCell::new` and `LayerPrimitiveCell::new` --
+/// the algebra is identical (only the reduction step differs between
+/// the two callers).
+pub(crate) fn compose_input_to_reduced_prim_linear(
+    reduced_trans_mat: Linear,
+    trans_mat: Linear,
+    prim_trans_mat: Linear,
+) -> Linear {
+    let inv_prim_trans_mat = prim_trans_mat
+        .map(|e| e as f64)
+        .try_inverse()
+        .unwrap()
+        .map(|e| e.round() as i32);
+    let inv_reduced_trans_mat = reduced_trans_mat.map(|e| e as f64).try_inverse().unwrap();
+    ((inv_prim_trans_mat * trans_mat).map(|e| e as f64) * inv_reduced_trans_mat)
+        .map(|e| e.round() as i32)
 }
 
 pub(crate) fn transformation_matrix_from_translations(
