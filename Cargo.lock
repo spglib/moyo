@@ -788,7 +788,7 @@ checksum = "f8ca58f447f06ed17d5fc4043ce1b10dd205e060fb3ce5b979b8ed8e59ff3f79"
 
 [[package]]
 name = "moyo"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "approx",
  "criterion",
@@ -811,7 +811,7 @@ dependencies = [
 
 [[package]]
 name = "moyo-wasm"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "moyo",
  "serde",
@@ -822,7 +822,7 @@ dependencies = [
 
 [[package]]
 name = "moyoc"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "approx",
  "log",
@@ -834,7 +834,7 @@ dependencies = [
 
 [[package]]
 name = "moyopy"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "approx",
  "itertools 0.14.0",

@@ -6,6 +6,20 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only dependency or build updates with no user-visible changes.
 
+## v0.9.0 - 2026-05-09
+
+### moyo
+
+- Add layer-group identification pipeline: `LayerGroup`, `LayerHallSymbol`, `LayerSetting`, and `MoyoLayerDataset` public API (#303, #304, #305, #306, #308)
+- Add `LayerGroup::from_lattice` for in-plane lattice reduction (#318)
+
+### moyopy
+
+- Mark Development Status as Beta (#302)
+- Add `MoyoLayerDataset` and `LayerSetting` bindings (#310)
+- Add `LayerGroupType` bindings and `operations_from_layer_number` (#317)
+- Add `LayerGroup` binding for layer-group identification (#318)
+
 ## v0.8.0 - 2026-05-01
 
 ### moyo
