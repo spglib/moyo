@@ -25,13 +25,33 @@ and inspect the result.
 
 ## Crystallographic data
 
-Layer-group settings.
+Layer-group settings, classification tables, and helpers to fetch operations
+by layer-group number.
 
 ```{eval-rst}
 .. autoapisummary::
 
    moyopy.LayerSetting
+   moyopy.LayerCentering
+   moyopy.LayerHallSymbolEntry
+   moyopy.LayerGroupType
+   moyopy.LayerArithmeticCrystalClass
+   moyopy.operations_from_layer_number
 
 .. autoapiclass:: moyopy.LayerSetting
    :members:
+
+.. autoapiclass:: moyopy.LayerCentering
+   :members:
+
+.. autoapiclass:: moyopy.LayerHallSymbolEntry
+   :members:
+
+.. autoapiclass:: moyopy.LayerGroupType
+   :members:
+
+.. autoapiclass:: moyopy.LayerArithmeticCrystalClass
+   :members:
+
+.. autoapifunction:: moyopy.operations_from_layer_number
 ```

@@ -11,9 +11,10 @@ use crate::base::{
     PyOperations, PyStructure, PyUnimodularTransformation,
 };
 use crate::data::{
-    PyArithmeticCrystalClass, PyCentering, PyHallSymbolEntry, PyLayerSetting,
+    PyArithmeticCrystalClass, PyCentering, PyHallSymbolEntry, PyLayerArithmeticCrystalClass,
+    PyLayerCentering, PyLayerGroupType, PyLayerHallSymbolEntry, PyLayerSetting,
     PyMagneticSpaceGroupType, PySetting, PySpaceGroupType, magnetic_operations_from_uni_number,
-    operations_from_number,
+    operations_from_layer_number, operations_from_number,
 };
 use crate::dataset::{
     PyMoyoCollinearMagneticDataset, PyMoyoDataset, PyMoyoLayerDataset,
@@ -64,13 +65,18 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PySetting>()?;
     m.add_class::<PyLayerSetting>()?;
     m.add_class::<PyCentering>()?;
+    m.add_class::<PyLayerCentering>()?;
     m.add_class::<PyHallSymbolEntry>()?;
+    m.add_class::<PyLayerHallSymbolEntry>()?;
     // data: Group data
     m.add_class::<PySpaceGroupType>()?;
+    m.add_class::<PyLayerGroupType>()?;
     m.add_class::<PyMagneticSpaceGroupType>()?;
     m.add_class::<PyArithmeticCrystalClass>()?;
+    m.add_class::<PyLayerArithmeticCrystalClass>()?;
     // data: Misc
     m.add_wrapped(wrap_pyfunction!(operations_from_number))?;
+    m.add_wrapped(wrap_pyfunction!(operations_from_layer_number))?;
     m.add_wrapped(wrap_pyfunction!(magnetic_operations_from_uni_number))?;
 
     // identify

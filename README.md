@@ -40,7 +40,7 @@ Legend: ✅ supported · 🟡 partial · ❌ not exposed · ➖ not applicable.
 | Space group          | Data access          | ✅            | ✅                | ❌          | ❌                    |
 | Space group          | Group identification | ✅            | ✅                | ❌          | ❌                    |
 | Layer group          | Dataset from cell    | ✅            | ✅                | ❌          | ❌                    |
-| Layer group          | Data access          | ✅            | 🟡                | ❌          | ❌                    |
+| Layer group          | Data access          | ✅            | ✅                | ❌          | ❌                    |
 | Layer group          | Group identification | ➖            | ➖                | ➖          | ➖                    |
 | Magnetic space group | Dataset from cell    | ✅            | ✅                | ❌          | ❌                    |
 | Magnetic space group | Data access          | ✅            | ✅                | ❌          | ❌                    |
@@ -57,10 +57,9 @@ Notes:
 - "Data access" covers classification tables and lookup helpers (e.g.
   `Setting`, `Centering`, `HallSymbolEntry`, `SpaceGroupType`,
   `ArithmeticCrystalClass`, `operations_from_number`, `LayerSetting`,
+  `LayerCentering`, `LayerHallSymbolEntry`, `LayerGroupType`,
+  `LayerArithmeticCrystalClass`, `operations_from_layer_number`,
   `MagneticSpaceGroupType`, `magnetic_operations_from_uni_number`).
-  Layer-group data access is partial in Python: only `LayerSetting` is
-  re-exported through `moyopy`. The Rust core exposes the full set of
-  layer-group classification tables.
 - "Group identification" recovers a group label from a primitive list of
   symmetry operations (`PointGroup` + `SpaceGroup` + `integral_normalizer`,
   `MagneticSpaceGroup`). moyo does not expose a standalone layer-group

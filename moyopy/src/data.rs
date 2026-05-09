@@ -1,6 +1,10 @@
 mod arithmetic_crystal_class;
 mod centering;
 mod hall_symbol;
+mod layer_arithmetic_crystal_class;
+mod layer_centering;
+mod layer_group_type;
+mod layer_hall_symbol;
 mod layer_setting;
 mod magnetic_space_group_type;
 mod setting;
@@ -9,6 +13,10 @@ mod space_group_type;
 pub use arithmetic_crystal_class::PyArithmeticCrystalClass;
 pub use centering::PyCentering;
 pub use hall_symbol::PyHallSymbolEntry;
+pub use layer_arithmetic_crystal_class::PyLayerArithmeticCrystalClass;
+pub use layer_centering::PyLayerCentering;
+pub use layer_group_type::PyLayerGroupType;
+pub use layer_hall_symbol::PyLayerHallSymbolEntry;
 pub use layer_setting::PyLayerSetting;
 pub use magnetic_space_group_type::PyMagneticSpaceGroupType;
 pub use setting::PySetting;
@@ -19,8 +27,8 @@ use pyo3::prelude::*;
 use super::base::{PyMagneticOperations, PyMoyoError, PyOperations};
 use moyo::base::{MagneticOperation, MoyoError, Operation};
 use moyo::data::{
-    HallSymbol, MagneticHallSymbol, Number, Setting, UNINumber, hall_symbol_entry,
-    magnetic_hall_symbol_entry,
+    HallSymbol, LayerHallSymbol, LayerNumber, LayerSetting, MagneticHallSymbol, Number, Setting,
+    UNINumber, hall_symbol_entry, magnetic_hall_symbol_entry,
 };
 
 /// Return symmetry operations for the given space-group ITA ``number``.
@@ -70,6 +78,60 @@ pub fn operations_from_number(
             for operation2 in coset.iter() {
                 // (E, t1) (r2, t2) = (r2, t1 + t2)
                 let t12 = (t1 + operation2.translation).map(|e| e % 1.);
+                operations.push(Operation::new(operation2.rotation, t12));
+            }
+        }
+    }
+
+    Ok(PyOperations::from(operations))
+}
+
+/// Return symmetry operations for the given layer-group ``number``.
+///
+/// Parameters
+/// ----------
+/// number : int
+///     Layer-group number (1 - 80).
+/// setting : LayerSetting, optional
+///     Setting of the layer group. If ``None``, the spglib default is used.
+/// primitive : bool, optional
+///     If ``True``, return operations of the primitive cell; otherwise return operations
+///     of the conventional cell.
+#[pyfunction]
+#[pyo3(signature = (number, *, setting=None, primitive=false))]
+pub fn operations_from_layer_number(
+    number: LayerNumber,
+    setting: Option<crate::data::PyLayerSetting>,
+    primitive: bool,
+) -> Result<PyOperations, PyMoyoError> {
+    let setting = if let Some(setting) = setting {
+        LayerSetting::from(setting)
+    } else {
+        LayerSetting::Spglib
+    };
+    let hall_number = match setting {
+        LayerSetting::HallNumber(hall_number) => hall_number,
+        _ => *setting
+            .hall_numbers()
+            .get((number - 1) as usize)
+            .ok_or(MoyoError::UnknownNumberError)?,
+    };
+    let lhs =
+        LayerHallSymbol::from_hall_number(hall_number).ok_or(MoyoError::UnknownHallNumberError)?;
+
+    let mut operations = vec![];
+    if primitive {
+        for operation in lhs.primitive_traverse().into_iter() {
+            operations.push(operation)
+        }
+    } else {
+        let coset = lhs.traverse();
+
+        let lattice_points = lhs.centering().lattice_points();
+        for t1 in lattice_points.iter() {
+            for operation2 in coset.iter() {
+                // (E, t1) (r2, t2) = (r2, t1 + t2)
+                let t12 = (t1 + operation2.translation).map(|e| e.rem_euclid(1.0));
                 operations.push(Operation::new(operation2.rotation, t12));
             }
         }
