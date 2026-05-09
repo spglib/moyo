@@ -12,6 +12,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.intersphinx",
     "sphinxcontrib.bibtex",
+    "sphinx_copybutton",
     # "nbsphinx",
     "myst_parser",
     "autoapi.extension",
@@ -100,7 +101,7 @@ html_theme_options = {
     "repository_url": repository_url,
     "use_repository_button": True,
     "navigation_with_keys": True,
-    "globaltoc_includehidden": "true",
+    "globaltoc_includehidden": True,
     "show_toc_level": 2,
 }
 
