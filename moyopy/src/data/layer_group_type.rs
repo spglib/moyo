@@ -43,11 +43,11 @@ pub struct PyLayerGroupType {
     /// Bravais class for the layer group's 2D lattice (one of
     /// ``"mp"``, ``"op"``, ``"oc"``, ``"tp"``, ``"hp"``).
     #[pyo3(get)]
-    layer_bravais_class: String,
-    /// Layer lattice system (one of ``"Oblique"``, ``"Rectangular"``,
+    bravais_class: String,
+    /// Lattice system (one of ``"Oblique"``, ``"Rectangular"``,
     /// ``"Square"``, ``"Hexagonal"``).
     #[pyo3(get)]
-    layer_lattice_system: String,
+    lattice_system: String,
 }
 
 #[pymethods]
@@ -63,7 +63,7 @@ impl PyLayerGroupType {
         let arithmetic_number = lhs_entry.arithmetic_number;
         let acc_entry = layer_arithmetic_crystal_class_entry(arithmetic_number)
             .ok_or(MoyoError::UnknownArithmeticNumberError)?;
-        let layer_lattice_system = acc_entry.layer_lattice_system();
+        let lattice_system = acc_entry.layer_lattice_system();
 
         Ok(Self {
             // Layer-group type
@@ -75,8 +75,8 @@ impl PyLayerGroupType {
             arithmetic_symbol: acc_entry.symbol,
             // Other classifications
             geometric_crystal_class: acc_entry.geometric_crystal_class.to_string(),
-            layer_bravais_class: acc_entry.layer_bravais_class.to_string(),
-            layer_lattice_system: layer_lattice_system.to_string(),
+            bravais_class: acc_entry.layer_bravais_class.to_string(),
+            lattice_system: lattice_system.to_string(),
         })
     }
 

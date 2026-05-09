@@ -244,12 +244,12 @@ class LayerGroupType:
         for string values.
         """
     @property
-    def layer_bravais_class(self) -> str:
+    def bravais_class(self) -> str:
         """Bravais class for the layer group's 2D lattice (one of ``"mp"``,
         ``"op"``, ``"oc"``, ``"tp"``, ``"hp"``)."""
     @property
-    def layer_lattice_system(self) -> str:
-        """Layer lattice system (one of ``"Oblique"``, ``"Rectangular"``,
+    def lattice_system(self) -> str:
+        """Lattice system (one of ``"Oblique"``, ``"Rectangular"``,
         ``"Square"``, ``"Hexagonal"``)."""
     # Serialization
     def serialize_json(self) -> str:
@@ -319,12 +319,12 @@ class LayerArithmeticCrystalClass:
     def geometric_crystal_class(self) -> str:
         """Geometric crystal class. Cubic classes never occur for layer groups."""
     @property
-    def layer_bravais_class(self) -> str:
+    def bravais_class(self) -> str:
         """Bravais class for the layer group's 2D lattice (one of ``"mp"``,
         ``"op"``, ``"oc"``, ``"tp"``, ``"hp"``)."""
     @property
-    def layer_lattice_system(self) -> str:
-        """Layer lattice system (one of ``"Oblique"``, ``"Rectangular"``,
+    def lattice_system(self) -> str:
+        """Lattice system (one of ``"Oblique"``, ``"Rectangular"``,
         ``"Square"``, ``"Hexagonal"``)."""
     # Serialization
     def serialize_json(self) -> str:

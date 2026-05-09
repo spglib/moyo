@@ -27,11 +27,11 @@ pub struct PyLayerArithmeticCrystalClass {
     /// Bravais class for the layer group's 2D lattice (one of
     /// ``"mp"``, ``"op"``, ``"oc"``, ``"tp"``, ``"hp"``).
     #[pyo3(get)]
-    pub layer_bravais_class: String,
-    /// Layer lattice system (one of ``"Oblique"``, ``"Rectangular"``,
+    pub bravais_class: String,
+    /// Lattice system (one of ``"Oblique"``, ``"Rectangular"``,
     /// ``"Square"``, ``"Hexagonal"``).
     #[pyo3(get)]
-    pub layer_lattice_system: String,
+    pub lattice_system: String,
 }
 
 #[pymethods]
@@ -40,13 +40,13 @@ impl PyLayerArithmeticCrystalClass {
     pub fn new(arithmetic_number: LayerArithmeticNumber) -> Result<Self, PyMoyoError> {
         let entry = layer_arithmetic_crystal_class_entry(arithmetic_number)
             .ok_or(MoyoError::UnknownArithmeticNumberError)?;
-        let layer_lattice_system = entry.layer_lattice_system();
+        let lattice_system = entry.layer_lattice_system();
         Ok(Self {
             arithmetic_number: entry.arithmetic_number,
             symbol: entry.symbol,
             geometric_crystal_class: entry.geometric_crystal_class.to_string(),
-            layer_bravais_class: entry.layer_bravais_class.to_string(),
-            layer_lattice_system: layer_lattice_system.to_string(),
+            bravais_class: entry.layer_bravais_class.to_string(),
+            lattice_system: lattice_system.to_string(),
         })
     }
 

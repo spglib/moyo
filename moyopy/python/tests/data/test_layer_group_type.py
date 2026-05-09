@@ -9,8 +9,8 @@ def test_layer_group_type_lg1():
     assert lgt.arithmetic_number == 1
     assert lgt.arithmetic_symbol == "p1"
     assert lgt.geometric_crystal_class == "1"
-    assert lgt.layer_bravais_class == "mp"
-    assert lgt.layer_lattice_system == "Oblique"
+    assert lgt.bravais_class == "mp"
+    assert lgt.lattice_system == "Oblique"
 
 
 def test_layer_group_type_lg10_centered():
@@ -19,8 +19,8 @@ def test_layer_group_type_lg10_centered():
     assert lgt.number == 10
     assert lgt.arithmetic_symbol == "c211"
     assert lgt.geometric_crystal_class == "2"
-    assert lgt.layer_bravais_class == "oc"
-    assert lgt.layer_lattice_system == "Rectangular"
+    assert lgt.bravais_class == "oc"
+    assert lgt.lattice_system == "Rectangular"
 
 
 def test_layer_group_type_lg80():
@@ -29,5 +29,5 @@ def test_layer_group_type_lg80():
     assert lgt.arithmetic_number == 43
     assert lgt.arithmetic_symbol == "p6/mmm"
     assert lgt.geometric_crystal_class == "6/mmm"
-    assert lgt.layer_bravais_class == "hp"
-    assert lgt.layer_lattice_system == "Hexagonal"
+    assert lgt.bravais_class == "hp"
+    assert lgt.lattice_system == "Hexagonal"
