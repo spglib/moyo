@@ -41,7 +41,7 @@ Legend: ✅ supported · 🟡 partial · ❌ not exposed · ➖ not applicable.
 | Space group          | Group identification | ✅            | ✅                | ❌          | ❌                    |
 | Layer group          | Dataset from cell    | ✅            | ✅                | ❌          | ❌                    |
 | Layer group          | Data access          | ✅            | ✅                | ❌          | ❌                    |
-| Layer group          | Group identification | ➖            | ➖                | ➖          | ➖                    |
+| Layer group          | Group identification | ✅            | ✅                | ❌          | ❌                    |
 | Magnetic space group | Dataset from cell    | ✅            | ✅                | ❌          | ❌                    |
 | Magnetic space group | Data access          | ✅            | ✅                | ❌          | ❌                    |
 | Magnetic space group | Group identification | ✅            | ✅                | ❌          | ❌                    |
@@ -62,8 +62,7 @@ Notes:
   `MagneticSpaceGroupType`, `magnetic_operations_from_uni_number`).
 - "Group identification" recovers a group label from a primitive list of
   symmetry operations (`PointGroup` + `SpaceGroup` + `integral_normalizer`,
-  `MagneticSpaceGroup`). moyo does not expose a standalone layer-group
-  identifier; layer-group analysis goes through `MoyoLayerDataset`.
+  `LayerGroup`, `MagneticSpaceGroup`).
 
 ## How to cite moyo and its interfaces
 
