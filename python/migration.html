@@ -32,6 +32,7 @@
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
   
   <!-- So that users can add custom icons -->
@@ -43,12 +44,14 @@
     <script src="_static/documentation_options.js?v=c73c0f3e"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
     <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'migration';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="API Reference" href="api.html" />
-    <link rel="prev" title="Moyo conventions of standardized cell" href="standardization.html" />
+    <link rel="prev" title="Moyo conventions of standardized layer cell" href="layer_standardization.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="0.8.0" />
@@ -143,6 +146,7 @@
 <li class="toctree-l1"><a class="reference internal" href="index.html">    Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples/index.html">    Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="standardization.html">    Standardization of Crystal Structures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="layer_standardization.html">    Standardization of Subperiodic Structures</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">    Migration Guide from spglib</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="api.html">    API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2"><a class="reference internal" href="api_layer_group.html">Layer Group</a></li>
@@ -399,7 +403,7 @@ That being said, moyopy is expected to work without specifying <code class="docu
 </ul>
 </section>
 <section id="spglib-get-symmetry-dataset">
-<h4><code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry_dataset()</span></code><a class="headerlink" href="#spglib-get-symmetry-dataset" title="Link to this heading">#</a></h4>
+<span id="spglibget-symmetry-dataset"></span><h4><code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry_dataset()</span></code><a class="headerlink" href="#spglib-get-symmetry-dataset" title="Link to this heading">#</a></h4>
 <p>Replace with <code class="docutils literal notranslate"><span class="pre">MoyoDataset</span></code>.</p>
 <p>If you need to specify <code class="docutils literal notranslate"><span class="pre">hall_number</span></code>, use</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">MoyoDataset</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">setting</span><span class="o">=</span><span class="n">Setting</span><span class="o">.</span><span class="n">hall_number</span><span class="p">(</span><span class="n">hall_number</span><span class="p">))</span>
@@ -464,7 +468,7 @@ That being said, moyopy is expected to work without specifying <code class="docu
 <section id="spglib-get-spacegroup">
 <h4><code class="docutils literal notranslate"><span class="pre">spglib.get_spacegroup()</span></code><a class="headerlink" href="#spglib-get-spacegroup" title="Link to this heading">#</a></h4>
 <p>Moyopy does not directly support this function.
-<a class="reference internal" href="#spglibget_symmetry_dataset"><span class="xref myst">See <code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry_dataset()</span></code></span></a>.</p>
+<a class="reference internal" href="#spglibget-symmetry-dataset">See <code class="docutils literal notranslate"><span class="pre">spglib.get_symmetry_dataset()</span></code></a>.</p>
 </section>
 </section>
 <section id="space-group-dataset-access">
@@ -659,12 +663,12 @@ Be careful that <code class="docutils literal notranslate"><span class="pre">Mag
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="standardization.html"
+       href="layer_standardization.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Moyo conventions of standardized cell</p>
+        <p class="prev-next-title">Moyo conventions of standardized layer cell</p>
       </div>
     </a>
     <a class="right-next"

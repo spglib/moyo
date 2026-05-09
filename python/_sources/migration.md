@@ -31,6 +31,8 @@ Let `symmetry` be the returned dictionary of `spglib.get_symmetry()`, the fields
 - `symmetry['translations']` -> `MoyoDataset.operations.translations`
 - `symmetry['equivalent_atoms']` is not directly available in `MoyoDataset`. However, `MoyoDataset.orbits` gives Spglib's `crystallographic_orbits`.
 
+(spglibget_symmetry_dataset)=
+
 #### `spglib.get_symmetry_dataset()`
 
 Replace with `MoyoDataset`.
