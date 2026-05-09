@@ -472,8 +472,8 @@
 <p>The public API mirrors the Rust crate layout: <code class="docutils literal notranslate"><span class="pre">base</span></code> (crystal structures and
 operation containers), <code class="docutils literal notranslate"><span class="pre">dataset</span></code> (symmetry analysis results), <code class="docutils literal notranslate"><span class="pre">data</span></code>
 (crystallographic classification tables), and <code class="docutils literal notranslate"><span class="pre">identify</span></code> (group identification
-primitives). The :mod:<code class="docutils literal notranslate"><span class="pre">moyopy.interface</span></code> adapters provide conversion helpers
-to/from pymatgen and ASE.</p>
+primitives). The <code class="xref py py-mod docutils literal notranslate"><span class="pre">moyopy.interface</span></code> adapters provide conversion
+helpers to/from pymatgen and ASE.</p>
 <p>This page documents the core types and the space-group API. Layer-group and
 magnetic-space-group APIs live on additional pages:</p>
 <div class="toctree-wrapper compound">
@@ -636,7 +636,7 @@ origin shift.</p>
 </section>
 <section id="symmetry-datasets">
 <h2>Symmetry datasets<a class="headerlink" href="#symmetry-datasets" title="Link to this heading">#</a></h2>
-<p>Run a symmetry analysis on a :class:<code class="docutils literal notranslate"><span class="pre">Cell</span></code> and inspect the result.</p>
+<p>Run a symmetry analysis on a <a class="reference internal" href="#moyopy.Cell" title="moyopy.Cell"><code class="xref py py-class docutils literal notranslate"><span class="pre">moyopy.Cell</span></code></a> and inspect the result.</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#moyopy.MoyoDataset" title="moyopy.MoyoDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MoyoDataset</span></code></a></p></td>
@@ -1219,10 +1219,10 @@ set is derived automatically.</p></li>
 </section>
 <section id="adapters">
 <h2>Adapters<a class="headerlink" href="#adapters" title="Link to this heading">#</a></h2>
-<p>Convert between :class:<code class="docutils literal notranslate"><span class="pre">moyopy.Cell</span></code> and pymatgen <code class="docutils literal notranslate"><span class="pre">Structure</span></code> / ASE <code class="docutils literal notranslate"><span class="pre">Atoms</span></code>.
-Requires the optional dependencies installed via
+<p>Convert between <a class="reference internal" href="#moyopy.Cell" title="moyopy.Cell"><code class="xref py py-class docutils literal notranslate"><span class="pre">moyopy.Cell</span></code></a> and pymatgen <code class="docutils literal notranslate"><span class="pre">Structure</span></code> / ASE
+<code class="docutils literal notranslate"><span class="pre">Atoms</span></code>. Requires the optional dependencies installed via
 <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">moyopy[interface]</span></code>. The magnetic counterpart
-:class:<code class="docutils literal notranslate"><span class="pre">moyopy.interface.MoyoNonCollinearMagneticAdapter</span></code> lives on the
+<a class="reference internal" href="api_magnetic_space_group.html#moyopy.interface.MoyoNonCollinearMagneticAdapter" title="moyopy.interface.MoyoNonCollinearMagneticAdapter"><code class="xref py py-class docutils literal notranslate"><span class="pre">moyopy.interface.MoyoNonCollinearMagneticAdapter</span></code></a> lives on the
 <a class="reference internal" href="api_magnetic_space_group.html"><span class="std std-doc">Magnetic Space Group</span></a> page.</p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
