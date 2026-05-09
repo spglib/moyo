@@ -5,15 +5,19 @@ use pythonize::pythonize;
 use serde::Serialize;
 use serde_json;
 
-use moyo::base::{Lattice, MagneticOperation, Operation};
-use moyo::data::{ArithmeticNumber, HallNumber, Number, Setting, UNINumber};
+use moyo::base::{AngleTolerance, Lattice, LayerLattice, MagneticOperation, Operation};
+use moyo::data::{
+    ArithmeticNumber, HallNumber, LayerHallNumber, LayerNumber, LayerSetting, Number, Setting,
+    UNINumber,
+};
 use moyo::identify::{
-    MagneticSpaceGroup, PointGroup, SpaceGroup, integral_normalizer as identify_integral_normalizer,
+    LayerGroup, MagneticSpaceGroup, PointGroup, SpaceGroup,
+    integral_normalizer as identify_integral_normalizer,
 };
 use moyo::utils::{to_3x3_slice, to_matrix3, to_vector3};
 
 use crate::base::{PyMoyoError, PyUnimodularTransformation};
-use crate::data::PySetting;
+use crate::data::{PyLayerSetting, PySetting};
 
 fn has_same_rotation(lhs: &Operation, rhs: &Operation) -> bool {
     lhs.rotation == rhs.rotation
@@ -341,6 +345,124 @@ impl From<PySpaceGroup> for SpaceGroup {
 impl From<SpaceGroup> for PySpaceGroup {
     fn from(space_group: SpaceGroup) -> Self {
         PySpaceGroup(space_group)
+    }
+}
+
+/// Layer group identified from a list of primitive layer-cell operations.
+#[derive(Debug, Clone, Serialize)]
+#[pyclass(name = "LayerGroup", frozen, from_py_object)]
+#[pyo3(module = "moyopy")]
+pub struct PyLayerGroup(LayerGroup);
+
+#[pymethods]
+impl PyLayerGroup {
+    /// Identify the layer group from primitive layer-cell rotations and translations.
+    ///
+    /// Parameters
+    /// ----------
+    /// prim_rotations : list\[list\[list\[int\]\]\]
+    ///     Rotation matrices of the layer-group operations of the primitive layer cell.
+    /// prim_translations : list\[list\[float\]\]
+    ///     Translation vectors of the layer-group operations of the primitive layer cell.
+    /// basis : list\[list\[float\]\] | None
+    ///     Row-wise basis vectors of the primitive layer lattice. ``a, b`` must lie in the
+    ///     xy-plane and ``c`` along z (the layer-group periodicity contract). When given,
+    ///     the in-plane block is Minkowski-reduced before identification. If ``None``, an
+    ///     identity basis is assumed.
+    /// setting : LayerSetting | None
+    ///     Preference for the standardized setting of the detected layer-group type.
+    /// epsilon : float
+    ///     Numerical tolerance for matching translations.
+    #[new]
+    #[pyo3(signature = (prim_rotations, prim_translations, *, basis=None, setting=None, epsilon=1e-4))]
+    pub fn new(
+        prim_rotations: Vec<[[i32; 3]; 3]>,
+        prim_translations: Vec<[f64; 3]>,
+        basis: Option<[[f64; 3]; 3]>,
+        setting: Option<PyLayerSetting>,
+        epsilon: f64,
+    ) -> Result<Self, PyMoyoError> {
+        let prim_operations = prim_rotations
+            .iter()
+            .zip(prim_translations.iter())
+            .map(|(r, t)| Operation::new(to_matrix3(r), to_vector3(t)))
+            .collect::<Vec<_>>();
+        let setting = setting.map(LayerSetting::from).unwrap_or_default();
+
+        let layer_group = if let Some(basis) = basis {
+            let lattice = Lattice::from_basis(basis);
+            let layer_lattice = LayerLattice::new(lattice, epsilon, AngleTolerance::Default)?;
+            LayerGroup::from_lattice(&layer_lattice, &prim_operations, setting, epsilon)?
+        } else {
+            LayerGroup::new(&prim_operations, setting, epsilon)?
+        };
+
+        Ok(Self(layer_group))
+    }
+
+    /// Layer-group number for the identified layer group (1 - 80).
+    #[getter]
+    pub fn number(&self) -> LayerNumber {
+        self.0.number
+    }
+
+    /// Layer Hall symbol number (1 - 116) for the chosen setting.
+    #[getter]
+    pub fn hall_number(&self) -> LayerHallNumber {
+        self.0.hall_number
+    }
+
+    /// Linear part of the transformation from the input primitive basis to the standardized
+    /// basis.
+    #[getter]
+    pub fn linear(&self) -> [[i32; 3]; 3] {
+        self.0.transformation.linear_as_array()
+    }
+
+    /// Origin shift of the transformation from the input primitive basis to the standardized
+    /// basis.
+    #[getter]
+    pub fn origin_shift(&self) -> [f64; 3] {
+        self.0.transformation.origin_shift_as_array()
+    }
+
+    // ------------------------------------------------------------------------
+    // Special methods
+    // ------------------------------------------------------------------------
+    fn __repr__(&self) -> String {
+        self.serialize_json()
+    }
+
+    fn __str__(&self) -> String {
+        self.__repr__()
+    }
+
+    // ------------------------------------------------------------------------
+    // Serialization
+    // ------------------------------------------------------------------------
+    /// Serialize this object to a JSON string.
+    pub fn serialize_json(&self) -> String {
+        serde_json::to_string(&self).expect("Serialization should not fail")
+    }
+
+    /// Convert this object to a dictionary.
+    pub fn as_dict(&self) -> PyResult<Py<PyAny>> {
+        Python::attach(|py| {
+            let obj = pythonize(py, &self).expect("Python object conversion should not fail");
+            obj.into_py_any(py)
+        })
+    }
+}
+
+impl From<PyLayerGroup> for LayerGroup {
+    fn from(layer_group: PyLayerGroup) -> Self {
+        layer_group.0
+    }
+}
+
+impl From<LayerGroup> for PyLayerGroup {
+    fn from(layer_group: LayerGroup) -> Self {
+        PyLayerGroup(layer_group)
     }
 }
 

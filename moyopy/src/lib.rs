@@ -20,7 +20,9 @@ use crate::dataset::{
     PyMoyoCollinearMagneticDataset, PyMoyoDataset, PyMoyoLayerDataset,
     PyMoyoNonCollinearMagneticDataset,
 };
-use crate::identify::{PyMagneticSpaceGroup, PyPointGroup, PySpaceGroup, integral_normalizer};
+use crate::identify::{
+    PyLayerGroup, PyMagneticSpaceGroup, PyPointGroup, PySpaceGroup, integral_normalizer,
+};
 
 // https://github.com/pydantic/pydantic-core/blob/main/src/lib.rs
 fn moyopy_version() -> &'static str {
@@ -82,6 +84,7 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // identify
     m.add_class::<PyPointGroup>()?;
     m.add_class::<PySpaceGroup>()?;
+    m.add_class::<PyLayerGroup>()?;
     m.add_class::<PyMagneticSpaceGroup>()?;
     m.add_wrapped(wrap_pyfunction!(integral_normalizer))?;
 
