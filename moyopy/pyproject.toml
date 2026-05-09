@@ -49,6 +49,7 @@ docs = [
     "sphinxcontrib-bibtex >= 2.5",
     "sphinx-book-theme",
     "sphinx-autoapi",
+    "sphinx-copybutton",
     "myst-parser >= 2.0",
     "linkify-it-py",
 ]

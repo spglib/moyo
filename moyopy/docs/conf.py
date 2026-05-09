@@ -12,6 +12,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.intersphinx",
     "sphinxcontrib.bibtex",
+    "sphinx_copybutton",
     # "nbsphinx",
     "myst_parser",
     "autoapi.extension",
