@@ -4,7 +4,7 @@ use serde::Serialize;
 use super::layer_point_group::LayerPointGroup;
 use super::normalizer::integral_normalizer_2_1;
 use crate::base::{
-    Lattice, Lattice2D, MoyoError, Operations, UnimodularTransformation, project_rotations,
+    Lattice2D, LayerLattice, MoyoError, Operations, UnimodularTransformation, project_rotations,
 };
 use crate::data::{
     LayerHallNumber, LayerHallSymbol, LayerNumber, LayerSetting, layer_hall_symbol_entry,
@@ -106,19 +106,18 @@ impl LayerGroup {
     /// (`T[0,2]=T[1,2]=T[2,0]=T[2,1]=0`, `T[2,2]=±1`) that
     /// [`LayerPointGroup::new`] and [`integral_normalizer_2_1`] rely on.
     ///
-    /// `lattice` must satisfy the layer-group periodicity contract
-    /// (`a, b` in the xy-plane, `c` along z); the reduction step relies on
-    /// extracting the upper-left 2x2 block of `lattice.basis` and only
-    /// `debug_assert!`s the layout (see [`Lattice2D::from_inplane_of`]). For
-    /// strict validation upstream of this call, build a
-    /// [`crate::base::LayerLattice`].
+    /// Taking [`LayerLattice`] (rather than [`crate::base::Lattice`]) makes
+    /// the layer-group periodicity contract (`a, b` in the xy-plane, `c`
+    /// along z) a precondition the type system enforces, so the in-plane
+    /// reduction can extract the upper-left 2x2 block of the basis without
+    /// silently dropping information.
     pub fn from_lattice(
-        lattice: &Lattice,
+        lattice: &LayerLattice,
         prim_layer_operations: &Operations,
         setting: LayerSetting,
         epsilon: f64,
     ) -> Result<Self, MoyoError> {
-        let reduced_trans_mat = Lattice2D::lift_inplane_minkowski_reduce(&lattice.basis)?;
+        let reduced_trans_mat = Lattice2D::lift_inplane_minkowski_reduce(lattice.basis())?;
         let to_reduced = UnimodularTransformation::from_linear(reduced_trans_mat);
         let reduced_prim_operations = to_reduced.transform_operations(prim_layer_operations);
 
@@ -138,6 +137,7 @@ mod tests {
     use nalgebra::{Matrix3, matrix, vector};
 
     use super::*;
+    use crate::base::{AngleTolerance, Lattice};
     use crate::data::{LayerHallSymbol, iter_layer_hall_symbol_entry};
 
     /// Round-trip: for every Hall number in LAYER_HALL_SYMBOL_DATABASE,
@@ -307,9 +307,14 @@ mod tests {
 
         // Skewed lattice in column-vector form: a, b in xy-plane; c along z.
         let skewed_basis = Matrix3::<f64>::identity() * shear.map(|e| e as f64);
-        let skewed_lattice = Lattice {
-            basis: skewed_basis,
-        };
+        let skewed_lattice = LayerLattice::new(
+            Lattice {
+                basis: skewed_basis,
+            },
+            1e-4,
+            AngleTolerance::Default,
+        )
+        .unwrap();
 
         let identified =
             LayerGroup::from_lattice(&skewed_lattice, &skewed_ops, LayerSetting::Standard, 1e-8)
@@ -334,9 +339,14 @@ mod tests {
         let lh = LayerHallSymbol::from_hall_number(canonical_hall).unwrap();
         let canonical_ops = lh.primitive_traverse();
 
-        let identity_lattice = Lattice {
-            basis: Matrix3::<f64>::identity(),
-        };
+        let identity_lattice = LayerLattice::new(
+            Lattice {
+                basis: Matrix3::<f64>::identity(),
+            },
+            1e-4,
+            AngleTolerance::Default,
+        )
+        .unwrap();
         let via_lattice = LayerGroup::from_lattice(
             &identity_lattice,
             &canonical_ops,

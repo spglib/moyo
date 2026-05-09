@@ -5,7 +5,7 @@ use pythonize::pythonize;
 use serde::Serialize;
 use serde_json;
 
-use moyo::base::{Lattice, MagneticOperation, Operation};
+use moyo::base::{AngleTolerance, Lattice, LayerLattice, MagneticOperation, Operation};
 use moyo::data::{
     ArithmeticNumber, HallNumber, LayerHallNumber, LayerNumber, LayerSetting, Number, Setting,
     UNINumber,
@@ -387,13 +387,12 @@ impl PyLayerGroup {
             .zip(prim_translations.iter())
             .map(|(r, t)| Operation::new(to_matrix3(r), to_vector3(t)))
             .collect::<Vec<_>>();
-        let setting = setting
-            .map(LayerSetting::from)
-            .unwrap_or(LayerSetting::Spglib);
+        let setting = setting.map(LayerSetting::from).unwrap_or_default();
 
         let layer_group = if let Some(basis) = basis {
             let lattice = Lattice::from_basis(basis);
-            LayerGroup::from_lattice(&lattice, &prim_operations, setting, epsilon)?
+            let layer_lattice = LayerLattice::new(lattice, epsilon, AngleTolerance::Default)?;
+            LayerGroup::from_lattice(&layer_lattice, &prim_operations, setting, epsilon)?
         } else {
             LayerGroup::new(&prim_operations, setting, epsilon)?
         };
