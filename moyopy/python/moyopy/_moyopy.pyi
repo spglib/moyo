@@ -29,6 +29,7 @@ from moyopy._dataset import (
     MoyoNonCollinearMagneticDataset,
 )  # noqa: F401
 from moyopy._identify import (  # noqa: F401
+    LayerGroup,
     MagneticSpaceGroup,
     PointGroup,
     SpaceGroup,
@@ -68,6 +69,7 @@ __all__ = [
     # identify
     "PointGroup",
     "SpaceGroup",
+    "LayerGroup",
     "MagneticSpaceGroup",
     "integral_normalizer",
     # lib

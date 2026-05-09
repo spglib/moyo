@@ -3,12 +3,14 @@ from __future__ import annotations
 import pytest
 
 from moyopy import (
+    LayerGroup,
     MagneticSpaceGroup,
     PointGroup,
     SpaceGroup,
     UnimodularTransformation,
     integral_normalizer,
     magnetic_operations_from_uni_number,
+    operations_from_layer_number,
     operations_from_number,
 )
 
@@ -39,6 +41,47 @@ def test_identify_space_group(number: int):
         prim_rotations=operations.rotations, prim_translations=operations.translations
     )
     assert space_group.number == number
+
+
+@pytest.mark.parametrize(
+    "number",
+    [
+        1,  # p1
+        8,  # p 2 1 1
+        65,  # p 6
+    ],
+)
+def test_identify_layer_group(number: int):
+    operations = operations_from_layer_number(number, primitive=True)
+    layer_group = LayerGroup(
+        prim_rotations=operations.rotations, prim_translations=operations.translations
+    )
+    assert layer_group.number == number
+    assert 1 <= layer_group.hall_number <= 116
+    assert len(layer_group.linear) == 3
+    assert all(len(row) == 3 for row in layer_group.linear)
+    assert len(layer_group.origin_shift) == 3
+
+
+@pytest.mark.parametrize(
+    "number",
+    [
+        1,  # p1
+        8,  # p 2 1 1
+    ],
+)
+def test_identify_layer_group_with_basis(number: int):
+    # Pass an explicit identity basis to exercise the from_lattice path.
+    # The in-plane Minkowski reduction is the identity for this basis, so
+    # the result must agree with the no-basis call.
+    operations = operations_from_layer_number(number, primitive=True)
+    identity_basis = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+    layer_group = LayerGroup(
+        prim_rotations=operations.rotations,
+        prim_translations=operations.translations,
+        basis=identity_basis,
+    )
+    assert layer_group.number == number
 
 
 @pytest.mark.parametrize(

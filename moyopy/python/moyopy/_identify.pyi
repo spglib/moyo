@@ -1,7 +1,7 @@
 from typing import Any
 
 from moyopy._base import UnimodularTransformation
-from moyopy._data import Setting
+from moyopy._data import LayerSetting, Setting
 
 class PointGroup:
     """Point group identified from a list of rotation matrices."""
@@ -61,6 +61,55 @@ class SpaceGroup:
     @property
     def hall_number(self) -> int:
         """Hall symbol number (1 - 530) for the chosen setting."""
+    @property
+    def linear(self) -> list[list[int]]:
+        """Linear part of the transformation from the input primitive basis to the
+        standardized basis."""
+    @property
+    def origin_shift(self) -> list[float]:
+        """Origin shift of the transformation from the input primitive basis to the
+        standardized basis."""
+    # Serialization
+    def serialize_json(self) -> str:
+        """Serialize this object to a JSON string."""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert this object to a dictionary."""
+
+class LayerGroup:
+    """Layer group identified from a list of primitive layer-cell operations."""
+    def __init__(
+        self,
+        prim_rotations: list[list[list[int]]],
+        prim_translations: list[list[float]],
+        *,
+        basis: list[list[float]] | None = None,
+        setting: LayerSetting | None = None,
+        epsilon: float = 1e-4,
+    ):
+        """Identify the layer group from primitive layer-cell rotations and translations.
+
+        Parameters
+        ----------
+        prim_rotations : list[list[list[int]]]
+            Rotation matrices of the layer-group operations of the primitive layer cell.
+        prim_translations : list[list[float]]
+            Translation vectors of the layer-group operations of the primitive layer cell.
+        basis : list[list[float]] | None
+            Row-wise basis vectors of the primitive layer lattice. ``a, b`` must lie in the
+            xy-plane and ``c`` along z (the layer-group periodicity contract). When given,
+            the in-plane block is Minkowski-reduced before identification. If ``None``, an
+            identity basis is assumed.
+        setting : LayerSetting | None
+            Preference for the standardized setting of the detected layer-group type.
+        epsilon : float
+            Numerical tolerance for matching translations.
+        """
+    @property
+    def number(self) -> int:
+        """Layer-group number for the identified layer group (1 - 80)."""
+    @property
+    def hall_number(self) -> int:
+        """Layer Hall symbol number (1 - 116) for the chosen setting."""
     @property
     def linear(self) -> list[list[int]]:
         """Linear part of the transformation from the input primitive basis to the

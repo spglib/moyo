@@ -6,6 +6,7 @@ from moyopy._moyopy import (
     HallSymbolEntry,
     LayerArithmeticCrystalClass,
     LayerCentering,
+    LayerGroup,
     LayerGroupType,
     LayerHallSymbolEntry,
     LayerSetting,
@@ -59,6 +60,7 @@ __all__ = [
     "MoyoLayerDataset",
     "MoyoNonCollinearMagneticDataset",
     # identify
+    "LayerGroup",
     "MagneticSpaceGroup",
     "PointGroup",
     "SpaceGroup",
