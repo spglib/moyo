@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from moyopy import Operations, operations_from_number
+from moyopy import Operations, operations_from_layer_number, operations_from_number
 
 
 def _unique_sites_in_cell(position, operations: Operations) -> np.ndarray:
@@ -33,3 +33,25 @@ def test_operations_from_number():
     prim_operations = operations_from_number(number=230, primitive=True)  # Ia-3d
     assert prim_operations.num_operations == 48
     assert len(prim_operations) == 48
+
+
+def test_operations_from_layer_number_primitive():
+    # LG 1 (p 1) -- single identity operation in the primitive cell.
+    operations = operations_from_layer_number(number=1)
+    assert operations.num_operations == 1
+
+    # LG 80 (p 6/m m m) -- order 24, primitive == conventional (centering P).
+    operations = operations_from_layer_number(number=80)
+    assert operations.num_operations == 24
+    prim_operations = operations_from_layer_number(number=80, primitive=True)
+    assert prim_operations.num_operations == 24
+
+
+def test_operations_from_layer_number_centered():
+    # LG 10 (c 2 1 1) -- centered (oc) rectangular.
+    # Conventional cell has 2 lattice points x order-2 point group = 4 ops.
+    operations = operations_from_layer_number(number=10)
+    assert operations.num_operations == 4
+    # Primitive cell has the centering folded out -> 2 ops.
+    prim_operations = operations_from_layer_number(number=10, primitive=True)
+    assert prim_operations.num_operations == 2

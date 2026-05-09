@@ -57,6 +57,27 @@ class Centering:
     def as_dict(self) -> dict[str, Any]:
         """Convert an object to a dictionary"""
 
+class LayerCentering:
+    """Centering of a layer-group conventional cell. Only ``P`` (primitive) and
+    ``C`` (rectangular-centered) occur for layer groups."""
+    @property
+    def order(self) -> int:
+        """Order of the centering."""
+    @property
+    def linear(self) -> list[list[int]]:
+        """Transformation matrix from the primitive cell to the conventional cell.
+        The aperiodic axis ``c`` is left untouched."""
+    @property
+    def lattice_points(self) -> list[list[float]]:
+        """Unique lattice points (in fractional coordinates) of the conventional cell.
+        The third (``c``) component is always zero because layer-group centerings
+        are purely in-plane."""
+    # Serialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
+
 class HallSymbolEntry:
     """An entry containing space-group information for a specified hall_number."""
     def __init__(self, hall_number: int): ...
@@ -84,6 +105,40 @@ class HallSymbolEntry:
     @property
     def centering(self) -> Centering:
         """Centering."""
+    # Serialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
+
+class LayerHallSymbolEntry:
+    """An entry containing layer-group information for a specified layer ``hall_number``."""
+    def __init__(self, hall_number: int): ...
+    @property
+    def hall_number(self) -> int:
+        """Sequential number for layer-group Hall settings (1 - 116)."""
+    @property
+    def number(self) -> int:
+        """Layer-group number (1 - 80)."""
+    @property
+    def arithmetic_number(self) -> int:
+        """Number for layer arithmetic crystal classes (1 - 43)."""
+    @property
+    def setting(self) -> str:
+        """Setting code (paper Table 5 axis/origin labels: ``""``, ``"a"``, ``"b"``,
+        ``"b-ac"``, ``"c"``, ``"c1"``, ``"c2"``, ``"c3"``, ``"1"``, ``"2"``)."""
+    @property
+    def hall_symbol(self) -> str:
+        """Layer Hall symbol with lowercase ``p``/``c`` lattice prefix."""
+    @property
+    def hm_short(self) -> str:
+        """Hermann-Mauguin symbol in short notation."""
+    @property
+    def hm_full(self) -> str:
+        """Hermann-Mauguin symbol in full notation."""
+    @property
+    def centering(self) -> LayerCentering:
+        """Layer centering."""
     # Serialization
     def serialize_json(self) -> str:
         """Serialize an object to a JSON string"""
@@ -160,6 +215,48 @@ class SpaceGroupType:
     def as_dict(self) -> dict[str, Any]:
         """Convert an object to a dictionary"""
 
+class LayerGroupType:
+    """Layer-group type information."""
+    def __init__(self, number: int): ...
+    # Layer-group type
+    @property
+    def number(self) -> int:
+        """Layer-group number (1 - 80)."""
+    @property
+    def hm_short(self) -> str:
+        """Hermann-Mauguin symbol in short notation."""
+    @property
+    def hm_full(self) -> str:
+        """Hermann-Mauguin symbol in full notation."""
+    # Layer arithmetic crystal class
+    @property
+    def arithmetic_number(self) -> int:
+        """Number for layer arithmetic crystal classes (1 - 43)."""
+    @property
+    def arithmetic_symbol(self) -> str:
+        """Symbol for the layer arithmetic crystal class."""
+    # Other classifications
+    @property
+    def geometric_crystal_class(self) -> str:
+        """Geometric crystal class. Cubic classes never occur for layer groups.
+
+        See https://github.com/spglib/moyo/blob/main/moyo/src/data/classification.rs
+        for string values.
+        """
+    @property
+    def layer_bravais_class(self) -> str:
+        """Bravais class for the layer group's 2D lattice (one of ``"mp"``,
+        ``"op"``, ``"oc"``, ``"tp"``, ``"hp"``)."""
+    @property
+    def layer_lattice_system(self) -> str:
+        """Layer lattice system (one of ``"Oblique"``, ``"Rectangular"``,
+        ``"Square"``, ``"Hexagonal"``)."""
+    # Serialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
+
 class MagneticSpaceGroupType:
     """Magnetic space-group type information."""
     def __init__(self, uni_number: int): ...
@@ -208,12 +305,42 @@ class ArithmeticCrystalClass:
     def as_dict(self) -> dict[str, Any]:
         """Convert an object to a dictionary"""
 
+class LayerArithmeticCrystalClass:
+    """Layer arithmetic crystal class information."""
+    def __init__(self, arithmetic_number: int): ...
+    @property
+    def arithmetic_number(self) -> int:
+        """Number for layer arithmetic crystal classes (1 - 43)."""
+    @property
+    def symbol(self) -> str:
+        """Symbol for the layer arithmetic crystal class (e.g. ``"p1"``,
+        ``"c2/m11"``)."""
+    @property
+    def geometric_crystal_class(self) -> str:
+        """Geometric crystal class. Cubic classes never occur for layer groups."""
+    @property
+    def layer_bravais_class(self) -> str:
+        """Bravais class for the layer group's 2D lattice (one of ``"mp"``,
+        ``"op"``, ``"oc"``, ``"tp"``, ``"hp"``)."""
+    @property
+    def layer_lattice_system(self) -> str:
+        """Layer lattice system (one of ``"Oblique"``, ``"Rectangular"``,
+        ``"Square"``, ``"Hexagonal"``)."""
+    # Serialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
+
 ###############################################################################
 # Misc
 ###############################################################################
 
 def operations_from_number(
     number: int, *, setting: Setting | None = None, primitive: bool = False
+) -> Operations: ...
+def operations_from_layer_number(
+    number: int, *, setting: LayerSetting | None = None, primitive: bool = False
 ) -> Operations: ...
 def magnetic_operations_from_uni_number(
     uni_number: int, *, primitive: bool = False
