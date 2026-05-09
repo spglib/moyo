@@ -3,7 +3,9 @@ use serde::Serialize;
 
 use super::layer_point_group::LayerPointGroup;
 use super::normalizer::integral_normalizer_2_1;
-use crate::base::{MoyoError, Operations, UnimodularTransformation, project_rotations};
+use crate::base::{
+    Lattice, Lattice2D, MoyoError, Operations, UnimodularTransformation, project_rotations,
+};
 use crate::data::{
     LayerHallNumber, LayerHallSymbol, LayerNumber, LayerSetting, layer_hall_symbol_entry,
 };
@@ -92,13 +94,48 @@ impl LayerGroup {
         }
         Err(MoyoError::LayerGroupTypeIdentificationError)
     }
+
+    /// Identify a layer group from a primitive layer cell whose in-plane
+    /// basis may not be Minkowski-reduced.
+    ///
+    /// Mirrors [`crate::identify::SpaceGroup::from_lattice`] but uses the
+    /// layer-aware in-plane reduction
+    /// [`Lattice2D::lift_inplane_minkowski_reduce`] to keep the aperiodic `c`
+    /// axis in place: a 3D Minkowski reduction may permute axes and break
+    /// the layer-block-form invariant
+    /// (`T[0,2]=T[1,2]=T[2,0]=T[2,1]=0`, `T[2,2]=±1`) that
+    /// [`LayerPointGroup::new`] and [`integral_normalizer_2_1`] rely on.
+    ///
+    /// `lattice` must satisfy the layer-group periodicity contract
+    /// (`a, b` in the xy-plane, `c` along z); the reduction step relies on
+    /// extracting the upper-left 2x2 block of `lattice.basis` and only
+    /// `debug_assert!`s the layout (see [`Lattice2D::from_inplane_of`]). For
+    /// strict validation upstream of this call, build a
+    /// [`crate::base::LayerLattice`].
+    pub fn from_lattice(
+        lattice: &Lattice,
+        prim_layer_operations: &Operations,
+        setting: LayerSetting,
+        epsilon: f64,
+    ) -> Result<Self, MoyoError> {
+        let reduced_trans_mat = Lattice2D::lift_inplane_minkowski_reduce(&lattice.basis)?;
+        let to_reduced = UnimodularTransformation::from_linear(reduced_trans_mat);
+        let reduced_prim_operations = to_reduced.transform_operations(prim_layer_operations);
+
+        let reduced = Self::new(&reduced_prim_operations, setting, epsilon)?;
+        Ok(LayerGroup {
+            number: reduced.number,
+            hall_number: reduced.hall_number,
+            transformation: reduced.transformation * to_reduced,
+        })
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
 
-    use nalgebra::vector;
+    use nalgebra::{Matrix3, matrix, vector};
 
     use super::*;
     use crate::data::{LayerHallSymbol, iter_layer_hall_symbol_entry};
@@ -246,5 +283,69 @@ mod tests {
                 input_hall
             );
         }
+    }
+
+    /// `from_lattice` should reduce a non-Minkowski-reduced in-plane basis
+    /// before identification and still recover the original LG. The skew
+    /// here applied to both the lattice and the operations preserves the
+    /// physical symmetry; only its representation changes.
+    #[test]
+    fn test_from_lattice_handles_inplane_skew() {
+        // LG 8 (p 2 1 1), default Hall number 12.
+        let canonical_hall: LayerHallNumber = 12;
+        let lh = LayerHallSymbol::from_hall_number(canonical_hall).unwrap();
+        let canonical_ops = lh.primitive_traverse();
+
+        // Layer-block-form unimodular shear in the ab-plane; c untouched.
+        let shear: Matrix3<i32> = matrix![
+            1, 4, 0;
+            0, 1, 0;
+            0, 0, 1;
+        ];
+        let to_skewed = UnimodularTransformation::from_linear(shear);
+        let skewed_ops = to_skewed.transform_operations(&canonical_ops);
+
+        // Skewed lattice in column-vector form: a, b in xy-plane; c along z.
+        let skewed_basis = Matrix3::<f64>::identity() * shear.map(|e| e as f64);
+        let skewed_lattice = Lattice {
+            basis: skewed_basis,
+        };
+
+        let identified =
+            LayerGroup::from_lattice(&skewed_lattice, &skewed_ops, LayerSetting::Standard, 1e-8)
+                .unwrap();
+        assert_eq!(identified.number, 8);
+        assert_eq!(identified.hall_number, canonical_hall);
+        assert_eq!(
+            identified
+                .transformation
+                .linear_as_f64()
+                .determinant()
+                .round() as i32,
+            1,
+        );
+    }
+
+    /// `from_lattice` with an already-reduced basis should agree with `new`
+    /// (the Minkowski reduction step is the identity in that case).
+    #[test]
+    fn test_from_lattice_identity_on_reduced_basis() {
+        let canonical_hall: LayerHallNumber = 12;
+        let lh = LayerHallSymbol::from_hall_number(canonical_hall).unwrap();
+        let canonical_ops = lh.primitive_traverse();
+
+        let identity_lattice = Lattice {
+            basis: Matrix3::<f64>::identity(),
+        };
+        let via_lattice = LayerGroup::from_lattice(
+            &identity_lattice,
+            &canonical_ops,
+            LayerSetting::Standard,
+            1e-8,
+        )
+        .unwrap();
+        let via_new = LayerGroup::new(&canonical_ops, LayerSetting::Standard, 1e-8).unwrap();
+        assert_eq!(via_lattice.number, via_new.number);
+        assert_eq!(via_lattice.hall_number, via_new.hall_number);
     }
 }
