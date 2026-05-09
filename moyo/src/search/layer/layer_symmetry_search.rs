@@ -1,5 +1,5 @@
+use super::super::primitive_symmetry_search::PrimitiveSymmetrySearch;
 use super::layer_bravais_group::is_layer_block_form;
-use super::primitive_symmetry_search::PrimitiveSymmetrySearch;
 use crate::base::{
     AngleTolerance, Cell, Lattice, LayerCell, MoyoError, Operation, Operations, Permutation,
     Rotation,

@@ -1,6 +1,6 @@
 use log::debug;
 
-use super::primitive_cell::{
+use super::super::primitive_cell::{
     compose_input_to_reduced_prim_linear, primitive_cell_from_pure_translations,
     search_pure_translations,
 };
