@@ -7,7 +7,7 @@ mod space_group;
 
 pub use layer::{LayerGroup, LayerPointGroup, integral_normalizer_2_1};
 pub use magnetic_space_group::MagneticSpaceGroup;
-pub use normalizer::integral_normalizer;
+pub use normalizer::{Normalizer, integral_normalizer};
 pub use point_group::PointGroup;
 pub use space_group::SpaceGroup;
 

@@ -98,12 +98,12 @@ use crate::base::{
     UnimodularTransformation,
 };
 use crate::data::{
-    ArithmeticCrystalClassEntry, HallNumber, HallSymbolEntry, LayerArithmeticCrystalClassEntry,
-    LayerHallNumber, LayerHallSymbolEntry, LayerNumber, LayerSetting, Number, Setting, UNINumber,
-    arithmetic_crystal_class_entry, hall_symbol_entry, layer_arithmetic_crystal_class_entry,
-    layer_hall_symbol_entry,
+    ArithmeticCrystalClassEntry, HallNumber, HallSymbol, HallSymbolEntry,
+    LayerArithmeticCrystalClassEntry, LayerHallNumber, LayerHallSymbolEntry, LayerNumber,
+    LayerSetting, Number, Setting, UNINumber, arithmetic_crystal_class_entry, hall_symbol_entry,
+    layer_arithmetic_crystal_class_entry, layer_hall_symbol_entry,
 };
-use crate::identify::{LayerGroup, MagneticSpaceGroup, SpaceGroup};
+use crate::identify::{LayerGroup, MagneticSpaceGroup, Normalizer, SpaceGroup};
 use crate::search::{
     LayerPrimitiveCell, LayerPrimitiveSymmetrySearch, iterative_magnetic_symmetry_search,
     iterative_symmetry_search, magnetic_operations_in_magnetic_cell, operations_in_cell,
@@ -342,6 +342,27 @@ impl MoyoDataset {
     /// Returns the arithmetic crystal class entry for the space group.
     pub fn arithmetic_crystal_class(&self) -> ArithmeticCrystalClassEntry {
         arithmetic_crystal_class_entry(self.hall_symbol().arithmetic_number).unwrap()
+    }
+
+    /// Compute the Euclidean normalizer of the identified space group in the
+    /// primitive standardized basis (`prim_std_cell.lattice`).
+    ///
+    /// `preserve_chirality = true` restricts to the chirality-preserving
+    /// subgroup N_E^+(G).
+    pub fn euclidean_normalizer(&self, preserve_chirality: bool) -> Result<Normalizer, MoyoError> {
+        // `self.hall_number` was produced by a successful identification, so
+        // looking it up in the Hall-symbol database always succeeds.
+        let hall_symbol = HallSymbol::from_hall_number(self.hall_number).unwrap();
+        let prim_operations = hall_symbol.primitive_traverse();
+        let prim_generators = hall_symbol.primitive_generators();
+        Normalizer::from_lattice(
+            &self.prim_std_cell.lattice,
+            &prim_operations,
+            &prim_generators,
+            self.symprec,
+            self.angle_tolerance,
+            preserve_chirality,
+        )
     }
 }
 
