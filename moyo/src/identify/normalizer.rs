@@ -140,9 +140,9 @@ impl Normalizer {
         }
 
         // 3. Translation subgroup (discrete part) and continuous directions:
-        //    both come from the same stacked `(W - I)` matrix.
+        //    both come from the SNF of the stacked `(W - I)` matrix.
         let (translations_reduced, continuous_reduced) =
-            normalizer_translations(&reduced_rotations, epsilon);
+            normalizer_translations(&reduced_rotations);
 
         // 4. Map results back to the input primitive basis: under the basis
         //    change matrix T = reduced_trans_mat, a normalizer element
@@ -176,19 +176,16 @@ impl Normalizer {
     }
 }
 
-/// Solve `(W - I) p ≡ 0` for all rotations W in two complementary ways from
-/// the same stacked matrix:
+/// Solve `(W - I) p ≡ 0` for all rotations W via SNF of the stacked
+/// `(W - I)` matrix. Returns:
 ///
-/// * **Discrete generators (mod Z^3)**: SNF of the integer matrix. Each
-///   diagonal entry `d_i > 1` gives a non-trivial fractional translation
-///   `R[:, i] / d_i mod 1`. Excludes the trivial Z^3 generators.
-/// * **Continuous directions (over R)**: SVD of the same matrix as `f64`.
-///   Right singular vectors with near-zero singular values span the polar
-///   (continuous-translation) directions of the normalizer.
-fn normalizer_translations(
-    prim_rotations: &[Rotation],
-    epsilon: f64,
-) -> (Vec<Translation>, Vec<Vector3<f64>>) {
+/// * **Discrete generators (mod Z^3)**: each diagonal entry `d_i > 1` gives
+///   the non-trivial fractional translation `R[:, i] / d_i mod 1`. Excludes
+///   the trivial Z^3 generators.
+/// * **Continuous directions (over R)**: each diagonal entry `d_i = 0`
+///   corresponds to a free coordinate in the SNF, so the column `R[:, i]`
+///   spans a polar (continuous-translation) direction of the normalizer.
+fn normalizer_translations(prim_rotations: &[Rotation]) -> (Vec<Translation>, Vec<Vector3<f64>>) {
     if prim_rotations.is_empty() {
         return (Vec::new(), Vec::new());
     }
@@ -203,33 +200,20 @@ fn normalizer_translations(
         }
     }
 
-    // Discrete generators via SNF on the integer matrix.
     let snf = SNF::new(&a);
     let mut discrete = Vec::new();
+    let mut continuous = Vec::new();
     for i in 0..3 {
-        let d = snf.d[(i, i)];
-        if d > 1 {
-            let mut t = Translation::zeros();
-            for j in 0..3 {
-                t[j] = (snf.r[(j, i)] as f64) / (d as f64);
+        let column = Vector3::new(snf.r[(0, i)], snf.r[(1, i)], snf.r[(2, i)]);
+        match snf.d[(i, i)] {
+            0 => continuous.push(column.map(|e| e as f64)),
+            d if d > 1 => {
+                let t = column.map(|e| (e as f64) / (d as f64));
+                discrete.push(t.map(|e| e.rem_euclid(1.0)));
             }
-            discrete.push(t.map(|e| e.rem_euclid(1.0)));
+            _ => {}
         }
     }
-
-    // Continuous directions via SVD on the same matrix as f64.
-    let svd = a.map(|e| e as f64).svd(false, true);
-    let s = svd.singular_values;
-    let v_t = svd.v_t.expect("SVD was requested with compute_v = true");
-    let s_max = s.iter().cloned().fold(0.0_f64, f64::max);
-    // 1e-10 is a noise floor on top of the user epsilon: SVD on an exact
-    // null direction returns ~1e-15, so even epsilon = 0 still detects it.
-    let tol = epsilon.max(1e-10) * s_max.max(1.0);
-    let continuous: Vec<Vector3<f64>> = (0..3)
-        .filter(|&i| s[i].abs() < tol)
-        .map(|i| Vector3::new(v_t[(i, 0)], v_t[(i, 1)], v_t[(i, 2)]))
-        .collect();
-
     (discrete, continuous)
 }
 
