@@ -325,7 +325,7 @@ pub fn magnetic_operations_in_magnetic_cell<M: MagneticMoment>(
 }
 
 /// Relevant to spglib.c/symmetry.c::get_lattice_symmetry
-pub(super) fn search_bravais_group(
+pub(crate) fn search_bravais_group(
     minkowski_lattice: &Lattice,
     symprec: f64,
     angle_tolerance: AngleTolerance,

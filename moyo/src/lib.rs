@@ -350,19 +350,19 @@ impl MoyoDataset {
     /// `preserve_chirality = true` restricts to the chirality-preserving
     /// subgroup N_E^+(G).
     pub fn euclidean_normalizer(&self, preserve_chirality: bool) -> Result<Normalizer, MoyoError> {
-        let hall_symbol = HallSymbol::from_hall_number(self.hall_number)
-            .ok_or(MoyoError::SpaceGroupTypeIdentificationError)?;
+        // `self.hall_number` was produced by a successful identification, so
+        // looking it up in the Hall-symbol database always succeeds.
+        let hall_symbol = HallSymbol::from_hall_number(self.hall_number).unwrap();
         let prim_operations = hall_symbol.primitive_traverse();
         let prim_generators = hall_symbol.primitive_generators();
-        let lattice = &self.prim_std_cell.lattice;
-        let epsilon = self.symprec / lattice.volume().powf(1.0 / 3.0);
-        Ok(Normalizer::from_lattice(
-            lattice,
+        Normalizer::from_lattice(
+            &self.prim_std_cell.lattice,
             &prim_operations,
             &prim_generators,
-            epsilon,
+            self.symprec,
+            self.angle_tolerance,
             preserve_chirality,
-        ))
+        )
     }
 }
 

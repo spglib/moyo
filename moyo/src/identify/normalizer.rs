@@ -7,10 +7,11 @@ use super::point_group::{iter_trans_mat_basis, iter_unimodular_trans_mat};
 use super::rotation_type::identify_rotation_type;
 use super::space_group::match_origin_shift;
 use crate::base::{
-    Lattice, Operation, Operations, Rotation, Translation, UnimodularLinear,
+    AngleTolerance, Lattice, MoyoError, Operation, Operations, Rotation, Translation,
     UnimodularTransformation, project_rotations,
 };
 use crate::math::SNF;
+use crate::search::search_bravais_group;
 
 ///
 /// Return integral normalizer of the point group representative up to its centralizer.
@@ -88,31 +89,32 @@ impl Normalizer {
     /// `prim_generators` MUST be expressed in that primitive basis. Passing a
     /// conventional (non-primitive) lattice is a usage error.
     ///
-    /// `epsilon` controls the tolerance for matching metric tensors and origin
-    /// shifts. `preserve_chirality = true` restricts the normalizer to the
+    /// `symprec` and `angle_tolerance` control the tolerance for the
+    /// Bravais-group enumeration and origin-shift matching.
+    /// `preserve_chirality = true` restricts the normalizer to the
     /// chirality-preserving subgroup N_E^+(G) (det(P) = +1 only).
     pub fn from_lattice(
         prim_lattice: &Lattice,
         prim_operations: &Operations,
         prim_generators: &Operations,
-        epsilon: f64,
+        symprec: f64,
+        angle_tolerance: AngleTolerance,
         preserve_chirality: bool,
-    ) -> Self {
-        // Reduce to a Minkowski basis so the Bravais-group enumeration stays
-        // bounded for arbitrary input primitive lattices. The reduction matrix
-        // may have `det = -1` (orientation flip), which is now handled by
-        // `UnimodularTransformation::new` accepting `det = +/- 1`.
-        let (reduced_lattice, reduced_trans_mat) = prim_lattice
-            .minkowski_reduce()
-            .expect("Minkowski reduction failed for the primitive lattice");
+    ) -> Result<Self, MoyoError> {
+        // Reduce to a Minkowski basis (precondition for `search_bravais_group`)
+        // and transform operations into that basis. Results are mapped back to
+        // the input basis at the end.
+        let (reduced_lattice, reduced_trans_mat) = prim_lattice.minkowski_reduce()?;
         let to_reduced = UnimodularTransformation::from_linear(reduced_trans_mat);
         let reduced_operations = to_reduced.transform_operations(prim_operations);
         let reduced_generators = to_reduced.transform_operations(prim_generators);
         let reduced_rotations = project_rotations(&reduced_operations);
         let reduced_rotation_set: HashSet<Rotation> = reduced_rotations.iter().copied().collect();
 
-        // 1. Bravais group of the reduced primitive lattice.
-        let bravais = bravais_group(&reduced_lattice, epsilon);
+        // 1. Bravais group of the reduced primitive lattice (reuses the
+        //    enumeration from `crate::search`).
+        let bravais = search_bravais_group(&reduced_lattice, symprec, angle_tolerance)?;
+        let epsilon = symprec / reduced_lattice.volume().powf(1.0 / 3.0);
 
         // 2. Filter linear parts that conjugate the point group to itself, then
         //    solve for the matching translation via match_origin_shift.
@@ -171,99 +173,12 @@ impl Normalizer {
         let continuous_translation_directions =
             continuous_reduced.iter().map(|d| trans_mat_f * d).collect();
 
-        Self {
+        Ok(Self {
             translations,
             coset_representatives,
             continuous_translation_directions,
-        }
-    }
-}
-
-/// Enumerate the Bravais group of `lattice`, i.e., the finite group
-/// `{ P in GL_3(Z) : P^T M P = M }` where M is the metric tensor.
-///
-/// Implementation: solve column-by-column. For each i, find integer vectors v
-/// with v^T M v == M[i,i]; then for each ordered triple (v0, v1, v2) check the
-/// off-diagonal metric entries and |det| = 1.
-///
-/// The enumeration radius is derived from the metric so it is bounded for any
-/// well-conditioned (Minkowski-reduced) basis.
-fn bravais_group(lattice: &Lattice, epsilon: f64) -> Vec<UnimodularLinear> {
-    let m = lattice.metric_tensor();
-
-    // Column-norm bound: |v_j|^2 <= M_target / lambda_min(M). Use the smallest
-    // diagonal entry as a cheap lower bound on the smallest eigenvalue (true
-    // for diagonally dominant Minkowski-reduced metrics; if it isn't, we still
-    // recover via eigen decomposition below).
-    let mut min_eig = m[(0, 0)].min(m[(1, 1)]).min(m[(2, 2)]);
-    let eig = m.symmetric_eigenvalues();
-    for i in 0..3 {
-        if eig[i] > 0.0 && eig[i] < min_eig {
-            min_eig = eig[i];
-        }
-    }
-    if min_eig <= 0.0 {
-        return Vec::new();
-    }
-    let max_diag = m[(0, 0)].max(m[(1, 1)]).max(m[(2, 2)]);
-    let radius = ((max_diag / min_eig).sqrt().ceil() as i32).max(1);
-
-    // Per-column candidates.
-    let candidate_columns: Vec<Vec<Vector3<i32>>> = (0..3)
-        .map(|i| {
-            let target = m[(i, i)];
-            let tol = epsilon * (target.abs() + 1.0);
-            let mut cols = Vec::new();
-            for vx in -radius..=radius {
-                for vy in -radius..=radius {
-                    for vz in -radius..=radius {
-                        if vx == 0 && vy == 0 && vz == 0 {
-                            continue;
-                        }
-                        let v = Vector3::new(vx, vy, vz);
-                        let nrm = quad(&m, &v, &v);
-                        if (nrm - target).abs() < tol {
-                            cols.push(v);
-                        }
-                    }
-                }
-            }
-            cols
         })
-        .collect();
-
-    let mut result = Vec::new();
-    for v0 in &candidate_columns[0] {
-        for v1 in &candidate_columns[1] {
-            let m01 = quad(&m, v0, v1);
-            if (m01 - m[(0, 1)]).abs() > epsilon * (m[(0, 1)].abs() + 1.0) {
-                continue;
-            }
-            for v2 in &candidate_columns[2] {
-                let m02 = quad(&m, v0, v2);
-                if (m02 - m[(0, 2)]).abs() > epsilon * (m[(0, 2)].abs() + 1.0) {
-                    continue;
-                }
-                let m12 = quad(&m, v1, v2);
-                if (m12 - m[(1, 2)]).abs() > epsilon * (m[(1, 2)].abs() + 1.0) {
-                    continue;
-                }
-                let p = Matrix3::from_columns(&[*v0, *v1, *v2]);
-                let det = p.map(|e| e as f64).determinant().round() as i32;
-                if det.abs() == 1 {
-                    result.push(p);
-                }
-            }
-        }
     }
-    result
-}
-
-/// v^T M w
-fn quad(m: &Matrix3<f64>, v: &Vector3<i32>, w: &Vector3<i32>) -> f64 {
-    let vf = v.map(|e| e as f64);
-    let wf = w.map(|e| e as f64);
-    (vf.transpose() * m * wf)[(0, 0)]
 }
 
 /// Discrete translation generators of the normalizer's translation subgroup
@@ -350,25 +265,20 @@ fn continuous_translation_directions(
 mod tests {
     use std::collections::HashSet;
 
-    use nalgebra::{Vector3, matrix};
+    use nalgebra::matrix;
 
     use super::*;
-    use crate::base::{EPS, Lattice, Operation};
+    use crate::base::{AngleTolerance, Lattice, Operation, UnimodularLinear};
     use crate::data::HallSymbol;
+
+    const TEST_SYMPREC: f64 = 1e-4;
+    const TEST_ANGLE: AngleTolerance = AngleTolerance::Default;
 
     fn cubic_lattice(a: f64) -> Lattice {
         Lattice::new(matrix![
             a, 0.0, 0.0;
             0.0, a, 0.0;
             0.0, 0.0, a;
-        ])
-    }
-
-    fn tetragonal_lattice(a: f64, c: f64) -> Lattice {
-        Lattice::new(matrix![
-            a, 0.0, 0.0;
-            0.0, a, 0.0;
-            0.0, 0.0, c;
         ])
     }
 
@@ -389,10 +299,7 @@ mod tests {
         ])
     }
 
-    /// For Hall symbols whose primitive setting is the standard cubic /
-    /// tetragonal / orthorhombic / hexagonal lattice (i.e., centering = P),
-    /// pair the primitive operations with a generic lattice respecting the
-    /// crystal system and verify each coset rep conjugates G to itself.
+    /// Verify each coset rep conjugates G to itself (rotation-set check).
     fn assert_normalizer_conjugates_g(
         prim_lattice: &Lattice,
         prim_operations: &Operations,
@@ -403,9 +310,11 @@ mod tests {
             prim_lattice,
             prim_operations,
             prim_generators,
-            EPS,
+            TEST_SYMPREC,
+            TEST_ANGLE,
             preserve_chirality,
-        );
+        )
+        .unwrap();
         let rotations: HashSet<Rotation> = prim_operations.iter().map(|op| op.rotation).collect();
         for cr in &normalizer.coset_representatives {
             let p = cr.linear;
@@ -433,38 +342,9 @@ mod tests {
     }
 
     #[test]
-    fn test_bravais_group_cubic() {
-        // cP: holohedry m-3m has 48 elements.
-        let bravais = bravais_group(&cubic_lattice(1.0), EPS);
-        assert_eq!(bravais.len(), 48);
-    }
-
-    #[test]
-    fn test_bravais_group_tetragonal() {
-        // tP: holohedry 4/mmm has 16 elements.
-        let bravais = bravais_group(&tetragonal_lattice(1.0, 1.5), EPS);
-        assert_eq!(bravais.len(), 16);
-    }
-
-    #[test]
-    fn test_bravais_group_orthorhombic() {
-        // oP: holohedry mmm has 8 elements.
-        let bravais = bravais_group(&orthorhombic_lattice(1.0, 1.3, 1.7), EPS);
-        assert_eq!(bravais.len(), 8);
-    }
-
-    #[test]
-    fn test_bravais_group_hexagonal() {
-        // hP: holohedry 6/mmm has 24 elements.
-        let bravais = bravais_group(&hexagonal_lattice(1.0, 1.5), EPS);
-        assert_eq!(bravais.len(), 24);
-    }
-
-    #[test]
     fn test_normalizer_p1() {
-        // P1 (Hall #1): all of GL_3(Z) up to conjugation, but on a cubic
-        // metric the Euclidean normalizer is generated by the cubic Bravais
-        // group together with continuous translations along all 3 axes.
+        // P1 (Hall #1): on a cubic metric the linear normalizer is the cubic
+        // Bravais group (m-3m, 48 elements); P1 is pyroelectric in all 3 axes.
         let hall_symbol = HallSymbol::from_hall_number(1).unwrap();
         let prim_operations = hall_symbol.primitive_traverse();
         let prim_generators = hall_symbol.primitive_generators();
@@ -472,20 +352,18 @@ mod tests {
             &cubic_lattice(1.0),
             &prim_operations,
             &prim_generators,
-            EPS,
+            TEST_SYMPREC,
+            TEST_ANGLE,
             false,
-        );
-        // For a cubic metric, the linear normalizer is the cubic Bravais
-        // group (m-3m, 48 elements).
+        )
+        .unwrap();
         assert_eq!(normalizer.coset_representatives.len(), 48);
-        // P1 is pyroelectric in all 3 directions.
         assert_eq!(normalizer.continuous_translation_directions.len(), 3);
     }
 
     #[test]
     fn test_normalizer_p_minus_1() {
-        // P-1 (Hall #2): point group has {1, -1}. Centrosymmetric, not
-        // pyroelectric.
+        // P-1 (Hall #2): centrosymmetric, not pyroelectric.
         let hall_symbol = HallSymbol::from_hall_number(2).unwrap();
         let prim_operations = hall_symbol.primitive_traverse();
         let prim_generators = hall_symbol.primitive_generators();
@@ -496,7 +374,6 @@ mod tests {
             false,
         );
         assert_eq!(normalizer.continuous_translation_directions.len(), 0);
-        // On a cubic metric the linear normalizer is the cubic Bravais group.
         assert_eq!(normalizer.coset_representatives.len(), 48);
     }
 
@@ -563,16 +440,20 @@ mod tests {
             &cubic_lattice(1.0),
             &prim_operations,
             &prim_generators,
-            EPS,
+            TEST_SYMPREC,
+            TEST_ANGLE,
             false,
-        );
+        )
+        .unwrap();
         let preserving = Normalizer::from_lattice(
             &cubic_lattice(1.0),
             &prim_operations,
             &prim_generators,
-            EPS,
+            TEST_SYMPREC,
+            TEST_ANGLE,
             true,
-        );
+        )
+        .unwrap();
         assert!(preserving.coset_representatives.len() < full.coset_representatives.len());
         // All preserving reps must have det = +1.
         for cr in &preserving.coset_representatives {
@@ -594,18 +475,14 @@ mod tests {
             &prim_generators,
             false,
         );
-        // For P-43n on cubic metric the Euclidean normalizer is Pm-3m with
-        // additional half-cell translations; the coset count should divide
-        // |B(L)| = 48.
+        // For P-43n on cubic metric the coset count should divide |B(L)| = 48.
         assert!(48 % normalizer.coset_representatives.len() == 0);
     }
 
     #[test]
     fn test_normalizer_translation_subgroup_contains_z3() {
-        // The translation subgroup always contains Z^3 (trivially), so
-        // shifting any operation by an integer vector keeps it in G.
-        // The `translations` field returns only the non-trivial cosets.
-        // For most space groups it is non-empty (e.g., P-43n has 1/2 1/2 1/2).
+        // For each non-trivial translation t, applying (I, t) to G must
+        // preserve G modulo Z^3.
         let hall_symbol = HallSymbol::from_hall_number(515).unwrap();
         let prim_operations = hall_symbol.primitive_traverse();
         let prim_generators = hall_symbol.primitive_generators();
@@ -613,11 +490,11 @@ mod tests {
             &cubic_lattice(1.0),
             &prim_operations,
             &prim_generators,
-            EPS,
+            TEST_SYMPREC,
+            TEST_ANGLE,
             false,
-        );
-        // For each non-trivial translation t, applying (I, t) to G must
-        // preserve G modulo Z^3.
+        )
+        .unwrap();
         for t in &normalizer.translations {
             let shifted: Operations = prim_operations
                 .iter()
@@ -629,7 +506,6 @@ mod tests {
                     Operation::new(op.rotation, new_t)
                 })
                 .collect();
-            // The set of (rotation, translation_mod_1) should match.
             let original: HashSet<(Rotation, [i64; 3])> = prim_operations
                 .iter()
                 .map(|op| (op.rotation, quantize_translation(&op.translation)))
@@ -650,5 +526,43 @@ mod tests {
             ((t[1] * denom_f).round() as i64).rem_euclid(denom),
             ((t[2] * denom_f).round() as i64).rem_euclid(denom),
         ]
+    }
+
+    #[test]
+    fn test_normalizer_hexagonal_p6mm() {
+        // P6mm (polar along c): lattice has hexagonal Bravais group, and the
+        // continuous translation direction must be along the c axis.
+        use nalgebra::matrix;
+        let identity = Rotation::identity();
+        let six_z = matrix![1, -1, 0; 1, 0, 0; 0, 0, 1];
+        let m_x = matrix![1, -1, 0; 0, -1, 0; 0, 0, 1];
+        // Closure under the generators yields 12 rotations.
+        let mut rotations = vec![identity];
+        let mut frontier = vec![identity];
+        while let Some(r) = frontier.pop() {
+            for g in [six_z, m_x] {
+                let r2 = r * g;
+                if !rotations.contains(&r2) {
+                    rotations.push(r2);
+                    frontier.push(r2);
+                }
+            }
+        }
+        assert_eq!(rotations.len(), 12);
+        let prim_operations: Operations = rotations
+            .iter()
+            .map(|r| Operation::new(*r, Translation::zeros()))
+            .collect();
+        let prim_generators = vec![
+            Operation::new(six_z, Translation::zeros()),
+            Operation::new(m_x, Translation::zeros()),
+        ];
+        let normalizer = assert_normalizer_conjugates_g(
+            &hexagonal_lattice(1.0, 1.5),
+            &prim_operations,
+            &prim_generators,
+            false,
+        );
+        assert_eq!(normalizer.continuous_translation_directions.len(), 1);
     }
 }
