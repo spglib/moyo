@@ -29,8 +29,8 @@ pub struct UnimodularTransformation {
 impl UnimodularTransformation {
     pub fn new(linear: UnimodularLinear, origin_shift: OriginShift) -> Self {
         let det = linear.map(|e| e as f64).determinant().round() as i32;
-        if det != 1 {
-            panic!("Determinant of transformation matrix should be one.");
+        if det.abs() != 1 {
+            panic!("Determinant of unimodular transformation must be +/- 1.");
         }
 
         let linear_inv = linear
@@ -431,10 +431,60 @@ fn transform_operation_as_f64(
 mod tests {
     use nalgebra::{matrix, vector};
 
-    use super::{Lattice, LayerCell, Transformation};
+    use super::{Lattice, LayerCell, Transformation, UnimodularTransformation};
     use crate::base::AngleTolerance;
     use crate::base::cell::Cell;
     use crate::base::operation::{Operation, Translation};
+
+    #[test]
+    fn test_unimodular_transformation_accepts_det_minus_one() {
+        // Mirror in x: det = -1. Must construct without panicking.
+        let mirror = matrix![
+            -1, 0, 0;
+             0, 1, 0;
+             0, 0, 1;
+        ];
+        let t = UnimodularTransformation::from_linear(mirror);
+        assert_eq!(t.linear_as_f64().determinant().round() as i32, -1);
+        // Inverse of an involution is itself.
+        let inv = t.inverse();
+        assert_eq!(inv.linear, mirror);
+        // Conjugating a 4-fold about z by the mirror yields a 4^-1 about z
+        // (the rotation sense is reversed). Either way, the operation must
+        // be a valid integer matrix; just check round-trip via inverse.
+        let op = Operation::new(
+            matrix![
+                0, -1, 0;
+                1,  0, 0;
+                0,  0, 1;
+            ],
+            vector![0.25, 0.0, 0.0],
+        );
+        let conjugated = t.transform_operation(&op);
+        let back = inv.transform_operation(&conjugated);
+        assert_eq!(back.rotation, op.rotation);
+        assert_relative_eq!(back.translation, op.translation);
+    }
+
+    #[test]
+    #[should_panic(expected = "Determinant of unimodular transformation must be +/- 1.")]
+    fn test_unimodular_transformation_rejects_det_two() {
+        let _ = UnimodularTransformation::from_linear(matrix![
+            2, 0, 0;
+            0, 1, 0;
+            0, 0, 1;
+        ]);
+    }
+
+    #[test]
+    #[should_panic(expected = "Determinant of unimodular transformation must be +/- 1.")]
+    fn test_unimodular_transformation_rejects_singular() {
+        let _ = UnimodularTransformation::from_linear(matrix![
+            1, 0, 0;
+            0, 1, 0;
+            0, 0, 0;
+        ]);
+    }
 
     #[test]
     fn test_incompatible_transformation() {
