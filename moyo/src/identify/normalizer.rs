@@ -120,17 +120,11 @@ impl Normalizer {
         //    solve for the matching translation via match_origin_shift.
         let mut coset_representatives_reduced = Vec::new();
         for p in &bravais {
-            if preserve_chirality {
-                let det = p.map(|e| e as f64).determinant().round() as i32;
-                if det != 1 {
-                    continue;
-                }
+            let p_f = p.map(|e| e as f64);
+            if preserve_chirality && p_f.determinant().round() as i32 != 1 {
+                continue;
             }
-            let p_inv = p
-                .map(|e| e as f64)
-                .try_inverse()
-                .unwrap()
-                .map(|e| e.round() as i32);
+            let p_inv = p_f.try_inverse().unwrap().map(|e| e.round() as i32);
             let preserves = reduced_rotations.iter().all(|w| {
                 let conjugated = p_inv * w * p;
                 reduced_rotation_set.contains(&conjugated)
@@ -243,22 +237,13 @@ fn continuous_translation_directions(
         None => return Vec::new(),
     };
     let s_max = s.iter().cloned().fold(0.0_f64, f64::max);
+    // 1e-10 is a noise floor on top of the user epsilon: SVD on an exact
+    // null direction returns ~1e-15, so even epsilon = 0 still detects it.
     let tol = epsilon.max(1e-10) * s_max.max(1.0);
-    let mut directions = Vec::new();
-    for i in 0..s.len().min(3) {
-        if s[i].abs() < tol {
-            directions.push(Vector3::new(v_t[(i, 0)], v_t[(i, 1)], v_t[(i, 2)]));
-        }
-    }
-    // SVD returns 3 singular values for a 3-column matrix; if the rank is < 3
-    // we may have fewer null singular values than directions. Pad from the
-    // remaining V^T rows if singular_values has fewer entries than 3.
-    if s.len() < 3 {
-        for i in s.len()..3 {
-            directions.push(Vector3::new(v_t[(i, 0)], v_t[(i, 1)], v_t[(i, 2)]));
-        }
-    }
-    directions
+    (0..3)
+        .filter(|&i| s[i].abs() < tol)
+        .map(|i| Vector3::new(v_t[(i, 0)], v_t[(i, 1)], v_t[(i, 2)]))
+        .collect()
 }
 
 #[cfg(test)]
@@ -268,7 +253,7 @@ mod tests {
     use nalgebra::matrix;
 
     use super::*;
-    use crate::base::{AngleTolerance, Lattice, Operation, UnimodularLinear};
+    use crate::base::{AngleTolerance, Lattice, Operation, UnimodularLinear, traverse};
     use crate::data::HallSymbol;
 
     const TEST_SYMPREC: f64 = 1e-4;
@@ -533,26 +518,13 @@ mod tests {
         // P6mm (polar along c): lattice has hexagonal Bravais group, and the
         // continuous translation direction must be along the c axis.
         use nalgebra::matrix;
-        let identity = Rotation::identity();
         let six_z = matrix![1, -1, 0; 1, 0, 0; 0, 0, 1];
         let m_x = matrix![1, -1, 0; 0, -1, 0; 0, 0, 1];
-        // Closure under the generators yields 12 rotations.
-        let mut rotations = vec![identity];
-        let mut frontier = vec![identity];
-        while let Some(r) = frontier.pop() {
-            for g in [six_z, m_x] {
-                let r2 = r * g;
-                if !rotations.contains(&r2) {
-                    rotations.push(r2);
-                    frontier.push(r2);
-                }
-            }
-        }
-        assert_eq!(rotations.len(), 12);
-        let prim_operations: Operations = rotations
+        let prim_operations: Operations = traverse(&vec![six_z, m_x])
             .iter()
             .map(|r| Operation::new(*r, Translation::zeros()))
             .collect();
+        assert_eq!(prim_operations.len(), 12);
         let prim_generators = vec![
             Operation::new(six_z, Translation::zeros()),
             Operation::new(m_x, Translation::zeros()),
