@@ -139,9 +139,10 @@ impl Normalizer {
             }
         }
 
-        // 3. Translation subgroup (discrete part) and continuous directions.
-        let translations_reduced = normalizer_translations(&reduced_rotations);
-        let continuous_reduced = continuous_translation_directions(&reduced_rotations, epsilon);
+        // 3. Translation subgroup (discrete part) and continuous directions:
+        //    both come from the same stacked `(W - I)` matrix.
+        let (translations_reduced, continuous_reduced) =
+            normalizer_translations(&reduced_rotations, epsilon);
 
         // 4. Map results back to the input primitive basis: under the basis
         //    change matrix T = reduced_trans_mat, a normalizer element
@@ -175,15 +176,21 @@ impl Normalizer {
     }
 }
 
-/// Discrete translation generators of the normalizer's translation subgroup
-/// modulo Z^3. Solve `(W - I) p ≡ 0 (mod Z^3)` for all rotations W using SNF.
+/// Solve `(W - I) p ≡ 0` for all rotations W in two complementary ways from
+/// the same stacked matrix:
 ///
-/// Returns a list of fractional translation vectors (in [0, 1)) which together
-/// with Z^3 generate the full translation lattice of the normalizer. Excludes
-/// the trivial Z^3 generators.
-fn normalizer_translations(prim_rotations: &[Rotation]) -> Vec<Translation> {
+/// * **Discrete generators (mod Z^3)**: SNF of the integer matrix. Each
+///   diagonal entry `d_i > 1` gives a non-trivial fractional translation
+///   `R[:, i] / d_i mod 1`. Excludes the trivial Z^3 generators.
+/// * **Continuous directions (over R)**: SVD of the same matrix as `f64`.
+///   Right singular vectors with near-zero singular values span the polar
+///   (continuous-translation) directions of the normalizer.
+fn normalizer_translations(
+    prim_rotations: &[Rotation],
+    epsilon: f64,
+) -> (Vec<Translation>, Vec<Vector3<f64>>) {
     if prim_rotations.is_empty() {
-        return Vec::new();
+        return (Vec::new(), Vec::new());
     }
     let n = prim_rotations.len();
     let mut a = OMatrix::<i32, Dyn, U3>::zeros(3 * n);
@@ -195,8 +202,10 @@ fn normalizer_translations(prim_rotations: &[Rotation]) -> Vec<Translation> {
             }
         }
     }
+
+    // Discrete generators via SNF on the integer matrix.
     let snf = SNF::new(&a);
-    let mut translations = Vec::new();
+    let mut discrete = Vec::new();
     for i in 0..3 {
         let d = snf.d[(i, i)];
         if d > 1 {
@@ -204,46 +213,24 @@ fn normalizer_translations(prim_rotations: &[Rotation]) -> Vec<Translation> {
             for j in 0..3 {
                 t[j] = (snf.r[(j, i)] as f64) / (d as f64);
             }
-            translations.push(t.map(|e| e.rem_euclid(1.0)));
+            discrete.push(t.map(|e| e.rem_euclid(1.0)));
         }
     }
-    translations
-}
 
-/// Real-valued null space of the stacked `(W - I)` matrices: directions p in
-/// R^3 such that `(W - I) p = 0` exactly for all rotations W. These are the
-/// polar (continuous-translation) directions of the normalizer.
-fn continuous_translation_directions(
-    prim_rotations: &[Rotation],
-    epsilon: f64,
-) -> Vec<Vector3<f64>> {
-    if prim_rotations.is_empty() {
-        return Vec::new();
-    }
-    let n = prim_rotations.len();
-    let mut a = OMatrix::<f64, Dyn, U3>::zeros(3 * n);
-    for (k, w) in prim_rotations.iter().enumerate() {
-        for i in 0..3 {
-            for j in 0..3 {
-                let v = w[(i, j)] - if i == j { 1 } else { 0 };
-                a[(3 * k + i, j)] = v as f64;
-            }
-        }
-    }
-    let svd = a.svd(false, true);
+    // Continuous directions via SVD on the same matrix as f64.
+    let svd = a.map(|e| e as f64).svd(false, true);
     let s = svd.singular_values;
-    let v_t = match svd.v_t {
-        Some(v) => v,
-        None => return Vec::new(),
-    };
+    let v_t = svd.v_t.expect("SVD was requested with compute_v = true");
     let s_max = s.iter().cloned().fold(0.0_f64, f64::max);
     // 1e-10 is a noise floor on top of the user epsilon: SVD on an exact
     // null direction returns ~1e-15, so even epsilon = 0 still detects it.
     let tol = epsilon.max(1e-10) * s_max.max(1.0);
-    (0..3)
+    let continuous: Vec<Vector3<f64>> = (0..3)
         .filter(|&i| s[i].abs() < tol)
         .map(|i| Vector3::new(v_t[(i, 0)], v_t[(i, 1)], v_t[(i, 2)]))
-        .collect()
+        .collect();
+
+    (discrete, continuous)
 }
 
 #[cfg(test)]
