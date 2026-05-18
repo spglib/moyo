@@ -5,6 +5,7 @@ mod hall_symbol;
 mod hall_symbol_database;
 mod layer;
 mod magnetic;
+mod operations;
 mod point_group;
 mod setting;
 mod wyckoff;
@@ -27,6 +28,9 @@ pub use layer::{
 pub use magnetic::{
     ConstructType, MagneticHallSymbolEntry, MagneticSpaceGroupType, NUM_MAGNETIC_SPACE_GROUP_TYPES,
     UNINumber, get_magnetic_space_group_type, magnetic_hall_symbol_entry,
+};
+pub use operations::{
+    magnetic_operations_from_uni_number, operations_from_layer_number, operations_from_number,
 };
 pub use setting::Setting;
 
