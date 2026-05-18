@@ -369,6 +369,8 @@ moyoc.h
 !apps/web/**/*.html
 !apps/web/**/*.png
 !apps/web/**/*.svg
+!apps/web/src/lib/
+!apps/web/src/lib/**
 
 docs/note/
 bench/mp/*.json
