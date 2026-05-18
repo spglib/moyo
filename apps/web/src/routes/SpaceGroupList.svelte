@@ -44,7 +44,7 @@
         <span class="sr-only">Search</span>
         <input
           type="search"
-          placeholder="Search... e.g. 'Fd-3m', '227', 'cubic m-3m', 'arith 73'"
+          placeholder="Search... e.g. 'Fd-3m', '227', 'cubic m-3m'"
           class="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
           bind:value={query}
         />
@@ -73,7 +73,6 @@
             <th class="px-3 py-2 text-left">HM full</th>
             <th class="px-3 py-2 text-left">Crystal system</th>
             <th class="px-3 py-2 text-left">Geom. class</th>
-            <th class="px-3 py-2 text-left">Arith. #</th>
             <th class="px-3 py-2 text-left">Arith. symbol</th>
             <th class="px-3 py-2 text-left">Bravais</th>
           </tr>
@@ -94,14 +93,13 @@
               <td class="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-400">{r.hm_full}</td>
               <td class="px-3 py-1.5">{r.crystal_system}</td>
               <td class="px-3 py-1.5 font-mono">{r.geometric_crystal_class}</td>
-              <td class="px-3 py-1.5 font-mono">{r.arithmetic_number}</td>
               <td class="px-3 py-1.5 font-mono">{r.arithmetic_symbol}</td>
               <td class="px-3 py-1.5 font-mono">{r.bravais_class}</td>
             </tr>
           {/each}
           {#if filtered.length === 0}
             <tr>
-              <td colspan="8" class="px-3 py-6 text-center text-sm text-slate-500">
+              <td colspan="7" class="px-3 py-6 text-center text-sm text-slate-500">
                 No space groups match the current filter.
               </td>
             </tr>
