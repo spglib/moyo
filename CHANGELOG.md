@@ -16,6 +16,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 
 - Add data-access wrappers for space groups: `operations_from_number`, `hall_symbol_entry`, `space_group_type`, `arithmetic_crystal_class`
 - Add data-access wrappers for layer groups: `operations_from_layer_number`, `layer_hall_symbol_entry`, `layer_group_type`, `layer_arithmetic_crystal_class`
+- Add data-access wrappers for magnetic space groups: `magnetic_operations_from_uni_number`, `magnetic_hall_symbol_entry`, `magnetic_space_group_type`
 
 ## v0.9.0 - 2026-05-09
 

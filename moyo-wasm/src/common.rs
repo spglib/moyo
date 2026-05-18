@@ -28,3 +28,21 @@ impl From<&moyo::base::Operation> for MoyoOperation {
         }
     }
 }
+
+#[derive(Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
+pub struct MoyoMagneticOperation {
+    pub rotation: [f64; 9],
+    pub translation: [f64; 3],
+    pub time_reversal: bool,
+}
+
+impl From<&moyo::base::MagneticOperation> for MoyoMagneticOperation {
+    fn from(mop: &moyo::base::MagneticOperation) -> Self {
+        Self {
+            rotation: to_array9(mop.operation.rotation.as_slice()),
+            translation: to_3_slice(&mop.operation.translation),
+            time_reversal: mop.time_reversal,
+        }
+    }
+}
