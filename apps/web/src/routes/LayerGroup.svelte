@@ -1,7 +1,5 @@
 <script lang="ts">
-  import { replace } from 'svelte-spa-router'
   import type {
-    MoyoLayerSetting,
     MoyoOperation,
     MoyoLayerGroupType,
     MoyoLayerHallSymbolEntry,
@@ -10,75 +8,32 @@
   import { getMoyo, formatErr } from '../lib/wasm'
   import { getLayerHallNumbersByGroup } from '../lib/hall'
   import { LAYER_GROUP_COUNT, clampInt } from '../lib/catalog'
-  import { parseQuery, buildQuery } from '../lib/url'
   import InfoGrid from '../components/InfoGrid.svelte'
   import OperationsTable from '../components/OperationsTable.svelte'
   import GroupPager from '../components/GroupPager.svelte'
   import ErrorCard from '../components/ErrorCard.svelte'
   import LoadingDots from '../components/LoadingDots.svelte'
 
-  type SettingKind = 'Standard' | 'Spglib' | 'HallNumber'
   interface Loaded {
     type: MoyoLayerGroupType
     hall: MoyoLayerHallSymbolEntry | null
     arith: MoyoLayerArithmeticCrystalClass
     operations: MoyoOperation[]
-    hallList: number[]
   }
 
-  let { params, querystring }: { params: { number: string }; querystring?: string } = $props()
+  let { params }: { params: { number: string } } = $props()
 
   const number = $derived(clampInt(Number(params.number), 1, LAYER_GROUP_COUNT))
-  const query = $derived(parseQuery(querystring))
-  const settingKind = $derived<SettingKind>(((): SettingKind => {
-    const s = query.get('setting')
-    if (s === 'Spglib' || s === 'HallNumber') return s
-    return 'Standard'
-  })())
-  const hallParam = $derived(Number(query.get('hall')))
-  const primitive = $derived(query.get('primitive') === '1')
+  const data = $derived(load(number))
 
-  const setting = $derived<MoyoLayerSetting>(
-    settingKind === 'HallNumber' && Number.isFinite(hallParam)
-      ? { type: 'HallNumber', value: hallParam }
-      : settingKind === 'Spglib'
-        ? { type: 'Spglib' }
-        : { type: 'Standard' }
-  )
-
-  const data = $derived(load(number, setting, primitive))
-
-  async function load(n: number, s: MoyoLayerSetting, prim: boolean): Promise<Loaded> {
+  async function load(n: number): Promise<Loaded> {
     const m = await getMoyo()
     const hallList = (await getLayerHallNumbersByGroup()).get(n) ?? []
     const type = m.layer_group_type(n)
-    const effective: MoyoLayerSetting =
-      s.type === 'HallNumber' && !hallList.includes(s.value) ? { type: 'Standard' } : s
-    const operations = m.operations_from_layer_number(n, effective, prim)
-    const activeHall =
-      effective.type === 'HallNumber'
-        ? effective.value
-        : (hallList[0] ?? 0)
-    const hall = activeHall ? m.layer_hall_symbol_entry(activeHall) : null
+    const operations = m.operations_from_layer_number(n, { type: 'Standard' }, false)
+    const hall = hallList.length > 0 ? m.layer_hall_symbol_entry(hallList[0]) : null
     const arith = m.layer_arithmetic_crystal_class(type.arithmetic_number)
-    return { type, hall, arith, operations, hallList }
-  }
-
-  function pushQuery(next: Partial<{ setting: SettingKind; hall: number | null; primitive: boolean }>) {
-    const merged = {
-      setting: next.setting ?? settingKind,
-      hall:
-        next.hall === null
-          ? null
-          : (next.hall ?? (settingKind === 'HallNumber' ? hallParam : null)),
-      primitive: next.primitive ?? primitive,
-    }
-    const q = buildQuery({
-      setting: merged.setting === 'Standard' ? '' : merged.setting,
-      hall: merged.setting === 'HallNumber' ? (merged.hall ?? '') : '',
-      primitive: merged.primitive ? '1' : '',
-    })
-    replace(`/lg/${number}${q ? `?${q}` : ''}`)
+    return { type, hall, arith, operations }
   }
 </script>
 
@@ -123,53 +78,6 @@
           { label: 'Geometric crystal class', value: d.type.geometric_crystal_class, mono: true },
         ]}
       />
-
-      <div
-        class="rounded border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900/40 flex flex-wrap items-center gap-4 text-sm"
-      >
-        <label class="flex items-center gap-2">
-          <span class="text-slate-500">Setting:</span>
-          <select
-            class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1"
-            value={settingKind}
-            onchange={(e) =>
-              pushQuery({
-                setting: (e.currentTarget as HTMLSelectElement).value as SettingKind,
-                hall: null,
-              })}
-          >
-            <option value="Standard">Standard</option>
-            <option value="Spglib">Spglib</option>
-            <option value="HallNumber" disabled={d.hallList.length === 0}>HallNumber</option>
-          </select>
-        </label>
-
-        {#if settingKind === 'HallNumber'}
-          <label class="flex items-center gap-2">
-            <span class="text-slate-500">Hall #:</span>
-            <select
-              class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 font-mono"
-              value={d.hall?.hall_number ?? d.hallList[0]}
-              onchange={(e) =>
-                pushQuery({ hall: Number((e.currentTarget as HTMLSelectElement).value) })}
-            >
-              {#each d.hallList as h}
-                <option value={h}>{h}</option>
-              {/each}
-            </select>
-          </label>
-        {/if}
-
-        <label class="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={primitive}
-            onchange={(e) =>
-              pushQuery({ primitive: (e.currentTarget as HTMLInputElement).checked })}
-          />
-          <span>Primitive cell</span>
-        </label>
-      </div>
 
       <OperationsTable operations={d.operations} />
     </div>

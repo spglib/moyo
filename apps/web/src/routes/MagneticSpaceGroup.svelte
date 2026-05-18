@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { replace } from 'svelte-spa-router'
   import type {
     MoyoMagneticHallSymbolEntry,
     MoyoMagneticOperation,
@@ -8,7 +7,6 @@
   } from '@spglib/moyo-wasm'
   import { getMoyo, formatErr } from '../lib/wasm'
   import { MAGNETIC_SG_COUNT, clampInt } from '../lib/catalog'
-  import { parseQuery, buildQuery } from '../lib/url'
   import { constructTypeLabel } from '../lib/format'
   import InfoGrid from '../components/InfoGrid.svelte'
   import OperationsTable from '../components/OperationsTable.svelte'
@@ -23,27 +21,18 @@
     operations: MoyoMagneticOperation[]
   }
 
-  let { params, querystring }: { params: { uni_number: string }; querystring?: string } = $props()
+  let { params }: { params: { uni_number: string } } = $props()
 
   const uni = $derived(clampInt(Number(params.uni_number), 1, MAGNETIC_SG_COUNT))
-  const query = $derived(parseQuery(querystring))
-  const primitive = $derived(query.get('primitive') === '1')
+  const data = $derived(load(uni))
 
-  const data = $derived(load(uni, primitive))
-
-  async function load(n: number, prim: boolean): Promise<Loaded> {
+  async function load(n: number): Promise<Loaded> {
     const m = await getMoyo()
     const type = m.magnetic_space_group_type(n)
     const hall = m.magnetic_hall_symbol_entry(n)
     const parent = m.space_group_type(type.number)
-    const operations = m.magnetic_operations_from_uni_number(n, prim)
+    const operations = m.magnetic_operations_from_uni_number(n, false)
     return { type, hall, parent, operations }
-  }
-
-  function pushQuery(next: { primitive?: boolean }) {
-    const merged = { primitive: next.primitive ?? primitive }
-    const q = buildQuery({ primitive: merged.primitive ? '1' : '' })
-    replace(`/msg/${uni}${q ? `?${q}` : ''}`)
   }
 </script>
 
@@ -84,20 +73,6 @@
         { label: 'Parent crystal system', value: d.parent.crystal_system },
       ]}
     />
-
-    <div
-      class="rounded border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900/40 flex flex-wrap items-center gap-4 text-sm"
-    >
-      <label class="flex items-center gap-2">
-        <input
-          type="checkbox"
-          checked={primitive}
-          onchange={(e) =>
-            pushQuery({ primitive: (e.currentTarget as HTMLInputElement).checked })}
-        />
-        <span>Primitive cell</span>
-      </label>
-    </div>
 
     <OperationsTable operations={d.operations} hasTimeReversal />
   </section>
