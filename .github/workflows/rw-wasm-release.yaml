@@ -30,7 +30,7 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
-        uses: taiki-e/install-action@5102cac9f5c72da47e8fef5dbcc4161c430ce36c # wasm-pack
+        uses: taiki-e/install-action@a3387ad234e9bb742db43e362e3e8a7eb042232a # wasm-pack
 
       - name: Install test dependencies
         working-directory: moyo-wasm
