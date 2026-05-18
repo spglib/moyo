@@ -73,3 +73,22 @@ c-test:
 [working-directory: 'moyoc']
 c-clean:
     make clean
+
+################################################################################
+# JS (WASM)
+################################################################################
+
+[group('js')]
+[working-directory: 'moyo-wasm']
+js-install:
+    npm install
+
+[group('js')]
+[working-directory: 'moyo-wasm']
+js-build:
+    npm run build
+
+[group('js')]
+[working-directory: 'moyo-wasm']
+js-test:
+    npm test
