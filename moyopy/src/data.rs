@@ -39,7 +39,7 @@ use moyo::data::{
 /// number : int
 ///     ITA number of the space group (1 - 230).
 /// setting : Setting, optional
-///     Setting of the space group. If ``None``, the spglib default is used.
+///     Setting of the space group. If ``None``, the default setting is used.
 /// primitive : bool, optional
 ///     If ``True``, return operations of the primitive cell; otherwise return operations
 ///     of the conventional cell.
@@ -50,7 +50,7 @@ pub fn operations_from_number(
     setting: Option<PySetting>,
     primitive: bool,
 ) -> Result<PyOperations, PyMoyoError> {
-    let setting = setting.map(|s| s.0).unwrap_or(Setting::Spglib);
+    let setting = setting.map(|s| s.0).unwrap_or_default();
     let operations = core_operations_from_number(number, setting, primitive)?;
     Ok(PyOperations::from(operations))
 }
@@ -62,7 +62,7 @@ pub fn operations_from_number(
 /// number : int
 ///     Layer-group number (1 - 80).
 /// setting : LayerSetting, optional
-///     Setting of the layer group. If ``None``, the spglib default is used.
+///     Setting of the layer group. If ``None``, the default setting is used.
 /// primitive : bool, optional
 ///     If ``True``, return operations of the primitive cell; otherwise return operations
 ///     of the conventional cell.
@@ -73,9 +73,7 @@ pub fn operations_from_layer_number(
     setting: Option<PyLayerSetting>,
     primitive: bool,
 ) -> Result<PyOperations, PyMoyoError> {
-    let setting = setting
-        .map(LayerSetting::from)
-        .unwrap_or(LayerSetting::Spglib);
+    let setting = setting.map(LayerSetting::from).unwrap_or_default();
     let operations = core_operations_from_layer_number(number, setting, primitive)?;
     Ok(PyOperations::from(operations))
 }
