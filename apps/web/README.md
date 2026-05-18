@@ -1,4 +1,4 @@
-# moyo Space Group Browser
+# moyo Crystallographic Group Viewer
 
 Static Svelte + Vite app that browses crystallographic space groups, layer groups,
 and magnetic space groups via the `moyo-wasm` WebAssembly bindings.

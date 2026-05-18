@@ -3,7 +3,7 @@
 
   const cards = [
     {
-      href: '/sg/1',
+      href: '/sg',
       title: 'Space groups',
       range: '1 - 230',
       blurb: 'The 230 crystallographic space-group types in 3-D.',
