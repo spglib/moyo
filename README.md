@@ -37,7 +37,7 @@ Legend: ✅ supported · 🟡 partial · ❌ not exposed · ➖ not applicable.
 | -------------------- | -------------------- | ------------- | ----------------- | ----------- | --------------------- |
 | Shared               | Core types           | ✅            | ✅                | 🟡          | 🟡                    |
 | Space group          | Dataset from cell    | ✅            | ✅                | ✅          | ✅                    |
-| Space group          | Data access          | ✅            | ✅                | ❌          | ❌                    |
+| Space group          | Data access          | ✅            | ✅                | ❌          | 🟡                    |
 | Space group          | Group identification | ✅            | ✅                | ❌          | ❌                    |
 | Layer group          | Dataset from cell    | ✅            | ✅                | ❌          | ❌                    |
 | Layer group          | Data access          | ✅            | ✅                | ❌          | ❌                    |
