@@ -40,7 +40,7 @@ Legend: ✅ supported · 🟡 partial · ❌ not exposed · ➖ not applicable.
 | Space group          | Data access          | ✅            | ✅                | ❌          | 🟡                    |
 | Space group          | Group identification | ✅            | ✅                | ❌          | ❌                    |
 | Layer group          | Dataset from cell    | ✅            | ✅                | ❌          | ❌                    |
-| Layer group          | Data access          | ✅            | ✅                | ❌          | ❌                    |
+| Layer group          | Data access          | ✅            | ✅                | ❌          | 🟡                    |
 | Layer group          | Group identification | ✅            | ✅                | ❌          | ❌                    |
 | Magnetic space group | Dataset from cell    | ✅            | ✅                | ❌          | ❌                    |
 | Magnetic space group | Data access          | ✅            | ✅                | ❌          | ❌                    |
