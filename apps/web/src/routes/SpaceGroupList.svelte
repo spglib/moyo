@@ -10,7 +10,6 @@
   let system = $state<CrystalSystem | 'All'>('All')
   let geomClass = $state<string>('All')
   let arithSymbol = $state<string>('All')
-  let bravais = $state<string>('All')
 
   const data = getAllSpaceGroups()
 
@@ -43,13 +42,11 @@
 {:then rows}
   {@const geomOptions = uniqueSorted(rows.map((r) => r.geometric_crystal_class))}
   {@const arithOptions = uniqueSorted(rows.map((r) => r.arithmetic_symbol))}
-  {@const bravaisOptions = uniqueSorted(rows.map((r) => r.bravais_class))}
   {@const filtered = filterRows(rows, query).filter(
     (r) =>
       (system === 'All' || r.crystal_system === system) &&
       (geomClass === 'All' || r.geometric_crystal_class === geomClass) &&
-      (arithSymbol === 'All' || r.arithmetic_symbol === arithSymbol) &&
-      (bravais === 'All' || r.bravais_class === bravais)
+      (arithSymbol === 'All' || r.arithmetic_symbol === arithSymbol)
   )}
 
   <section class="space-y-4">
@@ -68,31 +65,7 @@
 
     <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
       <label class="flex items-center gap-2">
-        <span class="text-slate-500">System:</span>
-        <select
-          class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1"
-          bind:value={system}
-        >
-          <option value="All">All</option>
-          {#each CRYSTAL_SYSTEMS as s}
-            <option value={s}>{s}</option>
-          {/each}
-        </select>
-      </label>
-      <label class="flex items-center gap-2">
-        <span class="text-slate-500">Geom. class:</span>
-        <select
-          class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 font-mono"
-          bind:value={geomClass}
-        >
-          <option value="All">All</option>
-          {#each geomOptions as g}
-            <option value={g}>{g}</option>
-          {/each}
-        </select>
-      </label>
-      <label class="flex items-center gap-2">
-        <span class="text-slate-500">Arith. symbol:</span>
+        <span class="text-slate-500">Arithmetic crystal class:</span>
         <select
           class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 font-mono"
           bind:value={arithSymbol}
@@ -104,18 +77,30 @@
         </select>
       </label>
       <label class="flex items-center gap-2">
-        <span class="text-slate-500">Bravais:</span>
+        <span class="text-slate-500">Geometric crystal class:</span>
         <select
           class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 font-mono"
-          bind:value={bravais}
+          bind:value={geomClass}
         >
           <option value="All">All</option>
-          {#each bravaisOptions as b}
-            <option value={b}>{b}</option>
+          {#each geomOptions as g}
+            <option value={g}>{g}</option>
           {/each}
         </select>
       </label>
-      {#if system !== 'All' || geomClass !== 'All' || arithSymbol !== 'All' || bravais !== 'All'}
+      <label class="flex items-center gap-2">
+        <span class="text-slate-500">Crystal system:</span>
+        <select
+          class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1"
+          bind:value={system}
+        >
+          <option value="All">All</option>
+          {#each CRYSTAL_SYSTEMS as s}
+            <option value={s}>{s}</option>
+          {/each}
+        </select>
+      </label>
+      {#if system !== 'All' || geomClass !== 'All' || arithSymbol !== 'All'}
         <button
           type="button"
           class="text-xs text-slate-500 hover:underline"
@@ -123,7 +108,6 @@
             system = 'All'
             geomClass = 'All'
             arithSymbol = 'All'
-            bravais = 'All'
           }}
         >
           Reset filters
@@ -138,10 +122,9 @@
             <th class="px-3 py-2 text-left">#</th>
             <th class="px-3 py-2 text-left">HM short</th>
             <th class="px-3 py-2 text-left">HM full</th>
+            <th class="px-3 py-2 text-left">Arithmetic crystal class</th>
+            <th class="px-3 py-2 text-left">Geometric crystal class</th>
             <th class="px-3 py-2 text-left">Crystal system</th>
-            <th class="px-3 py-2 text-left">Geom. class</th>
-            <th class="px-3 py-2 text-left">Arith. symbol</th>
-            <th class="px-3 py-2 text-left">Bravais</th>
           </tr>
         </thead>
         <tbody>
@@ -158,15 +141,14 @@
                 <a use:link href={`/sg/${r.number}`} class="hover:underline">{r.hm_short}</a>
               </td>
               <td class="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-400">{r.hm_full}</td>
-              <td class="px-3 py-1.5">{r.crystal_system}</td>
-              <td class="px-3 py-1.5 font-mono">{r.geometric_crystal_class}</td>
               <td class="px-3 py-1.5 font-mono">{r.arithmetic_symbol}</td>
-              <td class="px-3 py-1.5 font-mono">{r.bravais_class}</td>
+              <td class="px-3 py-1.5 font-mono">{r.geometric_crystal_class}</td>
+              <td class="px-3 py-1.5">{r.crystal_system}</td>
             </tr>
           {/each}
           {#if filtered.length === 0}
             <tr>
-              <td colspan="7" class="px-3 py-6 text-center text-sm text-slate-500">
+              <td colspan="6" class="px-3 py-6 text-center text-sm text-slate-500">
                 No space groups match the current filter.
               </td>
             </tr>
