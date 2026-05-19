@@ -18,26 +18,6 @@ export const CRYSTAL_SYSTEMS = [
 
 export type CrystalSystem = (typeof CRYSTAL_SYSTEMS)[number]
 
-/** [start, end] inclusive ITA-number ranges per crystal system. */
-export const SG_RANGES_BY_SYSTEM: Record<CrystalSystem, ReadonlyArray<readonly [number, number]>> = {
-  Triclinic: [[1, 2]],
-  Monoclinic: [[3, 15]],
-  Orthorhombic: [[16, 74]],
-  Tetragonal: [[75, 142]],
-  Trigonal: [[143, 167]],
-  Hexagonal: [[168, 194]],
-  Cubic: [[195, 230]],
-}
-
-export function systemOfSpaceGroup(n: number): CrystalSystem | null {
-  for (const sys of CRYSTAL_SYSTEMS) {
-    for (const [lo, hi] of SG_RANGES_BY_SYSTEM[sys]) {
-      if (n >= lo && n <= hi) return sys
-    }
-  }
-  return null
-}
-
 export function clampInt(value: number, lo: number, hi: number): number {
   const n = Math.trunc(value)
   if (!Number.isFinite(n)) return lo
