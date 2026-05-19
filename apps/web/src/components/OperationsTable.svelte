@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { MoyoOperation, MoyoMagneticOperation } from '@spglib/moyo-wasm'
-  import { formatRotationRow, formatFraction } from '../lib/format'
+  import { formatOperationXyz } from '../lib/format'
 
   type Op = MoyoOperation | MoyoMagneticOperation
   let { operations, hasTimeReversal = false }: { operations: Op[]; hasTimeReversal?: boolean } =
@@ -12,8 +12,7 @@
     <thead class="bg-slate-50 dark:bg-slate-900 text-xs uppercase tracking-wide">
       <tr>
         <th class="px-2 py-1 text-left">#</th>
-        <th class="px-2 py-1 text-left">Rotation</th>
-        <th class="px-2 py-1 text-left">Translation</th>
+        <th class="px-2 py-1 text-left">Coordinate triplet</th>
         {#if hasTimeReversal}
           <th class="px-2 py-1 text-left">1'</th>
         {/if}
@@ -23,16 +22,7 @@
       {#each operations as op, i}
         <tr class="border-t border-slate-100 dark:border-slate-800">
           <td class="px-2 py-1 align-top text-slate-500">{i + 1}</td>
-          <td class="px-2 py-1 align-top whitespace-pre">
-            {formatRotationRow(op.rotation, 0)}
-            {'\n'}{formatRotationRow(op.rotation, 1)}
-            {'\n'}{formatRotationRow(op.rotation, 2)}
-          </td>
-          <td class="px-2 py-1 align-top">
-            ({formatFraction(op.translation[0])}, {formatFraction(op.translation[1])}, {formatFraction(
-              op.translation[2]
-            )})
-          </td>
+          <td class="px-2 py-1 align-top">{formatOperationXyz(op.rotation, op.translation)}</td>
           {#if hasTimeReversal}
             <td class="px-2 py-1 align-top"
               >{(op as MoyoMagneticOperation).time_reversal ? '-1' : '+1'}</td
@@ -44,7 +34,7 @@
   </table>
 </div>
 <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-  {operations.length} operation{operations.length === 1 ? '' : 's'}. Note: the
-  ordering of operations is not guaranteed to match the conventions used by ITA or
-  the Bilbao Crystallographic Server.
+  {operations.length} operation{operations.length === 1 ? '' : 's'}. Note: the ordering of
+  operations is not guaranteed to match the conventions used by ITA or the Bilbao Crystallographic
+  Server.
 </p>
