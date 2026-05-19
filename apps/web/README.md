@@ -26,6 +26,24 @@ just web-preview   # serves dist locally
 For GitHub Pages, set `VITE_BASE=/<repo>/` before `npm run build`. The CI workflow
 at `.github/workflows/deploy-web.yml` does this automatically.
 
+### One-time GitHub setup for the deploy workflow
+
+The first time `actions/deploy-pages` runs, GitHub auto-creates a `github-pages`
+environment whose "Deployment branches and tags" rule may not match `main`. If
+the deploy job reports
+
+> Branch "main" is not allowed to deploy to github-pages due to environment
+> protection rules.
+
+then, in the repo settings:
+
+1. **Settings -> Pages**: set **Source** to **GitHub Actions**.
+1. **Settings -> Environments -> github-pages -> Deployment branches and tags**:
+   either pick **No restriction**, or **Selected branches and tags** and add
+   `main`.
+
+Then re-run the failed workflow or push another commit to `main`.
+
 ## Tests
 
 ```bash
