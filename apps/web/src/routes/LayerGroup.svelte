@@ -57,8 +57,8 @@
       rows={[
         { label: 'Layer number', value: d.type.number, mono: true },
         { label: 'Hall number', value: d.hall?.hall_number ?? '-', mono: true },
-        { label: 'HM short', value: d.type.hm_short, mono: true },
-        { label: 'HM full', value: d.type.hm_full, mono: true },
+        { label: 'Short Hermann-Mauguin symbol', value: d.type.hm_short, mono: true },
+        { label: 'Full Hermann-Mauguin symbol', value: d.type.hm_full, mono: true },
         { label: 'Hall symbol', value: d.hall?.hall_symbol ?? '-', mono: true },
         { label: 'Setting (Hall row)', value: d.hall?.setting ?? '-', mono: true },
         { label: 'Lattice system', value: d.type.lattice_system },

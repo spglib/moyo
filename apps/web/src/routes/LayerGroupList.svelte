@@ -68,8 +68,8 @@
         <thead class="bg-slate-50 dark:bg-slate-900 text-xs uppercase tracking-wide">
           <tr>
             <th class="px-3 py-2 text-left">#</th>
-            <th class="px-3 py-2 text-left">HM short</th>
-            <th class="px-3 py-2 text-left">HM full</th>
+            <th class="px-3 py-2 text-left">Short Hermann-Mauguin symbol</th>
+            <th class="px-3 py-2 text-left">Full Hermann-Mauguin symbol</th>
             <th class="px-3 py-2 text-left">Lattice system</th>
             <th class="px-3 py-2 text-left">Geom. class</th>
             <th class="px-3 py-2 text-left">Arith. symbol</th>
