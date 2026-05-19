@@ -8,14 +8,14 @@
   const PAGE_SIZE = 200
 
   let query = $state('')
-  let constructType = $state<'All' | '1' | '2' | '3' | '4'>('All')
+  let reference = $state<string>('All')
   let limit = $state(PAGE_SIZE)
 
   const data = getAllMagneticSpaceGroups()
 
   $effect(() => {
     void query
-    void constructType
+    void reference
     limit = PAGE_SIZE
   })
 
@@ -40,8 +40,11 @@
 {#await data}
   <LoadingDots />
 {:then rows}
+  {@const refOptions = Array.from(
+    new Map(rows.map((r) => [r.number, r.parent_hm_short])).entries()
+  ).sort((a, b) => a[0] - b[0])}
   {@const filtered = filterRows(rows, query).filter(
-    (r) => constructType === 'All' || String(r.construct_type) === constructType
+    (r) => reference === 'All' || String(r.number) === reference
   )}
   {@const visible = filtered.slice(0, limit)}
 
@@ -65,23 +68,19 @@
 
     <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
       <label class="flex items-center gap-2">
-        <span class="text-stone-500">Construct type:</span>
-        <select
-          class="filter-select"
-          bind:value={constructType}
-        >
+        <span class="text-stone-500">Reference space group in BNS setting:</span>
+        <select class="filter-select font-mono" bind:value={reference}>
           <option value="All">All</option>
-          <option value="1">I (colorless)</option>
-          <option value="2">II (grey)</option>
-          <option value="3">III (BW, equi-translation)</option>
-          <option value="4">IV (BW, equi-class)</option>
+          {#each refOptions as [n, hm]}
+            <option value={String(n)}>#{n} {hm}</option>
+          {/each}
         </select>
       </label>
-      {#if constructType !== 'All'}
+      {#if reference !== 'All'}
         <button
           type="button"
           class="link-button"
-          onclick={() => (constructType = 'All')}
+          onclick={() => (reference = 'All')}
         >
           Reset filters
         </button>
