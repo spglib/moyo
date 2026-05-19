@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { push } from 'svelte-spa-router'
   import type {
     MoyoOperation,
     MoyoSpaceGroupType,
@@ -8,7 +7,7 @@
   } from '@spglib/moyo-wasm'
   import { getMoyo, formatErr } from '../lib/wasm'
   import { getHallNumbersBySpaceGroup } from '../lib/hall'
-  import { SPACE_GROUP_COUNT, clampInt, systemOfSpaceGroup } from '../lib/catalog'
+  import { SPACE_GROUP_COUNT, clampInt } from '../lib/catalog'
   import InfoGrid from '../components/InfoGrid.svelte'
   import OperationsTable from '../components/OperationsTable.svelte'
   import GroupPager from '../components/GroupPager.svelte'
@@ -68,54 +67,33 @@
     <GroupPager value={number} min={1} max={SPACE_GROUP_COUNT} basePath="/sg" label="#" />
   </header>
 
-  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 space-y-6">
-      <InfoGrid
-        rows={[
-          { label: 'ITA number', value: d.type.number, mono: true },
-          { label: 'Hall number', value: d.hall?.hall_number ?? '-', mono: true },
-          { label: 'HM short', value: d.type.hm_short, mono: true },
-          { label: 'HM full', value: d.type.hm_full, mono: true },
-          { label: 'Hall symbol', value: d.hall?.hall_symbol ?? '-', mono: true },
-          { label: 'Setting (Hall row)', value: d.hall?.setting ?? '-', mono: true },
-          { label: 'Crystal family', value: d.type.crystal_family },
-          { label: 'Crystal system', value: d.type.crystal_system },
-          { label: 'Lattice system', value: d.type.lattice_system },
-          { label: 'Bravais class', value: d.type.bravais_class, mono: true },
-          {
-            label: 'Centering',
-            value: d.hall ? (centeringLabels[d.hall.centering] ?? d.hall.centering) : '-',
-          },
-          {
-            label: 'Arithmetic crystal class',
-            value: `${d.arith.arithmetic_number} (${d.arith.symbol})`,
-            mono: true,
-          },
-          { label: 'Geometric crystal class', value: d.type.geometric_crystal_class, mono: true },
-        ]}
-      />
+  <section class="space-y-6">
+    <InfoGrid
+      rows={[
+        { label: 'ITA number', value: d.type.number, mono: true },
+        { label: 'Hall number', value: d.hall?.hall_number ?? '-', mono: true },
+        { label: 'HM short', value: d.type.hm_short, mono: true },
+        { label: 'HM full', value: d.type.hm_full, mono: true },
+        { label: 'Hall symbol', value: d.hall?.hall_symbol ?? '-', mono: true },
+        { label: 'Setting (Hall row)', value: d.hall?.setting ?? '-', mono: true },
+        { label: 'Crystal family', value: d.type.crystal_family },
+        { label: 'Crystal system', value: d.type.crystal_system },
+        { label: 'Lattice system', value: d.type.lattice_system },
+        { label: 'Bravais class', value: d.type.bravais_class, mono: true },
+        {
+          label: 'Centering',
+          value: d.hall ? (centeringLabels[d.hall.centering] ?? d.hall.centering) : '-',
+        },
+        {
+          label: 'Arithmetic crystal class',
+          value: `${d.arith.arithmetic_number} (${d.arith.symbol})`,
+          mono: true,
+        },
+        { label: 'Geometric crystal class', value: d.type.geometric_crystal_class, mono: true },
+      ]}
+    />
 
-      {#if systemOfSpaceGroup(number)}
-        <div class="text-xs text-slate-500">{systemOfSpaceGroup(number)} system</div>
-      {/if}
-
-      <OperationsTable operations={d.operations} />
-    </div>
-
-    <aside class="space-y-3 lg:sticky lg:top-20 self-start">
-      <h3 class="text-xs uppercase tracking-wide text-slate-500">Crystal-system boundaries</h3>
-      <div class="flex flex-wrap gap-1">
-        {#each [1, 2, 3, 15, 16, 74, 75, 142, 143, 167, 168, 194, 195, 230] as n}
-          <button
-            type="button"
-            class="rounded border border-slate-300 dark:border-slate-700 px-2 py-1 font-mono text-xs hover:bg-slate-100 dark:hover:bg-slate-800"
-            onclick={() => push(`/sg/${n}`)}
-          >
-            {n}
-          </button>
-        {/each}
-      </div>
-    </aside>
+    <OperationsTable operations={d.operations} />
   </section>
 {:catch err}
   <ErrorCard message={`Failed to load space group ${number}: ${formatErr(err)}`} />

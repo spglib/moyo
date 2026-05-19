@@ -48,5 +48,7 @@
   </table>
 </div>
 <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
-  {operations.length} operation{operations.length === 1 ? '' : 's'}.
+  {operations.length} operation{operations.length === 1 ? '' : 's'}. Note: the
+  ordering of operations is not guaranteed to match the conventions used by ITA or
+  the Bilbao Crystallographic Server.
 </p>
