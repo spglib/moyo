@@ -13,21 +13,19 @@
       <tr>
         <th class="px-2 py-1 text-left">#</th>
         <th class="px-2 py-1 text-left">Coordinate triplet</th>
-        {#if hasTimeReversal}
-          <th class="px-2 py-1 text-left">1'</th>
-        {/if}
       </tr>
     </thead>
     <tbody>
       {#each operations as op, i}
         <tr class="border-t border-slate-100 dark:border-slate-800">
           <td class="px-2 py-1 align-top text-slate-500">{i + 1}</td>
-          <td class="px-2 py-1 align-top">{formatOperationXyz(op.rotation, op.translation)}</td>
-          {#if hasTimeReversal}
-            <td class="px-2 py-1 align-top"
-              >{(op as MoyoMagneticOperation).time_reversal ? '-1' : '+1'}</td
-            >
-          {/if}
+          <td class="px-2 py-1 align-top">
+            {formatOperationXyz(
+              op.rotation,
+              op.translation,
+              hasTimeReversal ? (op as MoyoMagneticOperation).time_reversal : undefined
+            )}
+          </td>
         </tr>
       {/each}
     </tbody>

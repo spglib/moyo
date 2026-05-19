@@ -10,10 +10,15 @@ export function formatRotationRow(m: Mat9, row: 0 | 1 | 2): string {
 }
 
 /** Render a symmetry operation as a comma-separated coordinate triplet
- *  (Jones-faithful notation), e.g. `-x+1/2, y, -z+1/2`. */
-export function formatOperationXyz(rotation: Mat9, translation: Vec3): string {
+ *  (Jones-faithful notation), e.g. `-x+1/2, y, -z+1/2`. When `timeReversal`
+ *  is given, a trailing `, +1` or `, -1` is appended for magnetic ops. */
+export function formatOperationXyz(
+  rotation: Mat9,
+  translation: Vec3,
+  timeReversal?: boolean
+): string {
   const vars = ['x', 'y', 'z']
-  return [0, 1, 2]
+  const triplet = [0, 1, 2]
     .map((i) => {
       const parts: string[] = []
       for (let j = 0; j < 3; j++) {
@@ -32,6 +37,8 @@ export function formatOperationXyz(rotation: Mat9, translation: Vec3): string {
       return parts.length > 0 ? parts.join('') : '0'
     })
     .join(', ')
+  if (timeReversal === undefined) return triplet
+  return `${triplet}, ${timeReversal ? '-1' : '+1'}`
 }
 
 export function formatFraction(x: number): string {

@@ -63,6 +63,11 @@ describe('formatOperationXyz', () => {
   it('renders a negative translation', () => {
     expect(formatOperationXyz(ident, [-0.25, 0, 0])).toBe('x-1/4, y, z')
   })
+
+  it('appends the time-reversal sign for magnetic operations', () => {
+    expect(formatOperationXyz(ident, [0, 0, 0], false)).toBe('x, y, z, +1')
+    expect(formatOperationXyz(ident, [0, 0, 0], true)).toBe('x, y, z, -1')
+  })
 })
 
 describe('constructTypeLabel', () => {
