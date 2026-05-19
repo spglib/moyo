@@ -73,9 +73,9 @@ describe('formatOperationXyz', () => {
 
 describe('constructTypeLabel', () => {
   it('labels magnetic construct types', () => {
-    expect(constructTypeLabel(1)).toMatch(/Fedorov/)
+    expect(constructTypeLabel(1)).toMatch(/colorless/)
     expect(constructTypeLabel(2)).toMatch(/grey/)
-    expect(constructTypeLabel(3)).toMatch(/BW/)
-    expect(constructTypeLabel(4)).toMatch(/BW/)
+    expect(constructTypeLabel(3)).toMatch(/BW, equi-translation/)
+    expect(constructTypeLabel(4)).toMatch(/BW, equi-class/)
   })
 })

@@ -63,13 +63,13 @@ function fmtInt(x: number): string {
 export function constructTypeLabel(t: number): string {
   switch (t) {
     case 1:
-      return 'Type I (Fedorov)'
+      return 'Type I (colorless)'
     case 2:
       return 'Type II (grey)'
     case 3:
-      return 'Type III (BW, equi-class)'
+      return 'Type III (BW, equi-translation)'
     case 4:
-      return 'Type IV (BW, equi-translation)'
+      return 'Type IV (BW, equi-class)'
     default:
       return `Type ${t}`
   }

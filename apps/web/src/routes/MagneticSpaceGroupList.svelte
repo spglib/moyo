@@ -73,10 +73,10 @@
           bind:value={constructType}
         >
           <option value="All">All</option>
-          <option value="1">I (Fedorov)</option>
+          <option value="1">I (colorless)</option>
           <option value="2">II (grey)</option>
-          <option value="3">III (BW, equi-class)</option>
-          <option value="4">IV (BW, equi-translation)</option>
+          <option value="3">III (BW, equi-translation)</option>
+          <option value="4">IV (BW, equi-class)</option>
         </select>
       </label>
       {#if constructType !== 'All'}
