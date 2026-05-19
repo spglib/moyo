@@ -6,6 +6,8 @@
   import LoadingDots from '../components/LoadingDots.svelte'
 
   let query = $state('')
+  let arithSymbol = $state<string>('All')
+  let geomClass = $state<string>('All')
   let lattice = $state<string>('All')
 
   const data = getAllLayerGroups()
@@ -16,6 +18,10 @@
       push(`/lg/${n}`)
     }
   }
+
+  function uniqueSorted(values: Iterable<string>): string[] {
+    return Array.from(new Set(values)).sort()
+  }
 </script>
 
 <header
@@ -25,7 +31,7 @@
     <div class="text-xs uppercase tracking-wide text-slate-500">Layer groups</div>
     <h1 class="text-2xl font-semibold">All 80 layer-group types</h1>
     <p class="text-sm text-slate-600 dark:text-slate-400">
-      Search by number, HM symbol, lattice system, Bravais class, ...
+      Search by number, HM symbol, arithmetic class, lattice system, ...
     </p>
   </div>
 </header>
@@ -33,9 +39,14 @@
 {#await data}
   <LoadingDots />
 {:then rows}
-  {@const lattices = ['All', ...Array.from(new Set(rows.map((r) => r.lattice_system))).sort()]}
+  {@const arithOptions = uniqueSorted(rows.map((r) => r.arithmetic_symbol))}
+  {@const geomOptions = uniqueSorted(rows.map((r) => r.geometric_crystal_class))}
+  {@const latticeOptions = uniqueSorted(rows.map((r) => r.lattice_system))}
   {@const filtered = filterRows(rows, query).filter(
-    (r) => lattice === 'All' || r.lattice_system === lattice
+    (r) =>
+      (arithSymbol === 'All' || r.arithmetic_symbol === arithSymbol) &&
+      (geomClass === 'All' || r.geometric_crystal_class === geomClass) &&
+      (lattice === 'All' || r.lattice_system === lattice)
   )}
 
   <section class="space-y-4">
@@ -49,18 +60,59 @@
           bind:value={query}
         />
       </label>
-      <label class="flex items-center gap-2 text-sm">
-        <span class="text-slate-500">Lattice:</span>
+      <span class="text-xs text-slate-500">{filtered.length} / {rows.length}</span>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+      <label class="flex items-center gap-2">
+        <span class="text-slate-500">Arithmetic crystal class:</span>
+        <select
+          class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 font-mono"
+          bind:value={arithSymbol}
+        >
+          <option value="All">All</option>
+          {#each arithOptions as a}
+            <option value={a}>{a}</option>
+          {/each}
+        </select>
+      </label>
+      <label class="flex items-center gap-2">
+        <span class="text-slate-500">Geometric crystal class:</span>
+        <select
+          class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1 font-mono"
+          bind:value={geomClass}
+        >
+          <option value="All">All</option>
+          {#each geomOptions as g}
+            <option value={g}>{g}</option>
+          {/each}
+        </select>
+      </label>
+      <label class="flex items-center gap-2">
+        <span class="text-slate-500">Lattice system:</span>
         <select
           class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1"
           bind:value={lattice}
         >
-          {#each lattices as s}
-            <option value={s}>{s}</option>
+          <option value="All">All</option>
+          {#each latticeOptions as l}
+            <option value={l}>{l}</option>
           {/each}
         </select>
       </label>
-      <span class="text-xs text-slate-500">{filtered.length} / {rows.length}</span>
+      {#if arithSymbol !== 'All' || geomClass !== 'All' || lattice !== 'All'}
+        <button
+          type="button"
+          class="text-xs text-slate-500 hover:underline"
+          onclick={() => {
+            arithSymbol = 'All'
+            geomClass = 'All'
+            lattice = 'All'
+          }}
+        >
+          Reset filters
+        </button>
+      {/if}
     </div>
 
     <div class="overflow-x-auto rounded border border-slate-200 dark:border-slate-800">
@@ -70,10 +122,9 @@
             <th class="px-3 py-2 text-left">#</th>
             <th class="px-3 py-2 text-left">Short Hermann-Mauguin symbol</th>
             <th class="px-3 py-2 text-left">Full Hermann-Mauguin symbol</th>
+            <th class="px-3 py-2 text-left">Arithmetic crystal class</th>
+            <th class="px-3 py-2 text-left">Geometric crystal class</th>
             <th class="px-3 py-2 text-left">Lattice system</th>
-            <th class="px-3 py-2 text-left">Geom. class</th>
-            <th class="px-3 py-2 text-left">Arith. symbol</th>
-            <th class="px-3 py-2 text-left">Bravais</th>
           </tr>
         </thead>
         <tbody>
@@ -90,15 +141,14 @@
                 <a use:link href={`/lg/${r.number}`} class="hover:underline">{r.hm_short}</a>
               </td>
               <td class="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-400">{r.hm_full}</td>
-              <td class="px-3 py-1.5">{r.lattice_system}</td>
-              <td class="px-3 py-1.5 font-mono">{r.geometric_crystal_class}</td>
               <td class="px-3 py-1.5 font-mono">{r.arithmetic_symbol}</td>
-              <td class="px-3 py-1.5 font-mono">{r.bravais_class}</td>
+              <td class="px-3 py-1.5 font-mono">{r.geometric_crystal_class}</td>
+              <td class="px-3 py-1.5">{r.lattice_system}</td>
             </tr>
           {/each}
           {#if filtered.length === 0}
             <tr>
-              <td colspan="7" class="px-3 py-6 text-center text-sm text-slate-500">
+              <td colspan="6" class="px-3 py-6 text-center text-sm text-slate-500">
                 No layer groups match the current filter.
               </td>
             </tr>
