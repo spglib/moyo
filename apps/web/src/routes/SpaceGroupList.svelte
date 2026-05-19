@@ -31,7 +31,7 @@
 >
   <div>
     <div class="text-xs uppercase tracking-wide text-slate-500">Space groups</div>
-    <h1 class="text-2xl font-semibold">All 230 ITA space-group types</h1>
+    <h1 class="text-2xl font-semibold">All 230 space-group types</h1>
     <p class="text-sm text-slate-600 dark:text-slate-400">
       Search by number, HM symbol, arithmetic class, crystal system, Bravais class, ...
     </p>
