@@ -20,6 +20,9 @@ A fast and robust crystal symmetry finder, written in Rust.
 - Rust support available via [crates.io](https://crates.io/crates/moyo): [Docs](https://docs.rs/moyo/latest/moyo/)
 - Python support available via [PyPI](https://pypi.org/project/moyopy/): [Docs](https://spglib.github.io/moyo/python/)
 - JavaScript and WebAssembly support available via [npm](https://www.npmjs.com/package/@spglib/moyo-wasm)
+- Browse the 230 space groups, 80 layer groups, and 1651 magnetic space groups
+  in the **moyo Crystallographic Group Viewer** at
+  <https://spglib.github.io/moyo/> (static SPA powered by `moyo-wasm`).
 
 ## Interfaces
 
@@ -27,6 +30,9 @@ A fast and robust crystal symmetry finder, written in Rust.
 - [Python](moyopy/README.md): Python binding
 - [C](moyoc/README.md): C binding
 - [JavaScript](moyo-wasm/README.md): JavaScript and WebAssembly binding
+- [Web viewer](apps/web/README.md): static Svelte + Vite + KaTeX SPA on top
+  of `moyo-wasm`, deployed to GitHub Pages via
+  `.github/workflows/deploy-web.yml`
 
 The functionality categories below mirror the sections of the [moyopy API
 reference](https://spglib.github.io/moyo/python/api.html).
