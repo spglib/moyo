@@ -23,6 +23,36 @@ export function parseHmShort(symbol: string): Token[] {
   return symbol.trim().split(/\s+/).filter(Boolean).map(parseToken)
 }
 
+/** Convert an HM short symbol to a KaTeX-renderable TeX expression. */
+export function hmShortToLatex(symbol: string): string {
+  const tokens = parseHmShort(symbol).map(tokenToLatex)
+  return tokens.join('\\,')
+}
+
+function tokenToLatex(token: Token): string {
+  return token
+    .map((seg) => {
+      switch (seg.kind) {
+        case 'over':
+          return `\\overline{${latexChars(seg.text)}}`
+        case 'sub':
+          return `_{${latexChars(seg.text)}}`
+        case 'plain':
+          return latexChars(seg.text)
+      }
+    })
+    .join('')
+}
+
+function latexChars(text: string): string {
+  let out = ''
+  for (const c of text) {
+    if (/[A-Za-z]/.test(c)) out += `\\mathrm{${c}}`
+    else out += c
+  }
+  return out
+}
+
 function parseToken(token: string): Segment[] {
   const out: Segment[] = []
   let i = 0

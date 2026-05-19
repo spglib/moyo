@@ -12,12 +12,14 @@
   },
   "dependencies": {
     "@spglib/moyo-wasm": "file:../../moyo-wasm/pkg",
+    "katex": "^0.16.47",
     "svelte-spa-router": "^4.0.1"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@tailwindcss/vite": "^4.0.0",
     "@tsconfig/svelte": "^5.0.4",
+    "@types/katex": "^0.16.8",
     "jsdom": "^25.0.1",
     "svelte": "^5.16.0",
     "svelte-check": "^4.1.4",

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseHmShort } from '../src/lib/hmShort'
+import { parseHmShort, hmShortToLatex } from '../src/lib/hmShort'
 
 describe('parseHmShort', () => {
   it('parses a token with an overline', () => {
@@ -47,5 +47,23 @@ describe('parseHmShort', () => {
       [{ kind: 'plain', text: 'P' }],
       [{ kind: 'plain', text: '1' }],
     ])
+  })
+})
+
+describe('hmShortToLatex', () => {
+  it('renders overlines via \\overline', () => {
+    expect(hmShortToLatex('F d -3 m')).toBe(
+      '\\mathrm{F}\\,\\mathrm{d}\\,\\overline{3}\\,\\mathrm{m}'
+    )
+  })
+
+  it('renders screw-axis subscripts', () => {
+    expect(hmShortToLatex('P 2_1')).toBe('\\mathrm{P}\\,2_{1}')
+  })
+
+  it('renders combined subscript and glide', () => {
+    expect(hmShortToLatex('P 6_3/m m c')).toBe(
+      '\\mathrm{P}\\,6_{3}/\\mathrm{m}\\,\\mathrm{m}\\,\\mathrm{c}'
+    )
   })
 })
