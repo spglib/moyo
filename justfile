@@ -92,3 +92,37 @@ js-build:
 [working-directory: 'moyo-wasm']
 js-test:
     npm test
+
+################################################################################
+# Web app (apps/web)
+################################################################################
+
+[group('web')]
+[working-directory: 'apps/web']
+web-install: js-build
+    npm install
+
+[group('web')]
+[working-directory: 'apps/web']
+web-dev: js-build
+    npm run dev
+
+[group('web')]
+[working-directory: 'apps/web']
+web-build:
+    npm run build
+
+[group('web')]
+[working-directory: 'apps/web']
+web-preview: web-build
+    npm run preview
+
+[group('web')]
+[working-directory: 'apps/web']
+web-test:
+    npm test
+
+[group('web')]
+[working-directory: 'apps/web']
+web-check:
+    npm run check

@@ -1,0 +1,32 @@
+{
+  "name": "@moyo/web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "svelte-check --tsconfig ./tsconfig.json && vite build",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@spglib/moyo-wasm": "file:../../moyo-wasm/pkg",
+    "katex": "^0.16.47",
+    "svelte-spa-router": "^4.0.1"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@tailwindcss/vite": "^4.0.0",
+    "@tsconfig/svelte": "^5.0.4",
+    "@types/katex": "^0.16.8",
+    "jsdom": "^25.0.1",
+    "svelte": "^5.16.0",
+    "svelte-check": "^4.1.4",
+    "tailwindcss": "^4.0.0",
+    "tslib": "^2.8.1",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7",
+    "vitest": "^2.1.8"
+  }
+}

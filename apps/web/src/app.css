@@ -1,0 +1,63 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Brand palette derived from the moyo logo (#be481f at the 600 step).
+   Exposed as Tailwind utilities: text-moyo-*, bg-moyo-*, border-moyo-*,
+   ring-moyo-*, etc. */
+@theme {
+  --color-moyo-50: #fdf4f0;
+  --color-moyo-100: #fce5db;
+  --color-moyo-200: #f8c8b3;
+  --color-moyo-300: #f1a489;
+  --color-moyo-400: #e57f60;
+  --color-moyo-500: #d35e3a;
+  --color-moyo-600: #be481f;
+  --color-moyo-700: #9d3717;
+  --color-moyo-800: #7e2c14;
+  --color-moyo-900: #662310;
+  --color-moyo-950: #3a140a;
+}
+
+:root {
+  color-scheme: light dark;
+  font-feature-settings: 'tnum';
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+@utility eyebrow {
+  @apply text-xs uppercase tracking-wide text-stone-500;
+}
+
+@utility page-header {
+  @apply flex flex-wrap items-end justify-between gap-4 py-2 border-b border-stone-300 dark:border-stone-700 mb-4;
+}
+
+@utility search-input {
+  @apply w-full border-b border-stone-300 dark:border-stone-700 bg-transparent px-0 py-1.5 text-sm focus:outline-none focus:border-moyo-600;
+}
+
+@utility filter-select {
+  @apply border-b border-stone-300 dark:border-stone-700 bg-transparent px-1 py-0.5;
+}
+
+@utility table-shell {
+  @apply overflow-x-auto border-y border-stone-300 dark:border-stone-700;
+}
+
+@utility table-head {
+  @apply text-xs uppercase tracking-wide text-stone-600 dark:text-stone-400;
+}
+
+@utility table-row-link {
+  @apply border-t border-stone-200 dark:border-stone-800 hover:bg-moyo-50 dark:hover:bg-moyo-950/30 cursor-pointer;
+}
+
+@utility link-button {
+  @apply text-xs text-stone-500 hover:text-moyo-700 dark:hover:text-moyo-400 hover:underline;
+}

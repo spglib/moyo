@@ -80,6 +80,7 @@ pub struct MoyoArithmeticCrystalClass {
 #[tsify(into_wasm_abi)]
 pub struct MoyoSpaceGroupType {
     pub number: i32,
+    pub hall_number: i32,
     pub hm_short: String,
     pub hm_full: String,
     pub arithmetic_number: i32,
@@ -149,6 +150,7 @@ pub fn space_group_type(number: i32) -> Result<MoyoSpaceGroupType, JsValue> {
     let crystal_family = CrystalFamily::from_lattice_system(lattice_system);
     Ok(MoyoSpaceGroupType {
         number: hs.number,
+        hall_number: hs.hall_number,
         hm_short: hs.hm_short.to_string(),
         hm_full: hs.hm_full.to_string(),
         arithmetic_number: arith.arithmetic_number,
