@@ -10,6 +10,7 @@
   let system = $state<CrystalSystem | 'All'>('All')
   let geomClass = $state<string>('All')
   let arithSymbol = $state<string>('All')
+  let lattice = $state<string>('All')
 
   const data = getAllSpaceGroups()
 
@@ -42,11 +43,13 @@
 {:then rows}
   {@const geomOptions = uniqueSorted(rows.map((r) => r.geometric_crystal_class))}
   {@const arithOptions = uniqueSorted(rows.map((r) => r.arithmetic_symbol))}
+  {@const latticeOptions = uniqueSorted(rows.map((r) => r.lattice_system))}
   {@const filtered = filterRows(rows, query).filter(
     (r) =>
       (system === 'All' || r.crystal_system === system) &&
       (geomClass === 'All' || r.geometric_crystal_class === geomClass) &&
-      (arithSymbol === 'All' || r.arithmetic_symbol === arithSymbol)
+      (arithSymbol === 'All' || r.arithmetic_symbol === arithSymbol) &&
+      (lattice === 'All' || r.lattice_system === lattice)
   )}
 
   <section class="space-y-4">
@@ -100,7 +103,19 @@
           {/each}
         </select>
       </label>
-      {#if system !== 'All' || geomClass !== 'All' || arithSymbol !== 'All'}
+      <label class="flex items-center gap-2">
+        <span class="text-slate-500">Lattice system:</span>
+        <select
+          class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1"
+          bind:value={lattice}
+        >
+          <option value="All">All</option>
+          {#each latticeOptions as l}
+            <option value={l}>{l}</option>
+          {/each}
+        </select>
+      </label>
+      {#if system !== 'All' || geomClass !== 'All' || arithSymbol !== 'All' || lattice !== 'All'}
         <button
           type="button"
           class="text-xs text-slate-500 hover:underline"
@@ -108,6 +123,7 @@
             system = 'All'
             geomClass = 'All'
             arithSymbol = 'All'
+            lattice = 'All'
           }}
         >
           Reset filters
@@ -125,6 +141,7 @@
             <th class="px-3 py-2 text-left">Arithmetic crystal class</th>
             <th class="px-3 py-2 text-left">Geometric crystal class</th>
             <th class="px-3 py-2 text-left">Crystal system</th>
+            <th class="px-3 py-2 text-left">Lattice system</th>
           </tr>
         </thead>
         <tbody>
@@ -144,11 +161,12 @@
               <td class="px-3 py-1.5 font-mono">{r.arithmetic_symbol}</td>
               <td class="px-3 py-1.5 font-mono">{r.geometric_crystal_class}</td>
               <td class="px-3 py-1.5">{r.crystal_system}</td>
+              <td class="px-3 py-1.5">{r.lattice_system}</td>
             </tr>
           {/each}
           {#if filtered.length === 0}
             <tr>
-              <td colspan="6" class="px-3 py-6 text-center text-sm text-slate-500">
+              <td colspan="7" class="px-3 py-6 text-center text-sm text-slate-500">
                 No space groups match the current filter.
               </td>
             </tr>
