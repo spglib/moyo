@@ -99,7 +99,7 @@ js-test:
 
 [group('web')]
 [working-directory: 'apps/web']
-web-install:
+web-install: js-build
     npm install
 
 [group('web')]
