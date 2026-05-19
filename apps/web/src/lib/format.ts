@@ -4,14 +4,12 @@ type Mat9 = readonly [number, number, number, number, number, number, number, nu
 const COMMON_DENOMS = [1, 2, 3, 4, 6, 8, 12]
 const EPS = 1e-6
 
-export function formatRotationRow(m: Mat9, row: 0 | 1 | 2): string {
-  const i = row * 3
-  return `[${fmtInt(m[i])}, ${fmtInt(m[i + 1])}, ${fmtInt(m[i + 2])}]`
-}
-
 /** Render a symmetry operation as a comma-separated coordinate triplet
  *  (Jones-faithful notation), e.g. `-x+1/2, y, -z+1/2`. When `timeReversal`
- *  is given, a trailing `, +1` or `, -1` is appended for magnetic ops. */
+ *  is given, a trailing `, +1` or `, -1` is appended for magnetic ops.
+ *
+ *  `rotation` is the nalgebra-flattened 3x3 in column-major order, so the
+ *  element at row `i`, column `j` is `rotation[j * 3 + i]`. */
 export function formatOperationXyz(
   rotation: Mat9,
   translation: Vec3,
@@ -22,7 +20,7 @@ export function formatOperationXyz(
     .map((i) => {
       const parts: string[] = []
       for (let j = 0; j < 3; j++) {
-        const c = rotation[i * 3 + j]
+        const c = rotation[j * 3 + i]
         if (Math.abs(c) < EPS) continue
         const sign = c < 0 ? '-' : parts.length > 0 ? '+' : ''
         const mag = Math.abs(c)
