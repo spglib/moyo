@@ -82,11 +82,18 @@ export function getAllMagneticSpaceGroups(): Promise<MagneticSpaceGroupRow[]> {
   return cachedMsg
 }
 
+/** Stripped form alongside the original, so a search for either
+ *  `Fd-3m` or `F d -3 m` matches `hm_short: "F d -3 m"`. */
+function withCompact(s: string): string {
+  const compact = s.replace(/\s+/g, '')
+  return compact === s ? s : `${s} ${compact}`
+}
+
 function spaceGroupSearchText(t: MoyoSpaceGroupType): string {
   return [
     t.number,
-    t.hm_short,
-    t.hm_full,
+    withCompact(t.hm_short),
+    withCompact(t.hm_full),
     t.arithmetic_number,
     t.arithmetic_symbol,
     t.geometric_crystal_class,
@@ -102,8 +109,8 @@ function spaceGroupSearchText(t: MoyoSpaceGroupType): string {
 function layerGroupSearchText(t: MoyoLayerGroupType): string {
   return [
     t.number,
-    t.hm_short,
-    t.hm_full,
+    withCompact(t.hm_short),
+    withCompact(t.hm_full),
     t.arithmetic_number,
     t.arithmetic_symbol,
     t.geometric_crystal_class,
@@ -126,8 +133,8 @@ function magneticSpaceGroupSearchText(
     t.bns_number,
     t.og_number,
     t.number,
-    parent_hm_short,
-    hall.magnetic_hall_symbol,
+    withCompact(parent_hm_short),
+    withCompact(hall.magnetic_hall_symbol),
     construct_label,
   ]
     .join(' ')
