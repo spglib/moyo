@@ -35,7 +35,7 @@
       <a
         use:link
         href={c.href}
-        class="block rounded-lg border border-slate-200 dark:border-slate-800 p-5 hover:border-slate-400 dark:hover:border-slate-600 transition-colors"
+        class="block rounded-lg border border-slate-200 dark:border-slate-800 p-5 hover:border-moyo-500 dark:hover:border-moyo-500 transition-colors"
       >
         <div class="flex items-baseline justify-between">
           <h2 class="text-lg font-medium">{c.title}</h2>

@@ -2,6 +2,23 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Brand palette derived from the moyo logo (#be481f at the 600 step).
+   Exposed as Tailwind utilities: text-moyo-*, bg-moyo-*, border-moyo-*,
+   ring-moyo-*, etc. */
+@theme {
+  --color-moyo-50: #fdf4f0;
+  --color-moyo-100: #fce5db;
+  --color-moyo-200: #f8c8b3;
+  --color-moyo-300: #f1a489;
+  --color-moyo-400: #e57f60;
+  --color-moyo-500: #d35e3a;
+  --color-moyo-600: #be481f;
+  --color-moyo-700: #9d3717;
+  --color-moyo-800: #7e2c14;
+  --color-moyo-900: #662310;
+  --color-moyo-950: #3a140a;
+}
+
 :root {
   color-scheme: light dark;
   font-feature-settings: 'tnum';
@@ -22,7 +39,7 @@ body {
 }
 
 @utility search-input {
-  @apply w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500;
+  @apply w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-moyo-500;
 }
 
 @utility filter-select {

@@ -12,7 +12,9 @@
 
 <header class="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur sticky top-0 z-10">
   <div class="mx-auto max-w-6xl px-4 py-3 flex items-center gap-4">
-    <a use:link href="/" class="font-semibold tracking-tight">moyo · Crystallographic Group Viewer</a>
+    <a use:link href="/" class="font-semibold tracking-tight">
+      <span class="text-moyo-700 dark:text-moyo-400">moyo</span> · Crystallographic Group Viewer
+    </a>
     <nav class="ml-2 flex gap-1 text-sm">
       {#each tabs as tab}
         {@const active = tab.match.test($location)}
