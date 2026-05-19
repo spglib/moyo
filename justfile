@@ -114,7 +114,7 @@ web-build:
 
 [group('web')]
 [working-directory: 'apps/web']
-web-preview:
+web-preview: web-build
     npm run preview
 
 [group('web')]
