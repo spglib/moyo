@@ -10,7 +10,6 @@
   import { SPACE_GROUP_COUNT, clampInt } from '../lib/catalog'
   import InfoGrid from '../components/InfoGrid.svelte'
   import OperationsTable from '../components/OperationsTable.svelte'
-  import GroupPager from '../components/GroupPager.svelte'
   import HmSymbol from '../components/HmSymbol.svelte'
   import ErrorCard from '../components/ErrorCard.svelte'
   import LoadingDots from '../components/LoadingDots.svelte'
@@ -51,21 +50,16 @@
 {#await data}
   <LoadingDots />
 {:then d}
-  <header
-    class="flex flex-wrap items-end justify-between gap-4 py-2 border-b border-slate-200 dark:border-slate-800 mb-4"
-  >
-    <div>
-      <div class="text-xs uppercase tracking-wide text-slate-500">Space group</div>
-      <h1 class="text-2xl font-semibold flex items-baseline gap-2">
-        <span class="font-mono">#{d.type.number}</span>
-        <HmSymbol symbol={d.type.hm_short} />
-      </h1>
-      <p class="text-sm text-slate-600 dark:text-slate-400 font-mono">
-        {d.type.hm_full}
-        {#if d.hall}&middot; Hall: {d.hall.hall_symbol}{/if}
-      </p>
-    </div>
-    <GroupPager value={number} min={1} max={SPACE_GROUP_COUNT} basePath="/sg" label="#" />
+  <header class="py-2 border-b border-slate-200 dark:border-slate-800 mb-4">
+    <div class="text-xs uppercase tracking-wide text-slate-500">Space group</div>
+    <h1 class="text-2xl font-semibold flex items-baseline gap-2">
+      <span class="font-mono">#{d.type.number}</span>
+      <HmSymbol symbol={d.type.hm_short} />
+    </h1>
+    <p class="text-sm text-slate-600 dark:text-slate-400 font-mono">
+      {d.type.hm_full}
+      {#if d.hall}&middot; Hall: {d.hall.hall_symbol}{/if}
+    </p>
   </header>
 
   <section class="space-y-6">
