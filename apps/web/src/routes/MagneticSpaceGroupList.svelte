@@ -34,7 +34,7 @@
     <div class="text-xs uppercase tracking-wide text-slate-500">Magnetic space groups</div>
     <h1 class="text-2xl font-semibold">All 1651 magnetic space-group types</h1>
     <p class="text-sm text-slate-600 dark:text-slate-400">
-      Search by UNI / Litvin / BNS / OG number, parent space group, magnetic Hall symbol, ...
+      Search by UNI / Litvin / BNS / OG number, magnetic Hall symbol, ...
     </p>
   </div>
 </header>
@@ -99,7 +99,6 @@
             <th class="px-3 py-2 text-left">BNS number</th>
             <th class="px-3 py-2 text-left">OG number</th>
             <th class="px-3 py-2 text-left">Magnetic Hall symbol</th>
-            <th class="px-3 py-2 text-left">Parent space group</th>
             <th class="px-3 py-2 text-left">Construct type</th>
           </tr>
         </thead>
@@ -121,13 +120,12 @@
                   >{r.magnetic_hall_symbol}</a
                 >
               </td>
-              <td class="px-3 py-1.5 font-mono">#{r.number} {r.parent_hm_short}</td>
               <td class="px-3 py-1.5">{r.construct_label}</td>
             </tr>
           {/each}
           {#if filtered.length === 0}
             <tr>
-              <td colspan="7" class="px-3 py-6 text-center text-sm text-slate-500">
+              <td colspan="6" class="px-3 py-6 text-center text-sm text-slate-500">
                 No magnetic space groups match the current filter.
               </td>
             </tr>
