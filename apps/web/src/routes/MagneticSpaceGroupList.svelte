@@ -34,7 +34,7 @@
     <div class="text-xs uppercase tracking-wide text-slate-500">Magnetic space groups</div>
     <h1 class="text-2xl font-semibold">All 1651 magnetic space-group types</h1>
     <p class="text-sm text-slate-600 dark:text-slate-400">
-      Search by UNI / Litvin / BNS / OG number, parent SG, magnetic Hall symbol, ...
+      Search by UNI / Litvin / BNS / OG number, parent space group, magnetic Hall symbol, ...
     </p>
   </div>
 </header>
@@ -58,8 +58,16 @@
           bind:value={query}
         />
       </label>
-      <label class="flex items-center gap-2 text-sm">
-        <span class="text-slate-500">Type:</span>
+      <span class="text-xs text-slate-500"
+        >{visible.length === filtered.length
+          ? `${filtered.length} / ${rows.length}`
+          : `${visible.length} of ${filtered.length} (of ${rows.length})`}</span
+      >
+    </div>
+
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+      <label class="flex items-center gap-2">
+        <span class="text-slate-500">Construct type:</span>
         <select
           class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1"
           bind:value={constructType}
@@ -71,24 +79,28 @@
           <option value="4">IV (BW, equi-translation)</option>
         </select>
       </label>
-      <span class="text-xs text-slate-500"
-        >{visible.length === filtered.length
-          ? `${filtered.length} / ${rows.length}`
-          : `${visible.length} of ${filtered.length} (of ${rows.length})`}</span
-      >
+      {#if constructType !== 'All'}
+        <button
+          type="button"
+          class="text-xs text-slate-500 hover:underline"
+          onclick={() => (constructType = 'All')}
+        >
+          Reset filters
+        </button>
+      {/if}
     </div>
 
     <div class="overflow-x-auto rounded border border-slate-200 dark:border-slate-800">
       <table class="min-w-full text-sm">
         <thead class="bg-slate-50 dark:bg-slate-900 text-xs uppercase tracking-wide">
           <tr>
-            <th class="px-3 py-2 text-left">UNI</th>
-            <th class="px-3 py-2 text-left">Litvin</th>
-            <th class="px-3 py-2 text-left">BNS</th>
-            <th class="px-3 py-2 text-left">OG</th>
-            <th class="px-3 py-2 text-left">Mag. Hall symbol</th>
-            <th class="px-3 py-2 text-left">Parent SG</th>
-            <th class="px-3 py-2 text-left">Type</th>
+            <th class="px-3 py-2 text-left">UNI number</th>
+            <th class="px-3 py-2 text-left">Litvin number</th>
+            <th class="px-3 py-2 text-left">BNS number</th>
+            <th class="px-3 py-2 text-left">OG number</th>
+            <th class="px-3 py-2 text-left">Magnetic Hall symbol</th>
+            <th class="px-3 py-2 text-left">Parent space group</th>
+            <th class="px-3 py-2 text-left">Construct type</th>
           </tr>
         </thead>
         <tbody>
