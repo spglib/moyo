@@ -97,6 +97,7 @@
             <th class="px-3 py-2 text-left">BNS number</th>
             <th class="px-3 py-2 text-left">OG number</th>
             <th class="px-3 py-2 text-left">Magnetic Hall symbol</th>
+            <th class="px-3 py-2 text-left">Reference space group in BNS setting</th>
             <th class="px-3 py-2 text-left">Construct type</th>
           </tr>
         </thead>
@@ -118,12 +119,13 @@
                   >{r.magnetic_hall_symbol}</a
                 >
               </td>
+              <td class="px-3 py-1.5 font-mono">#{r.number} {r.parent_hm_short}</td>
               <td class="px-3 py-1.5">{r.construct_label}</td>
             </tr>
           {/each}
           {#if filtered.length === 0}
             <tr>
-              <td colspan="6" class="px-3 py-6 text-center text-sm text-stone-500">
+              <td colspan="7" class="px-3 py-6 text-center text-sm text-stone-500">
                 No magnetic space groups match the current filter.
               </td>
             </tr>

@@ -66,11 +66,11 @@
         { label: 'Magnetic Hall symbol', value: d.hall.magnetic_hall_symbol, mono: true },
         { label: 'Construct type', value: constructTypeLabel(d.type.construct_type) },
         {
-          label: 'Parent space group',
+          label: 'Reference space group in BNS setting',
           value: `#${d.parent.number} ${d.parent.hm_short}`,
           mono: true,
         },
-        { label: 'Parent crystal system', value: d.parent.crystal_system },
+        { label: 'Crystal system of reference space group', value: d.parent.crystal_system },
       ]}
     />
 
