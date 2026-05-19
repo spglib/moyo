@@ -1,6 +1,7 @@
 <script lang="ts">
   import { push, link } from 'svelte-spa-router'
   import { getAllLayerGroups, filterRows } from '../lib/catalogIndex'
+  import { CRYSTAL_SYSTEMS, type CrystalSystem } from '../lib/catalog'
   import { formatErr } from '../lib/wasm'
   import ErrorCard from '../components/ErrorCard.svelte'
   import LoadingDots from '../components/LoadingDots.svelte'
@@ -8,6 +9,7 @@
   let query = $state('')
   let arithSymbol = $state<string>('All')
   let geomClass = $state<string>('All')
+  let system = $state<CrystalSystem | 'All'>('All')
   let lattice = $state<string>('All')
 
   const data = getAllLayerGroups()
@@ -42,10 +44,14 @@
   {@const arithOptions = uniqueSorted(rows.map((r) => r.arithmetic_symbol))}
   {@const geomOptions = uniqueSorted(rows.map((r) => r.geometric_crystal_class))}
   {@const latticeOptions = uniqueSorted(rows.map((r) => r.lattice_system))}
+  {@const systemsInUse = new Set(
+    rows.map((r) => r.crystal_system).filter((s): s is CrystalSystem => s !== null)
+  )}
   {@const filtered = filterRows(rows, query).filter(
     (r) =>
       (arithSymbol === 'All' || r.arithmetic_symbol === arithSymbol) &&
       (geomClass === 'All' || r.geometric_crystal_class === geomClass) &&
+      (system === 'All' || r.crystal_system === system) &&
       (lattice === 'All' || r.lattice_system === lattice)
   )}
 
@@ -89,6 +95,20 @@
         </select>
       </label>
       <label class="flex items-center gap-2">
+        <span class="text-slate-500">Crystal system:</span>
+        <select
+          class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1"
+          bind:value={system}
+        >
+          <option value="All">All</option>
+          {#each CRYSTAL_SYSTEMS as s}
+            {#if systemsInUse.has(s)}
+              <option value={s}>{s}</option>
+            {/if}
+          {/each}
+        </select>
+      </label>
+      <label class="flex items-center gap-2">
         <span class="text-slate-500">Lattice system:</span>
         <select
           class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1"
@@ -100,13 +120,14 @@
           {/each}
         </select>
       </label>
-      {#if arithSymbol !== 'All' || geomClass !== 'All' || lattice !== 'All'}
+      {#if arithSymbol !== 'All' || geomClass !== 'All' || system !== 'All' || lattice !== 'All'}
         <button
           type="button"
           class="text-xs text-slate-500 hover:underline"
           onclick={() => {
             arithSymbol = 'All'
             geomClass = 'All'
+            system = 'All'
             lattice = 'All'
           }}
         >
@@ -124,6 +145,7 @@
             <th class="px-3 py-2 text-left">Full Hermann-Mauguin symbol</th>
             <th class="px-3 py-2 text-left">Arithmetic crystal class</th>
             <th class="px-3 py-2 text-left">Geometric crystal class</th>
+            <th class="px-3 py-2 text-left">Crystal system</th>
             <th class="px-3 py-2 text-left">Lattice system</th>
           </tr>
         </thead>
@@ -143,12 +165,13 @@
               <td class="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-400">{r.hm_full}</td>
               <td class="px-3 py-1.5 font-mono">{r.arithmetic_symbol}</td>
               <td class="px-3 py-1.5 font-mono">{r.geometric_crystal_class}</td>
+              <td class="px-3 py-1.5">{r.crystal_system ?? '-'}</td>
               <td class="px-3 py-1.5">{r.lattice_system}</td>
             </tr>
           {/each}
           {#if filtered.length === 0}
             <tr>
-              <td colspan="6" class="px-3 py-6 text-center text-sm text-slate-500">
+              <td colspan="7" class="px-3 py-6 text-center text-sm text-slate-500">
                 No layer groups match the current filter.
               </td>
             </tr>

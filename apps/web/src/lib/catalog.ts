@@ -18,6 +18,47 @@ export const CRYSTAL_SYSTEMS = [
 
 export type CrystalSystem = (typeof CRYSTAL_SYSTEMS)[number]
 
+/** Crystal system of each geometric crystal class symbol (as emitted by
+ *  moyo, see moyo/src/data/classification.rs CrystalSystem). */
+const CRYSTAL_SYSTEM_OF_POINT_GROUP: Record<string, CrystalSystem> = {
+  '1': 'Triclinic',
+  '-1': 'Triclinic',
+  '2': 'Monoclinic',
+  m: 'Monoclinic',
+  '2/m': 'Monoclinic',
+  '222': 'Orthorhombic',
+  mm2: 'Orthorhombic',
+  mmm: 'Orthorhombic',
+  '4': 'Tetragonal',
+  '-4': 'Tetragonal',
+  '4/m': 'Tetragonal',
+  '422': 'Tetragonal',
+  '4mm': 'Tetragonal',
+  '-42m': 'Tetragonal',
+  '4/mmm': 'Tetragonal',
+  '3': 'Trigonal',
+  '-3': 'Trigonal',
+  '32': 'Trigonal',
+  '3m': 'Trigonal',
+  '-3m': 'Trigonal',
+  '6': 'Hexagonal',
+  '-6': 'Hexagonal',
+  '6/m': 'Hexagonal',
+  '622': 'Hexagonal',
+  '6mm': 'Hexagonal',
+  '-6m2': 'Hexagonal',
+  '6/mmm': 'Hexagonal',
+  '23': 'Cubic',
+  'm-3': 'Cubic',
+  '432': 'Cubic',
+  '-43m': 'Cubic',
+  'm-3m': 'Cubic',
+}
+
+export function crystalSystemOfPointGroup(pointGroup: string): CrystalSystem | null {
+  return CRYSTAL_SYSTEM_OF_POINT_GROUP[pointGroup] ?? null
+}
+
 export function clampInt(value: number, lo: number, hi: number): number {
   const n = Math.trunc(value)
   if (!Number.isFinite(n)) return lo
