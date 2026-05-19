@@ -40,7 +40,7 @@
   <LoadingDots />
 {:then d}
   <header class="py-2 border-b border-slate-200 dark:border-slate-800 mb-4">
-    <div class="text-xs uppercase tracking-wide text-slate-500">Magnetic space group</div>
+    <div class="eyebrow">Magnetic space group</div>
     <h1 class="text-2xl font-semibold">
       <span class="font-mono">UNI #{d.type.uni_number}</span>
       <span class="ml-2 font-mono">{d.hall.magnetic_hall_symbol}</span>

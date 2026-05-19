@@ -12,3 +12,35 @@ body {
   margin: 0;
   min-height: 100vh;
 }
+
+@utility eyebrow {
+  @apply text-xs uppercase tracking-wide text-slate-500;
+}
+
+@utility page-header {
+  @apply flex flex-wrap items-end justify-between gap-4 py-2 border-b border-slate-200 dark:border-slate-800 mb-4;
+}
+
+@utility search-input {
+  @apply w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500;
+}
+
+@utility filter-select {
+  @apply rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1;
+}
+
+@utility table-shell {
+  @apply overflow-x-auto rounded border border-slate-200 dark:border-slate-800;
+}
+
+@utility table-head {
+  @apply bg-slate-50 dark:bg-slate-900 text-xs uppercase tracking-wide;
+}
+
+@utility table-row-link {
+  @apply border-t border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/60 cursor-pointer;
+}
+
+@utility link-button {
+  @apply text-xs text-slate-500 hover:underline;
+}

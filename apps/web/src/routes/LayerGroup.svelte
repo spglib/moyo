@@ -39,7 +39,7 @@
   <LoadingDots />
 {:then d}
   <header class="py-2 border-b border-slate-200 dark:border-slate-800 mb-4">
-    <div class="text-xs uppercase tracking-wide text-slate-500">Layer group</div>
+    <div class="eyebrow">Layer group</div>
     <h1 class="text-2xl font-semibold flex items-baseline gap-2">
       <span class="font-mono">#{d.type.number}</span>
       <HmSymbol symbol={d.type.hm_short} />

@@ -27,11 +27,9 @@
   }
 </script>
 
-<header
-  class="flex flex-wrap items-end justify-between gap-4 py-2 border-b border-slate-200 dark:border-slate-800 mb-4"
->
+<header class="page-header">
   <div>
-    <div class="text-xs uppercase tracking-wide text-slate-500">Magnetic space groups</div>
+    <div class="eyebrow">Magnetic space groups</div>
     <h1 class="text-2xl font-semibold">All 1651 magnetic space-group types</h1>
     <p class="text-sm text-slate-600 dark:text-slate-400">
       Search by UNI / Litvin / BNS / OG number, magnetic Hall symbol, ...
@@ -54,7 +52,7 @@
         <input
           type="search"
           placeholder="Search... e.g. '227', 'Fd-3m', 'BNS 227.131', 'grey'"
-          class="w-full rounded border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+          class="search-input"
           bind:value={query}
         />
       </label>
@@ -69,7 +67,7 @@
       <label class="flex items-center gap-2">
         <span class="text-slate-500">Construct type:</span>
         <select
-          class="rounded border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1"
+          class="filter-select"
           bind:value={constructType}
         >
           <option value="All">All</option>
@@ -82,7 +80,7 @@
       {#if constructType !== 'All'}
         <button
           type="button"
-          class="text-xs text-slate-500 hover:underline"
+          class="link-button"
           onclick={() => (constructType = 'All')}
         >
           Reset filters
@@ -90,9 +88,9 @@
       {/if}
     </div>
 
-    <div class="overflow-x-auto rounded border border-slate-200 dark:border-slate-800">
+    <div class="table-shell">
       <table class="min-w-full text-sm">
-        <thead class="bg-slate-50 dark:bg-slate-900 text-xs uppercase tracking-wide">
+        <thead class="table-head">
           <tr>
             <th class="px-3 py-2 text-left">UNI number</th>
             <th class="px-3 py-2 text-left">Litvin number</th>
@@ -105,7 +103,7 @@
         <tbody>
           {#each visible as r (r.uni_number)}
             <tr
-              class="border-t border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/60 cursor-pointer"
+              class="table-row-link"
               tabindex="0"
               role="link"
               onclick={() => push(`/msg/${r.uni_number}`)}

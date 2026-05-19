@@ -7,9 +7,9 @@
     $props()
 </script>
 
-<div class="overflow-x-auto rounded border border-slate-200 dark:border-slate-800">
+<div class="table-shell">
   <table class="min-w-full text-sm font-mono">
-    <thead class="bg-slate-50 dark:bg-slate-900 text-xs uppercase tracking-wide">
+    <thead class="table-head">
       <tr>
         <th class="px-2 py-1 text-left">#</th>
         <th class="px-2 py-1 text-left">Coordinate triplet</th>
