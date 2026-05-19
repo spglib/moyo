@@ -128,12 +128,14 @@ function magneticSpaceGroupSearchText(
   parent_hm_short: string,
   construct_label: string
 ): string {
+  // Include the field label alongside each identifier so prefix queries
+  // like "BNS 227.131" or "UNI 1234" match.
   return [
-    t.uni_number,
-    t.litvin_number,
-    t.bns_number,
-    t.og_number,
-    t.number,
+    `uni ${t.uni_number}`,
+    `litvin ${t.litvin_number}`,
+    `bns ${t.bns_number}`,
+    `og ${t.og_number}`,
+    `parent ${t.number}`,
     withCompact(parent_hm_short),
     withCompact(hall.magnetic_hall_symbol),
     construct_label,
