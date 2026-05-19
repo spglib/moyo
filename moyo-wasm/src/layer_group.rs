@@ -71,6 +71,7 @@ pub struct MoyoLayerArithmeticCrystalClass {
 #[tsify(into_wasm_abi)]
 pub struct MoyoLayerGroupType {
     pub number: i32,
+    pub hall_number: i32,
     pub hm_short: String,
     pub hm_full: String,
     pub arithmetic_number: i32,
@@ -143,6 +144,7 @@ pub fn layer_group_type(number: i32) -> Result<MoyoLayerGroupType, JsValue> {
     let lattice_system = acc.layer_lattice_system();
     Ok(MoyoLayerGroupType {
         number: lhs.number,
+        hall_number: lhs.hall_number,
         hm_short: lhs.hm_short.to_string(),
         hm_full: lhs.hm_full.to_string(),
         arithmetic_number: acc.arithmetic_number,

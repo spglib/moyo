@@ -6,7 +6,6 @@
     MoyoArithmeticCrystalClass,
   } from '@spglib/moyo-wasm'
   import { getMoyo, formatErr } from '../lib/wasm'
-  import { getHallNumbersBySpaceGroup } from '../lib/hall'
   import { SPACE_GROUP_COUNT, clampInt } from '../lib/catalog'
   import InfoGrid from '../components/InfoGrid.svelte'
   import OperationsTable from '../components/OperationsTable.svelte'
@@ -16,7 +15,7 @@
 
   interface Loaded {
     type: MoyoSpaceGroupType
-    hall: MoyoHallSymbolEntry | null
+    hall: MoyoHallSymbolEntry
     arith: MoyoArithmeticCrystalClass
     operations: MoyoOperation[]
   }
@@ -28,10 +27,9 @@
 
   async function load(n: number): Promise<Loaded> {
     const m = await getMoyo()
-    const hallList = (await getHallNumbersBySpaceGroup()).get(n) ?? []
     const type = m.space_group_type(n)
     const operations = m.operations_from_number(n, { type: 'Standard' }, false)
-    const hall = hallList.length > 0 ? m.hall_symbol_entry(hallList[0]) : null
+    const hall = m.hall_symbol_entry(type.hall_number)
     const arith = m.arithmetic_crystal_class(type.arithmetic_number)
     return { type, hall, arith, operations }
   }
@@ -47,8 +45,7 @@
       <HmSymbol symbol={d.type.hm_short} />
     </h1>
     <p class="text-sm text-slate-600 dark:text-slate-400 font-mono">
-      {d.type.hm_full}
-      {#if d.hall}&middot; Hall: {d.hall.hall_symbol}{/if}
+      {d.type.hm_full} &middot; Hall: {d.hall.hall_symbol}
     </p>
   </header>
 
@@ -56,16 +53,16 @@
     <InfoGrid
       rows={[
         { label: 'ITA number', value: d.type.number, mono: true },
-        { label: 'Hall number', value: d.hall?.hall_number ?? '-', mono: true },
+        { label: 'Hall number', value: d.hall.hall_number, mono: true },
         { label: 'Short Hermann-Mauguin symbol', value: d.type.hm_short, mono: true },
         { label: 'Full Hermann-Mauguin symbol', value: d.type.hm_full, mono: true },
-        { label: 'Hall symbol', value: d.hall?.hall_symbol ?? '-', mono: true },
-        { label: 'Setting (Hall row)', value: d.hall?.setting ?? '-', mono: true },
+        { label: 'Hall symbol', value: d.hall.hall_symbol, mono: true },
+        { label: 'Setting (Hall row)', value: d.hall.setting, mono: true },
         { label: 'Crystal family', value: d.type.crystal_family },
         { label: 'Crystal system', value: d.type.crystal_system },
         { label: 'Lattice system', value: d.type.lattice_system },
         { label: 'Bravais class', value: d.type.bravais_class, mono: true },
-        { label: 'Centering', value: d.hall?.centering ?? '-', mono: true },
+        { label: 'Centering', value: d.hall.centering, mono: true },
         {
           label: 'Arithmetic crystal class',
           value: `${d.arith.arithmetic_number} (${d.arith.symbol})`,
