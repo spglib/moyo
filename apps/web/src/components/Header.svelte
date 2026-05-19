@@ -10,20 +10,22 @@
   ]
 </script>
 
-<header class="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur sticky top-0 z-10">
-  <div class="mx-auto max-w-6xl px-4 py-3 flex items-center gap-4">
+<header
+  class="border-b border-stone-300 dark:border-stone-700 bg-white/80 dark:bg-stone-950/80 backdrop-blur sticky top-0 z-10"
+>
+  <div class="mx-auto max-w-6xl px-4 py-3 flex items-center gap-6">
     <a use:link href="/" class="font-semibold tracking-tight">
       <span class="text-moyo-700 dark:text-moyo-400">moyo</span> · Crystallographic Group Viewer
     </a>
-    <nav class="ml-2 flex gap-1 text-sm">
+    <nav class="ml-2 flex gap-4 text-sm">
       {#each tabs as tab}
         {@const active = tab.match.test($location)}
         <a
           use:link
           href={tab.href}
-          class="px-2 py-1 rounded transition-colors {active
-            ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
-            : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'}"
+          class="border-b-2 -mb-px py-1 transition-colors {active
+            ? 'border-moyo-600 text-moyo-700 dark:text-moyo-400'
+            : 'border-transparent text-stone-600 hover:text-stone-950 dark:text-stone-300 dark:hover:text-white'}"
         >
           {tab.label}
         </a>

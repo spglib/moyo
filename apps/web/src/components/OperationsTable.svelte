@@ -17,8 +17,8 @@
     </thead>
     <tbody>
       {#each operations as op, i}
-        <tr class="border-t border-slate-100 dark:border-slate-800">
-          <td class="px-2 py-1 align-top text-slate-500">{i + 1}</td>
+        <tr class="border-t border-stone-200 dark:border-stone-800">
+          <td class="px-2 py-1 align-top text-stone-500">{i + 1}</td>
           <td class="px-2 py-1 align-top">
             {formatOperationXyz(
               op.rotation,
@@ -31,7 +31,7 @@
     </tbody>
   </table>
 </div>
-<p class="mt-2 text-xs text-slate-500 dark:text-slate-400">
+<p class="mt-2 text-xs text-stone-500 dark:text-stone-400">
   {operations.length} operation{operations.length === 1 ? '' : 's'}. Note: the ordering of
   operations is not guaranteed to match the conventions used by ITA or the Bilbao Crystallographic
   Server.

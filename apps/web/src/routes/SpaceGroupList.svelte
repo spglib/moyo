@@ -30,7 +30,7 @@
   <div>
     <div class="eyebrow">Space groups</div>
     <h1 class="text-2xl font-semibold">All 230 space-group types</h1>
-    <p class="text-sm text-slate-600 dark:text-slate-400">
+    <p class="text-sm text-stone-600 dark:text-stone-400">
       Search by number, HM symbol, arithmetic class, crystal system, Bravais class, ...
     </p>
   </div>
@@ -61,12 +61,12 @@
           bind:value={query}
         />
       </label>
-      <span class="text-xs text-slate-500">{filtered.length} / {rows.length}</span>
+      <span class="text-xs text-stone-500">{filtered.length} / {rows.length}</span>
     </div>
 
     <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
       <label class="flex items-center gap-2">
-        <span class="text-slate-500">Arithmetic crystal class:</span>
+        <span class="text-stone-500">Arithmetic crystal class:</span>
         <select
           class="filter-select font-mono"
           bind:value={arithSymbol}
@@ -78,7 +78,7 @@
         </select>
       </label>
       <label class="flex items-center gap-2">
-        <span class="text-slate-500">Geometric crystal class:</span>
+        <span class="text-stone-500">Geometric crystal class:</span>
         <select
           class="filter-select font-mono"
           bind:value={geomClass}
@@ -90,7 +90,7 @@
         </select>
       </label>
       <label class="flex items-center gap-2">
-        <span class="text-slate-500">Crystal system:</span>
+        <span class="text-stone-500">Crystal system:</span>
         <select
           class="filter-select"
           bind:value={system}
@@ -102,7 +102,7 @@
         </select>
       </label>
       <label class="flex items-center gap-2">
-        <span class="text-slate-500">Lattice system:</span>
+        <span class="text-stone-500">Lattice system:</span>
         <select
           class="filter-select"
           bind:value={lattice}
@@ -155,7 +155,7 @@
               <td class="px-3 py-1.5 font-mono">
                 <a use:link href={`/sg/${r.number}`} class="hover:underline">{r.hm_short}</a>
               </td>
-              <td class="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-400">{r.hm_full}</td>
+              <td class="px-3 py-1.5 font-mono text-stone-600 dark:text-stone-400">{r.hm_full}</td>
               <td class="px-3 py-1.5 font-mono">{r.arithmetic_symbol}</td>
               <td class="px-3 py-1.5 font-mono">{r.geometric_crystal_class}</td>
               <td class="px-3 py-1.5">{r.crystal_system}</td>
@@ -164,7 +164,7 @@
           {/each}
           {#if filtered.length === 0}
             <tr>
-              <td colspan="7" class="px-3 py-6 text-center text-sm text-slate-500">
+              <td colspan="7" class="px-3 py-6 text-center text-sm text-stone-500">
                 No space groups match the current filter.
               </td>
             </tr>

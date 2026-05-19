@@ -18,7 +18,7 @@
 
 <button
   type="button"
-  class="rounded border border-slate-300 dark:border-slate-700 px-2 py-1 text-xs hover:bg-slate-100 dark:hover:bg-slate-800"
+  class="rounded border border-stone-300 dark:border-stone-700 px-2 py-1 text-xs hover:bg-stone-100 dark:hover:bg-stone-800"
   onclick={() => (dark = !dark)}
   aria-label="Toggle dark mode"
 >

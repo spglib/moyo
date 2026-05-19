@@ -31,7 +31,7 @@
   <div>
     <div class="eyebrow">Magnetic space groups</div>
     <h1 class="text-2xl font-semibold">All 1651 magnetic space-group types</h1>
-    <p class="text-sm text-slate-600 dark:text-slate-400">
+    <p class="text-sm text-stone-600 dark:text-stone-400">
       Search by UNI / Litvin / BNS / OG number, magnetic Hall symbol, ...
     </p>
   </div>
@@ -56,7 +56,7 @@
           bind:value={query}
         />
       </label>
-      <span class="text-xs text-slate-500"
+      <span class="text-xs text-stone-500"
         >{visible.length === filtered.length
           ? `${filtered.length} / ${rows.length}`
           : `${visible.length} of ${filtered.length} (of ${rows.length})`}</span
@@ -65,7 +65,7 @@
 
     <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
       <label class="flex items-center gap-2">
-        <span class="text-slate-500">Construct type:</span>
+        <span class="text-stone-500">Construct type:</span>
         <select
           class="filter-select"
           bind:value={constructType}
@@ -123,7 +123,7 @@
           {/each}
           {#if filtered.length === 0}
             <tr>
-              <td colspan="6" class="px-3 py-6 text-center text-sm text-slate-500">
+              <td colspan="6" class="px-3 py-6 text-center text-sm text-stone-500">
                 No magnetic space groups match the current filter.
               </td>
             </tr>
@@ -136,7 +136,7 @@
       <div class="text-center">
         <button
           type="button"
-          class="rounded border border-slate-300 dark:border-slate-700 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
+          class="rounded border border-stone-300 dark:border-stone-700 px-3 py-1 text-sm hover:bg-stone-100 dark:hover:bg-stone-800"
           onclick={() => (limit += PAGE_SIZE)}
         >
           Show {Math.min(PAGE_SIZE, filtered.length - visible.length)} more

@@ -39,14 +39,14 @@
 {#await data}
   <LoadingDots />
 {:then d}
-  <header class="py-2 border-b border-slate-200 dark:border-slate-800 mb-4">
+  <header class="py-2 border-b border-stone-300 dark:border-stone-700 mb-4">
     <div class="eyebrow">Magnetic space group</div>
     <h1 class="text-2xl font-semibold">
       <span class="font-mono">UNI #{d.type.uni_number}</span>
       <span class="ml-2 font-mono">{d.hall.magnetic_hall_symbol}</span>
     </h1>
     <p
-      class="text-sm text-slate-600 dark:text-slate-400 font-mono flex items-baseline gap-1 flex-wrap"
+      class="text-sm text-stone-600 dark:text-stone-400 font-mono flex items-baseline gap-1 flex-wrap"
     >
       <span
         >BNS {d.type.bns_number} &middot; OG {d.type.og_number} &middot; parent SG #{d.type

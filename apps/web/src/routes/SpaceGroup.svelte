@@ -38,13 +38,13 @@
 {#await data}
   <LoadingDots />
 {:then d}
-  <header class="py-2 border-b border-slate-200 dark:border-slate-800 mb-4">
+  <header class="py-2 border-b border-stone-300 dark:border-stone-700 mb-4">
     <div class="eyebrow">Space group</div>
     <h1 class="text-2xl font-semibold flex items-baseline gap-2">
       <span class="font-mono">#{d.type.number}</span>
       <HmSymbol symbol={d.type.hm_short} />
     </h1>
-    <p class="text-sm text-slate-600 dark:text-slate-400 font-mono">
+    <p class="text-sm text-stone-600 dark:text-stone-400 font-mono">
       {d.type.hm_full} &middot; Hall: {d.hall.hall_symbol}
     </p>
   </header>

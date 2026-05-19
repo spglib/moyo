@@ -25,23 +25,26 @@
 
 <section class="py-4">
   <h1 class="text-2xl font-semibold tracking-tight">Browse crystallographic groups</h1>
-  <p class="mt-1 text-slate-600 dark:text-slate-400 max-w-2xl">
-    Static viewer powered by <code class="font-mono text-sm">moyo</code> compiled to WebAssembly. All
-    look-ups run in your browser; no server, no analytics.
+  <p class="mt-1 text-stone-600 dark:text-stone-400 max-w-2xl">
+    Static viewer powered by <code class="font-mono text-sm">moyo</code> compiled to WebAssembly.
+    All look-ups run in your browser; no server, no analytics.
   </p>
 
-  <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <div
+    class="mt-6 border-y border-stone-300 dark:border-stone-700 divide-y divide-stone-200 dark:divide-stone-800"
+  >
     {#each cards as c}
       <a
         use:link
         href={c.href}
-        class="block rounded-lg border border-slate-200 dark:border-slate-800 p-5 hover:border-moyo-500 dark:hover:border-moyo-500 transition-colors"
+        class="grid grid-cols-[7rem_1fr_auto] items-baseline gap-4 px-1 py-4 hover:bg-moyo-50 dark:hover:bg-moyo-950/30"
       >
-        <div class="flex items-baseline justify-between">
-          <h2 class="text-lg font-medium">{c.title}</h2>
-          <span class="text-xs text-slate-500 dark:text-slate-400 font-mono">{c.range}</span>
-        </div>
-        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{c.blurb}</p>
+        <span class="font-mono text-xs text-moyo-700 dark:text-moyo-400">{c.range}</span>
+        <span>
+          <span class="block font-medium">{c.title}</span>
+          <span class="block text-sm text-stone-600 dark:text-stone-400">{c.blurb}</span>
+        </span>
+        <span class="font-mono text-xs text-stone-400">&rarr;</span>
       </a>
     {/each}
   </div>
