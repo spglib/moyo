@@ -11,6 +11,7 @@
   import InfoGrid from '../components/InfoGrid.svelte'
   import OperationsTable from '../components/OperationsTable.svelte'
   import GroupPager from '../components/GroupPager.svelte'
+  import HmSymbol from '../components/HmSymbol.svelte'
   import ErrorCard from '../components/ErrorCard.svelte'
   import LoadingDots from '../components/LoadingDots.svelte'
 
@@ -55,9 +56,9 @@
   >
     <div>
       <div class="text-xs uppercase tracking-wide text-slate-500">Space group</div>
-      <h1 class="text-2xl font-semibold">
+      <h1 class="text-2xl font-semibold flex items-baseline gap-2">
         <span class="font-mono">#{d.type.number}</span>
-        <span class="ml-2">{d.type.hm_short}</span>
+        <HmSymbol symbol={d.type.hm_short} />
       </h1>
       <p class="text-sm text-slate-600 dark:text-slate-400 font-mono">
         {d.type.hm_full}
