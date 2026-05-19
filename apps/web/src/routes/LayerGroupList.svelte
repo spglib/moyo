@@ -44,9 +44,7 @@
   {@const arithOptions = uniqueSorted(rows.map((r) => r.arithmetic_symbol))}
   {@const geomOptions = uniqueSorted(rows.map((r) => r.geometric_crystal_class))}
   {@const latticeOptions = uniqueSorted(rows.map((r) => r.lattice_system))}
-  {@const systemsInUse = new Set(
-    rows.map((r) => r.crystal_system).filter((s): s is CrystalSystem => s !== null)
-  )}
+  {@const systemsInUse = new Set(rows.map((r) => r.crystal_system))}
   {@const filtered = filterRows(rows, query).filter(
     (r) =>
       (arithSymbol === 'All' || r.arithmetic_symbol === arithSymbol) &&
@@ -165,7 +163,7 @@
               <td class="px-3 py-1.5 font-mono text-slate-600 dark:text-slate-400">{r.hm_full}</td>
               <td class="px-3 py-1.5 font-mono">{r.arithmetic_symbol}</td>
               <td class="px-3 py-1.5 font-mono">{r.geometric_crystal_class}</td>
-              <td class="px-3 py-1.5">{r.crystal_system ?? '-'}</td>
+              <td class="px-3 py-1.5">{r.crystal_system}</td>
               <td class="px-3 py-1.5">{r.lattice_system}</td>
             </tr>
           {/each}

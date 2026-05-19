@@ -5,13 +5,7 @@ import type {
   MoyoMagneticHallSymbolEntry,
 } from '@spglib/moyo-wasm'
 import { getMoyo } from './wasm'
-import {
-  SPACE_GROUP_COUNT,
-  LAYER_GROUP_COUNT,
-  MAGNETIC_SG_COUNT,
-  crystalSystemOfPointGroup,
-  type CrystalSystem,
-} from './catalog'
+import { SPACE_GROUP_COUNT, LAYER_GROUP_COUNT, MAGNETIC_SG_COUNT } from './catalog'
 import { constructTypeLabel } from './format'
 
 export interface SpaceGroupRow extends MoyoSpaceGroupType {
@@ -19,7 +13,6 @@ export interface SpaceGroupRow extends MoyoSpaceGroupType {
 }
 
 export interface LayerGroupRow extends MoyoLayerGroupType {
-  crystal_system: CrystalSystem | null
   searchText: string
 }
 
@@ -54,12 +47,7 @@ export function getAllLayerGroups(): Promise<LayerGroupRow[]> {
       const rows: LayerGroupRow[] = []
       for (let n = 1; n <= LAYER_GROUP_COUNT; n++) {
         const t = m.layer_group_type(n)
-        const crystal_system = crystalSystemOfPointGroup(t.geometric_crystal_class)
-        rows.push({
-          ...t,
-          crystal_system,
-          searchText: layerGroupSearchText(t, crystal_system),
-        })
+        rows.push({ ...t, searchText: layerGroupSearchText(t) })
       }
       return rows
     })
@@ -118,7 +106,7 @@ function spaceGroupSearchText(t: MoyoSpaceGroupType): string {
     .toLowerCase()
 }
 
-function layerGroupSearchText(t: MoyoLayerGroupType, crystal_system: CrystalSystem | null): string {
+function layerGroupSearchText(t: MoyoLayerGroupType): string {
   return [
     t.number,
     withCompact(t.hm_short),
@@ -126,7 +114,7 @@ function layerGroupSearchText(t: MoyoLayerGroupType, crystal_system: CrystalSyst
     t.arithmetic_number,
     t.arithmetic_symbol,
     t.geometric_crystal_class,
-    crystal_system ?? '',
+    t.crystal_system,
     t.lattice_system,
     t.bravais_class,
   ]

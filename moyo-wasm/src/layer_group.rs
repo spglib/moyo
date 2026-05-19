@@ -3,7 +3,7 @@ use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
 use moyo::data::{
-    LayerCentering, LayerSetting, layer_arithmetic_crystal_class_entry,
+    CrystalSystem, LayerCentering, LayerSetting, layer_arithmetic_crystal_class_entry,
     layer_hall_symbol_entry as core_layer_hall_symbol_entry,
 };
 
@@ -76,6 +76,7 @@ pub struct MoyoLayerGroupType {
     pub arithmetic_number: i32,
     pub arithmetic_symbol: String,
     pub geometric_crystal_class: String,
+    pub crystal_system: String,
     pub bravais_class: String,
     pub lattice_system: String,
 }
@@ -138,6 +139,7 @@ pub fn layer_group_type(number: i32) -> Result<MoyoLayerGroupType, JsValue> {
         .ok_or_else(|| JsValue::from_str(&format!("unknown layer-group number: {}", number)))?;
     let lhs = core_layer_hall_symbol_entry(layer_hall_number).unwrap();
     let acc = layer_arithmetic_crystal_class_entry(lhs.arithmetic_number).unwrap();
+    let crystal_system = CrystalSystem::from_geometric_crystal_class(acc.geometric_crystal_class);
     let lattice_system = acc.layer_lattice_system();
     Ok(MoyoLayerGroupType {
         number: lhs.number,
@@ -146,6 +148,7 @@ pub fn layer_group_type(number: i32) -> Result<MoyoLayerGroupType, JsValue> {
         arithmetic_number: acc.arithmetic_number,
         arithmetic_symbol: acc.symbol.to_string(),
         geometric_crystal_class: acc.geometric_crystal_class.to_string(),
+        crystal_system: crystal_system.to_string(),
         bravais_class: acc.layer_bravais_class.to_string(),
         lattice_system: lattice_system.to_string(),
     })
