@@ -9,13 +9,13 @@
       blurb: 'The 230 crystallographic space-group types in 3-D.',
     },
     {
-      href: '/lg/1',
+      href: '/lg',
       title: 'Layer groups',
       range: '1 - 80',
       blurb: 'The 80 layer-group types (subperiodic groups in 3-D with 2-D translations).',
     },
     {
-      href: '/msg/1',
+      href: '/msg',
       title: 'Magnetic space groups',
       range: '1 - 1651',
       blurb: 'The 1651 Shubnikov / magnetic space-group types, indexed by UNI number.',

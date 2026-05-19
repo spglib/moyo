@@ -1,29 +1,91 @@
-import type { MoyoSpaceGroupType } from '@spglib/moyo-wasm'
+import type {
+  MoyoSpaceGroupType,
+  MoyoLayerGroupType,
+  MoyoMagneticSpaceGroupType,
+  MoyoMagneticHallSymbolEntry,
+} from '@spglib/moyo-wasm'
 import { getMoyo } from './wasm'
-import { SPACE_GROUP_COUNT } from './catalog'
+import { SPACE_GROUP_COUNT, LAYER_GROUP_COUNT, MAGNETIC_SG_COUNT } from './catalog'
+import { constructTypeLabel } from './format'
 
 export interface SpaceGroupRow extends MoyoSpaceGroupType {
   searchText: string
 }
 
-let cached: Promise<SpaceGroupRow[]> | null = null
+export interface LayerGroupRow extends MoyoLayerGroupType {
+  searchText: string
+}
+
+export interface MagneticSpaceGroupRow extends MoyoMagneticSpaceGroupType {
+  magnetic_hall_symbol: string
+  parent_hm_short: string
+  construct_label: string
+  searchText: string
+}
+
+let cachedSg: Promise<SpaceGroupRow[]> | null = null
+let cachedLg: Promise<LayerGroupRow[]> | null = null
+let cachedMsg: Promise<MagneticSpaceGroupRow[]> | null = null
 
 /** Eagerly load every 1..230 space-group-type entry, indexed for filtering. */
 export function getAllSpaceGroups(): Promise<SpaceGroupRow[]> {
-  if (!cached) {
-    cached = getMoyo().then((m) => {
+  if (!cachedSg) {
+    cachedSg = getMoyo().then((m) => {
       const rows: SpaceGroupRow[] = []
       for (let n = 1; n <= SPACE_GROUP_COUNT; n++) {
         const t = m.space_group_type(n)
-        rows.push({ ...t, searchText: searchText(t) })
+        rows.push({ ...t, searchText: spaceGroupSearchText(t) })
       }
       return rows
     })
   }
-  return cached
+  return cachedSg
 }
 
-function searchText(t: MoyoSpaceGroupType): string {
+/** Eagerly load every 1..80 layer-group-type entry. */
+export function getAllLayerGroups(): Promise<LayerGroupRow[]> {
+  if (!cachedLg) {
+    cachedLg = getMoyo().then((m) => {
+      const rows: LayerGroupRow[] = []
+      for (let n = 1; n <= LAYER_GROUP_COUNT; n++) {
+        const t = m.layer_group_type(n)
+        rows.push({ ...t, searchText: layerGroupSearchText(t) })
+      }
+      return rows
+    })
+  }
+  return cachedLg
+}
+
+/** Eagerly load every 1..1651 magnetic-space-group-type entry. */
+export function getAllMagneticSpaceGroups(): Promise<MagneticSpaceGroupRow[]> {
+  if (!cachedMsg) {
+    cachedMsg = getMoyo().then((m) => {
+      const parents = new Map<number, string>()
+      const rows: MagneticSpaceGroupRow[] = []
+      for (let n = 1; n <= MAGNETIC_SG_COUNT; n++) {
+        const t = m.magnetic_space_group_type(n)
+        const hall = m.magnetic_hall_symbol_entry(n)
+        if (!parents.has(t.number)) {
+          parents.set(t.number, m.space_group_type(t.number).hm_short)
+        }
+        const parent_hm_short = parents.get(t.number) ?? ''
+        const construct_label = constructTypeLabel(t.construct_type)
+        rows.push({
+          ...t,
+          magnetic_hall_symbol: hall.magnetic_hall_symbol,
+          parent_hm_short,
+          construct_label,
+          searchText: magneticSpaceGroupSearchText(t, hall, parent_hm_short, construct_label),
+        })
+      }
+      return rows
+    })
+  }
+  return cachedMsg
+}
+
+function spaceGroupSearchText(t: MoyoSpaceGroupType): string {
   return [
     t.number,
     t.hm_short,
@@ -40,7 +102,42 @@ function searchText(t: MoyoSpaceGroupType): string {
     .toLowerCase()
 }
 
-export function filterSpaceGroups(rows: SpaceGroupRow[], query: string): SpaceGroupRow[] {
+function layerGroupSearchText(t: MoyoLayerGroupType): string {
+  return [
+    t.number,
+    t.hm_short,
+    t.hm_full,
+    t.arithmetic_number,
+    t.arithmetic_symbol,
+    t.geometric_crystal_class,
+    t.lattice_system,
+    t.bravais_class,
+  ]
+    .join(' ')
+    .toLowerCase()
+}
+
+function magneticSpaceGroupSearchText(
+  t: MoyoMagneticSpaceGroupType,
+  hall: MoyoMagneticHallSymbolEntry,
+  parent_hm_short: string,
+  construct_label: string
+): string {
+  return [
+    t.uni_number,
+    t.litvin_number,
+    t.bns_number,
+    t.og_number,
+    t.number,
+    parent_hm_short,
+    hall.magnetic_hall_symbol,
+    construct_label,
+  ]
+    .join(' ')
+    .toLowerCase()
+}
+
+export function filterRows<T extends { searchText: string }>(rows: T[], query: string): T[] {
   const q = query.trim().toLowerCase()
   if (!q) return rows
   const tokens = q.split(/\s+/)

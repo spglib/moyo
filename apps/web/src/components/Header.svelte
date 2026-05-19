@@ -5,8 +5,8 @@
   const tabs = [
     { href: '/', label: 'Home', match: /^\/?$/ },
     { href: '/sg', label: 'Space groups', match: /^\/sg(\/|$)/ },
-    { href: '/lg/1', label: 'Layer groups', match: /^\/lg(\/|$)/ },
-    { href: '/msg/1', label: 'Magnetic SGs', match: /^\/msg(\/|$)/ },
+    { href: '/lg', label: 'Layer groups', match: /^\/lg(\/|$)/ },
+    { href: '/msg', label: 'Magnetic SGs', match: /^\/msg(\/|$)/ },
   ]
 </script>
 
