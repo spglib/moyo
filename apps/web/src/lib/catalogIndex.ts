@@ -27,7 +27,6 @@ let cachedSg: Promise<SpaceGroupRow[]> | null = null
 let cachedLg: Promise<LayerGroupRow[]> | null = null
 let cachedMsg: Promise<MagneticSpaceGroupRow[]> | null = null
 
-/** Eagerly load every 1..230 space-group-type entry, indexed for filtering. */
 export function getAllSpaceGroups(): Promise<SpaceGroupRow[]> {
   if (!cachedSg) {
     cachedSg = getMoyo().then((m) => {
@@ -42,7 +41,6 @@ export function getAllSpaceGroups(): Promise<SpaceGroupRow[]> {
   return cachedSg
 }
 
-/** Eagerly load every 1..80 layer-group-type entry. */
 export function getAllLayerGroups(): Promise<LayerGroupRow[]> {
   if (!cachedLg) {
     cachedLg = getMoyo().then((m) => {
@@ -57,7 +55,6 @@ export function getAllLayerGroups(): Promise<LayerGroupRow[]> {
   return cachedLg
 }
 
-/** Eagerly load every 1..1651 magnetic-space-group-type entry. */
 export function getAllMagneticSpaceGroups(): Promise<MagneticSpaceGroupRow[]> {
   if (!cachedMsg) {
     cachedMsg = getMoyo().then((m) => {

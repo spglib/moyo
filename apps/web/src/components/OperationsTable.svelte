@@ -1,14 +1,8 @@
 <script lang="ts">
+  import type { MoyoOperation, MoyoMagneticOperation } from '@spglib/moyo-wasm'
   import { formatRotationRow, formatFraction } from '../lib/format'
 
-  type Mat9 = [number, number, number, number, number, number, number, number, number]
-  type Vec3 = [number, number, number]
-  interface Op {
-    rotation: Mat9
-    translation: Vec3
-    time_reversal?: boolean
-  }
-
+  type Op = MoyoOperation | MoyoMagneticOperation
   let { operations, hasTimeReversal = false }: { operations: Op[]; hasTimeReversal?: boolean } =
     $props()
 </script>
@@ -40,7 +34,9 @@
             )})
           </td>
           {#if hasTimeReversal}
-            <td class="px-2 py-1 align-top">{op.time_reversal ? '-1' : '+1'}</td>
+            <td class="px-2 py-1 align-top"
+              >{(op as MoyoMagneticOperation).time_reversal ? '-1' : '+1'}</td
+            >
           {/if}
         </tr>
       {/each}

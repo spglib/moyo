@@ -58,30 +58,28 @@
     <GroupPager value={number} min={1} max={LAYER_GROUP_COUNT} basePath="/lg" label="#" />
   </header>
 
-  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <div class="lg:col-span-2 space-y-6">
-      <InfoGrid
-        rows={[
-          { label: 'Layer number', value: d.type.number, mono: true },
-          { label: 'Hall number', value: d.hall?.hall_number ?? '-', mono: true },
-          { label: 'HM short', value: d.type.hm_short, mono: true },
-          { label: 'HM full', value: d.type.hm_full, mono: true },
-          { label: 'Hall symbol', value: d.hall?.hall_symbol ?? '-', mono: true },
-          { label: 'Setting (Hall row)', value: d.hall?.setting ?? '-', mono: true },
-          { label: 'Lattice system', value: d.type.lattice_system },
-          { label: 'Bravais class', value: d.type.bravais_class, mono: true },
-          { label: 'Centering', value: d.hall?.centering ?? '-', mono: true },
-          {
-            label: 'Arithmetic crystal class',
-            value: `${d.arith.arithmetic_number} (${d.arith.symbol})`,
-            mono: true,
-          },
-          { label: 'Geometric crystal class', value: d.type.geometric_crystal_class, mono: true },
-        ]}
-      />
+  <section class="space-y-6">
+    <InfoGrid
+      rows={[
+        { label: 'Layer number', value: d.type.number, mono: true },
+        { label: 'Hall number', value: d.hall?.hall_number ?? '-', mono: true },
+        { label: 'HM short', value: d.type.hm_short, mono: true },
+        { label: 'HM full', value: d.type.hm_full, mono: true },
+        { label: 'Hall symbol', value: d.hall?.hall_symbol ?? '-', mono: true },
+        { label: 'Setting (Hall row)', value: d.hall?.setting ?? '-', mono: true },
+        { label: 'Lattice system', value: d.type.lattice_system },
+        { label: 'Bravais class', value: d.type.bravais_class, mono: true },
+        { label: 'Centering', value: d.hall?.centering ?? '-', mono: true },
+        {
+          label: 'Arithmetic crystal class',
+          value: `${d.arith.arithmetic_number} (${d.arith.symbol})`,
+          mono: true,
+        },
+        { label: 'Geometric crystal class', value: d.type.geometric_crystal_class, mono: true },
+      ]}
+    />
 
-      <OperationsTable operations={d.operations} />
-    </div>
+    <OperationsTable operations={d.operations} />
   </section>
 {:catch err}
   <ErrorCard message={`Failed to load layer group ${number}: ${formatErr(err)}`} />

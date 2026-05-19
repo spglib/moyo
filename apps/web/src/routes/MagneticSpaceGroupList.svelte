@@ -5,10 +5,19 @@
   import ErrorCard from '../components/ErrorCard.svelte'
   import LoadingDots from '../components/LoadingDots.svelte'
 
+  const PAGE_SIZE = 200
+
   let query = $state('')
   let constructType = $state<'All' | '1' | '2' | '3' | '4'>('All')
+  let limit = $state(PAGE_SIZE)
 
   const data = getAllMagneticSpaceGroups()
+
+  $effect(() => {
+    void query
+    void constructType
+    limit = PAGE_SIZE
+  })
 
   function onRowKey(e: KeyboardEvent, n: number) {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -36,6 +45,7 @@
   {@const filtered = filterRows(rows, query).filter(
     (r) => constructType === 'All' || String(r.construct_type) === constructType
   )}
+  {@const visible = filtered.slice(0, limit)}
 
   <section class="space-y-4">
     <div class="flex flex-wrap items-center gap-3">
@@ -61,7 +71,11 @@
           <option value="4">IV (BW, equi-translation)</option>
         </select>
       </label>
-      <span class="text-xs text-slate-500">{filtered.length} / {rows.length}</span>
+      <span class="text-xs text-slate-500"
+        >{visible.length === filtered.length
+          ? `${filtered.length} / ${rows.length}`
+          : `${visible.length} of ${filtered.length} (of ${rows.length})`}</span
+      >
     </div>
 
     <div class="overflow-x-auto rounded border border-slate-200 dark:border-slate-800">
@@ -78,7 +92,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each filtered as r (r.uni_number)}
+          {#each visible as r (r.uni_number)}
             <tr
               class="border-t border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/60 cursor-pointer"
               tabindex="0"
@@ -109,6 +123,18 @@
         </tbody>
       </table>
     </div>
+
+    {#if visible.length < filtered.length}
+      <div class="text-center">
+        <button
+          type="button"
+          class="rounded border border-slate-300 dark:border-slate-700 px-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-800"
+          onclick={() => (limit += PAGE_SIZE)}
+        >
+          Show {Math.min(PAGE_SIZE, filtered.length - visible.length)} more
+        </button>
+      </div>
+    {/if}
   </section>
 {:catch err}
   <ErrorCard message={`Failed to load magnetic-space-group catalog: ${formatErr(err)}`} />

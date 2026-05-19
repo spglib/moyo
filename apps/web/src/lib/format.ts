@@ -1,17 +1,8 @@
-type Vec3 = readonly [number, number, number]
 type Mat9 = readonly [number, number, number, number, number, number, number, number, number]
 
 export function formatRotationRow(m: Mat9, row: 0 | 1 | 2): string {
   const i = row * 3
   return `[${fmtInt(m[i])}, ${fmtInt(m[i + 1])}, ${fmtInt(m[i + 2])}]`
-}
-
-export function formatRotation(m: Mat9): string {
-  return [formatRotationRow(m, 0), formatRotationRow(m, 1), formatRotationRow(m, 2)].join(' / ')
-}
-
-export function formatTranslation(t: Vec3): string {
-  return `(${formatFraction(t[0])}, ${formatFraction(t[1])}, ${formatFraction(t[2])})`
 }
 
 const COMMON_DENOMS = [1, 2, 3, 4, 6, 8, 12]
