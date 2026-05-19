@@ -35,16 +35,6 @@
     const arith = m.arithmetic_crystal_class(type.arithmetic_number)
     return { type, hall, arith, operations }
   }
-
-  const centeringLabels: Record<string, string> = {
-    P: 'P (primitive)',
-    A: 'A',
-    B: 'B',
-    C: 'C',
-    I: 'I (body-centred)',
-    R: 'R (rhombohedral)',
-    F: 'F (face-centred)',
-  }
 </script>
 
 {#await data}
@@ -75,10 +65,7 @@
         { label: 'Crystal system', value: d.type.crystal_system },
         { label: 'Lattice system', value: d.type.lattice_system },
         { label: 'Bravais class', value: d.type.bravais_class, mono: true },
-        {
-          label: 'Centering',
-          value: d.hall ? (centeringLabels[d.hall.centering] ?? d.hall.centering) : '-',
-        },
+        { label: 'Centering', value: d.hall?.centering ?? '-', mono: true },
         {
           label: 'Arithmetic crystal class',
           value: `${d.arith.arithmetic_number} (${d.arith.symbol})`,
