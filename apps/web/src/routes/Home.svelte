@@ -21,6 +21,42 @@
       blurb: 'The 1651 Shubnikov / magnetic space-group types, indexed by UNI number.',
     },
   ]
+
+  const sources: { title: string; refs: { text: string; href?: string }[] }[] = [
+    {
+      title: 'Space groups',
+      refs: [
+        { text: "Seto's Hall-symbol database", href: 'https://yseto.net/en/sg/sg1' },
+        {
+          text: 'ITA Vol. A (2016)',
+          href: 'https://it.iucr.org/A/',
+        },
+      ],
+    },
+    {
+      title: 'Layer groups',
+      refs: [
+        { text: 'ITA Vol. E (2010)', href: 'https://it.iucr.org/E/' },
+        {
+          text: 'Fu et al., 2D Mater. 11, 035009 (2024)',
+          href: 'https://doi.org/10.1088/2053-1583/ad3e0c',
+        },
+      ],
+    },
+    {
+      title: 'Magnetic space groups',
+      refs: [
+        {
+          text: 'González-Platas et al., J. Appl. Cryst. (2021)',
+          href: 'https://journals.iucr.org/paper?tu5004',
+        },
+        {
+          text: 'Litvin, Magnetic Group Tables (IUCr, 2013)',
+          href: 'https://www.iucr.org/publ/978-0-9553602-2-0',
+        },
+      ],
+    },
+  ]
 </script>
 
 <section class="py-4">
@@ -48,4 +84,46 @@
       </a>
     {/each}
   </div>
+</section>
+
+<section class="mt-8 text-xs text-stone-500 dark:text-stone-400 space-y-2">
+  <h2 class="text-xs font-medium uppercase tracking-wide text-stone-600 dark:text-stone-300">
+    Data sources
+  </h2>
+  <dl class="space-y-1">
+    {#each sources as s}
+      <div class="flex flex-wrap gap-x-2">
+        <dt class="font-mono text-stone-600 dark:text-stone-300">{s.title}:</dt>
+        <dd class="flex-1 min-w-0">
+          {#each s.refs as r, i}{#if i > 0};{' '}{/if}{#if r.href}<a
+              href={r.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline hover:text-moyo-700 dark:hover:text-moyo-400">{r.text}</a
+            >{:else}{r.text}{/if}{/each}
+        </dd>
+      </div>
+    {/each}
+  </dl>
+  <p>
+    Source: <a
+      href="https://github.com/spglib/moyo"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="underline hover:text-moyo-700 dark:hover:text-moyo-400">github.com/spglib/moyo</a
+    >
+    &middot; License: <a
+      href="https://github.com/spglib/moyo/blob/main/LICENSE-MIT"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="underline hover:text-moyo-700 dark:hover:text-moyo-400">MIT</a
+    >
+    or
+    <a
+      href="https://github.com/spglib/moyo/blob/main/LICENSE-APACHE"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="underline hover:text-moyo-700 dark:hover:text-moyo-400">Apache-2.0</a
+    >
+  </p>
 </section>
