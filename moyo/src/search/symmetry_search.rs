@@ -1,8 +1,9 @@
+use super::layer::{LayerPrimitiveCell, LayerPrimitiveSymmetrySearch};
 use super::primitive_cell::{PrimitiveCell, PrimitiveMagneticCell};
 use super::primitive_symmetry_search::{PrimitiveMagneticSymmetrySearch, PrimitiveSymmetrySearch};
 use crate::base::{
-    AngleTolerance, Cell, MagneticCell, MagneticMoment, MagneticSymmetryTolerances, MoyoError,
-    RotationMagneticMomentAction, SymmetryTolerances, ToleranceHandler,
+    AngleTolerance, Cell, LayerCell, MagneticCell, MagneticMoment, MagneticSymmetryTolerances,
+    MoyoError, RotationMagneticMomentAction, SymmetryTolerances, ToleranceHandler,
 };
 
 use log::debug;
@@ -47,6 +48,68 @@ pub fn iterative_symmetry_search(
         }
 
         // When the maximum number of symmetry search trials is reached, restart ToleranceHandler to try larger strides
+        tolerances = tolerance_handler.tolerances.clone();
+        debug!("Restart ToleranceHandler with {:?}", tolerances);
+    }
+    debug!("Reach the maximum number of symmetry search trials");
+    Err(MoyoError::PrimitiveSymmetrySearchError)
+}
+
+/// Layer-group counterpart of [`iterative_symmetry_search`].
+///
+/// `LayerCell::new` validates the structural layer-cell contract (`c`
+/// perpendicular to `a, b`); the errors it raises (e.g.
+/// [`MoyoError::AperiodicAxisNotOrthogonal`]) describe the input geometry, not
+/// the tolerance, so it sits outside the retry loop. Only
+/// [`LayerPrimitiveCell::new`] and [`LayerPrimitiveSymmetrySearch::new`] are
+/// retried under tightening tolerances, matching the bulk path's choice to
+/// wrap only the tolerance-sensitive symmetry-search stages.
+pub fn iterative_layer_symmetry_search(
+    cell: &Cell,
+    symprec: f64,
+    angle_tolerance: AngleTolerance,
+) -> Result<
+    (
+        LayerPrimitiveCell,
+        LayerPrimitiveSymmetrySearch,
+        f64,
+        AngleTolerance,
+    ),
+    MoyoError,
+> {
+    let layer_cell = LayerCell::new(cell.clone(), symprec, angle_tolerance)?;
+
+    let mut tolerances = SymmetryTolerances {
+        symprec,
+        angle_tolerance,
+    };
+
+    for _ in 0..MAX_TOLERANCE_HANDLER_TRIALS {
+        let mut tolerance_handler = ToleranceHandler::new(tolerances);
+
+        for _ in 0..MAX_SYMMETRY_SEARCH_TRIALS {
+            match LayerPrimitiveCell::new(&layer_cell, tolerance_handler.tolerances.symprec) {
+                Ok(prim_layer) => {
+                    match LayerPrimitiveSymmetrySearch::new(
+                        &prim_layer.layer_cell,
+                        tolerance_handler.tolerances.symprec,
+                        tolerance_handler.tolerances.angle_tolerance,
+                    ) {
+                        Ok(symmetry_search) => {
+                            return Ok((
+                                prim_layer,
+                                symmetry_search,
+                                tolerance_handler.tolerances.symprec,
+                                tolerance_handler.tolerances.angle_tolerance,
+                            ));
+                        }
+                        Err(err) => tolerance_handler.update(err),
+                    }
+                }
+                Err(err) => tolerance_handler.update(err),
+            }
+        }
+
         tolerances = tolerance_handler.tolerances.clone();
         debug!("Restart ToleranceHandler with {:?}", tolerances);
     }
