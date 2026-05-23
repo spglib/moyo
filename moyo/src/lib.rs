@@ -105,7 +105,7 @@ use crate::data::{
 };
 use crate::identify::{LayerGroup, MagneticSpaceGroup, Normalizer, SpaceGroup};
 use crate::search::{
-    LayerPrimitiveCell, LayerPrimitiveSymmetrySearch, iterative_magnetic_symmetry_search,
+    LayerPrimitiveCell, iterative_layer_symmetry_search, iterative_magnetic_symmetry_search,
     iterative_symmetry_search, magnetic_operations_in_magnetic_cell, operations_in_cell,
 };
 use crate::symmetrize::{
@@ -449,10 +449,8 @@ impl MoyoLayerDataset {
         setting: LayerSetting,
         rotate_basis: bool,
     ) -> Result<Self, MoyoError> {
-        let layer_cell = LayerCell::new(cell.clone(), symprec, angle_tolerance)?;
-        let prim_layer = LayerPrimitiveCell::new(&layer_cell, symprec)?;
-        let symmetry_search =
-            LayerPrimitiveSymmetrySearch::new(&prim_layer.layer_cell, symprec, angle_tolerance)?;
+        let (prim_layer, symmetry_search, symprec, angle_tolerance) =
+            iterative_layer_symmetry_search(cell, symprec, angle_tolerance)?;
 
         let prim_volume = prim_layer.layer_cell.lattice().basis().determinant().abs();
         let epsilon = symprec / prim_volume.powf(1.0 / 3.0);
