@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use nalgebra::Matrix3;
 use nalgebra::linalg::QR;
 
@@ -139,9 +141,11 @@ impl StandardizedLayerCell {
             .ok_or(MoyoError::StandardizationError)?
             .layer_lattice_system();
         let prim_transformation = match lattice_system {
-            LayerLatticeSystem::Oblique => {
-                standardize_oblique_layer_cell(prim_layer_cell, &layer_group.transformation)
-            }
+            LayerLatticeSystem::Oblique => standardize_oblique_layer_cell(
+                prim_layer_cell,
+                &layer_group.transformation,
+                &prim_std_operations,
+            ),
             _ => layer_group.transformation.clone(),
         };
 
@@ -259,9 +263,23 @@ impl StandardizedLayerCell {
 /// failure (degenerate basis) is mapped to identity rather than an error so
 /// standardization remains total over the inputs the LG identification
 /// already accepted.
+///
+/// The in-plane reduction `(lifted, 0)` is composed *after* the LG
+/// transformation `(L, s)`, giving `(lifted * L, lifted * s)` (the origin shift
+/// must be carried through `lifted`, not left bare). But the reduction is only
+/// applied when `lifted` *normalizes* the canonical operation set
+/// `canonical_prim_ops`: for non-symmorphic oblique groups (LG 5, 7) the glide
+/// has an intrinsic in-plane translation that a generic basis change rotates
+/// off the canonical direction. Since the downstream symmetrization uses the
+/// fixed canonical Hall operations, a reduction that moves the glide would make
+/// the transformed positions inconsistent with those operations (a half-cell
+/// displacement) and break Wyckoff assignment. When `lifted` does not normalize
+/// the group, fall back to the bare LG transformation, which is already
+/// canonical-consistent (just possibly not Minkowski-reduced).
 fn standardize_oblique_layer_cell(
     prim_layer_cell: &LayerCell,
     transformation_to_prim_std: &UnimodularTransformation,
+    canonical_prim_ops: &Operations,
 ) -> UnimodularTransformation {
     let lattice_after =
         transformation_to_prim_std.transform_lattice(&prim_layer_cell.lattice().as_lattice());
@@ -269,10 +287,40 @@ fn standardize_oblique_layer_cell(
         Ok(t) => t,
         Err(_) => return transformation_to_prim_std.clone(),
     };
+    let lifted_only = UnimodularTransformation::from_linear(lifted);
+    if !normalizes_operations(&lifted_only, canonical_prim_ops) {
+        return transformation_to_prim_std.clone();
+    }
     UnimodularTransformation::new(
         lifted * transformation_to_prim_std.linear,
-        transformation_to_prim_std.origin_shift,
+        lifted.map(|e| e as f64) * transformation_to_prim_std.origin_shift,
     )
+}
+
+/// Whether the basis change `t` maps the operation set onto itself (same
+/// rotations, same translations modulo unit-cell vectors). The canonical
+/// operations carry exact rational translations, so the comparison uses a
+/// tight tolerance.
+fn normalizes_operations(t: &UnimodularTransformation, operations: &Operations) -> bool {
+    let transformed = t.transform_operations(operations);
+    if transformed.len() != operations.len() {
+        return false;
+    }
+    let mut translation_by_rotation = HashMap::new();
+    for op in operations.iter() {
+        translation_by_rotation.insert(op.rotation, op.translation);
+    }
+    for op in transformed.iter() {
+        let Some(target) = translation_by_rotation.get(&op.rotation) else {
+            return false;
+        };
+        let mut diff = target - op.translation;
+        diff -= diff.map(|e| e.round());
+        if diff.iter().any(|e| e.abs() > 1e-6) {
+            return false;
+        }
+    }
+    true
 }
 
 /// Symmetrize the in-plane block of a layer lattice with `c` along z.
