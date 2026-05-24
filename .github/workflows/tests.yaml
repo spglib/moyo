@@ -34,7 +34,7 @@ jobs:
     uses: ./.github/workflows/rw-python-tests.yaml
     permissions:
       id-token: write
-      contents: write
+      contents: read
 
   c:
     needs: path-filter

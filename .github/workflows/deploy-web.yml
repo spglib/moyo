@@ -6,6 +6,7 @@ on:
     paths:
       - 'moyo/**'
       - 'moyo-wasm/**'
+      - 'moyopy/**'
       - 'apps/web/**'
       - '.github/workflows/deploy-web.yml'
   workflow_dispatch:
@@ -60,6 +61,29 @@ jobs:
 
       - name: Copy index.html to 404.html for SPA fallback
         run: cp apps/web/dist/index.html apps/web/dist/404.html
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Build moyopy wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          args: --release --out dist --manifest-path moyopy/Cargo.toml
+          sccache: 'true'
+
+      - name: Install moyopy and docs dependencies
+        run: |
+          set -e
+          uv pip install --system --find-links dist moyopy
+          uv pip install --system moyopy[docs]
+
+      - name: Build docs into web app under /python
+        run: sphinx-build moyopy/docs apps/web/dist/python
 
       - name: Configure Pages
         uses: actions/configure-pages@v5

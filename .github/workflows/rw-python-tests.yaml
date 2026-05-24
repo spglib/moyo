@@ -68,12 +68,11 @@ jobs:
           uv pip install --system moyopy[testing,interface]
           pytest -v
 
-  # TODO:
+  # Build the Sphinx docs as a CI check. Publishing happens in
+  # deploy-web.yml, which bundles the docs under /python alongside the web
+  # app and ships them through the single GitHub Actions Pages deployment.
   docs:
     runs-on: ubuntu-latest
-    if: "!startsWith(github.ref, 'refs/tags/')"
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -97,10 +96,3 @@ jobs:
       - name: Build
         run: |
           sphinx-build moyopy/docs docs_build
-      - name: Deploy
-        if: ${{ github.event_name == 'push' }}
-        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs_build
-          destination_dir: python
