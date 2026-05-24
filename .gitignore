@@ -374,6 +374,7 @@ moyoc.h
 
 docs/note/
 bench/mp/*.json
+bench/2d/c2db/
 
 # python-interface docs
 _build/
