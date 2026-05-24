@@ -271,6 +271,51 @@ fn test_layer_dataset_sip_jvasp_27741() {
     assert_eq!(dataset.num_operations(), 8);
 }
 
+/// Repro for the moyopy "Wyckoff position assignment failed" crash on a
+/// centrosymmetric LG 7 (p2/a, oblique C2h) layer in a *near-square* cell
+/// whose glide is along the in-plane diagonal (CsBr monolayer, C2DB
+/// `2BrCs-1`, symmetrized to machine precision). Cs and Br each sit on a
+/// 2-fold axis (multiplicity-2 Wyckoff site).
+///
+/// The bug: for oblique layer groups the standardizer 2D-Minkowski-reduces
+/// the in-plane basis after the LG transformation. On a near-square cell the
+/// reduction can pick a basis that rotates the intrinsic glide off the
+/// canonical direction, leaving the transformed positions inconsistent with
+/// the fixed canonical Hall operations (a half-cell displacement) so no
+/// Wyckoff position matched. The fix only applies the reduction when it
+/// normalizes the canonical operation set, else falls back to the bare LG
+/// transformation. Pre-fix this errored at symprec <= 1e-3; it must now
+/// identify LG 7 and assign every atom a Wyckoff position.
+#[test]
+fn test_layer_dataset_lg7_diagonal_glide_near_square() {
+    let cell = Cell::new(
+        Lattice::new(matrix![
+            5.13647,  0.0,     0.0;
+            -0.00071, 5.13762, 0.0;
+            0.0,      0.0,     15.65196;
+        ]),
+        vec![
+            Vector3::new(0.56917124, 0.47581949, 0.61666151),
+            Vector3::new(0.06917124, 0.97581949, 0.38333849),
+            Vector3::new(0.06917124, 0.97581949, 0.61614090),
+            Vector3::new(0.56917124, 0.47581949, 0.38385910),
+        ],
+        vec![55, 55, 35, 35],
+    );
+
+    // symprec = 1e-3 is where this previously raised
+    // `WyckoffPositionAssignmentError`.
+    let dataset = MoyoLayerDataset::with_default(&cell, 1e-3).unwrap();
+    assert_eq!(dataset.number, 7);
+    // Two species, each a multiplicity-2 orbit on a 2-fold axis.
+    assert_eq!(dataset.orbits, vec![0, 0, 2, 2]);
+    // Every atom received a Wyckoff letter (the regression: assignment must
+    // not fail); the two Cs share a letter and the two Br share a letter.
+    assert_eq!(dataset.wyckoffs.len(), 4);
+    assert_eq!(dataset.wyckoffs[0], dataset.wyckoffs[1]);
+    assert_eq!(dataset.wyckoffs[2], dataset.wyckoffs[3]);
+}
+
 /// Tilted-c input must be rejected by the layer-cell constructor.
 #[test]
 fn test_layer_dataset_rejects_tilted_c() {

@@ -12,6 +12,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 
 - Expose `operations_from_number`, `operations_from_layer_number`, and `magnetic_operations_from_uni_number` from `moyo::data` so all bindings can reuse them
 - Wrap layer-group symmetry search in an iterative tolerance-retry loop (`iterative_layer_symmetry_search`), recovering from `TooLargeToleranceError` raised inside `LayerPrimitiveCell::new` / `LayerPrimitiveSymmetrySearch::new` instead of propagating immediately (#337)
+- Fix `WyckoffPositionAssignmentError` for oblique layer groups (LG 5, 7) in near-square cells: the in-plane Minkowski reduction during standardization could rotate a glide off the canonical direction. The reduction is now applied only when it normalizes the canonical operation set, and its origin shift is composed correctly
 
 ### moyo-wasm
 
