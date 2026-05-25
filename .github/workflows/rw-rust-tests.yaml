@@ -11,12 +11,12 @@ jobs:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
     - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
     - name: Install cargo-llvm-cov
-      uses: taiki-e/install-action@db5f2b269964e5b65b66c95c5abab5f79a135fc3 # cargo-llvm-cov
+      uses: taiki-e/install-action@9e57365e36de1e26dea5145e57d471261468d9f7 # cargo-llvm-cov
     - name: Test
       run: cargo llvm-cov --release --all-features --workspace --lcov --output-path lcov.info
     - name: Upload coverage to Codecov
       if: github.event.repository.fork == false
-      uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6
+      uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: lcov.info
