@@ -110,7 +110,7 @@
                 <CollapsibleSection title="Symmetry operations" count={s.operations.length}>
                   <OperationsTable operations={s.operations} />
                 </CollapsibleSection>
-                <CollapsibleSection title="Wyckoff positions" count={s.wyckoffs.length} open>
+                <CollapsibleSection title="Wyckoff positions" count={s.wyckoffs.length}>
                   <WyckoffTable positions={s.wyckoffs} />
                 </CollapsibleSection>
               </div>
