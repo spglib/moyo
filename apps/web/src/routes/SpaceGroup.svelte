@@ -4,11 +4,13 @@
     MoyoSpaceGroupType,
     MoyoHallSymbolEntry,
     MoyoArithmeticCrystalClass,
+    MoyoWyckoffPosition,
   } from '@spglib/moyo-wasm'
   import { getMoyo, formatErr } from '../lib/wasm'
   import { SPACE_GROUP_COUNT, clampInt } from '../lib/catalog'
   import InfoGrid from '../components/InfoGrid.svelte'
   import OperationsTable from '../components/OperationsTable.svelte'
+  import WyckoffTable from '../components/WyckoffTable.svelte'
   import HmSymbol from '../components/HmSymbol.svelte'
   import ErrorCard from '../components/ErrorCard.svelte'
   import LoadingDots from '../components/LoadingDots.svelte'
@@ -18,6 +20,7 @@
     hall: MoyoHallSymbolEntry
     arith: MoyoArithmeticCrystalClass
     operations: MoyoOperation[]
+    wyckoffs: MoyoWyckoffPosition[]
   }
 
   let { params }: { params: { number: string } } = $props()
@@ -31,7 +34,8 @@
     const operations = m.operations_from_number(n, { type: 'Standard' }, false)
     const hall = m.hall_symbol_entry(type.hall_number)
     const arith = m.arithmetic_crystal_class(type.arithmetic_number)
-    return { type, hall, arith, operations }
+    const wyckoffs = m.wyckoff_positions(type.hall_number)
+    return { type, hall, arith, operations, wyckoffs }
   }
 </script>
 
@@ -72,7 +76,15 @@
       ]}
     />
 
-    <OperationsTable operations={d.operations} />
+    <div>
+      <h2 class="text-lg font-semibold mb-2">Symmetry operations</h2>
+      <OperationsTable operations={d.operations} />
+    </div>
+
+    <div>
+      <h2 class="text-lg font-semibold mb-2">Wyckoff positions</h2>
+      <WyckoffTable positions={d.wyckoffs} />
+    </div>
   </section>
 {:catch err}
   <ErrorCard message={`Failed to load space group ${number}: ${formatErr(err)}`} />
