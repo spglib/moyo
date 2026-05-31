@@ -3,8 +3,9 @@ use tsify::Tsify;
 use wasm_bindgen::prelude::*;
 
 use moyo::data::{
-    Centering, CrystalFamily, CrystalSystem, LatticeSystem, Setting,
+    Centering, CrystalFamily, CrystalSystem, HallSymbolEntry, LatticeSystem, Setting,
     arithmetic_crystal_class_entry, hall_symbol_entry as core_hall_symbol_entry,
+    iter_wyckoff_positions_from_hall_number,
 };
 
 use crate::common::{MoyoOperation, map_moyo_err};
@@ -67,6 +68,21 @@ pub struct MoyoHallSymbolEntry {
     pub centering: MoyoCentering,
 }
 
+impl From<HallSymbolEntry> for MoyoHallSymbolEntry {
+    fn from(entry: HallSymbolEntry) -> Self {
+        Self {
+            hall_number: entry.hall_number,
+            number: entry.number,
+            arithmetic_number: entry.arithmetic_number,
+            setting: entry.setting.to_string(),
+            hall_symbol: entry.hall_symbol.to_string(),
+            hm_short: entry.hm_short.to_string(),
+            hm_full: entry.hm_full.to_string(),
+            centering: entry.centering.into(),
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi)]
 pub struct MoyoArithmeticCrystalClass {
@@ -74,6 +90,19 @@ pub struct MoyoArithmeticCrystalClass {
     pub symbol: String,
     pub geometric_crystal_class: String,
     pub bravais_class: String,
+}
+
+#[derive(Serialize, Deserialize, Tsify)]
+#[tsify(into_wasm_abi)]
+pub struct MoyoWyckoffPosition {
+    /// Multiplicity in the conventional cell.
+    pub multiplicity: usize,
+    /// Wyckoff letter.
+    pub letter: String,
+    /// Site-symmetry symbol.
+    pub site_symmetry: String,
+    /// Representative coordinate triplet (e.g. `x,y,z`).
+    pub coordinates: String,
 }
 
 #[derive(Serialize, Deserialize, Tsify)]
@@ -109,16 +138,33 @@ pub fn operations_from_number(
 pub fn hall_symbol_entry(hall_number: i32) -> Result<MoyoHallSymbolEntry, JsValue> {
     let entry = core_hall_symbol_entry(hall_number)
         .ok_or_else(|| JsValue::from_str(&format!("unknown hall_number: {}", hall_number)))?;
-    Ok(MoyoHallSymbolEntry {
-        hall_number: entry.hall_number,
-        number: entry.number,
-        arithmetic_number: entry.arithmetic_number,
-        setting: entry.setting.to_string(),
-        hall_symbol: entry.hall_symbol.to_string(),
-        hm_short: entry.hm_short.to_string(),
-        hm_full: entry.hm_full.to_string(),
-        centering: entry.centering.into(),
-    })
+    Ok(entry.into())
+}
+
+/// Return all Hall-symbol entries for the given ITA space-group `number` (1 - 230),
+/// ordered by Hall number. Each entry corresponds to one setting of the space group.
+#[wasm_bindgen]
+pub fn hall_symbol_entries_from_number(number: i32) -> Vec<MoyoHallSymbolEntry> {
+    (1..=530)
+        .filter_map(core_hall_symbol_entry)
+        .filter(|entry| entry.number == number)
+        .map(MoyoHallSymbolEntry::from)
+        .collect()
+}
+
+/// Return all Wyckoff positions for the given `hall_number` (1 - 530), ordered
+/// general-position-first then descending multiplicity. Returns an empty array for
+/// unknown Hall numbers.
+#[wasm_bindgen]
+pub fn wyckoff_positions(hall_number: i32) -> Vec<MoyoWyckoffPosition> {
+    iter_wyckoff_positions_from_hall_number(hall_number)
+        .map(|wp| MoyoWyckoffPosition {
+            multiplicity: wp.multiplicity,
+            letter: wp.letter.to_string(),
+            site_symmetry: wp.site_symmetry.to_string(),
+            coordinates: wp.coordinates.to_string(),
+        })
+        .collect()
 }
 
 /// Return the arithmetic-crystal-class entry for the given `arithmetic_number` (1 - 73).

@@ -119,6 +119,16 @@ pub fn iter_wyckoff_positions(
         .filter(move |wp| wp.hall_number == hall_number && wp.multiplicity == multiplicity)
 }
 
+/// Return all Wyckoff positions for the given `hall_number`, ordered as stored in
+/// the database (general position first, then descending multiplicity).
+pub fn iter_wyckoff_positions_from_hall_number(
+    hall_number: HallNumber,
+) -> impl Iterator<Item = &'static WyckoffPosition> {
+    WYCKOFF_DATABASE
+        .iter()
+        .filter(move |wp| wp.hall_number == hall_number)
+}
+
 static WYCKOFF_DATABASE: [WyckoffPosition; 3467] = [
     WyckoffPosition::new(1, 1, 'a', "1", "x,y,z"),
     WyckoffPosition::new(2, 2, 'i', "1", "x,y,z"),
@@ -3593,7 +3603,7 @@ static WYCKOFF_DATABASE: [WyckoffPosition; 3467] = [
 mod tests {
     use rstest::rstest;
 
-    use super::WyckoffPositionSpace;
+    use super::{WyckoffPositionSpace, iter_wyckoff_positions_from_hall_number};
     use nalgebra::{matrix, vector};
 
     #[rstest]
@@ -3609,5 +3619,25 @@ mod tests {
         let space = WyckoffPositionSpace::new(coordinates);
         assert_eq!(space.linear, linear);
         assert_relative_eq!(space.origin, origin);
+    }
+
+    #[test]
+    fn test_iter_wyckoff_positions_from_hall_number() {
+        // Hall number 530 (Ia-3d, space group 230) has 8 Wyckoff positions,
+        // stored general-position-first then descending multiplicity.
+        let positions: Vec<_> = iter_wyckoff_positions_from_hall_number(530).collect();
+        assert_eq!(positions.len(), 8);
+
+        let general = positions.first().unwrap();
+        assert_eq!(general.multiplicity, 96);
+        assert_eq!(general.letter, 'h');
+        assert_eq!(general.coordinates, "x,y,z");
+
+        let special = positions.last().unwrap();
+        assert_eq!(special.multiplicity, 16);
+        assert_eq!(special.letter, 'a');
+
+        // Unknown Hall numbers yield no positions.
+        assert_eq!(iter_wyckoff_positions_from_hall_number(0).count(), 0);
     }
 }

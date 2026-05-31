@@ -40,4 +40,6 @@ pub(super) use layer::{
 };
 pub(super) use magnetic::uni_number_range;
 pub(super) use point_group::PointGroupRepresentative;
-pub(super) use wyckoff::{WyckoffPosition, WyckoffPositionSpace, iter_wyckoff_positions};
+pub use wyckoff::{WyckoffPosition, iter_wyckoff_positions_from_hall_number};
+
+pub(super) use wyckoff::{WyckoffPositionSpace, iter_wyckoff_positions};

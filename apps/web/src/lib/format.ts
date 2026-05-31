@@ -60,6 +60,32 @@ function fmtInt(x: number): string {
   return x.toFixed(3)
 }
 
+/** Human-readable description of a Hall-symbol setting string: origin choice,
+ *  monoclinic unique axis (and cell choice), orthorhombic axis permutation, or
+ *  rhombohedral/hexagonal axes. Falls back to the raw string when unrecognized. */
+export function settingDescription(setting: string): string {
+  if (setting === '') return 'Default setting'
+  if (setting === 'H') return 'Hexagonal axes'
+  if (setting === 'R') return 'Rhombohedral axes'
+  if (setting === '1' || setting === '2') return `Origin choice ${setting}`
+
+  // Orthorhombic axis permutation, optionally prefixed by an origin choice.
+  const perm = setting.match(/^([12]?)(abc|ba-c|cab|-cba|bca|a-cb)$/)
+  if (perm) {
+    const axes = `axes ${perm[2]}`
+    return perm[1] ? `Origin choice ${perm[1]}, ${axes}` : `Axes ${perm[2]}`
+  }
+
+  // Monoclinic unique axis (optional negative direction) and optional cell choice.
+  const mono = setting.match(/^(-?)([abc])([123]?)$/)
+  if (mono) {
+    const axis = `Unique axis ${mono[1]}${mono[2]}`
+    return mono[3] ? `${axis}, cell choice ${mono[3]}` : axis
+  }
+
+  return setting
+}
+
 export function constructTypeLabel(t: number): string {
   switch (t) {
     case 1:
