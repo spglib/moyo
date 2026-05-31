@@ -17,12 +17,17 @@
   import ErrorCard from '../components/ErrorCard.svelte'
   import LoadingDots from '../components/LoadingDots.svelte'
 
-  interface Loaded {
-    type: MoyoSpaceGroupType
+  interface Setting {
     hall: MoyoHallSymbolEntry
-    arith: MoyoArithmeticCrystalClass
     operations: MoyoOperation[]
     wyckoffs: MoyoWyckoffPosition[]
+  }
+
+  interface Loaded {
+    type: MoyoSpaceGroupType
+    arith: MoyoArithmeticCrystalClass
+    defaultHallNumber: number
+    settings: Setting[]
   }
 
   let { params }: { params: { number: string } } = $props()
@@ -33,11 +38,22 @@
   async function load(n: number): Promise<Loaded> {
     const m = await getMoyo()
     const type = m.space_group_type(n)
-    const operations = m.operations_from_number(n, { type: 'Standard' }, false)
-    const hall = m.hall_symbol_entry(type.hall_number)
     const arith = m.arithmetic_crystal_class(type.arithmetic_number)
-    const wyckoffs = m.wyckoff_positions(type.hall_number)
-    return { type, hall, arith, operations, wyckoffs }
+    const settings: Setting[] = m.hall_symbol_entries_from_number(n).map((hall) => ({
+      hall,
+      operations: m.operations_from_number(
+        n,
+        { type: 'HallNumber', value: hall.hall_number },
+        false
+      ),
+      wyckoffs: m.wyckoff_positions(hall.hall_number),
+    }))
+    return { type, arith, defaultHallNumber: type.hall_number, settings }
+  }
+
+  function settingTitle(setting: string): string {
+    const desc = settingDescription(setting)
+    return setting ? `${desc} (${setting})` : desc
   }
 </script>
 
@@ -50,25 +66,19 @@
       <span class="font-mono">#{d.type.number}</span>
       <HmSymbol symbol={d.type.hm_short} />
     </h1>
-    <p class="text-sm text-stone-600 dark:text-stone-400 font-mono">
-      {d.type.hm_full} &middot; Hall: {d.hall.hall_symbol}
-    </p>
+    <p class="text-sm text-stone-600 dark:text-stone-400 font-mono">{d.type.hm_full}</p>
   </header>
 
   <section class="space-y-6">
     <InfoGrid
       rows={[
         { label: 'ITA number', value: d.type.number, mono: true },
-        { label: 'Hall number', value: d.hall.hall_number, mono: true },
         { label: 'Short Hermann-Mauguin symbol', value: d.type.hm_short, mono: true },
         { label: 'Full Hermann-Mauguin symbol', value: d.type.hm_full, mono: true },
-        { label: 'Hall symbol', value: d.hall.hall_symbol, mono: true },
-        { label: 'Setting', value: settingDescription(d.hall.setting) },
         { label: 'Crystal family', value: d.type.crystal_family },
         { label: 'Crystal system', value: d.type.crystal_system },
         { label: 'Lattice system', value: d.type.lattice_system },
         { label: 'Bravais class', value: d.type.bravais_class, mono: true },
-        { label: 'Centering', value: d.hall.centering, mono: true },
         {
           label: 'Arithmetic crystal class',
           value: `${d.arith.arithmetic_number} (${d.arith.symbol})`,
@@ -78,13 +88,37 @@
       ]}
     />
 
-    <CollapsibleSection title="Symmetry operations" count={d.operations.length}>
-      <OperationsTable operations={d.operations} />
-    </CollapsibleSection>
-
-    <CollapsibleSection title="Wyckoff positions" count={d.wyckoffs.length} open>
-      <WyckoffTable positions={d.wyckoffs} />
-    </CollapsibleSection>
+    <div>
+      <h2 class="text-lg font-semibold mb-2">
+        Settings <span class="text-sm font-normal text-stone-500">({d.settings.length})</span>
+      </h2>
+      <div class="space-y-3">
+        {#each d.settings as s (s.hall.hall_number)}
+          <div class="rounded border border-stone-200 dark:border-stone-800 p-3">
+            <CollapsibleSection
+              title={settingTitle(s.hall.setting)}
+              open={s.hall.hall_number === d.defaultHallNumber}
+            >
+              <div class="space-y-4">
+                <InfoGrid
+                  rows={[
+                    { label: 'Hall number', value: s.hall.hall_number, mono: true },
+                    { label: 'Hall symbol', value: s.hall.hall_symbol, mono: true },
+                    { label: 'Centering', value: s.hall.centering, mono: true },
+                  ]}
+                />
+                <CollapsibleSection title="Symmetry operations" count={s.operations.length}>
+                  <OperationsTable operations={s.operations} />
+                </CollapsibleSection>
+                <CollapsibleSection title="Wyckoff positions" count={s.wyckoffs.length} open>
+                  <WyckoffTable positions={s.wyckoffs} />
+                </CollapsibleSection>
+              </div>
+            </CollapsibleSection>
+          </div>
+        {/each}
+      </div>
+    </div>
   </section>
 {:catch err}
   <ErrorCard message={`Failed to load space group ${number}: ${formatErr(err)}`} />
