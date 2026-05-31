@@ -384,3 +384,5 @@ debug/*
 debug.py
 
 package-lock.json
+# roborev snapshots
+/.roborev/
