@@ -76,10 +76,23 @@
       ]}
     />
 
-    <div>
-      <h2 class="text-lg font-semibold mb-2">Symmetry operations</h2>
+    <details class="group">
+      <summary
+        class="flex items-center gap-2 mb-2 cursor-pointer list-none text-lg font-semibold [&::-webkit-details-marker]:hidden"
+      >
+        <svg
+          class="w-3 h-3 shrink-0 transition-transform group-open:rotate-90"
+          viewBox="0 0 12 12"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path d="M3 1l6 5-6 5z" />
+        </svg>
+        Symmetry operations
+        <span class="text-sm font-normal text-stone-500">({d.operations.length})</span>
+      </summary>
       <OperationsTable operations={d.operations} />
-    </div>
+    </details>
 
     <div>
       <h2 class="text-lg font-semibold mb-2">Wyckoff positions</h2>
