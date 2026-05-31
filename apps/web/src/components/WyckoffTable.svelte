@@ -1,8 +1,15 @@
 <script lang="ts">
-  import type { MoyoWyckoffPosition } from '@spglib/moyo-wasm'
   import HmSymbol from './HmSymbol.svelte'
 
-  let { positions }: { positions: MoyoWyckoffPosition[] } = $props()
+  // Structural type covering both space- and layer-group Wyckoff DTOs.
+  interface WyckoffRow {
+    multiplicity: number
+    letter: string
+    site_symmetry: string
+    coordinates: string
+  }
+
+  let { positions }: { positions: WyckoffRow[] } = $props()
 </script>
 
 <div class="table-shell">

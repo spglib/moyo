@@ -11,11 +11,14 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 ### moyo
 
 - Add `iter_wyckoff_positions_from_hall_number` and make `WyckoffPosition` public in `moyo::data` to allow looking up all Wyckoff positions of a space group by Hall number without analyzing a structure
+- Add `iter_layer_wyckoff_positions_from_hall_number` and make `LayerWyckoffPosition` public in `moyo::data` to allow looking up all Wyckoff positions of a layer group by Hall number without analyzing a structure
 
 ### moyo-wasm
 
 - Add `wyckoff_positions` data-access wrapper (and `MoyoWyckoffPosition` type) returning the Wyckoff positions of a space group for the given Hall number
 - Add `hall_symbol_entries_from_number` data-access wrapper returning every Hall-symbol entry (setting) of an ITA space-group number
+- Add `layer_wyckoff_positions` data-access wrapper (and `MoyoLayerWyckoffPosition` type) returning the Wyckoff positions of a layer group for the given Hall number
+- Add `layer_hall_symbol_entries_from_number` data-access wrapper returning every Hall-symbol entry (setting) of a layer-group number
 
 ## v0.10.0 - 2026-05-24
 

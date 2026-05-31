@@ -22,7 +22,8 @@ pub use hall_symbol_database::{HallNumber, HallSymbolEntry, Number, hall_symbol_
 pub use layer::{
     LayerArithmeticCrystalClassEntry, LayerArithmeticNumber, LayerBravaisClass, LayerCentering,
     LayerCrystalSystem, LayerHallNumber, LayerHallSymbolEntry, LayerLatticeSystem, LayerNumber,
-    LayerSetting, iter_layer_arithmetic_crystal_entry, iter_layer_hall_symbol_entry,
+    LayerSetting, LayerWyckoffPosition, iter_layer_arithmetic_crystal_entry,
+    iter_layer_hall_symbol_entry, iter_layer_wyckoff_positions_from_hall_number,
     layer_arithmetic_crystal_class_entry, layer_hall_symbol_entry,
 };
 pub use magnetic::{
@@ -35,9 +36,7 @@ pub use operations::{
 pub use setting::Setting;
 
 pub(super) use arithmetic_crystal_class::iter_arithmetic_crystal_entry;
-pub(super) use layer::{
-    LayerPointGroupRepresentative, LayerWyckoffPosition, iter_layer_wyckoff_positions,
-};
+pub(super) use layer::{LayerPointGroupRepresentative, iter_layer_wyckoff_positions};
 pub(super) use magnetic::uni_number_range;
 pub(super) use point_group::PointGroupRepresentative;
 pub use wyckoff::{WyckoffPosition, iter_wyckoff_positions_from_hall_number};
