@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { MoyoWyckoffPosition } from '@spglib/moyo-wasm'
+  import HmSymbol from './HmSymbol.svelte'
 
   let { positions }: { positions: MoyoWyckoffPosition[] } = $props()
 </script>
@@ -19,7 +20,7 @@
         <tr class="border-t border-stone-200 dark:border-stone-800">
           <td class="px-2 py-1 align-top">{wp.multiplicity}{wp.letter}</td>
           <td class="px-2 py-1 align-top text-stone-500">{wp.multiplicity}</td>
-          <td class="px-2 py-1 align-top">{wp.site_symmetry}</td>
+          <td class="px-2 py-1 align-top"><HmSymbol symbol={wp.site_symmetry} /></td>
           <td class="px-2 py-1 align-top">{wp.coordinates}</td>
         </tr>
       {/each}

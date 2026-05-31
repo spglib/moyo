@@ -8,9 +8,11 @@
   } from '@spglib/moyo-wasm'
   import { getMoyo, formatErr } from '../lib/wasm'
   import { SPACE_GROUP_COUNT, clampInt } from '../lib/catalog'
+  import { settingDescription } from '../lib/format'
   import InfoGrid from '../components/InfoGrid.svelte'
   import OperationsTable from '../components/OperationsTable.svelte'
   import WyckoffTable from '../components/WyckoffTable.svelte'
+  import CollapsibleSection from '../components/CollapsibleSection.svelte'
   import HmSymbol from '../components/HmSymbol.svelte'
   import ErrorCard from '../components/ErrorCard.svelte'
   import LoadingDots from '../components/LoadingDots.svelte'
@@ -61,7 +63,7 @@
         { label: 'Short Hermann-Mauguin symbol', value: d.type.hm_short, mono: true },
         { label: 'Full Hermann-Mauguin symbol', value: d.type.hm_full, mono: true },
         { label: 'Hall symbol', value: d.hall.hall_symbol, mono: true },
-        { label: 'Setting (Hall row)', value: d.hall.setting, mono: true },
+        { label: 'Setting', value: settingDescription(d.hall.setting) },
         { label: 'Crystal family', value: d.type.crystal_family },
         { label: 'Crystal system', value: d.type.crystal_system },
         { label: 'Lattice system', value: d.type.lattice_system },
@@ -76,28 +78,13 @@
       ]}
     />
 
-    <details class="group">
-      <summary
-        class="flex items-center gap-2 mb-2 cursor-pointer list-none text-lg font-semibold [&::-webkit-details-marker]:hidden"
-      >
-        <svg
-          class="w-3 h-3 shrink-0 transition-transform group-open:rotate-90"
-          viewBox="0 0 12 12"
-          fill="currentColor"
-          aria-hidden="true"
-        >
-          <path d="M3 1l6 5-6 5z" />
-        </svg>
-        Symmetry operations
-        <span class="text-sm font-normal text-stone-500">({d.operations.length})</span>
-      </summary>
+    <CollapsibleSection title="Symmetry operations" count={d.operations.length}>
       <OperationsTable operations={d.operations} />
-    </details>
+    </CollapsibleSection>
 
-    <div>
-      <h2 class="text-lg font-semibold mb-2">Wyckoff positions</h2>
+    <CollapsibleSection title="Wyckoff positions" count={d.wyckoffs.length} open>
       <WyckoffTable positions={d.wyckoffs} />
-    </div>
+    </CollapsibleSection>
   </section>
 {:catch err}
   <ErrorCard message={`Failed to load space group ${number}: ${formatErr(err)}`} />
