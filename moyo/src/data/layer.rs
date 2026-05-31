@@ -19,4 +19,7 @@ pub use layer_hall_symbol_database::{
 pub use layer_setting::LayerSetting;
 
 pub use layer_point_group::LayerPointGroupRepresentative;
-pub use layer_wyckoff::{LayerWyckoffPosition, iter_layer_wyckoff_positions};
+pub use layer_wyckoff::{
+    LayerWyckoffPosition, iter_layer_wyckoff_positions,
+    iter_layer_wyckoff_positions_from_hall_number,
+};

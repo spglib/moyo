@@ -47,6 +47,16 @@ pub fn iter_layer_wyckoff_positions(
         .filter(move |wp| wp.hall_number == hall_number && wp.multiplicity == multiplicity)
 }
 
+/// Return all Wyckoff positions for the given layer Hall number, ordered as stored
+/// in the database (general position first, then descending multiplicity).
+pub fn iter_layer_wyckoff_positions_from_hall_number(
+    hall_number: LayerHallNumber,
+) -> impl Iterator<Item = &'static LayerWyckoffPosition> {
+    LAYER_WYCKOFF_DATABASE
+        .iter()
+        .filter(move |wp| wp.hall_number == hall_number)
+}
+
 static LAYER_WYCKOFF_DATABASE: [LayerWyckoffPosition; 628] = [
     LayerWyckoffPosition::new(1, 1, 'a', "1", "x,y,z"),
     LayerWyckoffPosition::new(2, 2, 'e', "1", "x,y,z"),
@@ -700,6 +710,27 @@ mod tests {
                 entry.hall_number
             );
         }
+    }
+
+    #[test]
+    fn test_iter_layer_wyckoff_positions_from_hall_number() {
+        // Layer Hall 1 (LG 1, p1): a single general position.
+        let lg1: Vec<_> = iter_layer_wyckoff_positions_from_hall_number(1).collect();
+        assert_eq!(lg1.len(), 1);
+        assert_eq!(lg1[0].letter, 'a');
+        assert_eq!(lg1[0].multiplicity, 1);
+        assert_eq!(lg1[0].coordinates, "x,y,z");
+
+        // Layer Hall 8 (p2/m11): general position 'j' first, special 'a' last.
+        let lg8: Vec<_> = iter_layer_wyckoff_positions_from_hall_number(8).collect();
+        assert_eq!(lg8.len(), 10);
+        assert_eq!(lg8.first().unwrap().letter, 'j');
+        assert_eq!(lg8.first().unwrap().multiplicity, 4);
+        assert_eq!(lg8.last().unwrap().letter, 'a');
+        assert_eq!(lg8.last().unwrap().multiplicity, 1);
+
+        // Unknown Hall number yields nothing.
+        assert_eq!(iter_layer_wyckoff_positions_from_hall_number(0).count(), 0);
     }
 
     /// Wyckoff letters within a single Hall number are unique (each letter
