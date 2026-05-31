@@ -94,10 +94,16 @@
       </h2>
       <div class="space-y-3">
         {#each d.settings as s (s.hall.hall_number)}
-          <div class="rounded border border-stone-200 dark:border-stone-800 p-3">
+          {@const isStandard = s.hall.hall_number === d.defaultHallNumber}
+          <div
+            class="rounded border p-3 {isStandard
+              ? 'border-emerald-400 dark:border-emerald-600'
+              : 'border-stone-200 dark:border-stone-800'}"
+          >
             <CollapsibleSection
               title={settingTitle(s.hall.setting)}
-              open={s.hall.hall_number === d.defaultHallNumber}
+              badge={isStandard ? 'ITA standard' : undefined}
+              open={isStandard}
             >
               <div class="space-y-4">
                 <InfoGrid

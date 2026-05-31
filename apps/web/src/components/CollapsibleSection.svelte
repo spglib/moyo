@@ -4,9 +4,11 @@
   let {
     title,
     count,
+    badge,
     open = false,
     children,
-  }: { title: string; count?: number; open?: boolean; children: Snippet } = $props()
+  }: { title: string; count?: number; badge?: string; open?: boolean; children: Snippet } =
+    $props()
 </script>
 
 <details {open}>
@@ -22,6 +24,13 @@
     {title}
     {#if count !== undefined}
       <span class="text-sm font-normal text-stone-500">({count})</span>
+    {/if}
+    {#if badge}
+      <span
+        class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200"
+      >
+        {badge}
+      </span>
     {/if}
   </summary>
   {@render children()}
