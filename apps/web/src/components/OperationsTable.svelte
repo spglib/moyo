@@ -11,14 +11,12 @@
   <table class="min-w-full text-sm font-mono">
     <thead class="table-head">
       <tr>
-        <th class="px-2 py-1 text-left">#</th>
         <th class="px-2 py-1 text-left">Coordinate triplet</th>
       </tr>
     </thead>
     <tbody>
-      {#each operations as op, i}
+      {#each operations as op}
         <tr class="border-t border-stone-200 dark:border-stone-800">
-          <td class="px-2 py-1 align-top text-stone-500">{i + 1}</td>
           <td class="px-2 py-1 align-top">
             {formatOperationXyz(
               op.rotation,
