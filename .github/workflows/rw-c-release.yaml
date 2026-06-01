@@ -30,7 +30,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
         with:
           targets: ${{ matrix.target }}
-      - uses: cargo-bins/cargo-binstall@7884deddd95d515c3701294cf61a8b96cccc123b # main
+      - uses: cargo-bins/cargo-binstall@f8810ffa11196f23afb38e6fb64716fbf814ad8f # main
       - name: Install cbindgen
         run: cargo binstall cbindgen --locked --no-confirm --force
       - name: Install cross linker
