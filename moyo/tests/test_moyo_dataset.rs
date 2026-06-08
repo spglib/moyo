@@ -3,6 +3,7 @@ extern crate approx;
 
 use nalgebra::{Matrix3, Vector3, matrix, vector};
 use serde_json;
+use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
 use test_log::test;
@@ -181,6 +182,74 @@ fn test_with_fcc() {
     assert_eq!(dataset.orbits, vec![0, 0, 0, 0]);
     assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'a', 'a']);
     assert_eq!(dataset.pearson_symbol, "cF4");
+}
+
+#[test]
+fn test_normalizer_wyckoff_positions_perovskite() {
+    // Cubic perovskite ABO3, Pm-3m (No. 221):
+    //   A at 1a (0,0,0), B at 1b (1/2,1/2,1/2), O at 3c (face centers).
+    let a = 4.0;
+    let lattice = Lattice::new(matrix![
+        a, 0.0, 0.0;
+        0.0, a, 0.0;
+        0.0, 0.0, a;
+    ]);
+    let positions = vec![
+        Vector3::new(0.0, 0.0, 0.0), // A (1a)
+        Vector3::new(0.5, 0.5, 0.5), // B (1b)
+        Vector3::new(0.5, 0.5, 0.0), // O (3c)
+        Vector3::new(0.5, 0.0, 0.5), // O (3c)
+        Vector3::new(0.0, 0.5, 0.5), // O (3c)
+    ];
+    let numbers = vec![0, 1, 2, 2, 2];
+    let cell = Cell::new(lattice, positions, numbers);
+    let symprec = 1e-4;
+
+    let dataset = assert_dataset_with_default(&cell, symprec);
+    assert_eq!(dataset.number, 221); // Pm-3m
+    assert_eq!(dataset.orbits, vec![0, 1, 2, 2, 2]);
+    assert_eq!(dataset.wyckoffs, vec!['a', 'b', 'c', 'c', 'c']);
+
+    let candidates = dataset.normalizer_wyckoff_positions(false).unwrap();
+
+    // Candidate count equals the number of discrete normalizer operations.
+    let normalizer = dataset.euclidean_normalizer(false).unwrap();
+    assert_eq!(candidates.len(), normalizer.operations().len());
+
+    let sorted_letters = |cand: &Vec<moyo::data::WyckoffPosition>| -> Vec<char> {
+        let mut letters: Vec<char> = cand.iter().map(|w| w.letter).collect();
+        letters.sort();
+        letters
+    };
+
+    // Index 0 is the identity (this dataset's own setting): same Wyckoff
+    // multiset as the dataset assignment.
+    let mut dataset_letters = dataset.wyckoffs.clone();
+    dataset_letters.sort();
+    assert_eq!(sorted_letters(&candidates[0]), dataset_letters);
+
+    // Multiplicity is invariant under the normalizer: {1, 1, 3, 3, 3} always.
+    for cand in candidates.iter() {
+        let mut mults: Vec<usize> = cand.iter().map(|w| w.multiplicity).collect();
+        mults.sort();
+        assert_eq!(mults, vec![1, 1, 3, 3, 3]);
+    }
+
+    // The Euclidean normalizer of Pm-3m is Im-3m: the extra translation
+    // (1/2,1/2,1/2) swaps Wyckoff a<->b and c<->d. So the structure must be
+    // relabeled to {a, b, d, d, d} by some normalizer operation, and at least
+    // two distinct Wyckoff assignments must appear overall.
+    let distinct: HashSet<Vec<char>> = candidates.iter().map(sorted_letters).collect();
+    assert!(
+        distinct.len() >= 2,
+        "normalizer should produce more than one Wyckoff assignment"
+    );
+    assert!(
+        candidates
+            .iter()
+            .any(|cand| sorted_letters(cand) == vec!['a', 'b', 'd', 'd', 'd']),
+        "normalizer (1/2,1/2,1/2) translation should relabel a<->b and c<->d"
+    );
 }
 
 #[test]

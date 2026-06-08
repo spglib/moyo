@@ -375,6 +375,70 @@ where
         .collect())
 }
 
+/// For each conventional-basis normalizer operation, apply it to `positions`
+/// and recompute the Wyckoff positions of the structure.
+///
+/// Returns one inner `Vec` per operation (same order as `conventional_ops`),
+/// each holding one [`WyckoffPosition`] per atom in `positions` order. The
+/// result is RAW: duplicate assignments produced by different operations are
+/// NOT removed (the caller deduplicates / canonicalizes).
+///
+/// Contract: `conventional_ops`, `lattice`, and `positions` must all be in the
+/// conventional standardized setting (the Wyckoff database coordinates are);
+/// `site_orbits[i]` is the orbit index of atom `i` and `orbit_multiplicities`
+/// is indexed by orbit. The orbit structure is invariant under the normalizer,
+/// so it is computed once by the caller and reused for every operation. The
+/// lattice is normalizer-invariant (`P^T M P = M`), so it is used unchanged for
+/// the Cartesian-distance tolerance inside [`match_wyckoff_coordinates`].
+pub(crate) fn wyckoff_positions_under_normalizer(
+    conventional_ops: &[UnimodularTransformation],
+    lattice: &Lattice,
+    positions: &[Position],
+    hall_number: HallNumber,
+    site_orbits: &[usize],
+    orbit_multiplicities: &[usize],
+    symprec: f64,
+) -> Result<Vec<Vec<WyckoffPosition>>, MoyoError> {
+    let num_orbits = orbit_multiplicities.len();
+
+    let mut result = Vec::with_capacity(conventional_ops.len());
+    for op in conventional_ops {
+        let linear = op.linear.map(|e| e as f64);
+
+        // Apply the active map `x -> P x + p` (reduced mod 1) to each atom and
+        // assign a Wyckoff position per orbit. `match_wyckoff_coordinates` only
+        // matches the database representative coordinate (up to lattice
+        // translations and the free-variable span), so -- as in
+        // `assign_wyckoffs_by_orbit` -- each orbit is tried against successive
+        // atoms until one lands on that representative.
+        let mut representative_wyckoffs: Vec<Option<WyckoffPosition>> = vec![None; num_orbits];
+        for (i, &orbit) in site_orbits.iter().enumerate() {
+            if representative_wyckoffs[orbit].is_some() {
+                continue;
+            }
+            let transformed = (linear * positions[i] + op.origin_shift).map(|e| e.rem_euclid(1.0));
+            if let Some(wyckoff) = iter_wyckoff_positions(hall_number, orbit_multiplicities[orbit])
+                .find(|w| match_wyckoff_coordinates(&transformed, w.coordinates, lattice, symprec))
+                .cloned()
+            {
+                representative_wyckoffs[orbit] = Some(wyckoff);
+            }
+        }
+
+        let representative_wyckoffs = representative_wyckoffs
+            .into_iter()
+            .map(|w| w.ok_or(MoyoError::WyckoffPositionAssignmentError))
+            .collect::<Result<Vec<_>, _>>()?;
+        let assignment = site_orbits
+            .iter()
+            .map(|&orbit| representative_wyckoffs[orbit].clone())
+            .collect();
+        result.push(assignment);
+    }
+
+    Ok(result)
+}
+
 /// Niggli reduction for distorted triclinic lattice systems is numerically so challenging.
 /// Thus, we skip checking reduction condition.
 fn standardize_triclinic_cell(

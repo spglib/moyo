@@ -100,8 +100,8 @@ use crate::base::{
 use crate::data::{
     ArithmeticCrystalClassEntry, HallNumber, HallSymbol, HallSymbolEntry,
     LayerArithmeticCrystalClassEntry, LayerHallNumber, LayerHallSymbolEntry, LayerNumber,
-    LayerSetting, Number, Setting, UNINumber, arithmetic_crystal_class_entry, hall_symbol_entry,
-    layer_arithmetic_crystal_class_entry, layer_hall_symbol_entry,
+    LayerSetting, Number, Setting, UNINumber, WyckoffPosition, arithmetic_crystal_class_entry,
+    hall_symbol_entry, layer_arithmetic_crystal_class_entry, layer_hall_symbol_entry,
 };
 use crate::identify::{LayerGroup, MagneticSpaceGroup, Normalizer, SpaceGroup};
 use crate::search::{
@@ -110,6 +110,7 @@ use crate::search::{
 };
 use crate::symmetrize::{
     StandardizedCell, StandardizedLayerCell, StandardizedMagneticCell, orbits_in_cell,
+    wyckoff_positions_under_normalizer,
 };
 use crate::utils::{to_3_slice, to_3x3_slice};
 
@@ -362,6 +363,85 @@ impl MoyoDataset {
             self.symprec,
             self.angle_tolerance,
             preserve_chirality,
+        )
+    }
+
+    /// Raw normalizer-induced Wyckoff positions for this dataset's standardized
+    /// (conventional) cell.
+    ///
+    /// For every operation of the Euclidean normalizer (each coset
+    /// representative composed with the discrete translation subgroup;
+    /// continuous polar directions are ignored), the standardized structure is
+    /// transformed and its Wyckoff positions are recomputed. The result has one
+    /// inner `Vec` per normalizer operation (same order as
+    /// [`Normalizer::operations`]), each holding one [`WyckoffPosition`] per atom
+    /// of [`std_cell`](Self::std_cell), in `std_cell` atom order. The first
+    /// entry corresponds to the identity, i.e. this dataset's own setting.
+    ///
+    /// The output is RAW: duplicate assignments produced by different operations
+    /// are not removed. It is intended for building a canonical Wyckoff sequence
+    /// on the caller's side.
+    ///
+    /// `preserve_chirality = true` restricts to the chirality-preserving
+    /// subgroup N_E^+(G).
+    pub fn normalizer_wyckoff_positions(
+        &self,
+        preserve_chirality: bool,
+    ) -> Result<Vec<Vec<WyckoffPosition>>, MoyoError> {
+        let normalizer = self.euclidean_normalizer(preserve_chirality)?;
+
+        // Normalizer operations are in the primitive standardized basis; the
+        // Wyckoff database is in the conventional setting, so convert each
+        // operation into the conventional basis via the centering.
+        let prim_to_conv = Transformation::from_linear(self.hall_symbol().centering.linear());
+        let conventional_ops = normalizer
+            .operations()
+            .iter()
+            .map(|op| {
+                prim_to_conv
+                    .transform_operation(&Operation::new(op.linear, op.origin_shift))
+                    .map(|conv| UnimodularTransformation::new(conv.rotation, conv.translation))
+                    .ok_or(MoyoError::WyckoffPositionAssignmentError)
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+
+        // Orbit grouping of the conventional standardized cell, reusing the
+        // dataset's existing orbit data (no fresh symmetry search). Two
+        // conventional atoms are equivalent iff their primitive-standardized
+        // atoms lie in the same crystallographic orbit. `std_cell` atoms are
+        // grouped by source primitive atom (`Transformation::transform_cell`),
+        // so conventional atom `c` maps to primitive atom `c / size`.
+        let prim_num_atoms = self.prim_std_cell.num_atoms();
+        let mut prim_rep = vec![0_usize; prim_num_atoms];
+        for i in 0..self.orbits.len() {
+            prim_rep[self.mapping_std_prim[i]] = self.mapping_std_prim[self.orbits[i]];
+        }
+        let conv_num_atoms = self.std_cell.num_atoms();
+        debug_assert_eq!(conv_num_atoms % prim_num_atoms, 0);
+        let size = conv_num_atoms / prim_num_atoms;
+
+        let mut orbit_index = std::collections::HashMap::new();
+        let mut site_orbits = Vec::with_capacity(conv_num_atoms);
+        let mut orbit_multiplicities: Vec<usize> = Vec::new();
+        for c in 0..conv_num_atoms {
+            let key = prim_rep[c / size];
+            let next = orbit_index.len();
+            let orbit = *orbit_index.entry(key).or_insert(next);
+            if orbit == orbit_multiplicities.len() {
+                orbit_multiplicities.push(0);
+            }
+            site_orbits.push(orbit);
+            orbit_multiplicities[orbit] += 1;
+        }
+
+        wyckoff_positions_under_normalizer(
+            &conventional_ops,
+            &self.std_cell.lattice,
+            &self.std_cell.positions,
+            self.hall_number,
+            &site_orbits,
+            &orbit_multiplicities,
+            self.symprec,
         )
     }
 }

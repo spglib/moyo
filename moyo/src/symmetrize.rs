@@ -4,4 +4,6 @@ mod standardize;
 
 pub(super) use layer_standardize::StandardizedLayerCell;
 pub(super) use magnetic_standardize::StandardizedMagneticCell;
-pub(super) use standardize::{StandardizedCell, orbits_in_cell};
+pub(super) use standardize::{
+    StandardizedCell, orbits_in_cell, wyckoff_positions_under_normalizer,
+};
