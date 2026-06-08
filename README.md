@@ -113,4 +113,4 @@ RUST_LOG=debug cargo test -- --nocapture
 ## Acknowledgments
 
 We thank Dr. Yusuke Seto for providing the crystallographic database.
-We thank Juan Rodríguez-Carvajal for providing the magnetic space-group database.
+We thank Dr. Juan Rodríguez-Carvajal for providing the magnetic space-group database.
