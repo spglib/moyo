@@ -18,6 +18,7 @@ from moyopy._data import (
     MagneticSpaceGroupType,
     Setting,
     SpaceGroupType,
+    WyckoffPosition,
     magnetic_operations_from_uni_number,
     operations_from_layer_number,
     operations_from_number,
@@ -27,6 +28,7 @@ from moyopy._dataset import (
     MoyoDataset,
     MoyoLayerDataset,
     MoyoNonCollinearMagneticDataset,
+    NormalizerWyckoffPositions,
 )  # noqa: F401
 from moyopy._identify import (  # noqa: F401
     LayerGroup,
@@ -58,11 +60,13 @@ __all__ = [
     "MagneticSpaceGroupType",
     "ArithmeticCrystalClass",
     "LayerArithmeticCrystalClass",
+    "WyckoffPosition",
     "operations_from_number",
     "operations_from_layer_number",
     "magnetic_operations_from_uni_number",
     # dataset
     "MoyoDataset",
+    "NormalizerWyckoffPositions",
     "MoyoLayerDataset",
     "MoyoCollinearMagneticDataset",
     "MoyoNonCollinearMagneticDataset",

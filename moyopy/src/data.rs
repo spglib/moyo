@@ -9,6 +9,7 @@ mod layer_setting;
 mod magnetic_space_group_type;
 mod setting;
 mod space_group_type;
+mod wyckoff;
 
 pub use arithmetic_crystal_class::PyArithmeticCrystalClass;
 pub use centering::PyCentering;
@@ -21,6 +22,7 @@ pub use layer_setting::PyLayerSetting;
 pub use magnetic_space_group_type::PyMagneticSpaceGroupType;
 pub use setting::PySetting;
 pub use space_group_type::PySpaceGroupType;
+pub use wyckoff::PyWyckoffPosition;
 
 use pyo3::prelude::*;
 
