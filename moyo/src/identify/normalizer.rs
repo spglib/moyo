@@ -7,7 +7,7 @@ use super::point_group::{iter_trans_mat_basis, iter_unimodular_trans_mat};
 use super::rotation_type::identify_rotation_type;
 use super::space_group::match_origin_shift;
 use crate::base::{
-    AngleTolerance, Lattice, MoyoError, Operation, Operations, Rotation, Translation,
+    AngleTolerance, EPS, Lattice, MoyoError, Operation, Operations, Rotation, Translation,
     UnimodularTransformation, project_rotations,
 };
 use crate::math::SNF;
@@ -235,7 +235,7 @@ fn translation_order(translation: &Translation) -> usize {
     for order in 1..=MAX_ORDER {
         if translation.iter().all(|&v| {
             let scaled = v * order as f64;
-            (scaled - scaled.round()).abs() < 1e-6
+            (scaled - scaled.round()).abs() < EPS
         }) {
             return order;
         }
