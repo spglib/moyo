@@ -333,6 +333,33 @@ class LayerArithmeticCrystalClass:
         """Convert an object to a dictionary"""
 
 ###############################################################################
+# Wyckoff positions
+###############################################################################
+
+class WyckoffPosition:
+    """A Wyckoff position of a space group."""
+    @property
+    def hall_number(self) -> int:
+        """Hall symbol number of the space group this Wyckoff position belongs to."""
+    @property
+    def multiplicity(self) -> int:
+        """Site multiplicity in the conventional cell."""
+    @property
+    def letter(self) -> str:
+        """Wyckoff letter."""
+    @property
+    def site_symmetry(self) -> str:
+        """Site-symmetry symbol."""
+    @property
+    def coordinates(self) -> str:
+        """Representative coordinates in the conventional setting."""
+    # Serialization
+    def serialize_json(self) -> str:
+        """Serialize an object to a JSON string"""
+    def as_dict(self) -> dict[str, Any]:
+        """Convert an object to a dictionary"""
+
+###############################################################################
 # Misc
 ###############################################################################
 

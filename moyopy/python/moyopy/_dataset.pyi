@@ -8,10 +8,12 @@ from moyopy._base import (
     MagneticOperations,
     NonCollinearMagneticCell,
     Operations,
+    UnimodularTransformation,
 )
 from moyopy._data import (
     LayerSetting,
     Setting,
+    WyckoffPosition,
 )
 
 class MoyoDataset:
@@ -132,6 +134,27 @@ class MoyoDataset:
     @property
     def angle_tolerance(self) -> float | None:
         """Actually used ``angle_tolerance`` in iterative symmetry search."""
+    # Euclidean normalizer
+    def normalizer_wyckoff_positions(
+        self,
+        *,
+        preserve_chirality: bool = False,
+        primitive: bool = False,
+    ) -> NormalizerWyckoffPositions:
+        """Wyckoff positions of the standardized cell under the action of the
+        Euclidean normalizer, decomposed into the stabilizer of the Wyckoff
+        sequence and coset representatives of the distinct sequences.
+
+        Parameters
+        ----------
+        preserve_chirality: bool
+            If ``True``, restrict to the chirality-preserving subgroup of the
+            Euclidean normalizer.
+        primitive: bool
+            If ``True``, the returned operations are expressed in the primitive
+            standardized basis; otherwise they are expressed in the conventional
+            standardized basis, in which they act directly on ``std_cell``.
+        """
     # Serialization and deserialization
     def serialize_json(self) -> str:
         """Serialize an object to a JSON string."""
@@ -143,6 +166,36 @@ class MoyoDataset:
     @classmethod
     def from_dict(cls, obj: dict[str, Any]) -> Self:
         """Create an object from a dictionary."""
+
+class NormalizerWyckoffPositions:
+    """Wyckoff positions of a standardized cell under the Euclidean normalizer's
+    action, returned by :meth:`MoyoDataset.normalizer_wyckoff_positions`.
+
+    The (finite, modulo lattice translations) normalizer group acts on the
+    Wyckoff sequence -- the per-atom list of Wyckoff positions of the
+    standardized cell. This object decomposes that action relative to the
+    identity sequence ``wyckoffs``: ``stabilizer`` is the subgroup of normalizer
+    operations that leave the sequence unchanged, and ``coset_representatives``
+    contains one operation per distinct sequence, so
+    ``len(stabilizer) * len(coset_representatives)`` equals the number of
+    normalizer operations.
+    """
+    @property
+    def wyckoffs(self) -> list[WyckoffPosition]:
+        """Wyckoff positions of the standardized cell in the identity setting
+        (this dataset's own setting), one per atom in ``std_cell`` order. Equal
+        to ``coset_representatives[0][1]``."""
+    @property
+    def stabilizer(self) -> list[UnimodularTransformation]:
+        """Normalizer operations that fix ``wyckoffs``, expressed in the basis
+        selected by the ``primitive`` flag."""
+    @property
+    def coset_representatives(
+        self,
+    ) -> list[tuple[UnimodularTransformation, list[WyckoffPosition]]]:
+        """Coset representatives of the normalizer modulo the stabilizer (same
+        basis as ``stabilizer``), each paired with the distinct Wyckoff sequence
+        it produces. The first entry is the identity paired with ``wyckoffs``."""
 
 class MoyoCollinearMagneticDataset:
     """A dataset containing magnetic symmetry information of the input collinear magnetic

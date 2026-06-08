@@ -13,12 +13,12 @@ use crate::base::{
 use crate::data::{
     PyArithmeticCrystalClass, PyCentering, PyHallSymbolEntry, PyLayerArithmeticCrystalClass,
     PyLayerCentering, PyLayerGroupType, PyLayerHallSymbolEntry, PyLayerSetting,
-    PyMagneticSpaceGroupType, PySetting, PySpaceGroupType, magnetic_operations_from_uni_number,
-    operations_from_layer_number, operations_from_number,
+    PyMagneticSpaceGroupType, PySetting, PySpaceGroupType, PyWyckoffPosition,
+    magnetic_operations_from_uni_number, operations_from_layer_number, operations_from_number,
 };
 use crate::dataset::{
     PyMoyoCollinearMagneticDataset, PyMoyoDataset, PyMoyoLayerDataset,
-    PyMoyoNonCollinearMagneticDataset,
+    PyMoyoNonCollinearMagneticDataset, PyNormalizerWyckoffPositions,
 };
 use crate::identify::{
     PyLayerGroup, PyMagneticSpaceGroup, PyPointGroup, PySpaceGroup, integral_normalizer,
@@ -50,6 +50,7 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     // dataset
     m.add_class::<PyMoyoDataset>()?;
+    m.add_class::<PyNormalizerWyckoffPositions>()?;
     m.add_class::<PyMoyoLayerDataset>()?;
     m.add_class::<PyMoyoCollinearMagneticDataset>()?;
     m.add_class::<PyMoyoNonCollinearMagneticDataset>()?;
@@ -76,6 +77,7 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyMagneticSpaceGroupType>()?;
     m.add_class::<PyArithmeticCrystalClass>()?;
     m.add_class::<PyLayerArithmeticCrystalClass>()?;
+    m.add_class::<PyWyckoffPosition>()?;
     // data: Misc
     m.add_wrapped(wrap_pyfunction!(operations_from_number))?;
     m.add_wrapped(wrap_pyfunction!(operations_from_layer_number))?;

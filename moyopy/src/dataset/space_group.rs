@@ -4,12 +4,12 @@ use pyo3::{IntoPyObjectExt, prelude::*};
 use pythonize::{depythonize, pythonize};
 use serde::{Deserialize, Serialize};
 
-use moyo::MoyoDataset;
 use moyo::base::AngleTolerance;
 use moyo::data::Setting;
+use moyo::{MoyoDataset, NormalizerWyckoffPositions};
 
-use crate::base::{PyMoyoError, PyOperations, PyStructure};
-use crate::data::PySetting;
+use crate::base::{PyMoyoError, PyOperations, PyStructure, PyUnimodularTransformation};
+use crate::data::{PySetting, PyWyckoffPosition};
 
 /// A dataset containing symmetry information of the input crystal structure.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -219,6 +219,34 @@ impl PyMoyoDataset {
     }
 
     // ------------------------------------------------------------------------
+    // Euclidean normalizer
+    // ------------------------------------------------------------------------
+    /// Wyckoff positions of the standardized cell under the action of the
+    /// Euclidean normalizer, decomposed into the stabilizer of the Wyckoff
+    /// sequence and coset representatives of the distinct sequences.
+    ///
+    /// Parameters
+    /// ----------
+    /// preserve_chirality : bool
+    ///     If ``True``, restrict to the chirality-preserving subgroup of the
+    ///     Euclidean normalizer.
+    /// primitive : bool
+    ///     If ``True``, the returned operations are expressed in the primitive
+    ///     standardized basis; otherwise they are expressed in the conventional
+    ///     standardized basis, in which they act directly on ``std_cell``.
+    #[pyo3(signature = (*, preserve_chirality=false, primitive=false))]
+    pub fn normalizer_wyckoff_positions(
+        &self,
+        preserve_chirality: bool,
+        primitive: bool,
+    ) -> Result<PyNormalizerWyckoffPositions, PyMoyoError> {
+        let result = self
+            .0
+            .normalizer_wyckoff_positions(preserve_chirality, primitive)?;
+        Ok(result.into())
+    }
+
+    // ------------------------------------------------------------------------
     // Special methods
     // ------------------------------------------------------------------------
     fn __str__(&self) -> String {
@@ -267,5 +295,91 @@ impl PyMoyoDataset {
                 PyErr::new::<PyValueError, _>(format!("Deserialization failed: {}", e))
             })
         })
+    }
+}
+
+/// Wyckoff positions of a standardized cell under the Euclidean normalizer's
+/// action, returned by :meth:`MoyoDataset.normalizer_wyckoff_positions`.
+///
+/// The (finite, modulo lattice translations) normalizer group acts on the
+/// Wyckoff sequence -- the per-atom list of Wyckoff positions of the
+/// standardized cell. This object decomposes that action relative to the
+/// identity sequence ``wyckoffs``: ``stabilizer`` is the subgroup of normalizer
+/// operations that leave the sequence unchanged, and ``coset_representatives``
+/// contains one operation per distinct sequence, so
+/// ``len(stabilizer) * len(coset_representatives)`` equals the number of
+/// normalizer operations.
+#[derive(Debug, Clone)]
+#[pyclass(name = "NormalizerWyckoffPositions", frozen, skip_from_py_object)]
+#[pyo3(module = "moyopy")]
+pub struct PyNormalizerWyckoffPositions(NormalizerWyckoffPositions);
+
+#[pymethods]
+impl PyNormalizerWyckoffPositions {
+    /// Wyckoff positions of the standardized cell in the identity setting (this
+    /// dataset's own setting), one per atom in ``std_cell`` order. Equal to
+    /// ``coset_representatives[0][1]``.
+    #[getter]
+    pub fn wyckoffs(&self) -> Vec<PyWyckoffPosition> {
+        self.0
+            .wyckoffs
+            .iter()
+            .cloned()
+            .map(PyWyckoffPosition::from)
+            .collect()
+    }
+
+    /// Normalizer operations that fix ``wyckoffs``, expressed in the basis
+    /// selected by the ``primitive`` flag.
+    #[getter]
+    pub fn stabilizer(&self) -> Vec<PyUnimodularTransformation> {
+        self.0
+            .stabilizer
+            .iter()
+            .cloned()
+            .map(PyUnimodularTransformation::from)
+            .collect()
+    }
+
+    /// Coset representatives of the normalizer modulo the stabilizer (same basis
+    /// as ``stabilizer``), each paired with the distinct Wyckoff sequence it
+    /// produces. The first entry is the identity paired with ``wyckoffs``.
+    #[getter]
+    pub fn coset_representatives(
+        &self,
+    ) -> Vec<(PyUnimodularTransformation, Vec<PyWyckoffPosition>)> {
+        self.0
+            .coset_representatives
+            .iter()
+            .map(|(op, sequence)| {
+                (
+                    PyUnimodularTransformation::from(op.clone()),
+                    sequence
+                        .iter()
+                        .cloned()
+                        .map(PyWyckoffPosition::from)
+                        .collect(),
+                )
+            })
+            .collect()
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "NormalizerWyckoffPositions(wyckoffs=<{} positions>, stabilizer=<{} operations>, coset_representatives=<{} sequences>)",
+            self.0.wyckoffs.len(),
+            self.0.stabilizer.len(),
+            self.0.coset_representatives.len(),
+        )
+    }
+
+    fn __str__(&self) -> String {
+        self.__repr__()
+    }
+}
+
+impl From<NormalizerWyckoffPositions> for PyNormalizerWyckoffPositions {
+    fn from(inner: NormalizerWyckoffPositions) -> Self {
+        PyNormalizerWyckoffPositions(inner)
     }
 }
