@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
@@ -30,7 +30,7 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
-        uses: taiki-e/install-action@e141306cb8131fed52a4911fb30f4b4188ac9867 # wasm-pack
+        uses: taiki-e/install-action@190ee0b57c29bdc10de895a2448cdc848e1bfd99 # wasm-pack
 
       - name: Install test dependencies
         working-directory: moyo-wasm
