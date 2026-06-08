@@ -16,7 +16,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 
 ### moyopy
 
-- Add `MoyoDataset.normalizer_wyckoff_positions` binding (returning `NormalizerWyckoffPositions`) and expose the `WyckoffPosition` type, wrapping the Euclidean normalizer's action on the Wyckoff sequence of the standardized cell (#351)
+- Add `MoyoDataset.normalizer_wyckoff_positions` binding (returning `NormalizerWyckoffPositions`) and expose the `WyckoffPosition` type, wrapping the Euclidean normalizer's action on the Wyckoff sequence of the standardized cell (#352)
 
 ### moyo-wasm
 
