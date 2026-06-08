@@ -7,7 +7,7 @@ use super::point_group::{iter_trans_mat_basis, iter_unimodular_trans_mat};
 use super::rotation_type::identify_rotation_type;
 use super::space_group::match_origin_shift;
 use crate::base::{
-    AngleTolerance, Lattice, MoyoError, Operation, Operations, Rotation, Translation,
+    AngleTolerance, EPS, Lattice, MoyoError, Operation, Operations, Rotation, Translation,
     UnimodularTransformation, project_rotations,
 };
 use crate::math::SNF;
@@ -174,6 +174,73 @@ impl Normalizer {
             continuous_translation_directions,
         })
     }
+
+    /// All discrete normalizer operations: each coset representative composed
+    /// with every element of the discrete translation subgroup (mod Z^3), in
+    /// this normalizer's basis. The first element is the identity coset
+    /// representative composed with the zero translation, i.e. the unchanged
+    /// setting.
+    ///
+    /// Continuous (polar) translation directions are deliberately ignored: a
+    /// continuous translation slides a free Wyckoff coordinate and maps every
+    /// Wyckoff position to itself, so it cannot change a Wyckoff letter.
+    pub fn operations(&self) -> Vec<UnimodularTransformation> {
+        // Generate the full discrete translation subgroup mod Z^3. Each
+        // generator `t_i` has finite order `d_i` (the smallest `d_i` with
+        // `d_i * t_i` integral); the SNF-derived generators are independent, so
+        // the subgroup is the direct product of the cyclic groups `<t_i>` and
+        // the accumulated sums are distinct without deduplication.
+        let mut discrete = vec![Translation::zeros()];
+        for generator in &self.translations {
+            let order = translation_order(generator);
+            let base = discrete.clone();
+            for k in 1..order {
+                for t in &base {
+                    discrete.push((t + generator * (k as f64)).map(|e| e.rem_euclid(1.0)));
+                }
+            }
+        }
+
+        // Put the identity coset representative first so index 0 is the
+        // unchanged setting (`sort_by_key` is stable, so the relative order of
+        // the remaining representatives is preserved).
+        let mut coset_representatives = self.coset_representatives.clone();
+        coset_representatives.sort_by_key(|cr| {
+            let is_identity = cr.linear == Matrix3::<i32>::identity()
+                && cr
+                    .origin_shift
+                    .iter()
+                    .all(|&v| (v - v.round()).abs() < 1e-8);
+            !is_identity
+        });
+
+        let mut operations = Vec::with_capacity(coset_representatives.len() * discrete.len());
+        for cr in &coset_representatives {
+            for t in &discrete {
+                operations.push(cr.clone() * UnimodularTransformation::from_origin_shift(*t));
+            }
+        }
+        operations
+    }
+}
+
+/// Order of a fractional translation in the discrete translation group mod
+/// Z^3: the smallest positive `d` such that `d * translation` is an integer
+/// vector (i.e. the least common multiple of its component denominators).
+///
+/// Crystallographic translations have denominators in {1, 2, 3, 4, 6}, so the
+/// search bound is comfortably above any order that can occur.
+fn translation_order(translation: &Translation) -> usize {
+    const MAX_ORDER: usize = 24;
+    for order in 1..=MAX_ORDER {
+        if translation.iter().all(|&v| {
+            let scaled = v * order as f64;
+            (scaled - scaled.round()).abs() < EPS
+        }) {
+            return order;
+        }
+    }
+    MAX_ORDER
 }
 
 /// Solve `(W - I) p ≡ 0` for all rotations W via SNF of the stacked
@@ -507,5 +574,40 @@ mod tests {
             false,
         );
         assert_eq!(normalizer.continuous_translation_directions.len(), 1);
+    }
+
+    #[test]
+    fn test_operations_enumeration() {
+        // P-1 (Hall #2) on a cubic metric: 48 cubic coset representatives, and
+        // the full discrete translation subgroup (the inversion-center
+        // half-translations, i.e. {0, 1/2}^3 = (Z/2)^3 with 8 elements), so
+        // 48 * 8 = 384 discrete normalizer operations.
+        let hall_symbol = HallSymbol::from_hall_number(2).unwrap();
+        let prim_operations = hall_symbol.primitive_traverse();
+        let prim_generators = hall_symbol.primitive_generators();
+        let normalizer = Normalizer::from_lattice(
+            &cubic_lattice(1.0),
+            &prim_operations,
+            &prim_generators,
+            TEST_SYMPREC,
+            TEST_ANGLE,
+            false,
+        )
+        .unwrap();
+
+        let operations = normalizer.operations();
+        assert_eq!(normalizer.coset_representatives.len(), 48);
+        assert_eq!(normalizer.translations.len(), 3);
+        assert_eq!(operations.len(), 48 * 8);
+
+        // Index 0 is the identity coset representative composed with the zero
+        // translation (the unchanged setting).
+        assert_eq!(operations[0].linear, UnimodularLinear::identity());
+        assert!(
+            operations[0]
+                .origin_shift
+                .iter()
+                .all(|&v| (v - v.round()).abs() < 1e-8)
+        );
     }
 }

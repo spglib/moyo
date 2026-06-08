@@ -8,8 +8,8 @@ use std::path::Path;
 use test_log::test;
 
 use moyo::MoyoDataset;
-use moyo::base::{AngleTolerance, Cell, Lattice, Permutation, Rotation, Translation};
-use moyo::data::Setting;
+use moyo::base::{AngleTolerance, Cell, Lattice, Operation, Permutation, Rotation, Translation};
+use moyo::data::{Setting, operations_from_number};
 
 fn assert_dataset_with_default(cell: &Cell, symprec: f64) -> MoyoDataset {
     assert_dataset(cell, symprec, AngleTolerance::default(), Setting::default())
@@ -181,6 +181,176 @@ fn test_with_fcc() {
     assert_eq!(dataset.orbits, vec![0, 0, 0, 0]);
     assert_eq!(dataset.wyckoffs, vec!['a', 'a', 'a', 'a']);
     assert_eq!(dataset.pearson_symbol, "cF4");
+}
+
+#[test]
+fn test_normalizer_wyckoff_positions_perovskite() {
+    // Cubic perovskite ABO3, Pm-3m (No. 221):
+    //   A at 1a (0,0,0), B at 1b (1/2,1/2,1/2), O at 3c (face centers).
+    let a = 4.0;
+    let lattice = Lattice::new(matrix![
+        a, 0.0, 0.0;
+        0.0, a, 0.0;
+        0.0, 0.0, a;
+    ]);
+    let positions = vec![
+        Vector3::new(0.0, 0.0, 0.0), // A (1a)
+        Vector3::new(0.5, 0.5, 0.5), // B (1b)
+        Vector3::new(0.5, 0.5, 0.0), // O (3c)
+        Vector3::new(0.5, 0.0, 0.5), // O (3c)
+        Vector3::new(0.0, 0.5, 0.5), // O (3c)
+    ];
+    let numbers = vec![0, 1, 2, 2, 2];
+    let cell = Cell::new(lattice, positions, numbers);
+    let symprec = 1e-4;
+
+    let dataset = assert_dataset_with_default(&cell, symprec);
+    assert_eq!(dataset.number, 221); // Pm-3m
+    assert_eq!(dataset.orbits, vec![0, 1, 2, 2, 2]);
+    assert_eq!(dataset.wyckoffs, vec!['a', 'b', 'c', 'c', 'c']);
+
+    let result = dataset.normalizer_wyckoff_positions(false, true).unwrap();
+    let normalizer = dataset.euclidean_normalizer(false).unwrap();
+
+    // Per-atom Wyckoff letters in `std_cell` order, as a string.
+    let word =
+        |seq: &[moyo::data::WyckoffPosition]| -> String { seq.iter().map(|w| w.letter).collect() };
+
+    // Identity setting (this dataset's own): A->a, B->b, O->c.
+    assert_eq!(word(&result.wyckoffs), "abccc");
+
+    // Two distinct Wyckoff sequences under the normalizer: the identity "abccc"
+    // and "baddd" -- the Euclidean normalizer of Pm-3m is Im-3m, whose extra
+    // (1/2,1/2,1/2) translation swaps Wyckoff a<->b and c<->d.
+    let sequences: std::collections::BTreeSet<String> = result
+        .coset_representatives
+        .iter()
+        .map(|(_, seq)| word(seq))
+        .collect();
+    assert_eq!(
+        sequences,
+        ["abccc".to_string(), "baddd".to_string()]
+            .into_iter()
+            .collect()
+    );
+
+    // Multiplicity is invariant: {1, 1, 3, 3, 3} for every sequence.
+    for (_, seq) in result.coset_representatives.iter() {
+        let mut mults: Vec<usize> = seq.iter().map(|w| w.multiplicity).collect();
+        mults.sort();
+        assert_eq!(mults, vec![1, 1, 3, 3, 3]);
+    }
+
+    // Orbit-stabilizer: |stabilizer| * (#distinct sequences) == |normalizer|.
+    assert_eq!(
+        result.stabilizer.len() * result.coset_representatives.len(),
+        normalizer.operations().len()
+    );
+
+    // The `primitive` flag only changes the basis of the returned operations;
+    // the Wyckoff sequences and the stabilizer size are basis-independent.
+    let result_conv = dataset.normalizer_wyckoff_positions(false, false).unwrap();
+    assert_eq!(result_conv.stabilizer.len(), result.stabilizer.len());
+    let sequences_conv: std::collections::BTreeSet<String> = result_conv
+        .coset_representatives
+        .iter()
+        .map(|(_, seq)| word(seq))
+        .collect();
+    assert_eq!(sequences_conv, sequences);
+}
+
+/// Distinct images of `position` under `operations`, reduced into the unit cell.
+fn expand_sites(position: &Vector3<f64>, operations: &[Operation]) -> Vec<Vector3<f64>> {
+    let mut sites: Vec<Vector3<f64>> = vec![];
+    for op in operations {
+        let new_site =
+            (op.rotation.map(|e| e as f64) * position + op.translation).map(|e| e.rem_euclid(1.0));
+        let overlap = sites.iter().any(|site| {
+            let mut diff = site - new_site;
+            diff -= diff.map(|x| x.round());
+            diff.iter().all(|x| x.abs() < 1e-6)
+        });
+        if !overlap {
+            sites.push(new_site);
+        }
+    }
+    sites
+}
+
+#[test]
+fn test_normalizer_wyckoff_positions_ag3po4() {
+    // Ag3PO4, P-43n (No. 218). The canonical Euclidean-normalizer example
+    // (crystal-symmetry-primer Sec. 6.2 / ITA Sec. 3.5.3.2): the normalizer
+    // produces equivalent descriptions in which Ag's Wyckoff position is
+    // interchanged between 6c and 6d, while P stays 2a and O stays 8e.
+    //
+    // Asymmetric unit: P at 2a (0,0,0), Ag at 6d (1/4,0,1/2), O at 8e (x,x,x)
+    // with x = 0.1486.
+    let a = 6.0;
+    let lattice = Lattice::new(matrix![
+        a, 0.0, 0.0;
+        0.0, a, 0.0;
+        0.0, 0.0, a;
+    ]);
+    let operations = operations_from_number(218, Setting::default(), false).unwrap();
+    let asymmetric_unit = [
+        (0, Vector3::new(0.0, 0.0, 0.0)),          // P  (2a)
+        (1, Vector3::new(0.25, 0.0, 0.5)),         // Ag (6d)
+        (2, Vector3::new(0.1486, 0.1486, 0.1486)), // O  (8e)
+    ];
+    let mut positions = vec![];
+    let mut numbers = vec![];
+    for (number, rep) in asymmetric_unit {
+        for site in expand_sites(&rep, &operations) {
+            positions.push(site);
+            numbers.push(number);
+        }
+    }
+    let cell = Cell::new(lattice, positions, numbers);
+    let symprec = 1e-4;
+
+    let dataset = assert_dataset_with_default(&cell, symprec);
+    assert_eq!(dataset.number, 218); // P-43n
+    assert_eq!(dataset.std_cell.num_atoms(), 16); // 2 P + 6 Ag + 8 O
+
+    let result = dataset.normalizer_wyckoff_positions(false, true).unwrap();
+    let normalizer = dataset.euclidean_normalizer(false).unwrap();
+
+    // Two distinct Wyckoff sequences (Ag = 6c or 6d), and the orbit-stabilizer
+    // relation holds.
+    assert_eq!(result.coset_representatives.len(), 2);
+    assert_eq!(
+        result.stabilizer.len() * result.coset_representatives.len(),
+        normalizer.operations().len()
+    );
+
+    // In every equivalent description P stays 2a and O stays 8e; Ag is 6c or
+    // 6d. Multiplicities are invariant throughout.
+    let mut ag_letters = std::collections::BTreeSet::new();
+    for (_, seq) in result.coset_representatives.iter() {
+        for (i, w) in seq.iter().enumerate() {
+            match dataset.std_cell.numbers[i] {
+                0 => {
+                    assert_eq!(w.letter, 'a');
+                    assert_eq!(w.multiplicity, 2);
+                }
+                1 => {
+                    assert!(w.letter == 'c' || w.letter == 'd', "Ag should be 6c or 6d");
+                    assert_eq!(w.multiplicity, 6);
+                    ag_letters.insert(w.letter);
+                }
+                2 => {
+                    assert_eq!(w.letter, 'e');
+                    assert_eq!(w.multiplicity, 8);
+                }
+                other => panic!("unexpected atomic number {}", other),
+            }
+        }
+    }
+
+    // The normalizer interchanges Ag's Wyckoff position 6c <-> 6d, so both
+    // letters must appear across the equivalent descriptions.
+    assert_eq!(ag_letters.into_iter().collect::<Vec<_>>(), vec!['c', 'd']);
 }
 
 #[test]
