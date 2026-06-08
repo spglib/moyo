@@ -366,36 +366,38 @@ impl MoyoDataset {
         )
     }
 
-    /// Raw normalizer-induced Wyckoff positions for this dataset's standardized
-    /// (conventional) cell.
+    /// Wyckoff positions of this dataset's standardized cell under the action of
+    /// the Euclidean normalizer, decomposed into the stabilizer of the Wyckoff
+    /// sequence and coset representatives.
     ///
-    /// For every operation of the Euclidean normalizer (each coset
-    /// representative composed with the discrete translation subgroup;
-    /// continuous polar directions are ignored), the standardized structure is
-    /// transformed and its Wyckoff positions are recomputed. The result has one
-    /// inner `Vec` per normalizer operation (same order as
-    /// [`Normalizer::operations`]), each holding one [`WyckoffPosition`] per atom
-    /// of [`std_cell`](Self::std_cell), in `std_cell` atom order. The first
-    /// entry corresponds to the identity, i.e. this dataset's own setting.
-    ///
-    /// The output is RAW: duplicate assignments produced by different operations
-    /// are not removed. It is intended for building a canonical Wyckoff sequence
-    /// on the caller's side.
+    /// The normalizer acts on the Wyckoff sequence (the per-atom Wyckoff
+    /// positions of [`std_cell`](Self::std_cell)): applying an operation
+    /// transforms the structure and may permute the Wyckoff positions. The
+    /// returned [`NormalizerWyckoffPositions`] groups the normalizer operations
+    /// by the sequence they produce -- the stabilizer fixes the sequence, and
+    /// the coset representatives enumerate the distinct sequences (see
+    /// [`NormalizerWyckoffPositions`] for details).
     ///
     /// `preserve_chirality = true` restricts to the chirality-preserving
-    /// subgroup N_E^+(G).
+    /// subgroup N_E^+(G). `primitive = true` returns the operations in the
+    /// primitive standardized basis (matching [`euclidean_normalizer`](Self::euclidean_normalizer));
+    /// `primitive = false` returns them in the conventional standardized basis,
+    /// in which they act directly on `std_cell`'s fractional coordinates.
     pub fn normalizer_wyckoff_positions(
         &self,
         preserve_chirality: bool,
-    ) -> Result<Vec<Vec<WyckoffPosition>>, MoyoError> {
+        primitive: bool,
+    ) -> Result<NormalizerWyckoffPositions, MoyoError> {
         let normalizer = self.euclidean_normalizer(preserve_chirality)?;
+        let primitive_ops = normalizer.operations();
 
         // Normalizer operations are in the primitive standardized basis; the
         // Wyckoff database is in the conventional setting, so convert each
-        // operation into the conventional basis via the centering.
+        // operation into the conventional basis via the centering. Matching
+        // always uses the conventional operations; the returned operations are
+        // chosen by the `primitive` flag.
         let prim_to_conv = Transformation::from_linear(self.hall_symbol().centering.linear());
-        let conventional_ops = normalizer
-            .operations()
+        let conventional_ops = primitive_ops
             .iter()
             .map(|op| {
                 prim_to_conv
@@ -434,7 +436,7 @@ impl MoyoDataset {
             orbit_multiplicities[orbit] += 1;
         }
 
-        wyckoff_positions_under_normalizer(
+        let sequences = wyckoff_positions_under_normalizer(
             &conventional_ops,
             &self.std_cell.lattice,
             &self.std_cell.positions,
@@ -442,8 +444,74 @@ impl MoyoDataset {
             &site_orbits,
             &orbit_multiplicities,
             self.symprec,
-        )
+        )?;
+
+        // Operations returned to the caller, in the requested basis. `operations`
+        // places the identity first, so `sequences[0]` is the identity setting.
+        let returned_ops = if primitive {
+            &primitive_ops
+        } else {
+            &conventional_ops
+        };
+        let letters = |sequence: &[WyckoffPosition]| -> Vec<char> {
+            sequence.iter().map(|w| w.letter).collect()
+        };
+        let reference = letters(&sequences[0]);
+
+        // Partition the normalizer operations by the Wyckoff sequence they
+        // produce: the stabilizer fixes `reference`, and the first operation
+        // reaching each distinct sequence is a coset representative.
+        let mut stabilizer = Vec::new();
+        let mut coset_representatives = Vec::new();
+        let mut seen_sequences: Vec<Vec<char>> = Vec::new();
+        for (op, sequence) in returned_ops.iter().zip(sequences.iter()) {
+            let sequence_letters = letters(sequence);
+            if sequence_letters == reference {
+                stabilizer.push(op.clone());
+            }
+            if !seen_sequences.contains(&sequence_letters) {
+                seen_sequences.push(sequence_letters);
+                coset_representatives.push((op.clone(), sequence.clone()));
+            }
+        }
+
+        Ok(NormalizerWyckoffPositions {
+            wyckoffs: sequences.into_iter().next().unwrap(),
+            stabilizer,
+            coset_representatives,
+        })
     }
+}
+
+/// Wyckoff positions of a standardized cell under the Euclidean normalizer's
+/// action, returned by [`MoyoDataset::normalizer_wyckoff_positions`].
+///
+/// The (finite, modulo lattice translations) normalizer group acts on the
+/// Wyckoff sequence -- the per-atom list of Wyckoff positions of the
+/// standardized cell. This struct decomposes that action relative to the
+/// identity sequence [`wyckoffs`](Self::wyckoffs):
+///
+/// * [`stabilizer`](Self::stabilizer) is the subgroup of normalizer operations
+///   that leave the Wyckoff sequence unchanged.
+/// * [`coset_representatives`](Self::coset_representatives) contains one
+///   operation per distinct Wyckoff sequence, paired with that sequence. They
+///   are coset representatives of the normalizer modulo the stabilizer, so
+///   `stabilizer.len() * coset_representatives.len()` equals the number of
+///   normalizer operations.
+#[derive(Debug, Clone)]
+pub struct NormalizerWyckoffPositions {
+    /// Wyckoff positions of the standardized cell in the identity setting (this
+    /// dataset's own setting), one per atom in `std_cell` order. Equal to
+    /// `coset_representatives[0].1`.
+    pub wyckoffs: Vec<WyckoffPosition>,
+    /// Normalizer operations that fix [`wyckoffs`](Self::wyckoffs), expressed in
+    /// the basis selected by the `primitive` flag.
+    pub stabilizer: Vec<UnimodularTransformation>,
+    /// Coset representatives of the normalizer modulo the stabilizer (same basis
+    /// as [`stabilizer`](Self::stabilizer)), each paired with the distinct
+    /// Wyckoff sequence it produces. The first entry is the identity paired with
+    /// [`wyckoffs`](Self::wyckoffs).
+    pub coset_representatives: Vec<(UnimodularTransformation, Vec<WyckoffPosition>)>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]

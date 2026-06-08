@@ -12,7 +12,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 
 - Add `iter_wyckoff_positions_from_hall_number` and make `WyckoffPosition` public in `moyo::data` to allow looking up all Wyckoff positions of a space group by Hall number without analyzing a structure
 - Add `iter_layer_wyckoff_positions_from_hall_number` and make `LayerWyckoffPosition` public in `moyo::data` to allow looking up all Wyckoff positions of a layer group by Hall number without analyzing a structure
-- Add `MoyoDataset::normalizer_wyckoff_positions` and `Normalizer::operations` to recompute the Wyckoff positions of the standardized cell under every Euclidean-normalizer operation, returning the raw candidate assignments for building a canonical Wyckoff sequence (#351)
+- Add `MoyoDataset::normalizer_wyckoff_positions` (returning `NormalizerWyckoffPositions`) and `Normalizer::operations` to analyze the Euclidean normalizer's action on the Wyckoff sequence of the standardized cell, returning the stabilizer of the sequence and coset representatives of the distinct sequences for building a canonical Wyckoff sequence (#351)
 
 ### moyo-wasm
 

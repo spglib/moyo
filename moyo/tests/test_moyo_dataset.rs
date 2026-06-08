@@ -209,34 +209,54 @@ fn test_normalizer_wyckoff_positions_perovskite() {
     assert_eq!(dataset.orbits, vec![0, 1, 2, 2, 2]);
     assert_eq!(dataset.wyckoffs, vec!['a', 'b', 'c', 'c', 'c']);
 
-    let candidates = dataset.normalizer_wyckoff_positions(false).unwrap();
-
-    // Candidate count equals the number of discrete normalizer operations.
+    let result = dataset.normalizer_wyckoff_positions(false, true).unwrap();
     let normalizer = dataset.euclidean_normalizer(false).unwrap();
-    assert_eq!(candidates.len(), normalizer.operations().len());
 
     // Per-atom Wyckoff letters in `std_cell` order, as a string.
-    let word = |cand: &Vec<moyo::data::WyckoffPosition>| -> String {
-        cand.iter().map(|w| w.letter).collect()
-    };
+    let word =
+        |seq: &[moyo::data::WyckoffPosition]| -> String { seq.iter().map(|w| w.letter).collect() };
 
-    // Index 0 is the identity (this dataset's own setting): A->a, B->b, O->c.
-    assert_eq!(word(&candidates[0]), "abccc");
+    // Identity setting (this dataset's own): A->a, B->b, O->c.
+    assert_eq!(word(&result.wyckoffs), "abccc");
 
-    // Multiplicity is invariant under the normalizer: {1, 1, 3, 3, 3} always.
-    for cand in candidates.iter() {
-        let mut mults: Vec<usize> = cand.iter().map(|w| w.multiplicity).collect();
+    // Two distinct Wyckoff sequences under the normalizer: the identity "abccc"
+    // and "baddd" -- the Euclidean normalizer of Pm-3m is Im-3m, whose extra
+    // (1/2,1/2,1/2) translation swaps Wyckoff a<->b and c<->d.
+    let sequences: std::collections::BTreeSet<String> = result
+        .coset_representatives
+        .iter()
+        .map(|(_, seq)| word(seq))
+        .collect();
+    assert_eq!(
+        sequences,
+        ["abccc".to_string(), "baddd".to_string()]
+            .into_iter()
+            .collect()
+    );
+
+    // Multiplicity is invariant: {1, 1, 3, 3, 3} for every sequence.
+    for (_, seq) in result.coset_representatives.iter() {
+        let mut mults: Vec<usize> = seq.iter().map(|w| w.multiplicity).collect();
         mults.sort();
         assert_eq!(mults, vec![1, 1, 3, 3, 3]);
     }
 
-    // The Euclidean normalizer of Pm-3m is Im-3m: the extra translation
-    // (1/2,1/2,1/2) swaps Wyckoff a<->b and c<->d. Applied to the identity
-    // assignment "abccc", this relabels the structure to "baddd".
-    assert!(
-        candidates.iter().any(|cand| word(cand) == "baddd"),
-        "normalizer (1/2,1/2,1/2) translation should relabel abccc -> baddd"
+    // Orbit-stabilizer: |stabilizer| * (#distinct sequences) == |normalizer|.
+    assert_eq!(
+        result.stabilizer.len() * result.coset_representatives.len(),
+        normalizer.operations().len()
     );
+
+    // The `primitive` flag only changes the basis of the returned operations;
+    // the Wyckoff sequences and the stabilizer size are basis-independent.
+    let result_conv = dataset.normalizer_wyckoff_positions(false, false).unwrap();
+    assert_eq!(result_conv.stabilizer.len(), result.stabilizer.len());
+    let sequences_conv: std::collections::BTreeSet<String> = result_conv
+        .coset_representatives
+        .iter()
+        .map(|(_, seq)| word(seq))
+        .collect();
+    assert_eq!(sequences_conv, sequences);
 }
 
 /// Distinct images of `position` under `operations`, reduced into the unit cell.
@@ -293,15 +313,22 @@ fn test_normalizer_wyckoff_positions_ag3po4() {
     assert_eq!(dataset.number, 218); // P-43n
     assert_eq!(dataset.std_cell.num_atoms(), 16); // 2 P + 6 Ag + 8 O
 
-    let candidates = dataset.normalizer_wyckoff_positions(false).unwrap();
+    let result = dataset.normalizer_wyckoff_positions(false, true).unwrap();
     let normalizer = dataset.euclidean_normalizer(false).unwrap();
-    assert_eq!(candidates.len(), normalizer.operations().len());
+
+    // Two distinct Wyckoff sequences (Ag = 6c or 6d), and the orbit-stabilizer
+    // relation holds.
+    assert_eq!(result.coset_representatives.len(), 2);
+    assert_eq!(
+        result.stabilizer.len() * result.coset_representatives.len(),
+        normalizer.operations().len()
+    );
 
     // In every equivalent description P stays 2a and O stays 8e; Ag is 6c or
     // 6d. Multiplicities are invariant throughout.
     let mut ag_letters = std::collections::BTreeSet::new();
-    for cand in candidates.iter() {
-        for (i, w) in cand.iter().enumerate() {
+    for (_, seq) in result.coset_representatives.iter() {
+        for (i, w) in seq.iter().enumerate() {
             match dataset.std_cell.numbers[i] {
                 0 => {
                     assert_eq!(w.letter, 'a');
