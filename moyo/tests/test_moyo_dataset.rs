@@ -8,8 +8,8 @@ use std::path::Path;
 use test_log::test;
 
 use moyo::MoyoDataset;
-use moyo::base::{AngleTolerance, Cell, Lattice, Permutation, Rotation, Translation};
-use moyo::data::Setting;
+use moyo::base::{AngleTolerance, Cell, Lattice, Operation, Permutation, Rotation, Translation};
+use moyo::data::{Setting, operations_from_number};
 
 fn assert_dataset_with_default(cell: &Cell, symprec: f64) -> MoyoDataset {
     assert_dataset(cell, symprec, AngleTolerance::default(), Setting::default())
@@ -237,6 +237,93 @@ fn test_normalizer_wyckoff_positions_perovskite() {
         candidates.iter().any(|cand| word(cand) == "baddd"),
         "normalizer (1/2,1/2,1/2) translation should relabel abccc -> baddd"
     );
+}
+
+/// Distinct images of `position` under `operations`, reduced into the unit cell.
+fn expand_sites(position: &Vector3<f64>, operations: &[Operation]) -> Vec<Vector3<f64>> {
+    let mut sites: Vec<Vector3<f64>> = vec![];
+    for op in operations {
+        let new_site =
+            (op.rotation.map(|e| e as f64) * position + op.translation).map(|e| e.rem_euclid(1.0));
+        let overlap = sites.iter().any(|site| {
+            let mut diff = site - new_site;
+            diff -= diff.map(|x| x.round());
+            diff.iter().all(|x| x.abs() < 1e-6)
+        });
+        if !overlap {
+            sites.push(new_site);
+        }
+    }
+    sites
+}
+
+#[test]
+fn test_normalizer_wyckoff_positions_ag3po4() {
+    // Ag3PO4, P-43n (No. 218). The canonical Euclidean-normalizer example
+    // (crystal-symmetry-primer Sec. 6.2 / ITA Sec. 3.5.3.2): the normalizer
+    // produces equivalent descriptions in which Ag's Wyckoff position is
+    // interchanged between 6c and 6d, while P stays 2a and O stays 8e.
+    //
+    // Asymmetric unit: P at 2a (0,0,0), Ag at 6d (1/4,0,1/2), O at 8e (x,x,x)
+    // with x = 0.1486.
+    let a = 6.0;
+    let lattice = Lattice::new(matrix![
+        a, 0.0, 0.0;
+        0.0, a, 0.0;
+        0.0, 0.0, a;
+    ]);
+    let operations = operations_from_number(218, Setting::default(), false).unwrap();
+    let asymmetric_unit = [
+        (0, Vector3::new(0.0, 0.0, 0.0)),          // P  (2a)
+        (1, Vector3::new(0.25, 0.0, 0.5)),         // Ag (6d)
+        (2, Vector3::new(0.1486, 0.1486, 0.1486)), // O  (8e)
+    ];
+    let mut positions = vec![];
+    let mut numbers = vec![];
+    for (number, rep) in asymmetric_unit {
+        for site in expand_sites(&rep, &operations) {
+            positions.push(site);
+            numbers.push(number);
+        }
+    }
+    let cell = Cell::new(lattice, positions, numbers);
+    let symprec = 1e-4;
+
+    let dataset = assert_dataset_with_default(&cell, symprec);
+    assert_eq!(dataset.number, 218); // P-43n
+    assert_eq!(dataset.std_cell.num_atoms(), 16); // 2 P + 6 Ag + 8 O
+
+    let candidates = dataset.normalizer_wyckoff_positions(false).unwrap();
+    let normalizer = dataset.euclidean_normalizer(false).unwrap();
+    assert_eq!(candidates.len(), normalizer.operations().len());
+
+    // In every equivalent description P stays 2a and O stays 8e; Ag is 6c or
+    // 6d. Multiplicities are invariant throughout.
+    let mut ag_letters = std::collections::BTreeSet::new();
+    for cand in candidates.iter() {
+        for (i, w) in cand.iter().enumerate() {
+            match dataset.std_cell.numbers[i] {
+                0 => {
+                    assert_eq!(w.letter, 'a');
+                    assert_eq!(w.multiplicity, 2);
+                }
+                1 => {
+                    assert!(w.letter == 'c' || w.letter == 'd', "Ag should be 6c or 6d");
+                    assert_eq!(w.multiplicity, 6);
+                    ag_letters.insert(w.letter);
+                }
+                2 => {
+                    assert_eq!(w.letter, 'e');
+                    assert_eq!(w.multiplicity, 8);
+                }
+                other => panic!("unexpected atomic number {}", other),
+            }
+        }
+    }
+
+    // The normalizer interchanges Ag's Wyckoff position 6c <-> 6d, so both
+    // letters must appear across the equivalent descriptions.
+    assert_eq!(ag_letters.into_iter().collect::<Vec<_>>(), vec!['c', 'd']);
 }
 
 #[test]
