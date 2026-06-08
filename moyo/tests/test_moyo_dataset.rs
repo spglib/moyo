@@ -3,7 +3,6 @@ extern crate approx;
 
 use nalgebra::{Matrix3, Vector3, matrix, vector};
 use serde_json;
-use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
 use test_log::test;
@@ -216,17 +215,13 @@ fn test_normalizer_wyckoff_positions_perovskite() {
     let normalizer = dataset.euclidean_normalizer(false).unwrap();
     assert_eq!(candidates.len(), normalizer.operations().len());
 
-    let sorted_letters = |cand: &Vec<moyo::data::WyckoffPosition>| -> Vec<char> {
-        let mut letters: Vec<char> = cand.iter().map(|w| w.letter).collect();
-        letters.sort();
-        letters
+    // Per-atom Wyckoff letters in `std_cell` order, as a string.
+    let word = |cand: &Vec<moyo::data::WyckoffPosition>| -> String {
+        cand.iter().map(|w| w.letter).collect()
     };
 
-    // Index 0 is the identity (this dataset's own setting): same Wyckoff
-    // multiset as the dataset assignment.
-    let mut dataset_letters = dataset.wyckoffs.clone();
-    dataset_letters.sort();
-    assert_eq!(sorted_letters(&candidates[0]), dataset_letters);
+    // Index 0 is the identity (this dataset's own setting): A->a, B->b, O->c.
+    assert_eq!(word(&candidates[0]), "abccc");
 
     // Multiplicity is invariant under the normalizer: {1, 1, 3, 3, 3} always.
     for cand in candidates.iter() {
@@ -236,19 +231,11 @@ fn test_normalizer_wyckoff_positions_perovskite() {
     }
 
     // The Euclidean normalizer of Pm-3m is Im-3m: the extra translation
-    // (1/2,1/2,1/2) swaps Wyckoff a<->b and c<->d. So the structure must be
-    // relabeled to {a, b, d, d, d} by some normalizer operation, and at least
-    // two distinct Wyckoff assignments must appear overall.
-    let distinct: HashSet<Vec<char>> = candidates.iter().map(sorted_letters).collect();
+    // (1/2,1/2,1/2) swaps Wyckoff a<->b and c<->d. Applied to the identity
+    // assignment "abccc", this relabels the structure to "baddd".
     assert!(
-        distinct.len() >= 2,
-        "normalizer should produce more than one Wyckoff assignment"
-    );
-    assert!(
-        candidates
-            .iter()
-            .any(|cand| sorted_letters(cand) == vec!['a', 'b', 'd', 'd', 'd']),
-        "normalizer (1/2,1/2,1/2) translation should relabel a<->b and c<->d"
+        candidates.iter().any(|cand| word(cand) == "baddd"),
+        "normalizer (1/2,1/2,1/2) translation should relabel abccc -> baddd"
     );
 }
 
