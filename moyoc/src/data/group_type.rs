@@ -39,6 +39,11 @@ pub struct MoyoSpaceGroupType {
 /// Returns NULL if `number` is out of range.
 #[unsafe(no_mangle)]
 pub extern "C" fn moyo_space_group_type_new(number: i32) -> *mut MoyoSpaceGroupType {
+    // Reject lower-bound invalid numbers here: moyo indexes the database with
+    // `number - 1`, which overflows for extreme negative values.
+    if number < 1 {
+        return std::ptr::null_mut();
+    }
     let Some(hall_number) = Setting::default().hall_number(number) else {
         return std::ptr::null_mut();
     };
@@ -117,6 +122,9 @@ pub struct MoyoLayerGroupType {
 /// Returns NULL if `number` is out of range.
 #[unsafe(no_mangle)]
 pub extern "C" fn moyo_layer_group_type_new(number: i32) -> *mut MoyoLayerGroupType {
+    if number < 1 {
+        return std::ptr::null_mut();
+    }
     let Some(hall_number) = LayerSetting::default().hall_number(number) else {
         return std::ptr::null_mut();
     };

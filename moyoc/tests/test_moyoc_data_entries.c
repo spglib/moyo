@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -26,6 +27,7 @@ void test_hall_symbol_entry(void) {
     moyo_hall_symbol_entry_free(last_entry);
 
     assert(moyo_hall_symbol_entry_new(0) == NULL);
+    assert(moyo_hall_symbol_entry_new(INT32_MIN) == NULL);
     assert(moyo_hall_symbol_entry_new(531) == NULL);
 }
 
@@ -40,6 +42,7 @@ void test_layer_hall_symbol_entry(void) {
     moyo_layer_hall_symbol_entry_free(entry);
 
     assert(moyo_layer_hall_symbol_entry_new(0) == NULL);
+    assert(moyo_layer_hall_symbol_entry_new(INT32_MIN) == NULL);
     assert(moyo_layer_hall_symbol_entry_new(117) == NULL);
 }
 
@@ -62,6 +65,7 @@ void test_space_group_type(void) {
     moyo_space_group_type_free(space_group_type);
 
     assert(moyo_space_group_type_new(0) == NULL);
+    assert(moyo_space_group_type_new(INT32_MIN) == NULL);
     assert(moyo_space_group_type_new(231) == NULL);
 }
 
@@ -81,6 +85,7 @@ void test_layer_group_type(void) {
     moyo_layer_group_type_free(layer_group_type);
 
     assert(moyo_layer_group_type_new(0) == NULL);
+    assert(moyo_layer_group_type_new(INT32_MIN) == NULL);
     assert(moyo_layer_group_type_new(81) == NULL);
 }
 
@@ -101,6 +106,7 @@ void test_magnetic_space_group_type(void) {
     moyo_magnetic_space_group_type_free(magnetic_space_group_type);
 
     assert(moyo_magnetic_space_group_type_new(0) == NULL);
+    assert(moyo_magnetic_space_group_type_new(INT32_MIN) == NULL);
     assert(moyo_magnetic_space_group_type_new(1652) == NULL);
 }
 
