@@ -16,6 +16,7 @@ function(add_moyoc_test name)
     add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
+add_moyoc_test(test_moyoc_data_entries)
 add_moyoc_test(test_moyoc_dataset)
 add_moyoc_test(test_moyoc_layer_dataset)
 add_moyoc_test(test_moyoc_magnetic_dataset)

@@ -95,4 +95,21 @@ moyo_operations_free(layer_operations);
 MoyoMagneticOperations *magnetic_operations =
     moyo_magnetic_operations_from_uni_number(uni_number, primitive);
 moyo_magnetic_operations_free(magnetic_operations);
+
+// Group-type metadata lookups
+MoyoHallSymbolEntry *entry = moyo_hall_symbol_entry_new(hall_number);
+moyo_hall_symbol_entry_free(entry);
+
+MoyoLayerHallSymbolEntry *layer_entry = moyo_layer_hall_symbol_entry_new(layer_hall_number);
+moyo_layer_hall_symbol_entry_free(layer_entry);
+
+MoyoSpaceGroupType *space_group_type = moyo_space_group_type_new(number);
+moyo_space_group_type_free(space_group_type);
+
+MoyoLayerGroupType *layer_group_type = moyo_layer_group_type_new(layer_number);
+moyo_layer_group_type_free(layer_group_type);
+
+MoyoMagneticSpaceGroupType *magnetic_space_group_type =
+    moyo_magnetic_space_group_type_new(uni_number);
+moyo_magnetic_space_group_type_free(magnetic_space_group_type);
 ```
