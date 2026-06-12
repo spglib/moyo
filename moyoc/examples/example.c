@@ -5,7 +5,7 @@
 
 #include "moyoc.h"
 
-int main() {
+int main(void) {
     // Wurtzite (P6_3mc, No. 186)
     double a = 3.81;
     double c = 6.24;
@@ -22,17 +22,17 @@ int main() {
         {1.0 / 3.0, 2.0 / 3.0, z2_2b},
         {2.0 / 3.0, 1.0 / 3.0, z2_2b + 0.5},
     };
-    int numbers[] = {0, 0, 1, 1};
-    int num_atoms = 4;
+    int32_t numbers[] = {0, 0, 1, 1};
+    int32_t num_atoms = 4;
 
     double symprec = 1e-4;
     double angle_tolerance = -1;
     MoyoSetting setting = MOYO_SETTING_SPGLIB;
-    int hall_number = -1;
+    int32_t hall_number = -1;
     bool rotate_basis = true;
 
-    MoyoDataset *dataset = moyo_dataset(
-        &basis, positions, numbers, num_atoms,
+    MoyoDataset *dataset = moyo_dataset_new(
+        basis, positions, numbers, num_atoms,
         symprec, angle_tolerance, setting, hall_number, rotate_basis
     );
     assert(dataset != NULL);
@@ -43,5 +43,7 @@ int main() {
     assert(dataset->number == 186);
     assert(strcmp(dataset->hm_symbol, "P 6_3 m c") == 0);
 
-    free_moyo_dataset(dataset);
+    moyo_dataset_free(dataset);
+
+    return 0;
 }

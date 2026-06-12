@@ -62,17 +62,18 @@ py-docs:
 [group('c')]
 [working-directory: 'moyoc']
 c-build:
-    make build
+    cmake -S . -B build
+    cmake --build build
 
 [group('c')]
 [working-directory: 'moyoc']
-c-test:
-    make tests
+c-test: c-build
+    ctest --test-dir build --output-on-failure
 
 [group('c')]
 [working-directory: 'moyoc']
 c-clean:
-    make clean
+    rm -rf build
 
 ################################################################################
 # JS (WASM)

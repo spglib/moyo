@@ -359,8 +359,6 @@ lcov.info
 *.out
 *.ai
 
-moyoc.h
-
 !**/assets/*.json
 .env
 *.png
