@@ -57,6 +57,14 @@ MoyoDataset *dataset = moyo_dataset_new(
 // ... read dataset fields ...
 moyo_dataset_free(dataset);
 
+// Layer-group symmetry analysis
+MoyoLayerDataset *layer_dataset = moyo_layer_dataset_new(
+    basis, positions, numbers, num_atoms,
+    symprec, angle_tolerance, layer_setting, hall_number, rotate_basis
+);
+// ... read layer_dataset fields ...
+moyo_layer_dataset_free(layer_dataset);
+
 // Magnetic space-group symmetry analysis (collinear moments)
 MoyoCollinearMagneticDataset *mag_dataset = moyo_collinear_magnetic_dataset_new(
     basis, positions, numbers, magnetic_moments, num_atoms,
