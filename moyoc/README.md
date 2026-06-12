@@ -96,6 +96,30 @@ MoyoMagneticOperations *magnetic_operations =
     moyo_magnetic_operations_from_uni_number(uni_number, primitive);
 moyo_magnetic_operations_free(magnetic_operations);
 
+// Group identification from primitive operations
+MoyoPointGroup *point_group = moyo_point_group_new(
+    prim_rotations, num_operations, basis /* or NULL */
+);
+moyo_point_group_free(point_group);
+
+MoyoSpaceGroup *space_group = moyo_space_group_new(
+    prim_rotations, prim_translations, num_operations,
+    basis /* or NULL */, setting, hall_number, epsilon
+);
+moyo_space_group_free(space_group);
+
+MoyoLayerGroup *layer_group = moyo_layer_group_new(
+    prim_rotations, prim_translations, num_operations,
+    basis /* or NULL */, layer_setting, layer_hall_number, epsilon
+);
+moyo_layer_group_free(layer_group);
+
+MoyoMagneticSpaceGroup *magnetic_space_group = moyo_magnetic_space_group_new(
+    prim_rotations, prim_translations, prim_time_reversals, num_operations,
+    basis /* or NULL */, epsilon
+);
+moyo_magnetic_space_group_free(magnetic_space_group);
+
 // Group-type metadata lookups
 MoyoHallSymbolEntry *entry = moyo_hall_symbol_entry_new(hall_number);
 moyo_hall_symbol_entry_free(entry);

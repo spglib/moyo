@@ -47,13 +47,13 @@ Legend: ✅ supported · 🟡 partial · ❌ not exposed · ➖ not applicable.
 | Shared               | Core types           | ✅            | ✅                | 🟡          | 🟡                    |
 | Space group          | Dataset from cell    | ✅            | ✅                | ✅          | ✅                    |
 | Space group          | Data access          | ✅            | ✅                | 🟡          | 🟡                    |
-| Space group          | Group identification | ✅            | ✅                | ❌          | ❌                    |
+| Space group          | Group identification | ✅            | ✅                | 🟡          | ❌                    |
 | Layer group          | Dataset from cell    | ✅            | ✅                | ✅          | ❌                    |
 | Layer group          | Data access          | ✅            | ✅                | 🟡          | 🟡                    |
-| Layer group          | Group identification | ✅            | ✅                | ❌          | ❌                    |
+| Layer group          | Group identification | ✅            | ✅                | ✅          | ❌                    |
 | Magnetic space group | Dataset from cell    | ✅            | ✅                | ✅          | ❌                    |
 | Magnetic space group | Data access          | ✅            | ✅                | ✅          | 🟡                    |
-| Magnetic space group | Group identification | ✅            | ✅                | ❌          | ❌                    |
+| Magnetic space group | Group identification | ✅            | ✅                | ✅          | ❌                    |
 
 Notes:
 
@@ -77,7 +77,9 @@ Notes:
   `operations_from_*` generators are all exposed.
 - "Group identification" recovers a group label from a primitive list of
   symmetry operations (`PointGroup` + `SpaceGroup` + `integral_normalizer`,
-  `LayerGroup`, `MagneticSpaceGroup`).
+  `LayerGroup`, `MagneticSpaceGroup`). C's space-group row is 🟡 because
+  `integral_normalizer` is not bound; `PointGroup`, `SpaceGroup`,
+  `LayerGroup`, and `MagneticSpaceGroup` are all exposed.
 - The Fortran interface mirrors the C column one-to-one (it wraps the
   complete moyoc API).
 
