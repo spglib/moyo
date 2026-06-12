@@ -20,6 +20,7 @@ A fast and robust crystal symmetry finder, written in Rust.
 - Rust support available via [crates.io](https://crates.io/crates/moyo): [Docs](https://docs.rs/moyo/latest/moyo/)
 - Python support available via [PyPI](https://pypi.org/project/moyopy/): [Docs](https://spglib.github.io/moyo/python/)
 - JavaScript and WebAssembly support available via [npm](https://www.npmjs.com/package/@spglib/moyo-wasm)
+- C and Fortran support available via CMake: [moyoc](moyoc/README.md)
 - Browse the 230 space groups, 80 layer groups, and 1651 magnetic space groups
   in the **moyo Crystallographic Group Viewer** at
   <https://spglib.github.io/moyo/> (static SPA powered by `moyo-wasm`).
@@ -29,6 +30,8 @@ A fast and robust crystal symmetry finder, written in Rust.
 - [Rust](moyo/README.md): core implementation
 - [Python](moyopy/README.md): Python binding
 - [C](moyoc/README.md): C binding
+- [Fortran](moyoc/README.md#fortran-interface): Fortran interface on top of the
+  C binding (optional `moyo::moyof` CMake target)
 - [JavaScript](moyo-wasm/README.md): JavaScript and WebAssembly binding
 - [Web viewer](apps/web/README.md): static Svelte + Vite + KaTeX SPA on top
   of `moyo-wasm`, deployed to GitHub Pages via
@@ -43,20 +46,21 @@ Legend: ✅ supported · 🟡 partial · ❌ not exposed · ➖ not applicable.
 | -------------------- | -------------------- | ------------- | ----------------- | ----------- | --------------------- |
 | Shared               | Core types           | ✅            | ✅                | 🟡          | 🟡                    |
 | Space group          | Dataset from cell    | ✅            | ✅                | ✅          | ✅                    |
-| Space group          | Data access          | ✅            | ✅                | ❌          | 🟡                    |
+| Space group          | Data access          | ✅            | ✅                | 🟡          | 🟡                    |
 | Space group          | Group identification | ✅            | ✅                | ❌          | ❌                    |
-| Layer group          | Dataset from cell    | ✅            | ✅                | ❌          | ❌                    |
-| Layer group          | Data access          | ✅            | ✅                | ❌          | 🟡                    |
+| Layer group          | Dataset from cell    | ✅            | ✅                | ✅          | ❌                    |
+| Layer group          | Data access          | ✅            | ✅                | 🟡          | 🟡                    |
 | Layer group          | Group identification | ✅            | ✅                | ❌          | ❌                    |
-| Magnetic space group | Dataset from cell    | ✅            | ✅                | ❌          | ❌                    |
-| Magnetic space group | Data access          | ✅            | ✅                | ❌          | 🟡                    |
+| Magnetic space group | Dataset from cell    | ✅            | ✅                | ✅          | ❌                    |
+| Magnetic space group | Data access          | ✅            | ✅                | ✅          | 🟡                    |
 | Magnetic space group | Group identification | ✅            | ✅                | ❌          | ❌                    |
 
 Notes:
 
-- Core types are `Cell`, `Operations`, and `UnimodularTransformation`. C and
-  WASM expose only `Cell` and (implicitly) `Operations` via the dataset
-  output; `UnimodularTransformation` is not bound.
+- Core types are `Cell`, `Operations`, and `UnimodularTransformation`. C
+  exposes `Cell`, magnetic cells, `Operations`, and `MagneticOperations`;
+  WASM exposes only `Cell` and (implicitly) `Operations` via the dataset
+  output. `UnimodularTransformation` is not bound in either.
 - "Dataset from cell" is the main symmetry-analysis entry point
   (`MoyoDataset`, `MoyoLayerDataset`, `MoyoCollinearMagneticDataset`,
   `MoyoNonCollinearMagneticDataset`).
@@ -66,9 +70,16 @@ Notes:
   `LayerCentering`, `LayerHallSymbolEntry`, `LayerGroupType`,
   `LayerArithmeticCrystalClass`, `operations_from_layer_number`,
   `MagneticSpaceGroupType`, `magnetic_operations_from_uni_number`).
+- C's "Data access" is 🟡 because the standalone `Centering`,
+  `ArithmeticCrystalClass`, and `WyckoffPosition` classes are not bound
+  (their content is reachable as strings through the entry and group-type
+  lookups); the settings, Hall symbol entries, group types, and
+  `operations_from_*` generators are all exposed.
 - "Group identification" recovers a group label from a primitive list of
   symmetry operations (`PointGroup` + `SpaceGroup` + `integral_normalizer`,
   `LayerGroup`, `MagneticSpaceGroup`).
+- The Fortran interface mirrors the C column one-to-one (it wraps the
+  complete moyoc API).
 
 ## How to cite moyo and its interfaces
 
