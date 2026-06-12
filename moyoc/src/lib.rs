@@ -12,12 +12,12 @@ pub use base::{
     MoyoCell, MoyoCollinearMagneticCell, MoyoMagneticOperations, MoyoNonCollinearMagneticCell,
     MoyoOperations,
 };
-pub use data::MoyoSetting;
+pub use data::{MoyoLayerSetting, MoyoSetting};
 pub use dataset::{
-    MoyoCollinearMagneticDataset, MoyoDataset, MoyoNonCollinearMagneticDataset,
+    MoyoCollinearMagneticDataset, MoyoDataset, MoyoLayerDataset, MoyoNonCollinearMagneticDataset,
     moyo_collinear_magnetic_dataset_free, moyo_collinear_magnetic_dataset_new, moyo_dataset_free,
-    moyo_dataset_new, moyo_noncollinear_magnetic_dataset_free,
-    moyo_noncollinear_magnetic_dataset_new,
+    moyo_dataset_new, moyo_layer_dataset_free, moyo_layer_dataset_new,
+    moyo_noncollinear_magnetic_dataset_free, moyo_noncollinear_magnetic_dataset_new,
 };
 
 /// Return the version string of moyoc (e.g. "0.11.0").
