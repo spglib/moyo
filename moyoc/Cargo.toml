@@ -13,12 +13,11 @@ release = false
 
 [lib]
 name = "moyoc"
-crate-type = ["cdylib"]
+crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
 moyo = { path = "../moyo", version = "0.11.0" }
+
+[dev-dependencies]
 nalgebra.workspace = true
-serde.workspace = true
-serde_json.workspace = true
 approx.workspace = true
-log.workspace = true

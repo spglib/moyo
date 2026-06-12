@@ -1,12 +1,20 @@
 use moyo::base::{Operation, Operations};
 use moyo::utils::{to_3_slice, to_3x3_slice, to_matrix3, to_vector3};
 
+use crate::ffi::{free_slice, leak_slice};
+
+/// Symmetry operations.
+/// All pointer fields are owned by the containing `MoyoDataset` and are freed
+/// by `moyo_dataset_free`.
 #[derive(Debug, Clone)]
 #[repr(C)]
 pub struct MoyoOperations {
+    /// Rotation parts of the `num_operations` operations
     pub rotations: *const [[i32; 3]; 3],
+    /// Translation parts of the `num_operations` operations
     pub translations: *const [f64; 3],
-    pub num_operations: usize,
+    /// Number of symmetry operations
+    pub num_operations: i32,
 }
 
 impl From<&Operations> for MoyoOperations {
@@ -20,23 +28,24 @@ impl From<&Operations> for MoyoOperations {
             .map(|x| to_3_slice(&x.translation))
             .collect::<Vec<_>>();
         Self {
-            rotations: rotations.leak().as_ptr(),
-            translations: translations.leak().as_ptr(),
-            num_operations: operations.len(),
+            rotations: leak_slice(rotations),
+            translations: leak_slice(translations),
+            num_operations: operations.len() as i32,
         }
     }
 }
 
 impl From<&MoyoOperations> for Operations {
     fn from(operations: &MoyoOperations) -> Self {
+        let num_operations = operations.num_operations as usize;
         let rotations = unsafe {
-            std::slice::from_raw_parts(operations.rotations, operations.num_operations)
+            std::slice::from_raw_parts(operations.rotations, num_operations)
                 .iter()
                 .map(to_matrix3)
                 .collect::<Vec<_>>()
         };
         let translations = unsafe {
-            std::slice::from_raw_parts(operations.translations, operations.num_operations)
+            std::slice::from_raw_parts(operations.translations, num_operations)
                 .iter()
                 .map(to_vector3)
                 .collect::<Vec<_>>()
@@ -52,19 +61,10 @@ impl From<&MoyoOperations> for Operations {
     }
 }
 
-#[unsafe(no_mangle)]
-pub extern "C" fn free_moyo_operations(operations: MoyoOperations) {
+pub(crate) unsafe fn moyo_operations_free_members(operations: &MoyoOperations) {
     unsafe {
-        let _ = Vec::from_raw_parts(
-            operations.rotations as *mut [[i32; 3]; 3],
-            operations.num_operations,
-            operations.num_operations,
-        );
-        let _ = Vec::from_raw_parts(
-            operations.translations as *mut [f64; 3],
-            operations.num_operations,
-            operations.num_operations,
-        );
+        free_slice(operations.rotations, operations.num_operations as usize);
+        free_slice(operations.translations, operations.num_operations as usize);
     }
 }
 
@@ -112,6 +112,6 @@ mod tests {
             assert_eq!(op1.rotation, op2.rotation);
             assert_relative_eq!(op1.translation, op2.translation);
         }
-        free_moyo_operations(moyoc);
+        unsafe { moyo_operations_free_members(&moyoc) };
     }
 }

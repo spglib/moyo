@@ -1,8 +1,0 @@
-repos:
-  - repo: local
-    hooks:
-      - id: cbindgen
-        name: cbindgen
-        entry: bash -c 'make moyoc.h'
-        language: system
-        pass_filenames: false
