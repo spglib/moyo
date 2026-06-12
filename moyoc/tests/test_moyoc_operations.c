@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include "moyoc.h"
@@ -28,7 +29,10 @@ void test_operations_from_number(void) {
 
     // Invalid arguments return NULL
     assert(moyo_operations_from_number(231, MOYO_SETTING_SPGLIB, -1, false) == NULL);
+    assert(moyo_operations_from_number(0, MOYO_SETTING_SPGLIB, -1, false) == NULL);
+    assert(moyo_operations_from_number(INT32_MIN, MOYO_SETTING_SPGLIB, -1, false) == NULL);
     assert(moyo_operations_from_number(-1, MOYO_SETTING_HALL_NUMBER, -1, false) == NULL);
+    assert(moyo_operations_from_number(-1, MOYO_SETTING_HALL_NUMBER, INT32_MIN, false) == NULL);
 }
 
 void test_operations_from_layer_number(void) {
@@ -49,6 +53,9 @@ void test_operations_from_layer_number(void) {
 
     // Invalid arguments return NULL
     assert(moyo_operations_from_layer_number(81, MOYO_LAYER_SETTING_STANDARD, -1, false) == NULL);
+    assert(moyo_operations_from_layer_number(0, MOYO_LAYER_SETTING_STANDARD, -1, false) == NULL);
+    assert(moyo_operations_from_layer_number(INT32_MIN, MOYO_LAYER_SETTING_STANDARD, -1, false) ==
+           NULL);
 }
 
 void test_magnetic_operations_from_uni_number(void) {
@@ -79,6 +86,8 @@ void test_magnetic_operations_from_uni_number(void) {
 
     // Invalid arguments return NULL
     assert(moyo_magnetic_operations_from_uni_number(1652, false) == NULL);
+    assert(moyo_magnetic_operations_from_uni_number(0, false) == NULL);
+    assert(moyo_magnetic_operations_from_uni_number(INT32_MIN, false) == NULL);
 }
 
 int main(void) {
