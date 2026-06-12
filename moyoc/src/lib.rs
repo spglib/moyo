@@ -13,9 +13,14 @@ pub use base::{
     MoyoOperations,
 };
 pub use data::{
-    MoyoLayerSetting, MoyoSetting, moyo_magnetic_operations_free,
-    moyo_magnetic_operations_from_uni_number, moyo_operations_free,
-    moyo_operations_from_layer_number, moyo_operations_from_number,
+    MoyoHallSymbolEntry, MoyoLayerGroupType, MoyoLayerHallSymbolEntry, MoyoLayerSetting,
+    MoyoMagneticSpaceGroupType, MoyoSetting, MoyoSpaceGroupType, moyo_hall_symbol_entry_free,
+    moyo_hall_symbol_entry_new, moyo_layer_group_type_free, moyo_layer_group_type_new,
+    moyo_layer_hall_symbol_entry_free, moyo_layer_hall_symbol_entry_new,
+    moyo_magnetic_operations_free, moyo_magnetic_operations_from_uni_number,
+    moyo_magnetic_space_group_type_free, moyo_magnetic_space_group_type_new, moyo_operations_free,
+    moyo_operations_from_layer_number, moyo_operations_from_number, moyo_space_group_type_free,
+    moyo_space_group_type_new,
 };
 pub use dataset::{
     MoyoCollinearMagneticDataset, MoyoDataset, MoyoLayerDataset, MoyoNonCollinearMagneticDataset,
