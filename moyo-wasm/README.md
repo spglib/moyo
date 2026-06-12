@@ -1,22 +1,26 @@
-# `moyo-wasm`
+# moyo-wasm
 
-WASM bindings for the Rust crystal symmetry library `moyo`, for use in web apps.
+[![image](https://img.shields.io/npm/v/%40spglib%2Fmoyo-wasm)](https://www.npmjs.com/package/@spglib/moyo-wasm)
+
+JavaScript and WebAssembly interface of [moyo](https://github.com/spglib/moyo), a fast and robust crystal symmetry finder.
+
+- npm: <https://www.npmjs.com/package/@spglib/moyo-wasm>
+
+## Installation
+
+```shell
+npm install @spglib/moyo-wasm
+# or from a cloned repo during development
+npm install file:/path/to/moyo/moyo-wasm/pkg
+```
 
 ## Usage
-
-Install from a registry or local path:
-
-```bash
-pnpm add moyo-wasm
-# or from cloned repo during development
-pnpm add file:/path/to/moyo/moyo-wasm/pkg
-```
 
 Initialize and analyze a structure:
 
 ```ts
-import init, { analyze_cell, type MoyoDataset, type MoyoCell } from 'moyo-wasm'
-import wasm_url from 'moyo-wasm/moyo_wasm_bg.wasm?url'
+import init, { analyze_cell, type MoyoDataset, type MoyoCell } from '@spglib/moyo-wasm'
+import wasm_url from '@spglib/moyo-wasm/moyo_wasm_bg.wasm?url'
 
 await init(wasm_url)
 
@@ -36,24 +40,18 @@ console.log(`Wyckoffs: ${result.wyckoffs.join(', ')}`)
 
 The package exports TypeScript types generated from Rust (e.g. `MoyoDataset`).
 
-## Building
+## Development
 
-```bash
-wasm-pack build moyo-wasm --target web --release
+Run from the repo root with `just` (or the equivalent npm commands from this directory):
+
+```shell
+just js-install   # npm install
+just js-build     # wasm-pack build --target web --release --scope spglib
+just js-test      # npm test
 ```
 
-The package code ready for publishing is in `moyo-wasm/pkg`.
+The package code ready for publishing is generated in `moyo-wasm/pkg`. It is published to npm by CI when a new git tag is pushed to the monorepo.
 
-## Testing
+## How to cite moyo-wasm
 
-```bash
-cd moyo-wasm
-# Install dependencies
-npm install
-# Run tests
-npm test
-```
-
-## Publish
-
-This crate is published as an [NPM package](https://www.npmjs.com/package/@spglib/moyo-wasm) with CI when a new `git` tag is pushed to the Rust monorepo.
+See the citation information in [the root README](https://github.com/spglib/moyo/blob/main/README.md)

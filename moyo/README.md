@@ -8,13 +8,6 @@ The core implementation of moyo in Rust
 - Crates.io: https://crates.io/crates/moyo
 - Document: https://docs.rs/moyo/latest/moyo/
 
-## Module dependency
-
-```
-math <- base <- data <- identify <- standardize <- lib
-        ^---- search <--------------|
-```
-
 ## Goals
 
 - Find symmetry operations of a given crystal structure, identify its crystallographic group, and symmetrize the given crystal structure
@@ -26,6 +19,22 @@ math <- base <- data <- identify <- standardize <- lib
 
 - Crystallographic groups in other than three dimensions
 - Matching two similar crystal structures
+
+## Development
+
+Run from the repo root with `just`:
+
+```shell
+just test   # cargo test
+just doc    # cargo doc --open
+```
+
+### Module dependency
+
+```
+math <- base <- data <- identify <- standardize <- lib
+        ^---- search <--------------|
+```
 
 ## How to cite moyo
 

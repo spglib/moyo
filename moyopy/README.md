@@ -18,6 +18,17 @@ pip install moyopy
 pip install moyopy[interface]
 ```
 
+## Development
+
+Run from the repo root with `just`:
+
+```shell
+just py-install   # uv sync
+just py-build     # maturin develop
+just py-test      # pytest
+just py-docs      # build and serve the Sphinx docs
+```
+
 ## How to cite moyopy
 
 See the citation information in [the root README](https://github.com/spglib/moyo/blob/main/README.md)
