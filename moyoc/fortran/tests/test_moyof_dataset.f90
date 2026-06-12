@@ -144,6 +144,15 @@ program test_moyof_dataset
     if (c_associated(moyo_space_group_type_new(231_c_int32_t))) then
         error stop "moyo_space_group_type_new(231) did not return NULL"
     end if
+    if (c_associated(moyo_space_group_type_new(0_c_int32_t))) then
+        error stop "moyo_space_group_type_new(0) did not return NULL"
+    end if
+    if (c_associated(moyo_space_group_type_new(-huge(1_c_int32_t) - 1_c_int32_t))) then
+        error stop "moyo_space_group_type_new(INT32_MIN) did not return NULL"
+    end if
+    if (c_associated(moyo_hall_symbol_entry_new(-huge(1_c_int32_t) - 1_c_int32_t))) then
+        error stop "moyo_hall_symbol_entry_new(INT32_MIN) did not return NULL"
+    end if
 
     print *, "test_moyof_dataset: all checks passed"
 end program test_moyof_dataset
