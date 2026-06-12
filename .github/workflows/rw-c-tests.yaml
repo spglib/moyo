@@ -17,7 +17,7 @@ jobs:
       - name: Install cbindgen
         run: cargo binstall cbindgen --locked --no-confirm --force
       - name: Configure
-        run: cmake -S moyoc -B moyoc/build
+        run: cmake -S moyoc -B moyoc/build -DMOYOC_BUILD_FORTRAN=ON
       - name: Build
         run: cmake --build moyoc/build
       - name: Run tests

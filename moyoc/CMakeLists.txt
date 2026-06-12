@@ -12,6 +12,7 @@ project(moyoc VERSION "${CMAKE_MATCH_1}" LANGUAGES C)
 
 option(MOYOC_BUILD_TESTING "Build moyoc C tests" ${PROJECT_IS_TOP_LEVEL})
 option(MOYOC_INSTALL "Generate install rules for moyoc" ${PROJECT_IS_TOP_LEVEL})
+option(MOYOC_BUILD_FORTRAN "Build the Fortran interface (moyo::moyof)" OFF)
 
 if(PROJECT_IS_TOP_LEVEL)
     if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -71,6 +72,11 @@ add_library(moyo::moyoc ALIAS moyoc)
 if(MOYOC_BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
+endif()
+
+if(MOYOC_BUILD_FORTRAN)
+    enable_language(Fortran)
+    add_subdirectory(fortran)
 endif()
 
 if(MOYOC_INSTALL)

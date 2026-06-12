@@ -113,3 +113,32 @@ MoyoMagneticSpaceGroupType *magnetic_space_group_type =
     moyo_magnetic_space_group_type_new(uni_number);
 moyo_magnetic_space_group_type_free(magnetic_space_group_type);
 ```
+
+## Fortran interface
+
+Configure with `-DMOYOC_BUILD_FORTRAN=ON` to build the Fortran interface and expose
+the `moyo::moyof` CMake target (requires a Fortran compiler, e.g. gfortran). Link it
+and `use moyo` from your Fortran code.
+
+The interface mirrors the C API with a few conventions:
+
+- Arrays are passed column-major: `basis(:, i)` is the i-th basis vector and
+  `positions(:, i)` is the i-th site, i.e. a transpose view of the C row-major arrays.
+- Constructors return a `type(c_ptr)` which is NULL on failure. Map it to the
+  matching `bind(c)` derived type with `c_f_pointer`, then free it with the
+  corresponding `*_free` routine.
+- C strings are converted to Fortran with `moyo_to_string`.
+
+```fortran
+use moyo
+use iso_c_binding, only: c_ptr, c_f_pointer, c_associated
+type(c_ptr) :: handle
+type(MoyoDataset), pointer :: dataset
+
+handle = moyo_dataset_new(basis, positions, numbers, num_atoms, &
+    symprec, angle_tolerance, setting, hall_number, rotate_basis)
+if (.not. c_associated(handle)) error stop "moyo_dataset_new failed"
+call c_f_pointer(handle, dataset)
+! ... read dataset fields ...
+call moyo_dataset_free(handle)
+```
