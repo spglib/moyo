@@ -27,7 +27,7 @@ void show_cell(const MoyoCell *cell) {
 }
 
 void show_operations(const MoyoOperations *operations) {
-    for (int i = 0; i < (int)operations->num_operations; i++) {
+    for (int i = 0; i < operations->num_operations; i++) {
         printf("Operation %d\n", i);
         for (int a = 0; a < 3; a++) {
             for (int b = 0; b < 3; b++) {
@@ -52,6 +52,9 @@ void show_matrix3f(const double matrix[3][3]) {
 }
 
 int main(void) {
+    printf("moyo_version: %s\n", moyo_version());
+    assert(moyo_version() != NULL);
+
     // hcp
     double a = 3.17;
     double c = 5.14;
@@ -64,17 +67,17 @@ int main(void) {
         {1.0 / 3.0, 2.0 / 3.0, 1.0 / 4.0},
         {2.0 / 3.0, 1.0 / 3.0, 3.0 / 4.0},
     };
-    int numbers[] = {0, 0};
-    int num_atoms = 2;
+    int32_t numbers[] = {0, 0};
+    int32_t num_atoms = 2;
 
     double symprec = 1e-4;
     double angle_tolerance = -1;
     MoyoSetting setting = MOYO_SETTING_SPGLIB;
-    int hall_number = -1;
+    int32_t hall_number = -1;
     bool rotate_basis = true;
 
-    MoyoDataset *dataset = moyo_dataset(
-        &basis, positions, numbers, num_atoms,
+    MoyoDataset *dataset = moyo_dataset_new(
+        basis, positions, numbers, num_atoms,
         symprec, angle_tolerance, setting, hall_number, rotate_basis
     );
     assert(dataset != NULL);
@@ -87,6 +90,9 @@ int main(void) {
     assert(dataset->hall_number == 488);
     assert(strcmp(dataset->hm_symbol, "P 6_3/m m c") == 0);
 
+    // Input cell
+    assert(dataset->num_atoms == num_atoms);
+
     // Symmetry operations in the input cell
     printf("dataset->operations:\n");
     show_operations(&dataset->operations);
@@ -95,7 +101,7 @@ int main(void) {
     // Site symmetry
     printf("dataset->orbits:\n");
     for (int i = 0; i < num_atoms; i++) {
-        printf("%lu ", dataset->orbits[i]);
+        printf("%d ", dataset->orbits[i]);
     }
     printf("\n");
     assert(dataset->orbits[0] == 0);
@@ -143,7 +149,7 @@ int main(void) {
     printf("\n");
     printf("dataset->mapping_std_prim:\n");
     for (int i = 0; i < num_atoms; i++) {
-        printf("%lu ", dataset->mapping_std_prim[i]);
+        printf("%d ", dataset->mapping_std_prim[i]);
     }
     printf("\n");
     assert(dataset->mapping_std_prim[0] == 0);
@@ -153,7 +159,7 @@ int main(void) {
     printf("dataset->symprec: %f\n", dataset->symprec);
     printf("dataset->angle_tolerance: %f\n", dataset->angle_tolerance);
 
-    free_moyo_dataset(dataset);
+    moyo_dataset_free(dataset);
 
     return 0;
 }

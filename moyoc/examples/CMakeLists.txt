@@ -1,23 +1,17 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.23)
 project(example_moyoc LANGUAGES C)
-
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_STANDARD_REQUIRED ON)
 
 include(FetchContent)
 FetchContent_Declare(
-    moyoc
-    URL      https://github.com/spglib/moyo/releases/download/v0.4.8/moyoc-0.4.8-aarch64-apple-darwin.tar.gz
-    URL_HASH SHA256=2eccd32ec7f4c33088b2d0d2c18731d3b920a1a57948948a4b97b0bdabedbd8f
+    moyo
+    GIT_REPOSITORY https://github.com/spglib/moyo.git
+    GIT_TAG main # Pin a release tag (e.g. v0.12.0) in real projects
+    SOURCE_SUBDIR moyoc
 )
-FetchContent_MakeAvailable(moyoc)
-
-add_library(moyoc SHARED IMPORTED)
-set_target_properties(moyoc PROPERTIES
-    IMPORTED_LOCATION "${moyoc_SOURCE_DIR}/lib/libmoyoc.dylib"
-    INTERFACE_INCLUDE_DIRECTORIES "${moyoc_SOURCE_DIR}/include"
-    BUILD_RPATH "${moyoc_SOURCE_DIR}/lib"
-)
+FetchContent_MakeAvailable(moyo)
 
 add_executable(example example.c)
-target_link_libraries(example PRIVATE moyoc)
+target_link_libraries(example PRIVATE moyo::moyoc)
+if(NOT MSVC)
+    target_link_libraries(example PRIVATE m)
+endif()

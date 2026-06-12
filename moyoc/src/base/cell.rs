@@ -1,13 +1,21 @@
 use moyo::base::{Cell, Lattice};
 use moyo::utils::{to_3_slice, to_3x3_slice, to_vector3};
 
+use crate::ffi::{free_slice, leak_slice};
+
+/// Crystal structure.
+/// All pointer fields are owned by the containing `MoyoDataset` and are freed
+/// by `moyo_dataset_free`.
 #[derive(Debug, Clone)]
 #[repr(C)]
 pub struct MoyoCell {
     /// Row-wise basis vectors
     pub basis: [[f64; 3]; 3],
+    /// Fractional coordinates of the `num_atoms` sites
     pub positions: *const [f64; 3],
+    /// Atomic numbers of the `num_atoms` sites
     pub numbers: *const i32,
+    /// Number of atoms in the cell
     pub num_atoms: i32,
 }
 
@@ -21,8 +29,8 @@ impl From<&Cell> for MoyoCell {
 
         MoyoCell {
             basis,
-            positions: positions.leak().as_ptr(),
-            numbers: numbers.leak().as_ptr(),
+            positions: leak_slice(positions),
+            numbers: leak_slice(numbers),
             num_atoms,
         }
     }
@@ -43,19 +51,10 @@ impl From<&MoyoCell> for Cell {
     }
 }
 
-#[unsafe(no_mangle)]
-pub extern "C" fn free_moyo_cell(cell: MoyoCell) {
+pub(crate) unsafe fn moyo_cell_free_members(cell: &MoyoCell) {
     unsafe {
-        let _ = Vec::from_raw_parts(
-            cell.positions as *mut f64,
-            (cell.num_atoms as usize) * 3,
-            (cell.num_atoms as usize) * 3,
-        );
-        let _ = Vec::from_raw_parts(
-            cell.numbers as *mut i32,
-            cell.num_atoms as usize,
-            cell.num_atoms as usize,
-        );
+        free_slice(cell.positions, cell.num_atoms as usize);
+        free_slice(cell.numbers, cell.num_atoms as usize);
     }
 }
 
@@ -81,6 +80,6 @@ mod tests {
         let reconstructed = Cell::from(&moyoc);
         assert_eq!(original.num_atoms(), reconstructed.num_atoms());
         assert_relative_eq!(original.lattice.basis, reconstructed.lattice.basis);
-        free_moyo_cell(moyoc); // to avoid leaks
+        unsafe { moyo_cell_free_members(&moyoc) }; // to avoid leaks
     }
 }

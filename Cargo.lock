@@ -741,11 +741,8 @@ name = "moyoc"
 version = "0.11.0"
 dependencies = [
  "approx",
- "log",
  "moyo",
  "nalgebra",
- "serde",
- "serde_json",
 ]
 
 [[package]]

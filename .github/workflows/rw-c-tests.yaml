@@ -13,9 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+      - uses: cargo-bins/cargo-binstall@bdd791de5adfec6407aee16a3b287f12ba0ef2d8 # main
       - name: Install cbindgen
-        run: cargo install cbindgen
+        run: cargo binstall cbindgen --locked --no-confirm --force
+      - name: Configure
+        run: cmake -S moyoc -B moyoc/build
+      - name: Build
+        run: cmake --build moyoc/build
       - name: Run tests
-        run: |
-          set -e
-          cd moyoc && make tests
+        run: ctest --test-dir moyoc/build --output-on-failure
