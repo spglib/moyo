@@ -17,25 +17,25 @@ A fast and robust crystal symmetry finder, written in Rust.
     <figcaption><a href="bench/mp/analysis.ipynb">Several times faster symmetry detection than Spglib for Materials Project dataset</a></figcaption>
 </figure>
 
-- Rust support available via [crates.io](https://crates.io/crates/moyo): [Docs](https://docs.rs/moyo/latest/moyo/)
-- Python support available via [PyPI](https://pypi.org/project/moyopy/): [Docs](https://spglib.github.io/moyo/python/)
-- JavaScript and WebAssembly support available via [npm](https://www.npmjs.com/package/@spglib/moyo-wasm)
-- C and Fortran support available via CMake: [moyoc](moyoc/README.md)
-- Browse the 230 space groups, 80 layer groups, and 1651 magnetic space groups
-  in the **moyo Crystallographic Group Viewer** at
-  <https://spglib.github.io/moyo/> (static SPA powered by `moyo-wasm`).
-
 ## Interfaces
 
-- [Rust](moyo/README.md): core implementation
-- [Python](moyopy/README.md): Python binding
-- [C](moyoc/README.md): C binding
-- [Fortran](moyoc/README.md#fortran-interface): Fortran interface on top of the
-  C binding (optional `moyo::moyof` CMake target)
-- [JavaScript](moyo-wasm/README.md): JavaScript and WebAssembly binding
-- [Web viewer](apps/web/README.md): static Svelte + Vite + KaTeX SPA on top
-  of `moyo-wasm`, deployed to GitHub Pages via
-  `.github/workflows/deploy-web.yml`
+Each interface has its own README with installation, usage, and development
+instructions:
+
+- [Rust (`moyo`)](moyo/README.md): core implementation
+  ([crates.io](https://crates.io/crates/moyo),
+  [docs](https://docs.rs/moyo/latest/moyo/))
+- [Python (`moyopy`)](moyopy/README.md): Python binding
+  ([PyPI](https://pypi.org/project/moyopy/),
+  [docs](https://spglib.github.io/moyo/python/))
+- [C (`moyoc`)](moyoc/README.md): C binding, built and consumed with CMake
+- [Fortran](moyoc/README.md#fortran-interface): Fortran interface on top of
+  the C binding (optional `moyo::moyof` CMake target)
+- [JavaScript (`moyo-wasm`)](moyo-wasm/README.md): JavaScript and WebAssembly
+  binding ([npm](https://www.npmjs.com/package/@spglib/moyo-wasm))
+- [Web viewer](apps/web/README.md): browse the 230 space groups, 80 layer
+  groups, and 1651 magnetic space groups at <https://spglib.github.io/moyo/>
+  (static SPA powered by `moyo-wasm`)
 
 The functionality categories below mirror the sections of the [moyopy API
 reference](https://spglib.github.io/moyo/python/api.html).

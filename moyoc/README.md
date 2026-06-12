@@ -44,6 +44,8 @@ This installs `include/moyoc.h`, `lib/libmoyoc.a`, and `lib/libmoyoc.{so,dylib}`
 non-CMake consumers. Prebuilt archives with this layout are attached to
 [GitHub releases](https://github.com/spglib/moyo/releases).
 
+From the repo root, `just c-build` and `just c-test` wrap the configure/build/test steps.
+
 ## API
 
 See the generated `moyoc.h` for the full API. The main entry points are:
@@ -166,3 +168,7 @@ call c_f_pointer(handle, dataset)
 ! ... read dataset fields ...
 call moyo_dataset_free(handle)
 ```
+
+## How to cite moyoc
+
+See the citation information in [the root README](../README.md)

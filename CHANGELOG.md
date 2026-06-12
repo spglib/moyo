@@ -6,6 +6,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only dependency or build updates with no user-visible changes.
 
+## Unreleased
+
+### moyoc
+
+- Redesign the C API: rename the entry points to `moyo_dataset_new`/`moyo_dataset_free`, add `moyo_version()`, and use `int32_t` counts/index arrays and `const double (*)[3]` array parameters (#354)
+- Build and package moyoc with CMake and [corrosion](https://github.com/corrosion-rs/corrosion): consume the `moyo::moyoc` target via `FetchContent`, generate `moyoc.h` at build time, and `cmake --install` an include/lib layout for non-CMake users (#354)
+- Add magnetic dataset API: `moyo_collinear_magnetic_dataset_new` and `moyo_noncollinear_magnetic_dataset_new` (#355)
+- Add layer dataset API: `moyo_layer_dataset_new` (#356)
+- Add database operation generators: `moyo_operations_from_number`, `moyo_operations_from_layer_number`, and `moyo_magnetic_operations_from_uni_number` (#357)
+- Add group-type metadata lookups: `moyo_hall_symbol_entry_new`, `moyo_layer_hall_symbol_entry_new`, `moyo_space_group_type_new`, `moyo_layer_group_type_new`, and `moyo_magnetic_space_group_type_new` (#358)
+- Add a Fortran interface wrapping the complete C API, exposed as the optional `moyo::moyof` CMake target (`-DMOYOC_BUILD_FORTRAN=ON`) (#359)
+- Add group identification from primitive symmetry operations: `moyo_point_group_new`, `moyo_space_group_new`, `moyo_layer_group_new`, and `moyo_magnetic_space_group_new`, mirrored in the Fortran interface (#360)
+
 ## v0.11.0 - 2026-06-09
 
 ### moyo
