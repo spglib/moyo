@@ -49,10 +49,27 @@ non-CMake consumers. Prebuilt archives with this layout are attached to
 See the generated `moyoc.h` for the full API. The main entry points are:
 
 ```c
+// Space-group symmetry analysis
 MoyoDataset *dataset = moyo_dataset_new(
     basis, positions, numbers, num_atoms,
     symprec, angle_tolerance, setting, hall_number, rotate_basis
 );
 // ... read dataset fields ...
 moyo_dataset_free(dataset);
+
+// Magnetic space-group symmetry analysis (collinear moments)
+MoyoCollinearMagneticDataset *mag_dataset = moyo_collinear_magnetic_dataset_new(
+    basis, positions, numbers, magnetic_moments, num_atoms,
+    symprec, angle_tolerance, mag_symprec, is_axial, rotate_basis
+);
+// ... read mag_dataset fields ...
+moyo_collinear_magnetic_dataset_free(mag_dataset);
+
+// Magnetic space-group symmetry analysis (non-collinear moments)
+MoyoNonCollinearMagneticDataset *nc_mag_dataset = moyo_noncollinear_magnetic_dataset_new(
+    basis, positions, numbers, cartesian_magnetic_moments, num_atoms,
+    symprec, angle_tolerance, mag_symprec, is_axial, rotate_basis
+);
+// ... read nc_mag_dataset fields ...
+moyo_noncollinear_magnetic_dataset_free(nc_mag_dataset);
 ```

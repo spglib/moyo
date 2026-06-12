@@ -1,10 +1,20 @@
-add_executable(test_moyoc_dataset test_moyoc_dataset.c)
-target_link_libraries(test_moyoc_dataset PRIVATE moyo::moyoc)
-if(NOT MSVC)
-    target_compile_options(test_moyoc_dataset PRIVATE
-        -Wall -Wextra -fsanitize=address -fno-omit-frame-pointer)
-    target_link_options(test_moyoc_dataset PRIVATE -fsanitize=address)
-    target_link_libraries(test_moyoc_dataset PRIVATE m)
-endif()
+function(add_moyoc_test name)
+    add_executable(${name} ${name}.c)
+    target_link_libraries(${name} PRIVATE moyo::moyoc)
+    if(MSVC)
+        # Re-enable assert() in Release configurations
+        target_compile_options(${name} PRIVATE /UNDEBUG)
+    else()
+        target_compile_options(${name} PRIVATE
+            # Re-enable assert() in Release configurations
+            -UNDEBUG
+            -Wall -Wextra -fsanitize=address -fno-omit-frame-pointer)
+        target_link_options(${name} PRIVATE -fsanitize=address)
+        target_link_libraries(${name} PRIVATE m)
+    endif()
 
-add_test(NAME test_moyoc_dataset COMMAND test_moyoc_dataset)
+    add_test(NAME ${name} COMMAND ${name})
+endfunction()
+
+add_moyoc_test(test_moyoc_dataset)
+add_moyoc_test(test_moyoc_magnetic_dataset)
