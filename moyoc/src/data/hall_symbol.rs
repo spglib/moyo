@@ -32,6 +32,11 @@ pub struct MoyoHallSymbolEntry {
 /// Returns NULL if `hall_number` is out of range.
 #[unsafe(no_mangle)]
 pub extern "C" fn moyo_hall_symbol_entry_new(hall_number: i32) -> *mut MoyoHallSymbolEntry {
+    // Reject lower-bound invalid numbers here: moyo indexes the database with
+    // `hall_number - 1`, which overflows for extreme negative values.
+    if hall_number < 1 {
+        return std::ptr::null_mut();
+    }
     match hall_symbol_entry(hall_number) {
         Some(entry) => Box::into_raw(Box::new(MoyoHallSymbolEntry {
             hall_number: entry.hall_number,
@@ -97,6 +102,9 @@ pub struct MoyoLayerHallSymbolEntry {
 pub extern "C" fn moyo_layer_hall_symbol_entry_new(
     hall_number: i32,
 ) -> *mut MoyoLayerHallSymbolEntry {
+    if hall_number < 1 {
+        return std::ptr::null_mut();
+    }
     match layer_hall_symbol_entry(hall_number) {
         Some(entry) => Box::into_raw(Box::new(MoyoLayerHallSymbolEntry {
             hall_number: entry.hall_number,

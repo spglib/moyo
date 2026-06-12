@@ -30,6 +30,11 @@ pub struct MoyoMagneticSpaceGroupType {
 pub extern "C" fn moyo_magnetic_space_group_type_new(
     uni_number: i32,
 ) -> *mut MoyoMagneticSpaceGroupType {
+    // Reject lower-bound invalid numbers here: moyo indexes the database with
+    // `uni_number - 1`, which overflows for extreme negative values.
+    if uni_number < 1 {
+        return std::ptr::null_mut();
+    }
     match get_magnetic_space_group_type(uni_number) {
         Some(magnetic_space_group_type) => {
             let construct_type = match magnetic_space_group_type.construct_type {

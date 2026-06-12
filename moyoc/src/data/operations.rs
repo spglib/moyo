@@ -23,6 +23,12 @@ pub extern "C" fn moyo_operations_from_number(
     hall_number: i32,
     primitive: bool,
 ) -> *mut MoyoOperations {
+    // Reject lower-bound invalid numbers here: moyo indexes with `number - 1`,
+    // which overflows for extreme negative values. `number` is ignored with
+    // the HallNumber setting.
+    if !matches!(setting, MoyoSetting::HallNumber) && number < 1 {
+        return std::ptr::null_mut();
+    }
     let setting = match setting {
         MoyoSetting::HallNumber => {
             if hall_number <= 0 {
@@ -54,6 +60,12 @@ pub extern "C" fn moyo_operations_from_layer_number(
     hall_number: i32,
     primitive: bool,
 ) -> *mut MoyoOperations {
+    // Reject lower-bound invalid numbers here: moyo indexes with `number - 1`,
+    // which overflows for extreme negative values. `number` is ignored with
+    // the HallNumber setting.
+    if !matches!(setting, MoyoLayerSetting::HallNumber) && number < 1 {
+        return std::ptr::null_mut();
+    }
     let setting = match setting {
         MoyoLayerSetting::HallNumber => {
             if hall_number <= 0 {
@@ -101,6 +113,11 @@ pub extern "C" fn moyo_magnetic_operations_from_uni_number(
     uni_number: i32,
     primitive: bool,
 ) -> *mut MoyoMagneticOperations {
+    // Reject lower-bound invalid numbers here: moyo indexes with
+    // `uni_number - 1`, which overflows for extreme negative values.
+    if uni_number < 1 {
+        return std::ptr::null_mut();
+    }
     match magnetic_operations_from_uni_number(uni_number, primitive) {
         Ok(magnetic_operations) => Box::into_raw(Box::new((&magnetic_operations).into())),
         Err(_) => std::ptr::null_mut(),
