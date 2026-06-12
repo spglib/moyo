@@ -3,8 +3,9 @@ name: Check
 on:
   push:
     branches: [main]
+  # No branch filter: also run for stacked pull requests that target a
+  # feature branch instead of main
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
