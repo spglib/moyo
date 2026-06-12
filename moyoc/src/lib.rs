@@ -8,9 +8,17 @@ pub mod base;
 pub mod data;
 pub mod dataset;
 
-pub use base::{MoyoCell, MoyoOperations};
+pub use base::{
+    MoyoCell, MoyoCollinearMagneticCell, MoyoMagneticOperations, MoyoNonCollinearMagneticCell,
+    MoyoOperations,
+};
 pub use data::MoyoSetting;
-pub use dataset::{MoyoDataset, moyo_dataset_free, moyo_dataset_new};
+pub use dataset::{
+    MoyoCollinearMagneticDataset, MoyoDataset, MoyoNonCollinearMagneticDataset,
+    moyo_collinear_magnetic_dataset_free, moyo_collinear_magnetic_dataset_new, moyo_dataset_free,
+    moyo_dataset_new, moyo_noncollinear_magnetic_dataset_free,
+    moyo_noncollinear_magnetic_dataset_new,
+};
 
 /// Return the version string of moyoc (e.g. "0.11.0").
 /// The returned string is statically allocated and must not be freed.
