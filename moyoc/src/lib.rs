@@ -12,7 +12,11 @@ pub use base::{
     MoyoCell, MoyoCollinearMagneticCell, MoyoMagneticOperations, MoyoNonCollinearMagneticCell,
     MoyoOperations,
 };
-pub use data::{MoyoLayerSetting, MoyoSetting};
+pub use data::{
+    MoyoLayerSetting, MoyoSetting, moyo_magnetic_operations_free,
+    moyo_magnetic_operations_from_uni_number, moyo_operations_free,
+    moyo_operations_from_layer_number, moyo_operations_from_number,
+};
 pub use dataset::{
     MoyoCollinearMagneticDataset, MoyoDataset, MoyoLayerDataset, MoyoNonCollinearMagneticDataset,
     moyo_collinear_magnetic_dataset_free, moyo_collinear_magnetic_dataset_new, moyo_dataset_free,

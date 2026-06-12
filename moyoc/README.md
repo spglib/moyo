@@ -80,4 +80,19 @@ MoyoNonCollinearMagneticDataset *nc_mag_dataset = moyo_noncollinear_magnetic_dat
 );
 // ... read nc_mag_dataset fields ...
 moyo_noncollinear_magnetic_dataset_free(nc_mag_dataset);
+
+// Symmetry operations from the database
+MoyoOperations *operations = moyo_operations_from_number(
+    number, setting, hall_number, primitive
+);
+moyo_operations_free(operations);
+
+MoyoOperations *layer_operations = moyo_operations_from_layer_number(
+    layer_number, layer_setting, layer_hall_number, primitive
+);
+moyo_operations_free(layer_operations);
+
+MoyoMagneticOperations *magnetic_operations =
+    moyo_magnetic_operations_from_uni_number(uni_number, primitive);
+moyo_magnetic_operations_free(magnetic_operations);
 ```
