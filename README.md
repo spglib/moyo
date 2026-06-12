@@ -29,10 +29,13 @@ instructions:
   ([PyPI](https://pypi.org/project/moyopy/),
   [docs](https://spglib.github.io/moyo/python/))
 - [C (`moyoc`)](moyoc/README.md): C binding, built and consumed with CMake
+  ([API reference](moyoc/docs/api.md))
 - [Fortran](moyoc/README.md#fortran-interface): Fortran interface on top of
-  the C binding (optional `moyo::moyof` CMake target)
+  the C binding (optional `moyo::moyof` CMake target,
+  [API reference](moyoc/docs/api_fortran.md))
 - [JavaScript (`moyo-wasm`)](moyo-wasm/README.md): JavaScript and WebAssembly
-  binding ([npm](https://www.npmjs.com/package/@spglib/moyo-wasm))
+  binding ([npm](https://www.npmjs.com/package/@spglib/moyo-wasm),
+  [API reference](moyo-wasm/docs/api.md))
 - [Web viewer](apps/web/README.md): browse the 230 space groups, 80 layer
   groups, and 1651 magnetic space groups at <https://spglib.github.io/moyo/>
   (static SPA powered by `moyo-wasm`)

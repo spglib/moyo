@@ -5,6 +5,7 @@
 JavaScript and WebAssembly interface of [moyo](https://github.com/spglib/moyo), a fast and robust crystal symmetry finder.
 
 - npm: <https://www.npmjs.com/package/@spglib/moyo-wasm>
+- API reference: [docs/api.md](docs/api.md)
 
 ## Installation
 
