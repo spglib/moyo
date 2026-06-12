@@ -238,6 +238,43 @@ module moyo
         integer(c_int32_t) :: construct_type
     end type MoyoMagneticSpaceGroupType
 
+    !> Point group identified by `moyo_point_group_new` and freed by
+    !> `moyo_point_group_free`. `prim_trans_mat` is the transpose view of the
+    !> row-major C matrix.
+    type, bind(c), public :: MoyoPointGroup
+        integer(c_int32_t) :: arithmetic_number
+        integer(c_int32_t) :: prim_trans_mat(3, 3)
+    end type MoyoPointGroup
+
+    !> Space group identified by `moyo_space_group_new` and freed by
+    !> `moyo_space_group_free`. `linear` is the transpose view of the
+    !> row-major C matrix.
+    type, bind(c), public :: MoyoSpaceGroup
+        integer(c_int32_t) :: number
+        integer(c_int32_t) :: hall_number
+        integer(c_int32_t) :: linear(3, 3)
+        real(c_double) :: origin_shift(3)
+    end type MoyoSpaceGroup
+
+    !> Layer group identified by `moyo_layer_group_new` and freed by
+    !> `moyo_layer_group_free`. `linear` is the transpose view of the
+    !> row-major C matrix.
+    type, bind(c), public :: MoyoLayerGroup
+        integer(c_int32_t) :: number
+        integer(c_int32_t) :: hall_number
+        integer(c_int32_t) :: linear(3, 3)
+        real(c_double) :: origin_shift(3)
+    end type MoyoLayerGroup
+
+    !> Magnetic space group identified by `moyo_magnetic_space_group_new` and
+    !> freed by `moyo_magnetic_space_group_free`. `linear` is the transpose
+    !> view of the row-major C matrix.
+    type, bind(c), public :: MoyoMagneticSpaceGroup
+        integer(c_int32_t) :: uni_number
+        integer(c_int32_t) :: linear(3, 3)
+        real(c_double) :: origin_shift(3)
+    end type MoyoMagneticSpaceGroup
+
     public :: moyo_version
     public :: moyo_dataset_new, moyo_dataset_free
     public :: moyo_layer_dataset_new, moyo_layer_dataset_free
@@ -251,6 +288,10 @@ module moyo
     public :: moyo_space_group_type_new, moyo_space_group_type_free
     public :: moyo_layer_group_type_new, moyo_layer_group_type_free
     public :: moyo_magnetic_space_group_type_new, moyo_magnetic_space_group_type_free
+    public :: moyo_point_group_new, moyo_point_group_free
+    public :: moyo_space_group_new, moyo_space_group_free
+    public :: moyo_layer_group_new, moyo_layer_group_free
+    public :: moyo_magnetic_space_group_new, moyo_magnetic_space_group_free
     public :: moyo_to_string
 
     interface
@@ -503,6 +544,109 @@ module moyo
             import :: c_ptr
             type(c_ptr), value :: magnetic_space_group_type
         end subroutine moyo_magnetic_space_group_type_free
+
+        !> Identify the point group of `num_operations` primitive rotations;
+        !> returns a pointer to `MoyoPointGroup` or NULL on failure.
+        !> `prim_rotations` points to the rotation matrices (e.g.
+        !> `ops%rotations` or `c_loc` of an `integer(c_int32_t)` array whose
+        !> `(:, :, k)` slices are the transposed matrices). Pass `c_null_ptr`
+        !> as `basis` to assume an identity basis, or `c_loc` of a
+        !> `real(c_double) :: basis(3, 3)` whose columns are the basis vectors.
+        function moyo_point_group_new(prim_rotations, num_operations, basis) &
+            bind(c, name="moyo_point_group_new") result(point_group)
+            import :: c_ptr, c_int32_t
+            type(c_ptr), value :: prim_rotations
+            integer(c_int32_t), value :: num_operations
+            type(c_ptr), value :: basis
+            type(c_ptr) :: point_group
+        end function moyo_point_group_new
+
+        !> Free a point group created by `moyo_point_group_new`.
+        subroutine moyo_point_group_free(point_group) &
+            bind(c, name="moyo_point_group_free")
+            import :: c_ptr
+            type(c_ptr), value :: point_group
+        end subroutine moyo_point_group_free
+
+        !> Identify the space group from `num_operations` primitive rotations
+        !> and translations; returns a pointer to `MoyoSpaceGroup` or NULL on
+        !> failure. Pass `c_null_ptr` as `basis` to assume an identity basis
+        !> and a negative `epsilon` to use the default tolerance (1e-4);
+        !> `hall_number` is only used with `MOYO_SETTING_HALL_NUMBER`.
+        function moyo_space_group_new(prim_rotations, prim_translations, num_operations, &
+                                      basis, setting, hall_number, epsilon) &
+            bind(c, name="moyo_space_group_new") result(space_group)
+            import :: c_ptr, c_int32_t, c_double
+            type(c_ptr), value :: prim_rotations
+            type(c_ptr), value :: prim_translations
+            integer(c_int32_t), value :: num_operations
+            type(c_ptr), value :: basis
+            integer(c_int32_t), value :: setting
+            integer(c_int32_t), value :: hall_number
+            real(c_double), value :: epsilon
+            type(c_ptr) :: space_group
+        end function moyo_space_group_new
+
+        !> Free a space group created by `moyo_space_group_new`.
+        subroutine moyo_space_group_free(space_group) &
+            bind(c, name="moyo_space_group_free")
+            import :: c_ptr
+            type(c_ptr), value :: space_group
+        end subroutine moyo_space_group_free
+
+        !> Identify the layer group from `num_operations` primitive
+        !> layer-cell rotations and translations; returns a pointer to
+        !> `MoyoLayerGroup` or NULL on failure. Pass `c_null_ptr` as `basis`
+        !> to assume an identity basis and a negative `epsilon` to use the
+        !> default tolerance (1e-4); `hall_number` is only used with
+        !> `MOYO_LAYER_SETTING_HALL_NUMBER`.
+        function moyo_layer_group_new(prim_rotations, prim_translations, num_operations, &
+                                      basis, setting, hall_number, epsilon) &
+            bind(c, name="moyo_layer_group_new") result(layer_group)
+            import :: c_ptr, c_int32_t, c_double
+            type(c_ptr), value :: prim_rotations
+            type(c_ptr), value :: prim_translations
+            integer(c_int32_t), value :: num_operations
+            type(c_ptr), value :: basis
+            integer(c_int32_t), value :: setting
+            integer(c_int32_t), value :: hall_number
+            real(c_double), value :: epsilon
+            type(c_ptr) :: layer_group
+        end function moyo_layer_group_new
+
+        !> Free a layer group created by `moyo_layer_group_new`.
+        subroutine moyo_layer_group_free(layer_group) &
+            bind(c, name="moyo_layer_group_free")
+            import :: c_ptr
+            type(c_ptr), value :: layer_group
+        end subroutine moyo_layer_group_free
+
+        !> Identify the magnetic space group from `num_operations` primitive
+        !> magnetic operations; returns a pointer to `MoyoMagneticSpaceGroup`
+        !> or NULL on failure. Pass `c_null_ptr` as `basis` to assume an
+        !> identity basis and a negative `epsilon` to use the default
+        !> tolerance (1e-4).
+        function moyo_magnetic_space_group_new(prim_rotations, prim_translations, &
+                                               prim_time_reversals, num_operations, &
+                                               basis, epsilon) &
+            bind(c, name="moyo_magnetic_space_group_new") result(magnetic_space_group)
+            import :: c_ptr, c_int32_t, c_double
+            type(c_ptr), value :: prim_rotations
+            type(c_ptr), value :: prim_translations
+            type(c_ptr), value :: prim_time_reversals
+            integer(c_int32_t), value :: num_operations
+            type(c_ptr), value :: basis
+            real(c_double), value :: epsilon
+            type(c_ptr) :: magnetic_space_group
+        end function moyo_magnetic_space_group_new
+
+        !> Free a magnetic space group created by
+        !> `moyo_magnetic_space_group_new`.
+        subroutine moyo_magnetic_space_group_free(magnetic_space_group) &
+            bind(c, name="moyo_magnetic_space_group_free")
+            import :: c_ptr
+            type(c_ptr), value :: magnetic_space_group
+        end subroutine moyo_magnetic_space_group_free
     end interface
 
     interface
