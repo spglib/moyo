@@ -6,8 +6,12 @@ program test_moyof_dataset
     type(c_ptr) :: version_ptr
     type(c_ptr) :: dataset_ptr
     type(c_ptr) :: sgt_ptr
+    type(c_ptr) :: operations_ptr
+    type(c_ptr) :: space_group_ptr
     type(MoyoDataset), pointer :: dataset
     type(MoyoSpaceGroupType), pointer :: sgt
+    type(MoyoOperations), pointer :: prim_operations
+    type(MoyoSpaceGroup), pointer :: space_group
     integer(c_int32_t), pointer :: orbits(:)
     integer(c_int32_t), pointer :: mapping_std_prim(:)
     integer(c_int32_t), pointer :: rot(:, :, :)
@@ -153,6 +157,31 @@ program test_moyof_dataset
     if (c_associated(moyo_hall_symbol_entry_new(-huge(1_c_int32_t) - 1_c_int32_t))) then
         error stop "moyo_hall_symbol_entry_new(INT32_MIN) did not return NULL"
     end if
+
+    ! Group identification: primitive operations of P31c (no. 159) must
+    ! identify back to the same space group
+    operations_ptr = moyo_operations_from_number(159_c_int32_t, MOYO_SETTING_STANDARD, &
+                                                 -1_c_int32_t, .true._c_bool)
+    if (.not. c_associated(operations_ptr)) then
+        error stop "moyo_operations_from_number(159) returned NULL"
+    end if
+    call c_f_pointer(operations_ptr, prim_operations)
+
+    space_group_ptr = moyo_space_group_new(prim_operations%rotations, &
+                                           prim_operations%translations, &
+                                           prim_operations%num_operations, &
+                                           c_null_ptr, MOYO_SETTING_STANDARD, &
+                                           -1_c_int32_t, -1d0)
+    if (.not. c_associated(space_group_ptr)) then
+        error stop "moyo_space_group_new returned NULL"
+    end if
+    call c_f_pointer(space_group_ptr, space_group)
+    print *, "space_group%number: ", space_group%number
+    if (space_group%number /= 159) then
+        error stop "space_group%number /= 159"
+    end if
+    call moyo_space_group_free(space_group_ptr)
+    call moyo_operations_free(operations_ptr)
 
     print *, "test_moyof_dataset: all checks passed"
 end program test_moyof_dataset

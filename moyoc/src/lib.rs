@@ -7,6 +7,7 @@ use core::ffi::c_char;
 pub mod base;
 pub mod data;
 pub mod dataset;
+pub mod identify;
 
 pub use base::{
     MoyoCell, MoyoCollinearMagneticCell, MoyoMagneticOperations, MoyoNonCollinearMagneticCell,
@@ -27,6 +28,11 @@ pub use dataset::{
     moyo_collinear_magnetic_dataset_free, moyo_collinear_magnetic_dataset_new, moyo_dataset_free,
     moyo_dataset_new, moyo_layer_dataset_free, moyo_layer_dataset_new,
     moyo_noncollinear_magnetic_dataset_free, moyo_noncollinear_magnetic_dataset_new,
+};
+pub use identify::{
+    MoyoLayerGroup, MoyoMagneticSpaceGroup, MoyoPointGroup, MoyoSpaceGroup, moyo_layer_group_free,
+    moyo_layer_group_new, moyo_magnetic_space_group_free, moyo_magnetic_space_group_new,
+    moyo_point_group_free, moyo_point_group_new, moyo_space_group_free, moyo_space_group_new,
 };
 
 /// Return the version string of moyoc (e.g. "0.11.0").
