@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.23)
 
-# Read the version from the workspace manifest
+# Read the version from the workspace manifest, dropping any prerelease
+# suffix (e.g. "0.12.0-rc1") since project(VERSION) only accepts numbers
 file(READ "${CMAKE_CURRENT_SOURCE_DIR}/../Cargo.toml" _moyo_workspace_manifest)
-string(REGEX MATCH "\nversion = \"([0-9]+\\.[0-9]+\\.[0-9]+)\"" _ "${_moyo_workspace_manifest}")
+string(REGEX MATCH "\nversion = \"([0-9]+\\.[0-9]+\\.[0-9]+)" _ "${_moyo_workspace_manifest}")
 if(NOT CMAKE_MATCH_1)
     message(FATAL_ERROR "Failed to parse the version from the workspace Cargo.toml")
 endif()
@@ -53,6 +54,15 @@ corrosion_experimental_cbindgen(
     TARGET moyoc
     HEADER_NAME moyoc.h
 )
+
+# moyoc.h uses <stdbool.h> and <stdint.h>
+target_compile_features(moyoc INTERFACE c_std_11)
+
+# Let build-tree consumers of the shared library locate libmoyoc at runtime
+if(BUILD_SHARED_LIBS AND NOT Rust_CARGO_TARGET_OS STREQUAL "windows")
+    target_link_options(moyoc INTERFACE
+        "$<BUILD_INTERFACE:-Wl,-rpath,$<TARGET_FILE_DIR:moyoc-shared>>")
+endif()
 set(MOYOC_GENERATED_HEADER
     "${CMAKE_CURRENT_BINARY_DIR}/corrosion_generated/cbindgen/moyoc/include/moyoc.h")
 
