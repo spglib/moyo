@@ -1,0 +1,12 @@
+PROJECT_NAME           = "moyoc"
+PROJECT_BRIEF          = "C interface of moyo, a fast and robust crystal symmetry finder"
+INPUT                  = build/moyoc.h
+OUTPUT_DIRECTORY       = build/docs
+FULL_PATH_NAMES        = NO
+OPTIMIZE_OUTPUT_FOR_C  = YES
+TYPEDEF_HIDES_STRUCT   = YES
+EXTRACT_ALL            = YES
+JAVADOC_AUTOBRIEF      = YES
+GENERATE_LATEX         = NO
+QUIET                  = YES
+WARN_IF_UNDOCUMENTED   = NO

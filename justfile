@@ -72,6 +72,12 @@ c-test: c-build
 
 [group('c')]
 [working-directory: 'moyoc']
+c-docs:
+    cbindgen --config cbindgen.toml --output build/moyoc.h
+    doxygen Doxyfile
+
+[group('c')]
+[working-directory: 'moyoc']
 c-clean:
     rm -rf build
 

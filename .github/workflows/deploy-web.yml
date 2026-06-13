@@ -7,6 +7,7 @@ on:
       - 'moyo/**'
       - 'moyo-wasm/**'
       - 'moyopy/**'
+      - 'moyoc/**'
       - 'apps/web/**'
       - '.github/workflows/deploy-web.yml'
   pull_request:
@@ -15,6 +16,7 @@ on:
       - 'moyo/**'
       - 'moyo-wasm/**'
       - 'moyopy/**'
+      - 'moyoc/**'
       - 'apps/web/**'
       - '.github/workflows/deploy-web.yml'
   workflow_dispatch:
@@ -92,6 +94,25 @@ jobs:
 
       - name: Build docs into web app under /python
         run: sphinx-build moyopy/docs apps/web/dist/python
+
+      - name: Install Doxygen
+        run: |
+          set -e
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends doxygen
+
+      - name: Install cbindgen
+        uses: taiki-e/install-action@7a79fe8c3a13344501c80d99cae481c1c9085912 # v2.81.10
+        with:
+          tool: cbindgen
+
+      - name: Build C API docs into web app under /c
+        working-directory: moyoc
+        run: |
+          set -e
+          cbindgen --config cbindgen.toml --output build/moyoc.h
+          doxygen Doxyfile
+          cp -r build/docs/html ../apps/web/dist/c
 
       - name: Configure Pages
         if: github.event_name != 'pull_request'
