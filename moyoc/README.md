@@ -3,6 +3,8 @@
 C bindings for [moyo](https://github.com/spglib/moyo), built with CMake and
 [corrosion](https://github.com/corrosion-rs/corrosion).
 
+- API reference: <https://spglib.github.io/moyo/c/>
+
 ## Requirements
 
 - CMake >= 3.23
@@ -48,7 +50,9 @@ From the repo root, `just c-build` and `just c-test` wrap the configure/build/te
 
 ## API
 
-See the generated `moyoc.h` for the full API. The main entry points are:
+See the [API reference](https://spglib.github.io/moyo/c/) (generated with
+Doxygen from `moyoc.h`; build it locally with `just c-docs`). The main entry
+points are:
 
 ```c
 // Space-group symmetry analysis

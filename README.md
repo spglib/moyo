@@ -29,6 +29,7 @@ instructions:
   ([PyPI](https://pypi.org/project/moyopy/),
   [docs](https://spglib.github.io/moyo/python/))
 - [C (`moyoc`)](moyoc/README.md): C binding, built and consumed with CMake
+  ([docs](https://spglib.github.io/moyo/c/))
 - [Fortran](moyoc/README.md#fortran-interface): Fortran interface on top of
   the C binding (optional `moyo::moyof` CMake target)
 - [JavaScript (`moyo-wasm`)](moyo-wasm/README.md): JavaScript and WebAssembly

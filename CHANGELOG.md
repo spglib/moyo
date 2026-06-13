@@ -18,6 +18,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 - Add group-type metadata lookups: `moyo_hall_symbol_entry_new`, `moyo_layer_hall_symbol_entry_new`, `moyo_space_group_type_new`, `moyo_layer_group_type_new`, and `moyo_magnetic_space_group_type_new` (#358)
 - Add a Fortran interface wrapping the complete C API, exposed as the optional `moyo::moyof` CMake target (`-DMOYOC_BUILD_FORTRAN=ON`) (#359)
 - Add group identification from primitive symmetry operations: `moyo_point_group_new`, `moyo_space_group_new`, `moyo_layer_group_new`, and `moyo_magnetic_space_group_new`, mirrored in the Fortran interface (#360)
+- Publish the Doxygen-generated C API reference at <https://spglib.github.io/moyo/c/> (#363)
 
 ## v0.11.0 - 2026-06-09
 
