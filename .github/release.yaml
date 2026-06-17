@@ -26,6 +26,18 @@ changelog:
       exclude:
         labels:
           - renovate
+    - title: 🔧 moyoc
+      labels:
+        - moyoc
+      exclude:
+        labels:
+          - renovate
+    - title: 🌐 web-viewer
+      labels:
+        - web-viewer
+      exclude:
+        labels:
+          - renovate
     - title: 🐞 Bug fixes
       labels:
         - bug
