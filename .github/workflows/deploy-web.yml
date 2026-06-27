@@ -94,7 +94,6 @@ jobs:
           set -e
           uv pip install --system --find-links dist moyopy
           uv pip install --system moyopy[docs]
-          uv pip install --system ford
 
       - name: Build docs with Zensical
         working-directory: moyopy
@@ -120,7 +119,10 @@ jobs:
           set -e
           cbindgen --config cbindgen.toml --output build/moyoc.h
           doxygen Doxyfile
-          ford ford.md
+          # Run FORD in an isolated env via uvx: it pins old markdown
+          # (markdown-include / python-markdown-math) which would otherwise
+          # downgrade the system markdown that Zensical needs.
+          uvx ford ford.md
           zensical build --clean --strict
           cp -r site ../apps/web/dist/c
 
