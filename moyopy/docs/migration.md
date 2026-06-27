@@ -192,10 +192,11 @@ Replace it with `magnetic_operations_from_uni_number(uni_number)`.
 
 ### `spglib.standardize_cell()`
 
-`spglib.standardize_cell(..., to_primitive, no_idealize)` is replaced with creating `MoyoDataset` with appropriate arguments:
+`spglib.standardize_cell(..., to_primitive, no_idealize)` is replaced with creating `MoyoDataset` with appropriate arguments.
+Spglib's `no_idealize` is the **inverse** of moyopy's `rotate_basis` (idealizing the orientation corresponds to `rotate_basis=True`):
 
-- `to_primitive=True` -> `MoyoDataset(..., rotate_basis=no_idealize).prim_std_cell`
-- `to_primitive=False` -> `MoyoDataset(..., rotate_basis=no_idealize).std_cell`
+- `to_primitive=True` -> `MoyoDataset(..., rotate_basis=not no_idealize).prim_std_cell`
+- `to_primitive=False` -> `MoyoDataset(..., rotate_basis=not no_idealize).std_cell`
 
 ### `spglib.find_primitive()`
 
