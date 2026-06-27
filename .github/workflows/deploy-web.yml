@@ -94,6 +94,7 @@ jobs:
           set -e
           uv pip install --system --find-links dist moyopy
           uv pip install --system moyopy[docs]
+          uv pip install --system ford
 
       - name: Build docs with Zensical
         working-directory: moyopy
@@ -113,12 +114,13 @@ jobs:
         with:
           tool: cbindgen
 
-      - name: Build C landing page (Zensical) and API docs (Doxygen) into web app under /c
+      - name: Build C landing page (Zensical), C API docs (Doxygen) and Fortran API docs (FORD) into web app under /c
         working-directory: moyoc
         run: |
           set -e
           cbindgen --config cbindgen.toml --output build/moyoc.h
           doxygen Doxyfile
+          ford ford.md
           zensical build --clean --strict
           cp -r site ../apps/web/dist/c
 

@@ -76,6 +76,7 @@ c-test: c-build
 c-docs:
     cbindgen --config cbindgen.toml --output build/moyoc.h
     doxygen Doxyfile
+    ford ford.md
     zensical serve
 
 [group('c')]
