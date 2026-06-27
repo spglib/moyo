@@ -23,8 +23,11 @@ just web-build     # outputs to apps/web/dist
 just web-preview   # serves dist locally
 ```
 
-For GitHub Pages, set `VITE_BASE=/<repo>/` before `npm run build`. The CI workflow
-at `.github/workflows/deploy-web.yml` does this automatically.
+For GitHub Pages the viewer is served under a subpath, so CI sets
+`VITE_BASE=/<repo>/viewer/` before `npm run build` (the landing hub in
+`apps/landing` occupies the site root). The workflow at
+`.github/workflows/deploy-web.yml` does this automatically; routing is hash-based
+(`svelte-spa-router`), so no server-side SPA fallback is needed.
 
 ## Tests
 

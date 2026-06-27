@@ -380,6 +380,7 @@ apidocs/
 # zensical build output
 /moyopy/site/
 /moyoc/site/
+/apps/landing/site/
 # doxygen output bundled into the zensical site (moyoc landing -> /c/api/)
 /moyoc/docs/api/
 # FORD output bundled into the zensical site (moyoc landing -> /c/fortran-api/)

@@ -35,8 +35,11 @@ instructions:
 - [JavaScript (`moyo-wasm`)](moyo-wasm/README.md): JavaScript and WebAssembly
   binding ([npm](https://www.npmjs.com/package/@spglib/moyo-wasm))
 - [Web viewer](apps/web/README.md): browse the 230 space groups, 80 layer
-  groups, and 1651 magnetic space groups at <https://spglib.github.io/moyo/>
-  (static SPA powered by `moyo-wasm`)
+  groups, and 1651 magnetic space groups at
+  <https://spglib.github.io/moyo/viewer/> (static SPA powered by `moyo-wasm`)
+
+A landing hub linking all interfaces is served at the site root,
+<https://spglib.github.io/moyo/> (source in [`apps/landing`](apps/landing)).
 
 The functionality categories below mirror the sections of the [moyopy API
 reference](https://spglib.github.io/moyo/python/api.html).
