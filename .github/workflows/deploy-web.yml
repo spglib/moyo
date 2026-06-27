@@ -113,13 +113,14 @@ jobs:
         with:
           tool: cbindgen
 
-      - name: Build C API docs into web app under /c
+      - name: Build C landing page (Zensical) and API docs (Doxygen) into web app under /c
         working-directory: moyoc
         run: |
           set -e
           cbindgen --config cbindgen.toml --output build/moyoc.h
           doxygen Doxyfile
-          cp -r build/docs/html ../apps/web/dist/c
+          zensical build --clean --strict
+          cp -r site ../apps/web/dist/c
 
       - name: Configure Pages
         if: github.event_name != 'pull_request'

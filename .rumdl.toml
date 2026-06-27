@@ -12,3 +12,10 @@ disable = ["MD013", "MD033", "MD041"]
 # mdformat could not (those pages were previously excluded).
 [per-file-flavor]
 "moyopy/docs/**/*.md" = "mkdocs"
+
+# moyoc/README.md doubles as the Zensical landing page (included via snippet at
+# moyoc/docs/index.md). Its `api/` links resolve correctly on the rendered site
+# (/c/ -> /c/api/) but not relative to the README's own location, so MD057's
+# "relative link does not exist" check would always flag them.
+[per-file-ignores]
+"moyoc/README.md" = ["MD057"]

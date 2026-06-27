@@ -1,7 +1,8 @@
 PROJECT_NAME           = "moyoc"
 PROJECT_BRIEF          = "C interface of moyo, a fast and robust crystal symmetry finder"
 INPUT                  = build/moyoc.h
-OUTPUT_DIRECTORY       = build/docs
+OUTPUT_DIRECTORY       = docs
+HTML_OUTPUT            = api
 FULL_PATH_NAMES        = NO
 OPTIMIZE_OUTPUT_FOR_C  = YES
 TYPEDEF_HIDES_STRUCT   = YES
