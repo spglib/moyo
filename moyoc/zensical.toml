@@ -12,6 +12,7 @@ repo_name = "spglib/moyo"
 
 nav = [
     { "Introduction" = "index.md" },
+    { "Migration from spglib" = "migration.md" },
     { "API Reference" = "api/index.html" },
 ]
 
