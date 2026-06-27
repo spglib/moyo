@@ -1,0 +1,14 @@
+[project]
+name = "moyo-landing"
+version = "0.0.0"
+description = "Landing hub for moyo, built with Zensical."
+requires-python = ">=3.10"
+dependencies = [
+    "zensical >= 0.0.46",
+]
+
+# Docs-only project: there is no Python package to build, just the Zensical
+# build tool. This keeps zensical managed here instead of piggybacking on
+# moyopy[docs].
+[tool.uv]
+package = false

@@ -9,6 +9,7 @@ on:
       - 'moyopy/**'
       - 'moyoc/**'
       - 'apps/web/**'
+      - 'apps/landing/**'
       - '.github/workflows/deploy-web.yml'
   pull_request:
     branches: [main]
@@ -18,6 +19,7 @@ on:
       - 'moyopy/**'
       - 'moyoc/**'
       - 'apps/web/**'
+      - 'apps/landing/**'
       - '.github/workflows/deploy-web.yml'
   workflow_dispatch:
 
@@ -66,14 +68,11 @@ jobs:
         working-directory: apps/web
         run: npm install --no-audit --no-fund
 
-      - name: Build web app
+      - name: Build web app (served under /<repo>/viewer/)
         working-directory: apps/web
         env:
-          VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_BASE: /${{ github.event.repository.name }}/viewer/
         run: npm run build
-
-      - name: Copy index.html to 404.html for SPA fallback
-        run: cp apps/web/dist/index.html apps/web/dist/404.html
 
       - name: Install uv
         uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
@@ -99,8 +98,17 @@ jobs:
         working-directory: moyopy
         run: zensical build --clean --strict
 
-      - name: Copy docs into web app under /python
-        run: cp -r moyopy/site apps/web/dist/python
+      - name: Build landing hub with Zensical (artifact root)
+        # The hub manages its own zensical via apps/landing/pyproject.toml, so it
+        # does not depend on moyopy[docs].
+        working-directory: apps/landing
+        run: uv run zensical build --clean --strict
+
+      - name: Assemble web viewer and Python docs under the hub
+        run: |
+          set -e
+          cp -r apps/web/dist apps/landing/site/viewer
+          cp -r moyopy/site apps/landing/site/python
 
       - name: Install Doxygen
         run: |
@@ -124,7 +132,7 @@ jobs:
           # downgrade the system markdown that Zensical needs.
           uvx ford ford.md
           zensical build --clean --strict
-          cp -r site ../apps/web/dist/c
+          cp -r site ../apps/landing/site/c
 
       - name: Configure Pages
         if: github.event_name != 'pull_request'
@@ -134,7 +142,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
         with:
-          path: apps/web/dist
+          path: apps/landing/site
 
   deploy:
     if: github.event_name != 'pull_request'

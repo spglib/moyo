@@ -1,0 +1,8 @@
+/* Carry the brand color (deep-purple, from the palette primary) into the page
+   via headings, keeping a clean white/dark body. Reads as the parent hub,
+   distinct from the indigo moyopy (Python) and teal moyoc (C) docs. Links
+   already follow the primary color. */
+.md-typeset h1,
+.md-typeset h2 {
+  color: var(--md-primary-fg-color);
+}
