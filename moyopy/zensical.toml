@@ -35,6 +35,8 @@ extra_javascript = [
 [project.theme]
 name = "material"
 language = "en"
+logo = "assets/logo.svg"
+favicon = "assets/logo.svg"
 features = [
     "content.code.copy",
     "navigation.footer",
