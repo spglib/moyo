@@ -22,17 +22,11 @@ repos:
         exclude: ^(moyopy|bench)/uv\.lock
       - id: check-merge-conflict
       - id: detect-private-key
-  - repo: https://github.com/executablebooks/mdformat
-    rev: 1.0.0
+  - repo: https://github.com/rvben/rumdl-pre-commit
+    rev: v0.2.23
     hooks:
-      - id: mdformat
-        additional_dependencies:
-          - mdformat-gfm
-          - mdformat-myst
-          - mdformat-admon
-        # Zensical pages use mkdocstrings (`:::`), autorefs (`[`x`][x]`) and
-        # pymdownx snippets (`--8<--`), which mdformat escapes and breaks.
-        exclude: ^moyopy/docs/(index|api|api_layer_group|api_magnetic_space_group|examples/index)\.md$
+      - id: rumdl
+        args: [--fix]
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.37.3
     hooks:

@@ -5,8 +5,8 @@
 
 The core implementation of moyo in Rust
 
-- Crates.io: https://crates.io/crates/moyo
-- Document: https://docs.rs/moyo/latest/moyo/
+- Crates.io: <https://crates.io/crates/moyo>
+- Document: <https://docs.rs/moyo/latest/moyo/>
 
 ## Goals
 
@@ -31,7 +31,7 @@ just doc    # cargo doc --open
 
 ### Module dependency
 
-```
+```text
 math <- base <- data <- identify <- standardize <- lib
         ^---- search <--------------|
 ```

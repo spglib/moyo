@@ -49,7 +49,7 @@ RUST_LOG=debug cargo test -- --nocapture  # With debug output
 
 Module dependency graph within `moyo/`:
 
-```
+```text
 math <- base <- data <- identify <- standardize <- lib
         ^---- search <--------------|
 ```

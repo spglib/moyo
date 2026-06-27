@@ -88,7 +88,7 @@ Notes:
 
 If you use moyo or its interfaces in your work, please cite the following figshare entry.
 
-```
+```text
 @misc{moyo,
   author = {Kohei Shinohara},
   title  = {{moyo: A fast and robust crystal symmetry finder, written in Rust}},
