@@ -17,5 +17,10 @@ disable = ["MD013", "MD033", "MD041"]
 # moyoc/docs/index.md). Its `api/` links resolve correctly on the rendered site
 # (/c/ -> /c/api/) but not relative to the README's own location, so MD057's
 # "relative link does not exist" check would always flag them.
+#
+# moyoc/ford.md is the FORD project file; its front-page body links to the C API
+# reference and migration guide, which resolve on the rendered site
+# (/c/fortran-api/ -> /c/api/, /c/migration/) but not at lint time.
 [per-file-ignores]
 "moyoc/README.md" = ["MD057"]
+"moyoc/ford.md" = ["MD057"]

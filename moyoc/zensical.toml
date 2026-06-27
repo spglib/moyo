@@ -14,6 +14,7 @@ nav = [
     { "Introduction" = "index.md" },
     { "Migration from spglib" = "migration.md" },
     { "API Reference" = "api/index.html" },
+    { "Fortran API Reference" = "fortran-api/index.html" },
 ]
 
 # Teal heading accents to distinguish the C docs from the indigo Python (moyopy) docs.
