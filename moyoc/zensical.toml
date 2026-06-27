@@ -1,0 +1,73 @@
+[project]
+site_name = "moyoc"
+site_description = "C interface of moyo, a fast and robust crystal symmetry finder."
+site_author = "Kohei Shinohara"
+site_url = "https://spglib.github.io/moyo/c/"
+copyright = "Copyright &copy; 2023, Kohei Shinohara"
+
+docs_dir = "docs"
+
+repo_url = "https://github.com/spglib/moyo"
+repo_name = "spglib/moyo"
+
+nav = [
+    { "Introduction" = "index.md" },
+    { "API Reference" = "api/index.html" },
+]
+
+# Teal heading accents to distinguish the C docs from the indigo Python (moyopy) docs.
+extra_css = ["stylesheets/extra.css"]
+
+# Theme
+[project.theme]
+name = "material"
+language = "en"
+logo = "assets/logo.svg"
+favicon = "assets/logo.svg"
+features = [
+    "content.code.copy",
+    "navigation.footer",
+    "navigation.indexes",
+    "navigation.instant",
+    "navigation.top",
+    "navigation.tracking",
+    "search.highlight",
+    "toc.follow",
+]
+
+[[project.theme.palette]]
+scheme = "default"
+primary = "teal"
+accent = "teal"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+scheme = "slate"
+primary = "teal"
+accent = "teal"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to light mode"
+
+# Markdown extensions
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.attr_list]
+[project.markdown_extensions.def_list]
+[project.markdown_extensions.footnotes]
+[project.markdown_extensions.md_in_html]
+[project.markdown_extensions.toc]
+permalink = true
+[project.markdown_extensions.pymdownx.details]
+[project.markdown_extensions.pymdownx.highlight]
+anchor_linenums = true
+line_spans = "__span"
+pygments_lang_class = true
+[project.markdown_extensions.pymdownx.inlinehilite]
+[project.markdown_extensions.pymdownx.magiclink]
+[project.markdown_extensions.pymdownx.smartsymbols]
+[project.markdown_extensions.pymdownx.snippets]
+base_path = ["."]
+check_paths = true
+[project.markdown_extensions.pymdownx.superfences]
+[project.markdown_extensions.pymdownx.tasklist]
+custom_checkbox = true

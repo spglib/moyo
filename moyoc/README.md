@@ -3,7 +3,7 @@
 C bindings for [moyo](https://github.com/spglib/moyo), built with CMake and
 [corrosion](https://github.com/corrosion-rs/corrosion).
 
-- API reference: <https://spglib.github.io/moyo/c/>
+- [API reference](api/index.html)
 
 ## Requirements
 
@@ -31,7 +31,7 @@ target_link_libraries(example PRIVATE moyo::moyoc)
 
 The `moyo::moyoc` target carries the generated `moyoc.h` include directory and links the
 static library by default. Set `-DBUILD_SHARED_LIBS=ON` to link the shared library instead.
-See [examples](examples) for a complete project.
+See [examples](https://github.com/spglib/moyo/tree/main/moyoc/examples) for a complete project.
 
 ## Standalone build
 
@@ -50,7 +50,7 @@ From the repo root, `just c-build` and `just c-test` wrap the configure/build/te
 
 ## API
 
-See the [API reference](https://spglib.github.io/moyo/c/) (generated with
+See the [API reference](api/index.html) (generated with
 Doxygen from `moyoc.h`; build it locally with `just c-docs`). The main entry
 points are:
 
@@ -175,4 +175,4 @@ call moyo_dataset_free(handle)
 
 ## How to cite moyoc
 
-See the citation information in [the root README](../README.md)
+See the citation information in [the root README](https://github.com/spglib/moyo/blob/main/README.md)

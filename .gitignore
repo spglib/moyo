@@ -379,6 +379,9 @@ _build/
 apidocs/
 # zensical build output
 /moyopy/site/
+/moyoc/site/
+# doxygen output bundled into the zensical site (moyoc landing -> /c/api/)
+/moyoc/docs/api/
 
 debug/*
 debug.py
