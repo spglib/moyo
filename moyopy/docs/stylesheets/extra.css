@@ -1,0 +1,7 @@
+/* Carry the brand color (indigo, from the palette primary) into the page via
+   headings, keeping a clean white/dark body. Distinguishes the Python docs from
+   the teal moyoc (C) docs. Links already follow the primary color. */
+.md-typeset h1,
+.md-typeset h2 {
+  color: var(--md-primary-fg-color);
+}
