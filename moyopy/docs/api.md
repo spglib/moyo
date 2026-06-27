@@ -1,128 +1,68 @@
 # API Reference
 
-```{eval-rst}
-.. currentmodule:: moyopy
-```
-
 The public API mirrors the Rust crate layout: `base` (crystal structures and
 operation containers), `dataset` (symmetry analysis results), `data`
 (crystallographic classification tables), and `identify` (group identification
-primitives). The {py:mod}`moyopy.interface` adapters provide conversion
-helpers to/from pymatgen and ASE.
+primitives). The `moyopy.interface` adapters provide conversion helpers to/from
+pymatgen and ASE.
 
 This page documents the core types and the space-group API. Layer-group and
 magnetic-space-group APIs live on additional pages:
 
-```{toctree}
----
-maxdepth: 1
----
-Layer Group <api_layer_group>
-Magnetic Space Group <api_magnetic_space_group>
-```
+- [Layer Group](api_layer_group.md)
+- [Magnetic Space Group](api_magnetic_space_group.md)
 
 ## Core types
 
 Lattice + sites, the non-magnetic operation container, and the unimodular
 transformation type used across all group families.
 
-```{eval-rst}
-.. autoapisummary::
+::: moyopy.Cell
 
-   moyopy.Cell
-   moyopy.Operations
-   moyopy.UnimodularTransformation
+::: moyopy.Operations
 
-.. autoapiclass:: moyopy.Cell
-   :members:
-
-.. autoapiclass:: moyopy.Operations
-   :members:
-
-.. autoapiclass:: moyopy.UnimodularTransformation
-   :members:
-```
+::: moyopy.UnimodularTransformation
 
 ## Symmetry datasets
 
-Run a symmetry analysis on a {py:class}`moyopy.Cell` and inspect the result.
+Run a symmetry analysis on a [`moyopy.Cell`][moyopy.Cell] and inspect the result.
 
-```{eval-rst}
-.. autoapisummary::
-
-   moyopy.MoyoDataset
-
-.. autoapiclass:: moyopy.MoyoDataset
-   :members:
-```
+::: moyopy.MoyoDataset
 
 ## Crystallographic data
 
 Hall symbols, settings, centering, classification tables, and helpers to fetch
 operations by ITA number.
 
-```{eval-rst}
-.. autoapisummary::
+::: moyopy.Setting
 
-   moyopy.Setting
-   moyopy.Centering
-   moyopy.HallSymbolEntry
-   moyopy.SpaceGroupType
-   moyopy.ArithmeticCrystalClass
-   moyopy.operations_from_number
+::: moyopy.Centering
 
-.. autoapiclass:: moyopy.Setting
-   :members:
+::: moyopy.HallSymbolEntry
 
-.. autoapiclass:: moyopy.Centering
-   :members:
+::: moyopy.SpaceGroupType
 
-.. autoapiclass:: moyopy.HallSymbolEntry
-   :members:
+::: moyopy.ArithmeticCrystalClass
 
-.. autoapiclass:: moyopy.SpaceGroupType
-   :members:
-
-.. autoapiclass:: moyopy.ArithmeticCrystalClass
-   :members:
-
-.. autoapifunction:: moyopy.operations_from_number
-```
+::: moyopy.operations_from_number
 
 ## Group identification
 
 Identify point groups and space groups from a primitive list of symmetry
 operations.
 
-```{eval-rst}
-.. autoapisummary::
+::: moyopy.PointGroup
 
-   moyopy.PointGroup
-   moyopy.SpaceGroup
-   moyopy.integral_normalizer
+::: moyopy.SpaceGroup
 
-.. autoapiclass:: moyopy.PointGroup
-   :members:
-
-.. autoapiclass:: moyopy.SpaceGroup
-   :members:
-
-.. autoapifunction:: moyopy.integral_normalizer
-```
+::: moyopy.integral_normalizer
 
 ## Adapters
 
-Convert between {py:class}`moyopy.Cell` and pymatgen `Structure` / ASE
+Convert between [`moyopy.Cell`][moyopy.Cell] and pymatgen `Structure` / ASE
 `Atoms`. Requires the optional dependencies installed via
 `pip install moyopy[interface]`. The magnetic counterpart
-{py:class}`moyopy.interface.MoyoNonCollinearMagneticAdapter` lives on the
-[Magnetic Space Group](api_magnetic_space_group.md) page.
+[`moyopy.interface.MoyoNonCollinearMagneticAdapter`][moyopy.interface.MoyoNonCollinearMagneticAdapter]
+lives on the [Magnetic Space Group](api_magnetic_space_group.md) page.
 
-```{eval-rst}
-.. autoapisummary::
-
-   moyopy.interface.MoyoAdapter
-
-.. autoapiclass:: moyopy.interface.MoyoAdapter
-   :members:
-```
+::: moyopy.interface.MoyoAdapter

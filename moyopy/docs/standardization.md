@@ -1,7 +1,7 @@
 # Moyo conventions of standardized cell
 
-[!NOTE]
-This document is based on moyo==0.7.3.
+!!! note
+    This document is based on moyo==0.7.3.
 
 This document describes how the standardized cell `MoyoDataset.std_cell` and the primitive standardized cell `MoyoDataset.prim_std_cell` are specified in Moyo.
 The conventions described here apply uniformly to the core Rust implementation as well as all other language bindings.
@@ -34,14 +34,16 @@ When `setting=Setting.Standard`, the standardized cell gives the space group in 
 
 Let $\mathbf{A}$ be the column-wise basis vectors of the input crystal structure, `Cell.basis`, and $\mathbf{A}_{\mathbf{std}}$ be the column-wise basis vectors of the standardized cell, `MoyoDataset.std_cell.basis`.
 When `rotate_basis=true`, the following relation holds:
-$
+
+$$
 \mathbf{A}_{\mathbf{std}} = \mathbf{R} \mathbf{A} \mathbf{P}_{\mathrm{std}},
-$
+$$
+
 where $\mathbf{R}$ is `MoyoDataset.std_rotation_matrix`.
 Here, $\mathbf{R}$ is a proper rotation matrix that brings the input basis vectors into a certain orientation depending on the crystal family.
 
-[!CAUTION]
-The Rust-implementation attribute `Cell.basis` stores the basis vectors in column-wise manner, while the other language bindings store them in row-wise manner.
+!!! caution
+    The Rust-implementation attribute `Cell.basis` stores the basis vectors in column-wise manner, while the other language bindings store them in row-wise manner.
 
 The standardized cell basis vectors $\mathbf{A}_{\mathrm{std}}$ are defined for each crystal family as the following table.
 Note that `rotate_basis=true` is assumed, and that the input basis vectors are right-handed.
@@ -80,13 +82,13 @@ Moyo chooses a transformation matrix $\mathbf{Q}$ from a primitive cell to the s
 
 Depending on the Bravais class of the standardized cell, the following relation holds:
 
-$
+$$
 (\mathbf{P}_{\mathrm{prim}}, \mathbf{p}_{\mathrm{prim}}) = (\mathbf{P}_{\mathrm{std}}, \mathbf{p}_{\mathrm{std}}) (\mathbf{Q}, \mathbf{0})^{-1}
-$
+$$
 
-$
+$$
 \mathbf{A}_{\mathrm{prim}} = \mathbf{A}_{\mathrm{std}} \mathbf{Q}^{-1}.
-$
+$$
 
 [^setting]: That being said, the order of the Hall symbols are the same as Table A1.4.2.7 in International Tables for Crystallography Volume B (2010).
 

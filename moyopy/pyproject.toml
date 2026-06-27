@@ -44,14 +44,8 @@ testing = [
     "numpy",
 ]
 docs = [
-    "Sphinx >= 7.0",
-    "sphinx-autobuild",
-    "sphinxcontrib-bibtex >= 2.5",
-    "sphinx-book-theme",
-    "sphinx-autoapi",
-    "sphinx-copybutton",
-    "myst-parser >= 2.0",
-    "linkify-it-py",
+    "zensical >= 0.0.46",
+    "mkdocstrings-python >= 2.0",
 ]
 bench = [
     "matbench-discovery==1.3.1; python_version >= '3.11'",

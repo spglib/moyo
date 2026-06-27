@@ -26,7 +26,7 @@ Run from the repo root with `just`:
 just py-install   # uv sync
 just py-build     # maturin develop
 just py-test      # pytest
-just py-docs      # build and serve the Sphinx docs
+just py-docs      # build and serve the docs (Zensical)
 ```
 
 ## How to cite moyopy
