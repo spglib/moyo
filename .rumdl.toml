@@ -1,0 +1,14 @@
+# Markdown linting and formatting (replaces mdformat).
+# https://github.com/rvben/rumdl
+
+[global]
+flavor = "gfm"
+# mdformat never enforced these, and the repo relies on long lines, inline HTML
+# (README badges/figures), and non-heading first lines (HTML wrappers, snippets).
+disable = ["MD013", "MD033", "MD041"]
+
+# Zensical (MkDocs) pages use mkdocstrings (`:::`), autorefs (`[x][x]`) and
+# pymdownx snippets (`--8<--`). The mkdocs flavor understands this syntax, which
+# mdformat could not (those pages were previously excluded).
+[per-file-flavor]
+"moyopy/docs/**/*.md" = "mkdocs"

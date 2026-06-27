@@ -37,7 +37,7 @@ Replace with `MoyoDataset`.
 
 If you need to specify `hall_number`, use
 
-```
+```text
 MoyoDataset(..., setting=Setting.hall_number(hall_number))
 ```
 

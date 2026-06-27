@@ -62,6 +62,7 @@ Type-checker tooltips will go stale. After editing the Rust side, mirror to the 
 - **Style**: NumPy-style. Class-level docstring first, then per-method/getter/property. Constructors get a `Parameters` section. Avoid Google-style `Args:` -- the project uses NumPy throughout.
 - **Inline code**: double backticks (RST/Sphinx style): ` `cell.basis` `, ` `symprec` `. Markdown single backticks render wrong in Sphinx.
 - **Code blocks in Rust `///`**: never use indented blocks (rustdoc treats them as Rust and runs them as doctests). Use fenced ```` ```text ```` blocks:
+
   ````rust
   /// Same transformation convention as the standardized cell:
   ///
@@ -69,6 +70,7 @@ Type-checker tooltips will go stale. After editing the Rust side, mirror to the 
   /// std_cell.basis.T = std_rotation_matrix @ cell.basis.T @ std_linear
   /// ```
   ````
+
 - **Code blocks in `.pyi`**: RST `::` followed by indent, OR fenced -- both render in Sphinx. Match the existing surrounding style in the file you're editing.
 - **Cross-references in `.pyi`**: use `:attr:`, `:class:`, `:func:` (Sphinx). In Rust `///`, plain prose is fine -- the Rust doc tree is not used by the Python project.
 - **Module attribute** (CRITICAL): keep `#[pyo3(module = "moyopy")]` on every `#[pyclass]` and `#[pyfunction]`. Do **not** change to `"moyopy._moyopy"` -- it leaks the hidden submodule into `__module__`, `repr()`, and pickle. The reviewer rejected this.
@@ -78,7 +80,7 @@ Type-checker tooltips will go stale. After editing the Rust side, mirror to the 
 
 After porting, run all of:
 
-```
+```text
 # rebuild bindings
 PYO3_PYTHON=/path/to/moyopy/.venv/bin/python uv run --directory moyopy maturin develop --release --manifest-path Cargo.toml
 
