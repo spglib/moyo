@@ -1,7 +1,7 @@
 # Moyo conventions of standardized layer cell
 
-[!NOTE]
-This document describes how the standardized layer cell `MoyoLayerDataset.std_cell` and the primitive standardized layer cell `MoyoLayerDataset.prim_std_cell` are specified in Moyo. The conventions described here apply uniformly to the core Rust implementation as well as all other language bindings.
+!!! note
+    This document describes how the standardized layer cell `MoyoLayerDataset.std_cell` and the primitive standardized layer cell `MoyoLayerDataset.prim_std_cell` are specified in Moyo. The conventions described here apply uniformly to the core Rust implementation as well as all other language bindings.
 
 For the bulk space-group standardization, see [Moyo conventions of standardized cell](./standardization.md). The layer-group convention deviates from the bulk one in two places: the third basis vector is the aperiodic stacking direction (not a lattice translation), and the only centerings are `p` (primitive) and `c` (rectangular-centered).
 
