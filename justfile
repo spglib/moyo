@@ -12,7 +12,7 @@ prek-all:
 
 clean:
     rm moyopy/python/moyopy/*.so
-    rm -r moyopy/docs/_build
+    rm -rf moyopy/site
 
 ################################################################################
 # Rust
@@ -52,8 +52,9 @@ py-test:
     python -m pytest -v moyopy/python/tests
 
 [group('python')]
+[working-directory: 'moyopy']
 py-docs:
-    sphinx-autobuild moyopy/docs moyopy/docs/_build
+    zensical serve
 
 ################################################################################
 # C

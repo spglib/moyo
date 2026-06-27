@@ -1,95 +1,50 @@
 # Magnetic Space Group API
 
-```{eval-rst}
-.. currentmodule:: moyopy
-```
-
 Magnetic crystal structures, symmetry analysis, classification tables, and
 group identification for the 1,651 magnetic space groups. Shared types such
-as {py:class}`moyopy.Cell`, {py:class}`moyopy.Operations`,
-{py:class}`moyopy.UnimodularTransformation`, and {py:class}`moyopy.PointGroup`
-are documented on the [API Reference](api.md) hub.
+as [`moyopy.Cell`][moyopy.Cell], [`moyopy.Operations`][moyopy.Operations],
+[`moyopy.UnimodularTransformation`][moyopy.UnimodularTransformation], and
+[`moyopy.PointGroup`][moyopy.PointGroup] are documented on the
+[API Reference](api.md) hub.
 
 ## Magnetic core types
 
 Lattice + sites with magnetic moments, plus the magnetic operation
 container.
 
-```{eval-rst}
-.. autoapisummary::
+::: moyopy.CollinearMagneticCell
 
-   moyopy.CollinearMagneticCell
-   moyopy.NonCollinearMagneticCell
-   moyopy.MagneticOperations
+::: moyopy.NonCollinearMagneticCell
 
-.. autoapiclass:: moyopy.CollinearMagneticCell
-   :members:
-
-.. autoapiclass:: moyopy.NonCollinearMagneticCell
-   :members:
-
-.. autoapiclass:: moyopy.MagneticOperations
-   :members:
-```
+::: moyopy.MagneticOperations
 
 ## Symmetry datasets
 
 Run a symmetry analysis on a magnetic cell and inspect the result.
 
-```{eval-rst}
-.. autoapisummary::
+::: moyopy.MoyoCollinearMagneticDataset
 
-   moyopy.MoyoCollinearMagneticDataset
-   moyopy.MoyoNonCollinearMagneticDataset
-
-.. autoapiclass:: moyopy.MoyoCollinearMagneticDataset
-   :members:
-
-.. autoapiclass:: moyopy.MoyoNonCollinearMagneticDataset
-   :members:
-```
+::: moyopy.MoyoNonCollinearMagneticDataset
 
 ## Crystallographic data
 
 Classification tables and helpers to fetch operations by UNI number.
 
-```{eval-rst}
-.. autoapisummary::
+::: moyopy.MagneticSpaceGroupType
 
-   moyopy.MagneticSpaceGroupType
-   moyopy.magnetic_operations_from_uni_number
-
-.. autoapiclass:: moyopy.MagneticSpaceGroupType
-   :members:
-
-.. autoapifunction:: moyopy.magnetic_operations_from_uni_number
-```
+::: moyopy.magnetic_operations_from_uni_number
 
 ## Group identification
 
 Identify magnetic space groups from a primitive list of magnetic symmetry
 operations.
 
-```{eval-rst}
-.. autoapisummary::
-
-   moyopy.MagneticSpaceGroup
-
-.. autoapiclass:: moyopy.MagneticSpaceGroup
-   :members:
-```
+::: moyopy.MagneticSpaceGroup
 
 ## Adapters
 
-Convert between {py:class}`moyopy.NonCollinearMagneticCell` and pymatgen
-`Structure` / ASE `Atoms`. Requires the optional dependencies installed via
-`pip install moyopy[interface]`.
+Convert between [`moyopy.NonCollinearMagneticCell`][moyopy.NonCollinearMagneticCell]
+and pymatgen `Structure` / ASE `Atoms`. Requires the optional dependencies
+installed via `pip install moyopy[interface]`.
 
-```{eval-rst}
-.. autoapisummary::
-
-   moyopy.interface.MoyoNonCollinearMagneticAdapter
-
-.. autoapiclass:: moyopy.interface.MoyoNonCollinearMagneticAdapter
-   :members:
-```
+::: moyopy.interface.MoyoNonCollinearMagneticAdapter

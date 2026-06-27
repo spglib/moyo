@@ -29,6 +29,9 @@ repos:
         additional_dependencies:
           - mdformat-gfm
           - mdformat-myst
+        # Zensical pages use mkdocstrings (`:::`), autorefs (`[`x`][x]`) and
+        # pymdownx snippets (`--8<--`), which mdformat escapes and breaks.
+        exclude: ^moyopy/docs/(index|api|api_layer_group|api_magnetic_space_group|examples/index)\.md$
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.37.3
     hooks:

@@ -92,8 +92,12 @@ jobs:
           uv pip install --system --find-links dist moyopy
           uv pip install --system moyopy[docs]
 
-      - name: Build docs into web app under /python
-        run: sphinx-build moyopy/docs apps/web/dist/python
+      - name: Build docs with Zensical
+        working-directory: moyopy
+        run: zensical build --clean --strict
+
+      - name: Copy docs into web app under /python
+        run: cp -r moyopy/site apps/web/dist/python
 
       - name: Install Doxygen
         run: |

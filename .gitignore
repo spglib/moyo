@@ -377,6 +377,8 @@ bench/2d/c2db/
 # python-interface docs
 _build/
 apidocs/
+# zensical build output
+/moyopy/site/
 
 debug/*
 debug.py
