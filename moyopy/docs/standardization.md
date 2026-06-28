@@ -52,7 +52,7 @@ Note that `rotate_basis=true` is assumed, and that the input basis vectors are r
 | -------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | Triclinic      | $\begin{pmatrix} a_x & b_x & c_x \\ a_y & b_y & c_y \\ a_z & b_z & c_z \end{pmatrix}$        | Niggli reduced [^std-cell-2]; $a_x, b_y, c_z \gt 0$ [^std-cell-3] |
 | Monoclinic     | $\begin{pmatrix} a & 0 & c \cos \beta \\ 0 & b & 0 \\ 0 & 0 & c \sin \beta \end{pmatrix}$    | $a, b, c \sin \beta \gt 0$; $\cos \beta \le 0$ [^std-cell-4] [^std-cell-7] |
-| Orthorhombic   | $\begin{pmatrix} a & 0 & 0 \\ 0 & b & 0 \\ 0 & 0 & c \end{pmatrix}$                          | $a, b, c \gt 0$ [^std-cell-4] [^std-cell-6]                       |
+| Orthorhombic   | $\begin{pmatrix} a & 0 & 0 \\ 0 & b & 0 \\ 0 & 0 & c \end{pmatrix}$                          | $a, b, c \gt 0$ [^std-cell-4]; $a \le b \le c$ as far as possible [^std-cell-6] |
 | Tetragonal     | $\begin{pmatrix} a & 0 & 0 \\ 0 & a & 0 \\ 0 & 0 & c \end{pmatrix}$                          | $a, c \gt 0$ [^std-cell-4]                                        |
 | Hexagonal      | $\begin{pmatrix} a & -a / 2 & 0 \\0 & \sqrt{3} a / 2 & 0 \\ 0 & 0 & c \end{pmatrix}$         | $a, c > 0$ [^std-cell-4]                                          |
 | Cubic          | $\begin{pmatrix} a & 0 & 0 \\ 0 & a & 0 \\ 0 & 0 & a \end{pmatrix}$                          | $a > 0$ [^std-cell-5]                                             |
@@ -100,6 +100,6 @@ $$
 
 [^std-cell-7]: moyo brings $\beta$ as close to $\pi / 2$ as possible and, following the ITA convention, chooses the non-acute value ($\pi / 2 \le \beta \lt \pi$, i.e. $\cos \beta \le 0$) when the acute and obtuse choices are equally close to $\pi / 2$.
 
-[^std-cell-6]: Currently, moyo does not enforce the order in $a$, $b$, and $c$.
+[^std-cell-6]: moyo orders the basis vectors as $a \le b \le c$ as far as the space-group setting allows. Among the six axis permutations, only those that preserve both the matrix representations of the symmetry operations (as a set) and the centering are admissible, and moyo picks the admissible one with the lexicographically smallest $(a, b, c)$. The number of admissible permutations equals seekpath's "number of distinct projections", so full ordering is not always attainable; for example, side-face-centered cells (oS) admit only the $\mathbf{a} \leftrightarrow \mathbf{b}$ swap, enforcing $a \le b$ alone.
 
 [^std-cell-5]: Negative (z, z)-component for left-handed input basis vectors.

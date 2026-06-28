@@ -10,6 +10,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 
 ### moyo
 
+- Order the basis vectors of orthorhombic standardized cells as `a <= b <= c` as much as possible. The axis permutation is chosen among the six candidates that preserve the symmetry operation matrices (as a set) and the centering, deriving seekpath's "number of distinct projections" directly from the operations instead of a hardcoded per-space-group table. This automatically respects the side-face-centered exception (only `a <= b` for `C`/`A`-centered cells) (#378)
 - Fix `standardize_monoclinic_conv_cell` returning an acute angle between the `a` and `c` axes of the standardized monoclinic conventional cell. The acute angle and its non-acute supplement scored equally under the skewness metric, so the tie-break could pick the acute one; ties are now broken in favor of the non-acute angle required by the ITA convention (#377)
 
 ## v0.12.0 - 2026-06-13
