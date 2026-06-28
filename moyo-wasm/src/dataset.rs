@@ -102,7 +102,13 @@ fn convert_angle_tolerance(tol: InternalAngleTolerance) -> AngleTolerance {
     }
 }
 
-/// Return a strongly-typed DTO; wasm-bindgen + tsify will emit .d.ts based on these Rust types
+/// Analyze the symmetry of a crystal structure and return the full dataset.
+///
+/// `cell_json` is a JSON-encoded [`MoyoCell`] (row-major `lattice.basis`,
+/// fractional `positions`, atomic `numbers`). `symprec` is the distance
+/// tolerance (in the same length unit as the lattice). `setting` selects the
+/// standardization convention: `"Spglib"` for spglib-compatible settings,
+/// anything else (e.g. `"Standard"`) for the ITA standard setting.
 #[wasm_bindgen]
 pub fn analyze_cell(cell_json: &str, symprec: f64, setting: &str) -> Result<MoyoDataset, JsValue> {
     let json_value: serde_json::Value = serde_json::from_str(cell_json)

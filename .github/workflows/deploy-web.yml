@@ -98,17 +98,28 @@ jobs:
         working-directory: moyopy
         run: zensical build --clean --strict
 
+      - name: Build moyo-wasm API reference (TypeDoc) and doc site (Zensical)
+        # The moyo-wasm pkg/ (and its .d.ts) was produced by the earlier
+        # `wasm-pack build moyo-wasm` step; TypeDoc renders the reference from it.
+        working-directory: moyo-wasm
+        run: |
+          set -e
+          npm install --no-audit --no-fund
+          npm run docs
+          zensical build --clean --strict
+
       - name: Build landing hub with Zensical (artifact root)
         # The hub manages its own zensical via apps/landing/pyproject.toml, so it
         # does not depend on moyopy[docs].
         working-directory: apps/landing
         run: uv run zensical build --clean --strict
 
-      - name: Assemble web viewer and Python docs under the hub
+      - name: Assemble web viewer, Python docs and JS / WASM docs under the hub
         run: |
           set -e
           cp -r apps/web/dist apps/landing/site/viewer
           cp -r moyopy/site apps/landing/site/python
+          cp -r moyo-wasm/site apps/landing/site/js
 
       - name: Install Doxygen
         run: |
