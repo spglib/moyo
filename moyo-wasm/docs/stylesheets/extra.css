@@ -1,0 +1,8 @@
+/* Carry the brand color (orange, from the palette primary) into the page via
+   headings, keeping a clean white/dark body. Distinguishes the JS / WASM docs
+   from the indigo Python (moyopy) and teal C (moyoc) docs. Links already follow
+   the primary color. */
+.md-typeset h1,
+.md-typeset h2 {
+  color: var(--md-primary-fg-color);
+}

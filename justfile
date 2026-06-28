@@ -103,6 +103,13 @@ js-build:
 js-test:
     npm test
 
+# Generate the TypeDoc API reference, build the moyo-wasm doc site, and serve it.
+[group('js')]
+[working-directory: 'moyo-wasm']
+js-docs: js-build
+    npm run docs
+    uvx zensical serve
+
 ################################################################################
 # Web app (apps/web)
 ################################################################################
@@ -164,13 +171,15 @@ landing-build:
 docs-build:
     cd moyo-wasm && npm run build
     cd apps/web && VITE_BASE=/moyo/viewer/ npm run build
+    cd moyo-wasm && npm run docs && uvx zensical build --clean --strict
     cd moyopy && uv run zensical build --clean --strict
     cd apps/landing && uv run zensical build --clean --strict
     cd moyoc && cbindgen --config cbindgen.toml --output build/moyoc.h && doxygen Doxyfile && uvx ford ford.md && uvx zensical build --clean --strict
-    rm -rf apps/landing/site/python apps/landing/site/c apps/landing/site/viewer
+    rm -rf apps/landing/site/python apps/landing/site/c apps/landing/site/viewer apps/landing/site/js
     cp -r moyopy/site apps/landing/site/python
     cp -r moyoc/site apps/landing/site/c
     cp -r apps/web/dist apps/landing/site/viewer
+    cp -r moyo-wasm/site apps/landing/site/js
 
 # The site is mounted under /moyo/ (a gitignored symlink) so the local URL
 # structure matches the GitHub Pages base path.

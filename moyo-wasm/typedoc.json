@@ -1,0 +1,21 @@
+{
+  "$schema": "https://typedoc-plugin-markdown.org/schema.json",
+  "entryPoints": ["docs-entry.d.ts"],
+  "plugin": ["typedoc-plugin-markdown"],
+  "out": "docs/api",
+  "name": "moyo-wasm API",
+  "readme": "none",
+  "githubPages": false,
+  "disableSources": true,
+  "outputFileStrategy": "modules",
+  "entryFileName": "index",
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "useCodeBlocks": true,
+  "indexFormat": "table",
+  "parametersFormat": "table",
+  "interfacePropertiesFormat": "list",
+  "typeDeclarationFormat": "table",
+  "expandObjects": true,
+  "excludeInternal": true
+}
