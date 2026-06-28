@@ -12,6 +12,10 @@ disable = ["MD013", "MD033", "MD041"]
 # mdformat could not (those pages were previously excluded).
 [per-file-flavor]
 "moyopy/docs/**/*.md" = "mkdocs"
+# The landing hub (apps/landing) is a Zensical site too: its index uses Material
+# admonitions (`!!!`) and grid cards, which the gfm flavor would misread (e.g.
+# MD046 treating indented admonition bodies as code blocks).
+"apps/landing/docs/**/*.md" = "mkdocs"
 
 # moyoc/README.md doubles as the Zensical landing page (included via snippet at
 # moyoc/docs/index.md). Its `api/` links resolve correctly on the rendered site

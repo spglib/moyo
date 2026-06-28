@@ -136,3 +136,17 @@ web-test:
 [working-directory: 'apps/web']
 web-check:
     npm run check
+
+################################################################################
+# Landing hub (apps/landing)
+################################################################################
+
+[group('web')]
+[working-directory: 'apps/landing']
+landing-serve:
+    uv run zensical serve
+
+[group('web')]
+[working-directory: 'apps/landing']
+landing-build:
+    uv run zensical build --clean --strict
