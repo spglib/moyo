@@ -54,7 +54,7 @@ py-test:
 [group('python')]
 [working-directory: 'moyopy']
 py-docs:
-    zensical serve
+    uv run zensical serve
 
 ################################################################################
 # C
