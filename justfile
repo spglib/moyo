@@ -77,7 +77,7 @@ c-docs:
     cbindgen --config cbindgen.toml --output build/moyoc.h
     doxygen Doxyfile
     uvx ford ford.md
-    zensical serve
+    uvx zensical serve
 
 [group('c')]
 [working-directory: 'moyoc']
