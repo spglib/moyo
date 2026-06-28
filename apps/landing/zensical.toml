@@ -12,11 +12,20 @@ repo_name = "spglib/moyo"
 
 nav = [
     { "Home" = "index.md" },
+    { "Standardization of Crystal Structures" = "standardization.md" },
+    { "Standardization of Subperiodic Structures" = "layer_standardization.md" },
 ]
 
 # Deep-purple heading accents read as the parent hub, distinct from the indigo
 # Python (moyopy) and teal C (moyoc) docs.
 extra_css = ["stylesheets/extra.css"]
+
+# MathJax: render dollar-math converted by pymdownx.arithmatex (generic = true)
+# on the standardization convention pages.
+extra_javascript = [
+    "javascripts/mathjax.js",
+    "https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js",
+]
 
 # Theme
 [project.theme]
@@ -57,6 +66,8 @@ toggle.name = "Switch to light mode"
 [project.markdown_extensions.md_in_html]
 [project.markdown_extensions.toc]
 permalink = true
+[project.markdown_extensions.pymdownx.arithmatex]
+generic = true
 [project.markdown_extensions.pymdownx.details]
 # Render :simple-...: / :octicons-...: icons and :emoji: shortcodes as inline
 # SVGs. Zensical's twemoji index also bundles the material/simple/octicons icon

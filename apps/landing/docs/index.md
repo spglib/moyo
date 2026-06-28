@@ -73,6 +73,14 @@ space groups, and standardizes and symmetrizes structures.
 
 </div>
 
+## Conventions
+
+How moyo standardizes cells, applied uniformly across the Rust core and all
+language bindings:
+
+- [Standardized cell](standardization.md)
+- [Standardized subperiodic (layer) cell](layer_standardization.md)
+
 ## Feature support
 
 For the per-interface feature-support matrix and the notes behind it, see the
