@@ -381,6 +381,8 @@ apidocs/
 /moyopy/site/
 /moyoc/site/
 /apps/landing/site/
+# local `just docs` preview mount (symlinks site under /moyo/)
+/apps/landing/.preview/
 # doxygen output bundled into the zensical site (moyoc landing -> /c/api/)
 /moyoc/docs/api/
 # FORD output bundled into the zensical site (moyoc landing -> /c/fortran-api/)
