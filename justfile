@@ -143,11 +143,6 @@ web-check:
 
 [group('landing')]
 [working-directory: 'apps/landing']
-landing-serve:
-    uv run zensical serve
-
-[group('landing')]
-[working-directory: 'apps/landing']
 landing-build:
     uv run zensical build --clean --strict
 
