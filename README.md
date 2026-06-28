@@ -11,9 +11,6 @@
 A fast and robust crystal symmetry finder, written in Rust.
 
 <figure>
-    <div style="text-align: center">
-        <img src="bench/mp/mp.png" width=50%>
-    </div>
     <figcaption><a href="bench/mp/analysis.ipynb">Several times faster symmetry detection than Spglib for Materials Project dataset</a></figcaption>
 </figure>
 
