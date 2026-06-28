@@ -484,6 +484,32 @@ static UNIMODULAR3_RANGE1: Lazy<Vec<UnimodularTransformation>> = Lazy::new(|| {
         .collect()
 });
 
+/// The six axis permutations as proper (det = +1) signed-permutation matrices. The
+/// three odd permutations (transpositions) are made right-handed by negating their
+/// first axis, since [`Transformation`] requires a positive determinant.
+///
+/// One proper representative per permutation is sufficient: for every orthorhombic
+/// space group, whether a permutation preserves the operation set and centering does
+/// not depend on the choice of axis signs (the point-group rotations are diagonal, so
+/// conjugation by a sign flip leaves them unchanged, and centering half-translations
+/// absorb the sign of any non-symmorphic translation). The sign-flipped axes are
+/// re-oriented away later by `symmetrize_lattice`.
+static AXIS_PERMUTATIONS3: Lazy<Vec<UnimodularTransformation>> = Lazy::new(|| {
+    [
+        // Even permutations (already det = +1).
+        Matrix3::new(1, 0, 0, 0, 1, 0, 0, 0, 1), // abc (identity)
+        Matrix3::new(0, 1, 0, 0, 0, 1, 1, 0, 0), // cab
+        Matrix3::new(0, 0, 1, 1, 0, 0, 0, 1, 0), // bca
+        // Odd permutations, first axis negated to restore det = +1.
+        Matrix3::new(0, 1, 0, -1, 0, 0, 0, 0, 1), // b(-a)c  (a <-> b)
+        Matrix3::new(-1, 0, 0, 0, 0, 1, 0, 1, 0), // (-a)cb  (b <-> c)
+        Matrix3::new(0, 0, 1, 0, 1, 0, -1, 0, 0), // c b(-a) (a <-> c)
+    ]
+    .into_iter()
+    .map(UnimodularTransformation::from_linear)
+    .collect()
+});
+
 /// Standardize monoclinic cell by choosing reduced basis vectors for perpendicular plane to the unique axis while keeping matrix representations of `conv_std_generators`.
 fn standardize_monoclinic_conv_cell(
     prim_lattice: &Lattice,
@@ -574,13 +600,9 @@ fn standardize_orthorhombic_conv_cell(
     epsilon: f64,
 ) -> Linear {
     let mut candidate_conv_transformations = vec![];
-    // Restrict the bounded `[-1, 1]` search to the six axis permutations (with sign
-    // freedom so that det = +1 and the centering/operation translations can be
-    // matched -- orthorhombic d-glides carry 1/4 translations whose sign matters).
-    for trans_perm in UNIMODULAR3_RANGE1
-        .iter()
-        .filter(|t| is_signed_permutation(&t.linear))
-    {
+    // Consider the six axis permutations and keep those that preserve the centering
+    // and the operation set; pick the one giving the smallest lengths.
+    for trans_perm in AXIS_PERMUTATIONS3.iter() {
         // trans_perm should keep centering translations.
         if centering.lattice_points().iter().any(|translation| {
             let mut diff = trans_perm.linear.map(|e| e as f64) * translation - translation;
@@ -640,17 +662,6 @@ fn standardize_orthorhombic_conv_cell(
         })
         .unwrap()
         .1
-}
-
-/// Whether `mat` is a signed permutation matrix: exactly one nonzero entry, equal to
-/// `+/-1`, in every row and every column.
-fn is_signed_permutation(mat: &Matrix3<i32>) -> bool {
-    let single_unit = |entries: [i32; 3]| {
-        let nonzero: Vec<i32> = entries.into_iter().filter(|&e| e != 0).collect();
-        nonzero.len() == 1 && nonzero[0].abs() == 1
-    };
-    (0..3).all(|i| single_unit([mat[(i, 0)], mat[(i, 1)], mat[(i, 2)]]))
-        && (0..3).all(|j| single_unit([mat[(0, j)], mat[(1, j)], mat[(2, j)]]))
 }
 
 /// Whether two fractional translations are equal modulo the centering lattice (which
