@@ -51,7 +51,7 @@ Note that `rotate_basis=true` is assumed, and that the input basis vectors are r
 | Crystal family | "Conventional" basis vectors $\mathbf{A}_{\mathrm{std}}$ <br> (`MoyoDataset.std_cell.basis`) | Additional conditions                                             |
 | -------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | Triclinic      | $\begin{pmatrix} a_x & b_x & c_x \\ a_y & b_y & c_y \\ a_z & b_z & c_z \end{pmatrix}$        | Niggli reduced [^std-cell-2]; $a_x, b_y, c_z \gt 0$ [^std-cell-3] |
-| Monoclinic     | $\begin{pmatrix} a & 0 & c \cos \beta \\ 0 & b & 0 \\ 0 & 0 & c \sin \beta \end{pmatrix}$    | $a, b, c \sin \beta \gt 0$ [^std-cell-4] [^std-cell-7]            |
+| Monoclinic     | $\begin{pmatrix} a & 0 & c \cos \beta \\ 0 & b & 0 \\ 0 & 0 & c \sin \beta \end{pmatrix}$    | $a, b, c \sin \beta \gt 0$; $\cos \beta \le 0$ [^std-cell-4] [^std-cell-7] |
 | Orthorhombic   | $\begin{pmatrix} a & 0 & 0 \\ 0 & b & 0 \\ 0 & 0 & c \end{pmatrix}$                          | $a, b, c \gt 0$ [^std-cell-4] [^std-cell-6]                       |
 | Tetragonal     | $\begin{pmatrix} a & 0 & 0 \\ 0 & a & 0 \\ 0 & 0 & c \end{pmatrix}$                          | $a, c \gt 0$ [^std-cell-4]                                        |
 | Hexagonal      | $\begin{pmatrix} a & -a / 2 & 0 \\0 & \sqrt{3} a / 2 & 0 \\ 0 & 0 & c \end{pmatrix}$         | $a, c > 0$ [^std-cell-4]                                          |
@@ -98,7 +98,7 @@ $$
 
 [^std-cell-4]: $c < 0$ for left-handed input basis vectors.
 
-[^std-cell-7]: moyo tries to bring $\beta$ closer to $\pi / 2$ as much as possible.
+[^std-cell-7]: moyo brings $\beta$ as close to $\pi / 2$ as possible and, following the ITA convention, chooses the non-acute value ($\pi / 2 \le \beta \lt \pi$, i.e. $\cos \beta \le 0$) when the acute and obtuse choices are equally close to $\pi / 2$.
 
 [^std-cell-6]: Currently, moyo does not enforce the order in $a$, $b$, and $c$.
 
