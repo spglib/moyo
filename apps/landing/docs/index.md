@@ -60,8 +60,7 @@ space groups, and standardizes and symmetrizes structures.
 
     JavaScript and WebAssembly binding.
 
-    [:octicons-package-16: npm](https://www.npmjs.com/package/@spglib/moyo-wasm) &middot;
-    [:octicons-globe-16: Web viewer](https://spglib.github.io/moyo/viewer/)
+    [:octicons-package-16: npm](https://www.npmjs.com/package/@spglib/moyo-wasm)
 
 -   :octicons-eye-16: __Web viewer__
 
