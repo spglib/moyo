@@ -141,12 +141,12 @@ web-check:
 # Landing hub (apps/landing)
 ################################################################################
 
-[group('web')]
+[group('landing')]
 [working-directory: 'apps/landing']
 landing-serve:
     uv run zensical serve
 
-[group('web')]
+[group('landing')]
 [working-directory: 'apps/landing']
 landing-build:
     uv run zensical build --clean --strict
