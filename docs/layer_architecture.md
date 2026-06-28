@@ -1,6 +1,6 @@
 # Layer-Group Architecture
 
-This document captures the design decisions behind moyo's layer-group support: the public surface, the type-level periodicity contract, the crystallographic conventions, the algorithmic structure, and the static databases. Project-management content (milestones, approval status) lives in the design plan; the user-facing standardization contract lives in [`moyopy/docs/layer_standardization.md`](../moyopy/docs/layer_standardization.md).
+This document captures the design decisions behind moyo's layer-group support: the public surface, the type-level periodicity contract, the crystallographic conventions, the algorithmic structure, and the static databases. Project-management content (milestones, approval status) lives in the design plan; the user-facing standardization contract lives in [`apps/landing/docs/layer_standardization.md`](../apps/landing/docs/layer_standardization.md).
 
 Reference paper: Fu et al., "Symmetry classification of 2D materials: layer groups versus space groups", *2D Mater.* **11**, 035009 (2024).
 
@@ -378,7 +378,7 @@ The earlier static-list approach (identity, `b a -c`, `diag(-1, +1, -1)`) is rep
 
 ### Standardization
 
-Mirrors `StandardizedCell::new`. The user-facing output contract lives in [`moyopy/docs/layer_standardization.md`](../moyopy/docs/layer_standardization.md); this section describes how it is produced. Differences from the space-group standardization:
+Mirrors `StandardizedCell::new`. The user-facing output contract lives in [`apps/landing/docs/layer_standardization.md`](../apps/landing/docs/layer_standardization.md); this section describes how it is produced. Differences from the space-group standardization:
 
 - Use the `LayerCentering` type for centering transforms (no body/face/etc.).
 - For triclinic and monoclinic-oblique LGs, run 2D Minkowski reduction on the in-plane `(a, b)` with `c` left invariant. For other LG crystal systems, follow paper Figure 1 / Appendix C metric conditions.

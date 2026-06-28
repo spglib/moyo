@@ -13,7 +13,7 @@ space groups, and standardizes and symmetrizes structures.
 !!! info "The Web Viewer has moved"
 
     The interactive Web Viewer now lives at
-    [**spglib.github.io/moyo/viewer/**](https://spglib.github.io/moyo/viewer/).
+    [**spglib.github.io/moyo/viewer/**](viewer/).
     Please update your bookmarks; the old root URL now serves this landing page.
 
 ## Interfaces
@@ -36,7 +36,7 @@ space groups, and standardizes and symmetrizes structures.
     Python binding via PyO3.
 
     [:octicons-package-16: PyPI](https://pypi.org/project/moyopy/) &middot;
-    [:octicons-book-16: Docs](https://spglib.github.io/moyo/python/)
+    [:octicons-book-16: Docs](python/)
 
 -   :simple-c: __C (`moyoc`)__
 
@@ -44,7 +44,7 @@ space groups, and standardizes and symmetrizes structures.
 
     C binding, built and consumed with CMake.
 
-    [:octicons-book-16: Docs](https://spglib.github.io/moyo/c/)
+    [:octicons-book-16: Docs](c/)
 
 -   :simple-fortran: __Fortran__
 
@@ -52,7 +52,7 @@ space groups, and standardizes and symmetrizes structures.
 
     Fortran interface on top of the C binding.
 
-    [:octicons-book-16: Docs](https://spglib.github.io/moyo/c/fortran-api/)
+    [:octicons-book-16: Docs](c/fortran-api/)
 
 -   :simple-javascript: __JS / WASM (`moyo-wasm`)__
 
@@ -69,9 +69,17 @@ space groups, and standardizes and symmetrizes structures.
     Browse the 230 space groups, 80 layer groups, and 1651 magnetic space groups
     in your browser. Powered by `moyo-wasm`; no server, no analytics.
 
-    [:octicons-arrow-right-16: Open the viewer](https://spglib.github.io/moyo/viewer/)
+    [:octicons-arrow-right-16: Open the viewer](viewer/)
 
 </div>
+
+## Conventions
+
+How moyo standardizes cells, applied uniformly across the Rust core and all
+language bindings:
+
+- [Standardized cell](standardization.md)
+- [Standardized subperiodic (layer) cell](layer_standardization.md)
 
 ## Feature support
 

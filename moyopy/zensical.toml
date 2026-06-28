@@ -11,10 +11,16 @@ repo_url = "https://github.com/spglib/moyo"
 repo_name = "spglib/moyo"
 
 nav = [
+    { "moyo interfaces" = [
+        { "Overview" = "/moyo/" },
+        { "C / Fortran" = "/moyo/c/" },
+        { "Rust (docs.rs)" = "https://docs.rs/moyo" },
+        { "Web viewer" = "/moyo/viewer/" },
+    ] },
     { "Introduction" = "index.md" },
     { "Examples" = "examples/index.md" },
-    { "Standardization of Crystal Structures" = "standardization.md" },
-    { "Standardization of Subperiodic Structures" = "layer_standardization.md" },
+    { "Standardization of Crystal Structures" = "/moyo/standardization/" },
+    { "Standardization of Subperiodic Structures" = "/moyo/layer_standardization/" },
     { "Migration Guide from spglib" = "migration.md" },
     { "API Reference" = [
         "api.md",

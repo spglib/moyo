@@ -54,7 +54,7 @@ py-test:
 [group('python')]
 [working-directory: 'moyopy']
 py-docs:
-    zensical serve
+    uv run zensical serve
 
 ################################################################################
 # C
@@ -77,7 +77,7 @@ c-docs:
     cbindgen --config cbindgen.toml --output build/moyoc.h
     doxygen Doxyfile
     uvx ford ford.md
-    zensical serve
+    uvx zensical serve
 
 [group('c')]
 [working-directory: 'moyoc']
@@ -141,12 +141,45 @@ web-check:
 # Landing hub (apps/landing)
 ################################################################################
 
-[group('web')]
-[working-directory: 'apps/landing']
-landing-serve:
-    uv run zensical serve
-
-[group('web')]
+[group('landing')]
 [working-directory: 'apps/landing']
 landing-build:
     uv run zensical build --clean --strict
+
+################################################################################
+# All documents + viewer (apps/landing + moyopy + moyoc + apps/web)
+#
+# `docs` builds every doc site AND the web viewer, assembles them under
+# apps/landing/site in the GitHub Pages layout (root = landing, /python = moyopy,
+# /c = moyoc, /viewer = apps/web), then serves the bundle under the production
+# base path at http://localhost:8000/moyo/ so every cross-interface link
+# resolves locally exactly as it does in production.
+#
+# Prerequisites: wasm-pack + the wasm32-unknown-unknown Rust target, and the
+# apps/web node deps installed once via `just web-install`.
+################################################################################
+
+# Build all doc sites + the viewer and assemble them under apps/landing/site.
+[group('docs')]
+docs-build:
+    cd moyo-wasm && npm run build
+    cd apps/web && VITE_BASE=/moyo/viewer/ npm run build
+    cd moyopy && uv run zensical build --clean --strict
+    cd apps/landing && uv run zensical build --clean --strict
+    cd moyoc && cbindgen --config cbindgen.toml --output build/moyoc.h && doxygen Doxyfile && uvx ford ford.md && uvx zensical build --clean --strict
+    rm -rf apps/landing/site/python apps/landing/site/c apps/landing/site/viewer
+    cp -r moyopy/site apps/landing/site/python
+    cp -r moyoc/site apps/landing/site/c
+    cp -r apps/web/dist apps/landing/site/viewer
+
+# The site is mounted under /moyo/ (a gitignored symlink) so the local URL
+# structure matches the GitHub Pages base path.
+#
+# Build everything, then serve the assembled hub at http://localhost:8000/moyo/.
+[group('docs')]
+docs: docs-build
+    rm -rf apps/landing/.preview
+    mkdir -p apps/landing/.preview
+    ln -sfn ../site apps/landing/.preview/moyo
+    @echo "Serving moyo docs hub at http://localhost:8000/moyo/"
+    python3 -m http.server -d apps/landing/.preview 8000

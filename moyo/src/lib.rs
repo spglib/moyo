@@ -552,7 +552,7 @@ pub struct MoyoLayerDataset {
     // Standardized layer cell
     // ------------------------------------------------------------------------
     /// Conventional standardized layer cell. See
-    /// `moyopy/docs/layer_standardization.md` for the output convention.
+    /// `apps/landing/docs/layer_standardization.md` for the output convention.
     pub std_cell: LayerCell,
     /// Linear part of the transformation from the input cell to `std_cell`.
     pub std_linear: Matrix3<f64>,

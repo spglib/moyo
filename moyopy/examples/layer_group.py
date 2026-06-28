@@ -5,7 +5,7 @@ import moyopy
 # MoS2 1H monolayer (layer group 78, p-6m2).
 # In-plane lattice constant a ~ 3.16 A; intra-layer S-S spacing ~ 3.12 A.
 # The third basis vector is the aperiodic stacking direction; its length is
-# arbitrary (moyo does not rescale c). See moyopy/docs/layer_standardization.md.
+# arbitrary (moyo does not rescale c). See apps/landing/docs/layer_standardization.md.
 a = 3.16
 c = 20.0
 basis = [

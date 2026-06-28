@@ -1,7 +1,7 @@
 # Moyo conventions of standardized cell
 
 !!! note
-    This document is based on moyo==0.7.3.
+    This document is based on moyo==0.13.0.
 
 This document describes how the standardized cell `MoyoDataset.std_cell` and the primitive standardized cell `MoyoDataset.prim_std_cell` are specified in Moyo.
 The conventions described here apply uniformly to the core Rust implementation as well as all other language bindings.
