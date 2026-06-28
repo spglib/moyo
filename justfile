@@ -150,3 +150,27 @@ landing-serve:
 [working-directory: 'apps/landing']
 landing-build:
     uv run zensical build --clean --strict
+
+################################################################################
+# All documents (apps/landing + moyopy + moyoc)
+#
+# `docs` builds every doc site, assembles them under apps/landing/site in the
+# GitHub Pages layout (root = landing, /python = moyopy, /c = moyoc), and serves
+# the result at http://localhost:8000. Cross-interface switcher links resolve to
+# the production URLs; the /viewer/ path is not built here.
+################################################################################
+
+# Build all doc sites and assemble them under apps/landing/site.
+[group('docs')]
+docs-build:
+    cd moyopy && uv run zensical build --clean --strict
+    cd apps/landing && uv run zensical build --clean --strict
+    cd moyoc && cbindgen --config cbindgen.toml --output build/moyoc.h && doxygen Doxyfile && uvx ford ford.md && uvx zensical build --clean --strict
+    rm -rf apps/landing/site/python apps/landing/site/c
+    cp -r moyopy/site apps/landing/site/python
+    cp -r moyoc/site apps/landing/site/c
+
+# Build all docs, then serve the assembled hub at http://localhost:8000.
+[group('docs')]
+docs: docs-build
+    python3 -m http.server -d apps/landing/site 8000
