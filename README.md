@@ -43,18 +43,18 @@ reference](https://spglib.github.io/moyo/python/api.html).
 
 Legend: ✅ supported · 🟡 partial · ❌ not exposed · ➖ not applicable.
 
-| Category             | Functionality        | Rust (`moyo`) | Python (`moyopy`) | C (`moyoc`) | JS/WASM (`moyo-wasm`) |
-| -------------------- | -------------------- | ------------- | ----------------- | ----------- | --------------------- |
-| Shared               | Core types           | ✅            | ✅                | 🟡          | 🟡                    |
-| Space group          | Dataset from cell    | ✅            | ✅                | ✅          | ✅                    |
-| Space group          | Data access          | ✅            | ✅                | 🟡          | 🟡                    |
-| Space group          | Group identification | ✅            | ✅                | 🟡          | ❌                    |
-| Layer group          | Dataset from cell    | ✅            | ✅                | ✅          | ❌                    |
-| Layer group          | Data access          | ✅            | ✅                | 🟡          | 🟡                    |
-| Layer group          | Group identification | ✅            | ✅                | ✅          | ❌                    |
-| Magnetic space group | Dataset from cell    | ✅            | ✅                | ✅          | ❌                    |
-| Magnetic space group | Data access          | ✅            | ✅                | ✅          | 🟡                    |
-| Magnetic space group | Group identification | ✅            | ✅                | ✅          | ❌                    |
+| Category             | Functionality        | Rust (`moyo`) | Python (`moyopy`) | C (`moyoc`) | Fortran | JS/WASM (`moyo-wasm`) |
+| -------------------- | -------------------- | ------------- | ----------------- | ----------- | ------- | --------------------- |
+| Shared               | Core types           | ✅            | ✅                | 🟡          | 🟡      | 🟡                    |
+| Space group          | Dataset from cell    | ✅            | ✅                | ✅          | ✅      | ✅                    |
+| Space group          | Data access          | ✅            | ✅                | 🟡          | 🟡      | 🟡                    |
+| Space group          | Group identification | ✅            | ✅                | 🟡          | 🟡      | ❌                    |
+| Layer group          | Dataset from cell    | ✅            | ✅                | ✅          | ✅      | ❌                    |
+| Layer group          | Data access          | ✅            | ✅                | 🟡          | 🟡      | 🟡                    |
+| Layer group          | Group identification | ✅            | ✅                | ✅          | ✅      | ❌                    |
+| Magnetic space group | Dataset from cell    | ✅            | ✅                | ✅          | ✅      | ❌                    |
+| Magnetic space group | Data access          | ✅            | ✅                | ✅          | ✅      | 🟡                    |
+| Magnetic space group | Group identification | ✅            | ✅                | ✅          | ✅      | ❌                    |
 
 Notes:
 
@@ -81,8 +81,8 @@ Notes:
   `LayerGroup`, `MagneticSpaceGroup`). C's space-group row is 🟡 because
   `integral_normalizer` is not bound; `PointGroup`, `SpaceGroup`,
   `LayerGroup`, and `MagneticSpaceGroup` are all exposed.
-- The Fortran interface mirrors the C column one-to-one (it wraps the
-  complete moyoc API).
+- The Fortran interface wraps the complete moyoc API, so its column matches
+  the C column one-to-one.
 
 ## How to cite moyo and its interfaces
 
