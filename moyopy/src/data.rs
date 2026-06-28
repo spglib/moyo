@@ -28,7 +28,7 @@ use pyo3::prelude::*;
 
 use super::base::{PyMagneticOperations, PyMoyoError, PyOperations};
 use moyo::data::{
-    LayerNumber, LayerSetting, Number, Setting, UNINumber,
+    LayerNumber, LayerSetting, Number, UNINumber,
     magnetic_operations_from_uni_number as core_magnetic_operations_from_uni_number,
     operations_from_layer_number as core_operations_from_layer_number,
     operations_from_number as core_operations_from_number,
