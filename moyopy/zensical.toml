@@ -19,8 +19,8 @@ nav = [
     ] },
     { "Introduction" = "index.md" },
     { "Examples" = "examples/index.md" },
-    { "Standardization of Crystal Structures" = "standardization.md" },
-    { "Standardization of Subperiodic Structures" = "layer_standardization.md" },
+    { "Standardization of Crystal Structures" = "https://spglib.github.io/moyo/standardization/" },
+    { "Standardization of Subperiodic Structures" = "https://spglib.github.io/moyo/layer_standardization/" },
     { "Migration Guide from spglib" = "migration.md" },
     { "API Reference" = [
         "api.md",
