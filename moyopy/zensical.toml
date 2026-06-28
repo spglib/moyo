@@ -11,6 +11,12 @@ repo_url = "https://github.com/spglib/moyo"
 repo_name = "spglib/moyo"
 
 nav = [
+    { "moyo interfaces" = [
+        { "Overview" = "https://spglib.github.io/moyo/" },
+        { "C / Fortran" = "https://spglib.github.io/moyo/c/" },
+        { "Rust (docs.rs)" = "https://docs.rs/moyo" },
+        { "Web viewer" = "https://spglib.github.io/moyo/viewer/" },
+    ] },
     { "Introduction" = "index.md" },
     { "Examples" = "examples/index.md" },
     { "Standardization of Crystal Structures" = "standardization.md" },
