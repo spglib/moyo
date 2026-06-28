@@ -936,3 +936,126 @@ fn test_monoclinic_non_acute_angle() {
         );
     }
 }
+
+/// Lengths of the standardized conventional basis vectors `(a, b, c)`.
+fn std_cell_lengths(dataset: &MoyoDataset) -> (f64, f64, f64) {
+    let basis = dataset.std_cell.lattice.basis;
+    (
+        basis.column(0).norm(),
+        basis.column(1).norm(),
+        basis.column(2).norm(),
+    )
+}
+
+#[test]
+fn test_orthorhombic_axis_order_pmmm() {
+    // A single atom at the origin in an orthorhombic lattice gives Pmmm (#47),
+    // whose point group mmm permits all six axis permutations. Standardization
+    // must therefore sort the basis-vector lengths fully into a <= b <= c.
+    let lattice = Lattice::new(matrix![
+        5.0, 0.0, 0.0;
+        0.0, 4.0, 0.0;
+        0.0, 0.0, 3.0;
+    ]);
+    let positions = vec![Vector3::new(0.0, 0.0, 0.0)];
+    let numbers = vec![0];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let dataset = assert_dataset_with_default(&cell, symprec);
+    assert_dataset_with_default(&dataset.std_cell, symprec);
+    assert_eq!(dataset.number, 47); // Pmmm
+
+    let (a, b, c) = std_cell_lengths(&dataset);
+    assert!(a <= b + 1e-6 && b <= c + 1e-6, "a={a}, b={b}, c={c}");
+    assert_relative_eq!(a, 3.0, epsilon = 1e-6);
+    assert_relative_eq!(b, 4.0, epsilon = 1e-6);
+    assert_relative_eq!(c, 5.0, epsilon = 1e-6);
+}
+
+#[test]
+fn test_orthorhombic_axis_order_pmm2() {
+    // Two different atoms along the third lattice vector keep the two-fold axis
+    // and both mirrors but break inversion (a single atom would be
+    // centrosymmetric), giving Pmm2 (#25). Only the a<->b swap preserves the
+    // operation set, so the two-fold axis length (5.0) must stay on c while
+    // a <= b is imposed -- the longest axis (7.0) is *not* sorted to c.
+    let lattice = Lattice::new(matrix![
+        7.0, 0.0, 0.0;
+        0.0, 3.0, 0.0;
+        0.0, 0.0, 5.0;
+    ]);
+    let positions = vec![Vector3::new(0.0, 0.0, 0.1), Vector3::new(0.0, 0.0, 0.4)];
+    let numbers = vec![0, 1];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let dataset = assert_dataset_with_default(&cell, symprec);
+    assert_dataset_with_default(&dataset.std_cell, symprec);
+    assert_eq!(dataset.number, 25); // Pmm2
+
+    let (a, b, c) = std_cell_lengths(&dataset);
+    assert!(a <= b + 1e-6, "a={a} should be <= b={b}");
+    // The two-fold axis (length 5.0) is preserved on c, even though b > c.
+    assert_relative_eq!(c, 5.0, epsilon = 1e-6);
+    assert_relative_eq!(a, 3.0, epsilon = 1e-6);
+    assert_relative_eq!(b, 7.0, epsilon = 1e-6);
+}
+
+#[test]
+fn test_orthorhombic_axis_order_c_centered() {
+    // Two equal atoms at (0,0,0) and (1/2,1/2,0) make a C-centered orthorhombic
+    // cell with point group mmm: Cmmm (#65). The side-face centering ties a and b
+    // together, so only the a<->b swap is allowed (the seekpath side-face
+    // exception): a <= b is imposed but c is left untouched.
+    let lattice = Lattice::new(matrix![
+        7.0, 0.0, 0.0;
+        0.0, 3.0, 0.0;
+        0.0, 0.0, 5.0;
+    ]);
+    let positions = vec![Vector3::new(0.0, 0.0, 0.0), Vector3::new(0.5, 0.5, 0.0)];
+    let numbers = vec![0, 0];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let dataset = assert_dataset_with_default(&cell, symprec);
+    assert_dataset_with_default(&dataset.std_cell, symprec);
+    assert_eq!(dataset.number, 65); // Cmmm
+
+    let (a, b, c) = std_cell_lengths(&dataset);
+    assert!(a <= b + 1e-6, "a={a} should be <= b={b}");
+    // c is not moved by the side-face centering exception.
+    assert_relative_eq!(c, 5.0, epsilon = 1e-6);
+}
+
+#[test]
+fn test_orthorhombic_axis_order_pnma() {
+    // Pnma (#62) is non-symmorphic; the maintainer flagged groups like this as
+    // tricky. Here we only check that standardization keeps the space group and
+    // operation set intact (an illegal axis swap would change `number`), and that
+    // re-standardizing the result is self-consistent.
+    let a = 7.0;
+    let b = 5.0;
+    let c = 9.0;
+    let lattice = Lattice::new(matrix![
+        a, 0.0, 0.0;
+        0.0, b, 0.0;
+        0.0, 0.0, c;
+    ]);
+    // General 4c site (.m. site symmetry) of Pnma in the standard setting.
+    let (x, z) = (0.18, 0.04);
+    let positions = vec![
+        Vector3::new(x, 0.25, z),
+        Vector3::new(-x + 0.5, 0.75, z + 0.5),
+        Vector3::new(-x, 0.75, -z),
+        Vector3::new(x + 0.5, 0.25, -z + 0.5),
+    ];
+    let numbers = vec![0, 0, 0, 0];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let dataset = assert_dataset_with_default(&cell, symprec);
+    assert_dataset_with_default(&dataset.std_cell, symprec);
+    assert_eq!(dataset.number, 62); // Pnma
+    assert_eq!(dataset.num_operations(), 8);
+}

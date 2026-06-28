@@ -3,6 +3,7 @@ use log::{debug, warn};
 use nalgebra::linalg::{Cholesky, QR};
 use nalgebra::{Matrix3, Vector3, vector};
 use once_cell::sync::Lazy;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 
 use crate::base::{
@@ -136,6 +137,16 @@ impl StandardizedCell {
                     &space_group.transformation,
                     entry.centering,
                     &hs.generators,
+                    epsilon,
+                );
+                (space_group.transformation.clone(), trans_std_prim_to_conv)
+            }
+            LatticeSystem::Orthorhombic => {
+                let trans_std_prim_to_conv = standardize_orthorhombic_conv_cell(
+                    &prim_cell.lattice,
+                    &space_group.transformation,
+                    entry.centering,
+                    &conv_std_operations,
                     epsilon,
                 );
                 (space_group.transformation.clone(), trans_std_prim_to_conv)
@@ -543,6 +554,122 @@ fn standardize_monoclinic_conv_cell(
         })
         .unwrap()
         .2
+}
+
+/// Standardize an orthorhombic conventional cell by choosing the axis permutation
+/// that orders the basis-vector lengths as `a <= b <= c` as much as possible, while
+/// keeping the matrix representations of the symmetry operations (as a set) and the
+/// centering.
+///
+/// Unlike the monoclinic case, an axis permutation relabels generators among
+/// themselves, so the *set* of `conv_std_operations` -- not each individual generator
+/// -- must be preserved. Permutations that would change the operation set or move a
+/// centered face (e.g. for `C`-centering) are rejected, which reproduces seekpath's
+/// "number of distinct projections" without a hardcoded per-space-group table.
+fn standardize_orthorhombic_conv_cell(
+    prim_lattice: &Lattice,
+    transformation_to_prim_std: &UnimodularTransformation,
+    centering: Centering,
+    conv_std_operations: &Operations,
+    epsilon: f64,
+) -> Linear {
+    let mut candidate_conv_transformations = vec![];
+    // Restrict the bounded `[-1, 1]` search to the six axis permutations (with sign
+    // freedom so that det = +1 and the centering/operation translations can be
+    // matched -- orthorhombic d-glides carry 1/4 translations whose sign matters).
+    for trans_perm in UNIMODULAR3_RANGE1
+        .iter()
+        .filter(|t| is_signed_permutation(&t.linear))
+    {
+        // trans_perm should keep centering translations.
+        if centering.lattice_points().iter().any(|translation| {
+            let mut diff = trans_perm.linear.map(|e| e as f64) * translation - translation;
+            diff -= diff.map(|e| e.round()); // in [-0.5, 0.5]
+            diff.iter().any(|e| e.abs() > epsilon)
+        }) {
+            continue;
+        }
+
+        // trans_perm should keep the *set* of conv_std_operations: each conjugated
+        // operation must coincide with some operation in the set (rotation exactly,
+        // translation modulo the centering lattice). `conv_std_operations` holds one
+        // coset representative per rotation, so translations are compared modulo the
+        // centering translations, not only modulo 1.
+        if conv_std_operations.iter().any(|ops| {
+            let perm_ops = trans_perm.transform_operation(ops);
+            !conv_std_operations.iter().any(|other| {
+                perm_ops.rotation == other.rotation
+                    && translations_equal_mod_centering(
+                        &perm_ops.translation,
+                        &other.translation,
+                        centering,
+                        epsilon,
+                    )
+            })
+        }) {
+            continue;
+        }
+
+        let refined_conv_trans = Transformation::new(
+            transformation_to_prim_std.linear * centering.linear() * trans_perm.linear,
+            transformation_to_prim_std.origin_shift,
+        );
+        let lc = refined_conv_trans
+            .transform_lattice(prim_lattice)
+            .lattice_constant();
+        let lengths = [lc[0], lc[1], lc[2]];
+        candidate_conv_transformations.push((lengths, centering.linear() * trans_perm.linear));
+    }
+
+    // Choose the lexicographically smallest (a, b, c). `min_by` keeps the first
+    // element among EPS-ties, so iteration order makes the selection stable.
+    candidate_conv_transformations
+        .into_iter()
+        .min_by(|(lengths_lhs, _), (lengths_rhs, _)| {
+            lengths_lhs
+                .iter()
+                .zip(lengths_rhs.iter())
+                .find_map(|(lhs, rhs)| {
+                    if (lhs - rhs).abs() < EPS {
+                        None
+                    } else {
+                        Some(lhs.partial_cmp(rhs).unwrap())
+                    }
+                })
+                .unwrap_or(Ordering::Equal)
+        })
+        .unwrap()
+        .1
+}
+
+/// Whether `mat` is a signed permutation matrix: exactly one nonzero entry, equal to
+/// `+/-1`, in every row and every column.
+fn is_signed_permutation(mat: &Matrix3<i32>) -> bool {
+    let single_unit = |entries: [i32; 3]| {
+        let nonzero: Vec<i32> = entries.into_iter().filter(|&e| e != 0).collect();
+        nonzero.len() == 1 && nonzero[0].abs() == 1
+    };
+    (0..3).all(|i| single_unit([mat[(i, 0)], mat[(i, 1)], mat[(i, 2)]]))
+        && (0..3).all(|j| single_unit([mat[(0, j)], mat[(1, j)], mat[(2, j)]]))
+}
+
+/// Whether two fractional translations are equal modulo the centering lattice (which
+/// includes the integer lattice). Used to compare symmetry operations of a
+/// conventional centered cell, where a given coset may be represented by translations
+/// differing by a centering vector.
+fn translations_equal_mod_centering(
+    lhs: &Vector3<f64>,
+    rhs: &Vector3<f64>,
+    centering: Centering,
+    epsilon: f64,
+) -> bool {
+    let mut diff = lhs - rhs;
+    diff -= diff.map(|e| e.round()); // in [-0.5, 0.5]
+    centering.lattice_points().iter().any(|lattice_point| {
+        let mut residual = diff - lattice_point;
+        residual -= residual.map(|e| e.round());
+        residual.iter().all(|e| e.abs() <= epsilon)
+    })
 }
 
 /// Test whether `position` matches a Wyckoff orbit described by `coordinates`
