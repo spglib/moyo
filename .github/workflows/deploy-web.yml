@@ -63,6 +63,13 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: '22'
+          cache: 'npm'
+          # package-lock.json is gitignored in this repo, so key the npm
+          # download cache (~/.npm) on the package.json files instead. The
+          # cache still avoids re-downloading tarballs on `npm install`.
+          cache-dependency-path: |
+            apps/web/package.json
+            moyo-wasm/package.json
 
       - name: Install web app dependencies
         working-directory: apps/web
@@ -122,10 +129,10 @@ jobs:
           cp -r moyo-wasm/site apps/landing/site/js
 
       - name: Install Doxygen
-        run: |
-          set -e
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends doxygen
+        uses: awalsh128/cache-apt-pkgs-action@5513791f75b039e2a79653b1a92238d3fb8d99b4 # v1.6.2
+        with:
+          packages: doxygen
+          version: 1.0
 
       - name: Install cbindgen
         uses: taiki-e/install-action@15449e3094499af05d8d964a1c884208e4b8b595 # v2.81.11
