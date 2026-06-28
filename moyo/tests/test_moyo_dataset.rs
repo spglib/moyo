@@ -901,3 +901,38 @@ fn test_with_nickeline() {
         epsilon = 1e-8
     );
 }
+
+#[test]
+fn test_monoclinic_non_acute_angle() {
+    // Primitive monoclinic lattice (unique axis b) whose `a`-`c` basis vectors
+    // subtend an acute angle (beta ~ 72 deg). A single atom at the origin gives
+    // space group P2/m (#10). The supplement transformation that flips beta to
+    // its obtuse partner preserves both the 2/m generators and the (trivial)
+    // primitive centering, so standardization must follow the ITA convention
+    // and return a non-acute monoclinic angle. Before the tie-break fix this
+    // input standardized to an acute beta (cos beta ~ 0.31).
+    let lattice = Lattice::new(matrix![
+        4.0, 0.0, 0.0;
+        0.0, 5.0, 0.0;
+        1.0, 0.0, 3.1;
+    ]);
+    let positions = vec![Vector3::new(0.0, 0.0, 0.0)];
+    let numbers = vec![0];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let dataset = assert_dataset_with_default(&cell, symprec);
+    assert_eq!(dataset.number, 10); // P2/m
+
+    // Every angle of the standardized conventional cell must be non-acute.
+    let basis = dataset.std_cell.lattice.basis;
+    for (i, j) in [(0, 1), (0, 2), (1, 2)] {
+        let vi = basis.column(i);
+        let vj = basis.column(j);
+        let cos_angle = vi.dot(&vj) / (vi.norm() * vj.norm());
+        assert!(
+            cos_angle < 1e-6,
+            "acute angle between basis vectors {i} and {j}: cos = {cos_angle}"
+        );
+    }
+}

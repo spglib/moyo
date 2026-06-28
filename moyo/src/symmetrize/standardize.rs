@@ -513,21 +513,36 @@ fn standardize_monoclinic_conv_cell(
             transformation_to_prim_std.origin_shift,
         );
         let refined_conv_lattice = refined_conv_trans.transform_lattice(prim_lattice);
-        // `skewness` gets smaller as the basis vectors are closer to orthorhombic.
-        let skewness = refined_conv_lattice.lattice_constant()[3..]
+        let cos_angles = refined_conv_lattice.lattice_constant()[3..]
             .iter()
-            .map(|angle_deg| angle_deg.to_radians().cos().abs())
-            .sum::<f64>();
-        candidate_conv_transformations.push((skewness, centering.linear() * trans_corr.linear));
+            .map(|angle_deg| angle_deg.to_radians().cos())
+            .collect::<Vec<_>>();
+        // `skewness` gets smaller as the basis vectors are closer to orthorhombic.
+        let skewness = cos_angles.iter().map(|cos| cos.abs()).sum::<f64>();
+        // The monoclinic angle and its supplement give the same `skewness`
+        // (`|cos|` is symmetric about 90 deg), so the unimodular correction that
+        // flips the angle to its supplement is an equally valid candidate. Among
+        // such ties we follow the ITA convention and prefer a non-acute angle,
+        // i.e. the smaller (more negative) signed cosine sum.
+        let signed_cos_sum = cos_angles.iter().sum::<f64>();
+        candidate_conv_transformations.push((
+            skewness,
+            signed_cos_sum,
+            centering.linear() * trans_corr.linear,
+        ));
     }
 
     candidate_conv_transformations
         .into_iter()
-        .min_by(|(skewness_lhs, _), (skewness_rhs, _)| {
-            skewness_lhs.partial_cmp(skewness_rhs).unwrap()
+        .min_by(|(skewness_lhs, cos_lhs, _), (skewness_rhs, cos_rhs, _)| {
+            if (skewness_lhs - skewness_rhs).abs() < EPS {
+                cos_lhs.partial_cmp(cos_rhs).unwrap()
+            } else {
+                skewness_lhs.partial_cmp(skewness_rhs).unwrap()
+            }
         })
         .unwrap()
-        .1
+        .2
 }
 
 /// Test whether `position` matches a Wyckoff orbit described by `coordinates`
