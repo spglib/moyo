@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only dependency or build updates with no user-visible changes.
 
+## Unreleased
+
+### moyo
+
+- Fix `standardize_monoclinic_conv_cell` returning an acute angle between the `a` and `c` axes of the standardized monoclinic conventional cell. The acute angle and its non-acute supplement scored equally under the skewness metric, so the tie-break could pick the acute one; ties are now broken in favor of the non-acute angle required by the ITA convention (#377)
+
 ## v0.12.0 - 2026-06-13
 
 ### moyoc
