@@ -76,27 +76,8 @@ space groups, and standardizes and symmetrizes structures.
 
 ## Feature support
 
-The functionality categories below mirror the sections of the
-[moyopy API reference](https://spglib.github.io/moyo/python/api.html).
-
-Legend: :white_check_mark: supported &middot; :yellow_circle: partial &middot;
-:x: not exposed &middot; :heavy_minus_sign: not applicable.
-
-| Category             | Functionality        | Rust (`moyo`) | Python (`moyopy`) | C (`moyoc`) | JS/WASM (`moyo-wasm`) |
-| -------------------- | -------------------- | ------------- | ----------------- | ----------- | --------------------- |
-| Shared               | Core types           | :white_check_mark: | :white_check_mark: | :yellow_circle: | :yellow_circle: |
-| Space group          | Dataset from cell    | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Space group          | Data access          | :white_check_mark: | :white_check_mark: | :yellow_circle: | :yellow_circle: |
-| Space group          | Group identification | :white_check_mark: | :white_check_mark: | :yellow_circle: | :x: |
-| Layer group          | Dataset from cell    | :white_check_mark: | :white_check_mark: | :white_check_mark: | :x: |
-| Layer group          | Data access          | :white_check_mark: | :white_check_mark: | :yellow_circle: | :yellow_circle: |
-| Layer group          | Group identification | :white_check_mark: | :white_check_mark: | :white_check_mark: | :x: |
-| Magnetic space group | Dataset from cell    | :white_check_mark: | :white_check_mark: | :white_check_mark: | :x: |
-| Magnetic space group | Data access          | :white_check_mark: | :white_check_mark: | :white_check_mark: | :yellow_circle: |
-| Magnetic space group | Group identification | :white_check_mark: | :white_check_mark: | :white_check_mark: | :x: |
-
-See the [repository README](https://github.com/spglib/moyo#interfaces) for the
-detailed notes behind this matrix.
+For the per-interface feature-support matrix and the notes behind it, see the
+[repository README](https://github.com/spglib/moyo#interfaces).
 
 ## How to cite
 
