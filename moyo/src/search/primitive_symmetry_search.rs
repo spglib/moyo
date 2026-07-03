@@ -8,7 +8,7 @@ use super::{
     PrimitiveCell,
     primitive_cell::PrimitiveMagneticCell,
     solve::{
-        PeriodicKdTree, pivot_site_indices, solve_correspondence,
+        PeriodicNeighborSearch, pivot_site_indices, solve_correspondence,
         symmetrize_translation_from_permutation,
     },
 };
@@ -47,7 +47,7 @@ impl PrimitiveSymmetrySearch {
         }
 
         // Search symmetry operations
-        let pkdtree = PeriodicKdTree::new(primitive_cell, rough_symprec);
+        let neighbor_search = PeriodicNeighborSearch::new(primitive_cell, rough_symprec);
         let bravais_group =
             search_bravais_group(&primitive_cell.lattice, symprec, angle_tolerance)?;
         let pivot_site_indices = pivot_site_indices(&primitive_cell.numbers);
@@ -68,7 +68,7 @@ impl PrimitiveSymmetrySearch {
                     .collect::<Vec<_>>();
 
                 if let Some(permutation) =
-                    solve_correspondence(&pkdtree, primitive_cell, &new_positions)
+                    solve_correspondence(&neighbor_search, primitive_cell, &new_positions)
                 {
                     symmetries_tmp.push((*rotation, translation, permutation));
                     // Do not break here because there may be multiple translations with the rough tolerance
@@ -194,7 +194,7 @@ impl PrimitiveMagneticSymmetrySearch {
             operations_in_cell(&prim_nonmag_cell, &prim_nonmag_symmetry.operations);
 
         // Find time reversal parts that keep magnetic moments
-        let pkdtree = PeriodicKdTree::new(&primitive_magnetic_cell.cell, symprec);
+        let neighbor_search = PeriodicNeighborSearch::new(&primitive_magnetic_cell.cell, symprec);
         let mut magnetic_operations = vec![];
         let mut permutations = vec![];
         for operation in candidate_operations.iter() {
@@ -204,9 +204,11 @@ impl PrimitiveMagneticSymmetrySearch {
                 .iter()
                 .map(|pos| operation.rotation.map(|e| e as f64) * pos + operation.translation)
                 .collect::<Vec<_>>();
-            if let Some(permutation) =
-                solve_correspondence(&pkdtree, &primitive_magnetic_cell.cell, &new_positions)
-            {
+            if let Some(permutation) = solve_correspondence(
+                &neighbor_search,
+                &primitive_magnetic_cell.cell,
+                &new_positions,
+            ) {
                 let cartesian_rotation =
                     operation.cartesian_rotation(&primitive_magnetic_cell.cell.lattice);
                 let rotated_magnetic_moments = primitive_magnetic_cell

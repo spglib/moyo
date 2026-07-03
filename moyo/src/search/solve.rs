@@ -1,16 +1,27 @@
-use std::{collections::BTreeMap, num::NonZero};
+use std::collections::BTreeMap;
 
 use itertools::iproduct;
-use kiddo::{ImmutableKdTree, SquaredEuclidean};
-use nalgebra::{Rotation3, Vector3};
+use nalgebra::Vector3;
+use rustc_hash::FxHashMap;
 
 use crate::base::{AtomicSpecie, Cell, Lattice, Permutation, Position, Rotation, Translation};
 
+/// Nearest-neighbor search under periodic boundary conditions, backed by a
+/// uniform bin grid over Cartesian coordinates. Each point is registered in
+/// every bin its ball of radius `symprec` overlaps -- at most eight bins,
+/// because the bin size is at least `2 * symprec`. A query then only
+/// inspects the single bin containing the query position: any point within
+/// `symprec` of the query has registered itself there.
 #[doc(hidden)]
-pub struct PeriodicKdTree {
+pub struct PeriodicNeighborSearch {
     num_sites: usize,
     lattice: Lattice,
-    kdtree: ImmutableKdTree<f64, 3>,
+    bin_size: f64,
+    /// Bin index -> entries registered to the bin (indices into `cart_coords`
+    /// and `indices`)
+    bins: FxHashMap<(i64, i64, i64), Vec<usize>>,
+    cart_coords: Vec<Vector3<f64>>,
+    /// Entry -> site index in the original cell
     indices: Vec<usize>,
     symprec: f64,
 }
@@ -22,18 +33,20 @@ pub struct PeriodicNeighbor {
     pub distance: f64,
 }
 
-impl PeriodicKdTree {
-    /// Construct a periodic kd-tree from the given **Minkowski-reduced** cell.
+impl PeriodicNeighborSearch {
+    /// Construct a periodic neighbor search from the given **Minkowski-reduced** cell.
     pub fn new(reduced_cell: &Cell, symprec: f64) -> Self {
-        // Randomly rotate lattice to avoid align along x,y,z axes
-        let random_rotation_matrix = Rotation3::new(Vector3::new(0.01, 0.02, 0.03));
-        let new_lattice = reduced_cell.lattice.rotate(&random_rotation_matrix.into());
+        let lattice = reduced_cell.lattice.clone();
 
         // Twice the padding for safety
-        let padding = 2.0 * symprec
-            / (3.0 * (new_lattice.basis * new_lattice.basis.transpose()).trace()).sqrt();
+        let padding =
+            2.0 * symprec / (3.0 * (lattice.basis * lattice.basis.transpose()).trace()).sqrt();
 
-        let mut entries = vec![];
+        // `f64::EPSILON` floor keeps the bin size positive for degenerate symprec;
+        // queries then fall back to exact-match behavior instead of dividing by zero.
+        let bin_size = (2.0 * symprec).max(f64::EPSILON);
+        let mut bins: FxHashMap<(i64, i64, i64), Vec<usize>> = FxHashMap::default();
+        let mut cart_coords = vec![];
         let mut indices = vec![];
         for offset in iproduct!(-1..=1, -1..=1, -1..=1) {
             for (index, position) in reduced_cell.positions.iter().enumerate() {
@@ -50,45 +63,57 @@ impl PeriodicKdTree {
                     continue;
                 }
 
-                let cart_coords = new_lattice.cartesian_coords(&new_position);
-                entries.push([cart_coords.x, cart_coords.y, cart_coords.z]);
+                let cart = lattice.cartesian_coords(&new_position);
+                // Register the entry in every bin overlapping its symprec-ball
+                let lo = Self::bin_key(&cart.add_scalar(-symprec), bin_size);
+                let hi = Self::bin_key(&cart.add_scalar(symprec), bin_size);
+                for key in iproduct!(lo.0..=hi.0, lo.1..=hi.1, lo.2..=hi.2) {
+                    bins.entry(key).or_default().push(cart_coords.len());
+                }
+                cart_coords.push(cart);
                 indices.push(index);
             }
         }
 
         Self {
             num_sites: reduced_cell.num_atoms(),
-            lattice: new_lattice,
-            kdtree: ImmutableKdTree::new_from_slice(&entries),
+            lattice,
+            bin_size,
+            bins,
+            cart_coords,
             indices,
             symprec,
         }
+    }
+
+    fn bin_key(cart_coords: &Vector3<f64>, bin_size: f64) -> (i64, i64, i64) {
+        // `as i64` saturates on overflow, which only degrades bin locality,
+        // never memory safety.
+        (
+            (cart_coords.x / bin_size).floor() as i64,
+            (cart_coords.y / bin_size).floor() as i64,
+            (cart_coords.z / bin_size).floor() as i64,
+        )
     }
 
     /// Return the nearest neighbor within symprec if exists.
     pub fn nearest(&self, position: &Position) -> Option<PeriodicNeighbor> {
         let mut wrapped_position = *position;
         wrapped_position -= wrapped_position.map(|e| e.floor()); // [0, 1)
-        let cart_coords = self.lattice.cartesian_coords(&wrapped_position);
-        let mut within = self.kdtree.best_n_within::<SquaredEuclidean>(
-            &[cart_coords.x, cart_coords.y, cart_coords.z],
-            self.symprec.powi(2), // squared distance for KdTree
-            NonZero::new(1).unwrap(),
-        );
-        if let Some(entry) = within.next() {
-            let item = entry.item as usize;
-            let distance = entry.distance.sqrt();
-            if distance > self.symprec {
-                return None;
-            }
+        let cart = self.lattice.cartesian_coords(&wrapped_position);
 
-            Some(PeriodicNeighbor {
-                index: self.indices[item],
-                distance,
-            })
-        } else {
-            None
+        let mut nearest: Option<PeriodicNeighbor> = None;
+        let entries = self.bins.get(&Self::bin_key(&cart, self.bin_size))?;
+        for &entry in entries {
+            let distance = (self.cart_coords[entry] - cart).norm();
+            if distance <= self.symprec && nearest.as_ref().is_none_or(|n| distance < n.distance) {
+                nearest = Some(PeriodicNeighbor {
+                    index: self.indices[entry],
+                    distance,
+                });
+            }
         }
+        nearest
     }
 }
 
@@ -111,18 +136,18 @@ pub fn pivot_site_indices(numbers: &[AtomicSpecie]) -> Vec<usize> {
 /// Return correspondence between the input and acted positions.
 /// Search permutation such that new_positions\[i\] = reduced_cell.positions\[permutation\[i\]\].
 /// Then, a corresponding symmetry operation moves the i-th site into the permutation\[i\]-th site.
-/// This function takes O(num_atoms * log(num_atoms)) time.
+/// This function takes O(num_atoms) expected time thanks to the bin-grid nearest-neighbor queries.
 #[doc(hidden)]
 pub fn solve_correspondence(
-    pkdtree: &PeriodicKdTree,
+    neighbor_search: &PeriodicNeighborSearch,
     reduced_cell: &Cell,
     new_positions: &[Position],
 ) -> Option<Permutation> {
-    let num_atoms = pkdtree.num_sites;
+    let num_atoms = neighbor_search.num_sites;
     let mut mapping = vec![None; num_atoms];
 
     for i in 0..num_atoms {
-        let neighbor = pkdtree.nearest(&new_positions[i])?;
+        let neighbor = neighbor_search.nearest(&new_positions[i])?;
         let j = neighbor.index;
         if reduced_cell.numbers[i] != reduced_cell.numbers[j] {
             return None;
@@ -230,13 +255,13 @@ mod tests {
     use crate::base::{Cell, Lattice, Permutation, Rotation, Translation};
 
     use super::{
-        PeriodicKdTree, pivot_site_indices, solve_correspondence, solve_correspondence_naive,
-        symmetrize_translation_from_permutation,
+        PeriodicNeighborSearch, pivot_site_indices, solve_correspondence,
+        solve_correspondence_naive, symmetrize_translation_from_permutation,
     };
 
     #[test]
-    fn test_periodic_kdtree() {
-        let pkdtree = PeriodicKdTree::new(
+    fn test_periodic_neighbor_search() {
+        let neighbor_search = PeriodicNeighborSearch::new(
             &Cell::new(
                 Lattice::new(Matrix3::identity()),
                 vec![
@@ -251,18 +276,67 @@ mod tests {
         );
 
         {
-            let neighbor = pkdtree.nearest(&Vector3::new(0.0, 0.0, 0.0)).unwrap();
+            let neighbor = neighbor_search
+                .nearest(&Vector3::new(0.0, 0.0, 0.0))
+                .unwrap();
             assert!(neighbor.index == 0);
         }
 
         {
-            let neighbor = pkdtree.nearest(&Vector3::new(1.0, 0.5, 0.5)).unwrap();
+            let neighbor = neighbor_search
+                .nearest(&Vector3::new(1.0, 0.5, 0.5))
+                .unwrap();
             assert!(neighbor.index == 1);
         }
 
         {
-            let neighbor = pkdtree.nearest(&Vector3::new(1.5, -0.0, -0.5)).unwrap();
+            let neighbor = neighbor_search
+                .nearest(&Vector3::new(1.5, -0.0, -0.5))
+                .unwrap();
             assert!(neighbor.index == 2);
+        }
+    }
+
+    #[test]
+    fn test_periodic_neighbor_search_axis_aligned_grid() {
+        // Many sites sharing coordinate values on every axis (an axis-aligned
+        // n x n x n grid). Cross-check every translation against the naive
+        // O(num_atoms^2) solver.
+        let n = 4;
+        let mut positions = vec![];
+        let mut numbers = vec![];
+        for i in 0..n {
+            for j in 0..n {
+                for k in 0..n {
+                    positions.push(Vector3::new(
+                        i as f64 / n as f64,
+                        j as f64 / n as f64,
+                        k as f64 / n as f64,
+                    ));
+                    numbers.push(0);
+                }
+            }
+        }
+        let reduced_cell = Cell::new(
+            Lattice::new(Matrix3::identity() * n as f64),
+            positions,
+            numbers,
+        );
+        let symprec = 1e-4;
+        let neighbor_search = PeriodicNeighborSearch::new(&reduced_cell, symprec);
+
+        for dst in 0..reduced_cell.num_atoms() {
+            let translation = reduced_cell.positions[dst] - reduced_cell.positions[0];
+            let new_positions = reduced_cell
+                .positions
+                .iter()
+                .map(|pos| pos + translation)
+                .collect::<Vec<_>>();
+
+            let actual = solve_correspondence(&neighbor_search, &reduced_cell, &new_positions);
+            let expect = solve_correspondence_naive(&reduced_cell, &new_positions, symprec);
+            assert_eq!(actual, expect);
+            assert!(actual.is_some());
         }
     }
 
@@ -288,7 +362,7 @@ mod tests {
             vec![0, 0, 0, 0],
         );
         let symprec = 1e-4;
-        let pkdtree = PeriodicKdTree::new(&reduced_cell, symprec);
+        let neighbor_search = PeriodicNeighborSearch::new(&reduced_cell, symprec);
 
         {
             // Translation::new(0.0, 0.5, 0.5);
@@ -304,9 +378,9 @@ mod tests {
                 solve_correspondence_naive(&reduced_cell, &new_positions, symprec).unwrap();
             assert_eq!(actual_naive, expect);
 
-            let actual_kdtree =
-                solve_correspondence(&pkdtree, &reduced_cell, &new_positions).unwrap();
-            assert_eq!(actual_kdtree, expect);
+            let actual_neighbor_search =
+                solve_correspondence(&neighbor_search, &reduced_cell, &new_positions).unwrap();
+            assert_eq!(actual_neighbor_search, expect);
         }
         {
             // Translation::new(0.0, 0.5, 0.5 - 2 * symprec);
@@ -320,8 +394,9 @@ mod tests {
             let actual_naive = solve_correspondence_naive(&reduced_cell, &new_positions, symprec);
             assert_eq!(actual_naive, None);
 
-            let actual_kdtree = solve_correspondence(&pkdtree, &reduced_cell, &new_positions);
-            assert_eq!(actual_kdtree, None);
+            let actual_neighbor_search =
+                solve_correspondence(&neighbor_search, &reduced_cell, &new_positions);
+            assert_eq!(actual_neighbor_search, None);
         }
     }
 

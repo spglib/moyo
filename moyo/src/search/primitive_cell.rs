@@ -4,7 +4,7 @@ use log::debug;
 use nalgebra::{Dyn, Matrix3, OMatrix, U3, Vector3};
 
 use super::solve::{
-    PeriodicKdTree, pivot_site_indices, solve_correspondence,
+    PeriodicNeighborSearch, pivot_site_indices, solve_correspondence,
     symmetrize_translation_from_permutation,
 };
 use crate::base::{
@@ -186,7 +186,7 @@ impl<M: MagneticMoment> PrimitiveMagneticCell<M> {
 /// permutations.
 ///
 /// Precondition: `reduced_cell.lattice.basis` must be Minkowski reduced.
-/// `PeriodicKdTree::new` only enumerates periodic images for offsets in
+/// `PeriodicNeighborSearch::new` only enumerates periodic images for offsets in
 /// `[-1, 1]^3`, which is exact under that precondition but can miss the
 /// nearest image on a strongly skewed basis.
 pub(crate) fn search_pure_translations(
@@ -195,7 +195,7 @@ pub(crate) fn search_pure_translations(
 ) -> (Vec<Translation>, Vec<Permutation>) {
     let rough_symprec = 2.0 * symprec;
     // Try possible translations: overlap the `src`-th site to the `dst`-th site
-    let pkdtree = PeriodicKdTree::new(reduced_cell, rough_symprec);
+    let neighbor_search = PeriodicNeighborSearch::new(reduced_cell, rough_symprec);
     let pivot_site_indices = pivot_site_indices(&reduced_cell.numbers);
     let mut permutations_translations_tmp = vec![];
     let src = pivot_site_indices[0];
@@ -209,7 +209,9 @@ pub(crate) fn search_pure_translations(
 
         // Because the translation may not be optimal to minimize distance between input and acted positions,
         // use a larger symprec (diameter of a Ball) for finding correspondence
-        if let Some(permutation) = solve_correspondence(&pkdtree, reduced_cell, &new_positions) {
+        if let Some(permutation) =
+            solve_correspondence(&neighbor_search, reduced_cell, &new_positions)
+        {
             permutations_translations_tmp.push((permutation, translation));
         }
     }
