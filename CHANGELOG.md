@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only dependency or build updates with no user-visible changes.
 
+## Unreleased
+
+### moyo
+
+- Replace the kiddo `ImmutableKdTree` behind the periodic nearest-neighbor search (`PeriodicKdTree`, now `PeriodicNeighborSearch`) with a safe uniform bin-grid implementation. This removes the only unsafe-heavy code in the symmetry-search call path, suspected of heap corruption crashes in long magnetic symmetry search runs, and avoids kiddo v5's known incorrect-results bug in best-n queries (sdd/kiddo#258). The grid is roughly as fast as the kd-tree at small cell sizes and 1.6-2.5x faster from 64 atoms up (#390)
+
 ## v0.13.0 - 2026-06-28
 
 ### moyo
