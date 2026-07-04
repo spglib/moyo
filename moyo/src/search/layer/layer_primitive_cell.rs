@@ -42,8 +42,8 @@ pub(crate) struct LayerPrimitiveCell {
 impl LayerPrimitiveCell {
     /// Find the primitive cell of a 2D-periodic (layer) system.
     ///
-    /// In-plane axes are 2D-Minkowski-reduced before the kd-tree-based
-    /// translation search (the bulk `PeriodicKdTree` requires a Minkowski-
+    /// In-plane axes are 2D-Minkowski-reduced before the grid-based
+    /// translation search (the bulk `PeriodicNeighborSearch` requires a Minkowski-
     /// reduced basis for its `[-1, 1]^3` periodic-image enumeration to be
     /// exact). The aperiodic `c` axis is left untouched, so the layer
     /// contract is preserved. Candidate translations whose fractional
@@ -80,7 +80,7 @@ impl LayerPrimitiveCell {
             return Err(MoyoError::TooLargeToleranceError);
         }
 
-        // Reuse the bulk pure-translation search (kd-tree + correspondence +
+        // Reuse the bulk pure-translation search (neighbor search + correspondence +
         // symmetrize), which is correct on a Minkowski-reduced basis.
         let (raw_translations, raw_permutations) = search_pure_translations(&reduced_cell, symprec);
 
@@ -118,7 +118,7 @@ impl LayerPrimitiveCell {
 
         // Re-reduce so the returned layer cell satisfies the Minkowski-reduced
         // precondition of downstream bulk routines (`PrimitiveSymmetrySearch`,
-        // `PeriodicKdTree`, `search_bravais_group`). The HNF-derived primitive
+        // `PeriodicNeighborSearch`, `search_bravais_group`). The HNF-derived primitive
         // basis is upper-triangular, not Minkowski-reduced, so this step is
         // required even though the input was already reduced.
         let (reduced_prim_cell, prim_trans_mat) = minkowski_reduce_inplane(&primitive_cell)?;
@@ -294,7 +294,7 @@ mod tests {
     #[test]
     fn test_layer_skewed_in_plane_basis_is_reduced() {
         // Skewed in-plane basis: a = (1, 0, 0), b = (4, 1, 0), c along z.
-        // Without 2D Minkowski reduction the kd-tree's [-1, 1]^3 image search
+        // Without 2D Minkowski reduction the neighbor search's [-1, 1]^3 image search
         // can miss the true nearest periodic image. After reduction the
         // primitive cell finder still returns a single trivial translation
         // for a one-atom cell, and the linear field correctly maps the input

@@ -6,7 +6,7 @@ mod symmetry_search;
 
 pub use layer::LayerPrimitiveSymmetrySearch;
 pub use solve::{
-    PeriodicKdTree, PeriodicNeighbor, solve_correspondence, solve_correspondence_naive,
+    PeriodicNeighbor, PeriodicNeighborSearch, solve_correspondence, solve_correspondence_naive,
 };
 
 pub(crate) use layer::{LayerPrimitiveCell, is_layer_block_form};

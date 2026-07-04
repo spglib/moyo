@@ -3,7 +3,7 @@ use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_m
 use nalgebra::{matrix, vector};
 
 use moyo::base::{Cell, Lattice, Position};
-use moyo::search::{PeriodicKdTree, solve_correspondence, solve_correspondence_naive};
+use moyo::search::{PeriodicNeighborSearch, solve_correspondence, solve_correspondence_naive};
 
 /// O(num_atoms^3)
 fn naive(reduced_cell: &Cell) {
@@ -21,11 +21,11 @@ fn naive(reduced_cell: &Cell) {
     }
 }
 
-/// O(num_atoms^2 * log(num_atoms))
-fn kdtree(reduced_cell: &Cell) {
+/// O(num_atoms^2) expected
+fn neighbor_search(reduced_cell: &Cell) {
     let num_atoms = reduced_cell.num_atoms();
     let symprec = 1e-5;
-    let pkdtree = PeriodicKdTree::new(reduced_cell, symprec);
+    let neighbor_search = PeriodicNeighborSearch::new(reduced_cell, symprec);
     for j in 0..num_atoms {
         let translation = reduced_cell.positions[j] - reduced_cell.positions[0];
         let new_positions: Vec<Position> = reduced_cell
@@ -34,7 +34,7 @@ fn kdtree(reduced_cell: &Cell) {
             .map(|pos| pos + translation)
             .collect();
 
-        solve_correspondence(&pkdtree, reduced_cell, &new_positions);
+        solve_correspondence(&neighbor_search, reduced_cell, &new_positions);
     }
 }
 
@@ -73,8 +73,8 @@ pub fn benchmark(c: &mut Criterion) {
         group.bench_with_input(BenchmarkId::new("naive", n), &cell, |b, cell| {
             b.iter(|| naive(&cell));
         });
-        group.bench_with_input(BenchmarkId::new("kdtree", n), &cell, |b, cell| {
-            b.iter(|| kdtree(&cell));
+        group.bench_with_input(BenchmarkId::new("neighbor_search", n), &cell, |b, cell| {
+            b.iter(|| neighbor_search(&cell));
         });
     }
     group.finish();

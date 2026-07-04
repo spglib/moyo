@@ -58,7 +58,7 @@ math <- base <- data <- identify <- standardize <- lib
 
 - **base**: Core data structures (`Cell`, `Lattice`, `Operation`, `MagneticCell`, `Transformation`)
 - **math**: Lattice reduction algorithms (Niggli, Delaunay, Minkowski), integer linear algebra (HNF, SNF)
-- **search**: Symmetry operation finding using `PeriodicKdTree`, primitive cell identification
+- **search**: Symmetry operation finding using `PeriodicNeighborSearch`, primitive cell identification
 - **identify**: Space group and point group identification from symmetry operations
 - **data**: Embedded crystallographic databases (Hall symbols, Wyckoff positions, magnetic space groups)
 - **symmetrize**: Structure standardization to conventional/primitive cells
