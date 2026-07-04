@@ -12,7 +12,7 @@ Spglib's implementation is referenced for cross-checking, but moyo deliberately 
 
 - Detect the layer group (one of 80 types) of a 3D crystal structure that has 2D periodicity (a layer system).
 - Produce a `MoyoLayerDataset` analogous to `MoyoDataset`: layer-group number, Hall symbol, layer-group operations in the input cell, primitive/standardized layer cells, Wyckoff positions, site symmetry, transformation matrices.
-- Reuse moyo's existing primitives (`Cell`, `Operation`, `PrimitiveCell`, `PeriodicKdTree`, identification machinery) rather than forking the pipeline.
+- Reuse moyo's existing primitives (`Cell`, `Operation`, `PrimitiveCell`, `PeriodicNeighborSearch`, identification machinery) rather than forking the pipeline.
 
 ### Non-goals (initial release)
 
@@ -178,7 +178,7 @@ Monoclinic-rectangular note (LG 8-18): the paper's appendix B carves out a speci
 
 ### Primitive 2D cell search
 
-Analogous to `PrimitiveCell::new`, but candidate translations are filtered to those with the `c`-component (in fractional coords) equal to 0 (within `symprec / |c|`). All other machinery (`PeriodicKdTree`, correspondence solver) carries over.
+Analogous to `PrimitiveCell::new`, but candidate translations are filtered to those with the `c`-component (in fractional coords) equal to 0 (within `symprec / |c|`). All other machinery (`PeriodicNeighborSearch`, correspondence solver) carries over.
 
 If a candidate translation has nonzero `c`-component, moyo **rejects the input** rather than try to interpret it — a 2D-periodic structure should not have spurious "stacking" translations along `c`. Concretely: if the user passes an AA-stacked bilayer with `c` being the stacking direction, we want them to either thicken the cell to a true 2D unit or pass `c` as the stacking length; a "translation" of `c/2` along `c` would falsify the layer-group hypothesis.
 
