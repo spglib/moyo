@@ -7,11 +7,34 @@ use rustc_hash::FxHashMap;
 use crate::base::{AtomicSpecie, Cell, Lattice, Permutation, Position, Rotation, Translation};
 
 /// Nearest-neighbor search under periodic boundary conditions, backed by a
-/// uniform bin grid over Cartesian coordinates. Each point is registered in
-/// every bin its ball of radius `symprec` overlaps -- at most eight bins,
-/// because the bin size is at least `2 * symprec`. A query then only
-/// inspects the single bin containing the query position: any point within
-/// `symprec` of the query has registered itself there.
+/// uniform bin grid over Cartesian coordinates.
+///
+/// **Registration.** Each point `p` is registered in every bin overlapped by
+/// the axis-aligned bounding box of its ball of radius `symprec`, so a single
+/// point may be stored in multiple bins. The bin size is at least
+/// `2 * symprec` -- the diameter of that ball -- so the box spans at most two
+/// bins per axis: `p` lands in at most 2^3 = 8 bins. A 2D cross-section, with
+/// `p` near a corner where four bins meet (`*` marks the bins storing `p`):
+///
+/// ```text
+/// +----------+----------+
+/// |          |          |
+/// |  *   ,---+---.   *  |  <-- ball of radius `symprec` around `p`
+/// |     /    |    \     |
+/// +----(-----p-----)----+
+/// |     \    |    /     |
+/// |  *   `---+---'   *  |
+/// |          |          |
+/// +----------+----------+
+///  bin_size >= 2 * symprec
+/// ```
+///
+/// **Query.** `nearest(q)` inspects only the single bin containing `q`, yet
+/// misses nothing: if `|p - q| <= symprec`, then `q` lies inside `p`'s ball,
+/// hence inside its bounding box, hence in one of the bins `p` was registered
+/// in. Points sharing the bin but farther than `symprec` are rejected by the
+/// exact distance check, so the duplicated registration only adds candidates,
+/// never wrong results.
 #[doc(hidden)]
 pub struct PeriodicNeighborSearch {
     num_sites: usize,
