@@ -25,12 +25,12 @@ jobs:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
 
-      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+      - uses: dtolnay/rust-toolchain@4be7066ada62dd38de10e7b70166bc74ed198c30 # stable
         with:
           targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
-        uses: taiki-e/install-action@92cf88562039553237101d8d4cbd017bc8c2c48e # wasm-pack
+        uses: taiki-e/install-action@6b1e690fff2cc02ff46be114b24cda63a8344c82 # wasm-pack
 
       - name: Install test dependencies
         working-directory: moyo-wasm
