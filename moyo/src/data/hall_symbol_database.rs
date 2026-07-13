@@ -3874,7 +3874,7 @@ static HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
     HallSymbolEntry::new(
         481,
         187,
-        57,
+        56,
         "",
         "P -6 2",
         "P -6 m 2",
@@ -3884,7 +3884,7 @@ static HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
     HallSymbolEntry::new(
         482,
         188,
-        57,
+        56,
         "",
         "P -6c 2",
         "P -6 c 2",
@@ -3894,7 +3894,7 @@ static HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
     HallSymbolEntry::new(
         483,
         189,
-        56,
+        57,
         "",
         "P -6 -2",
         "P -6 2 m",
@@ -3904,7 +3904,7 @@ static HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
     HallSymbolEntry::new(
         484,
         190,
-        56,
+        57,
         "",
         "P -6c -2c",
         "P -6 2 c",
@@ -4349,6 +4349,7 @@ static HALL_SYMBOL_DATABASE: [HallSymbolEntry; 530] = [
 #[cfg(test)]
 mod tests {
     use super::{HALL_SYMBOL_DATABASE, HallSymbolEntry};
+    use crate::data::arithmetic_crystal_class::arithmetic_crystal_class_entry;
     use crate::data::hall_symbol::HallSymbol;
 
     fn iter_hall_symbol_entry() -> impl Iterator<Item = &'static HallSymbolEntry> {
@@ -4360,6 +4361,28 @@ mod tests {
         for entry in iter_hall_symbol_entry() {
             let hs = HallSymbol::new(entry.hall_symbol).unwrap();
             assert_eq!(48 % hs.traverse().len(), 0);
+        }
+    }
+
+    #[test]
+    fn test_arithmetic_crystal_class_for_sg_187_to_190() {
+        // International Tables for Crystallography, Volume C (2004), Table 1.4.2.1
+        let expected = [
+            (187, 56, "-6m2P"),
+            (188, 56, "-6m2P"),
+            (189, 57, "-62mP"),
+            (190, 57, "-62mP"),
+        ];
+        for (number, arithmetic_number, symbol) in expected {
+            for entry in iter_hall_symbol_entry().filter(|entry| entry.number == number) {
+                assert_eq!(entry.arithmetic_number, arithmetic_number);
+                assert_eq!(
+                    arithmetic_crystal_class_entry(entry.arithmetic_number)
+                        .unwrap()
+                        .symbol,
+                    symbol
+                );
+            }
         }
     }
 }

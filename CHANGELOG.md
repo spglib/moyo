@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only dependency or build updates with no user-visible changes.
 
+## Unreleased
+
+### moyo
+
+- Fix swapped arithmetic crystal class numbers 56 and 57 for space groups 187-190: `-6m2P` is No. 56 and `-62mP` is No. 57 per International Tables for Crystallography, Volume C (2004), Table 1.4.2.1. The symbols reported for these space groups were already correct; only the numbers exposed via `MoyoDataset` and `moyopy.SpaceGroupType.arithmetic_number` change. Same fix as spglib/spglib#632 (#398)
+
 ## v0.14.0 - 2026-07-04
 
 ### moyo
