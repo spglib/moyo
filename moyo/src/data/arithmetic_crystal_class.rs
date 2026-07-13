@@ -110,8 +110,8 @@ const ARITHMETIC_CRYSTAL_CLASS_DATABASE: [ArithmeticCrystalClassEntry; 73] = [
     ArithmeticCrystalClassEntry::new(53, "6/mP", GeometricCrystalClass::C6h, BravaisClass::hP),
     ArithmeticCrystalClassEntry::new(54, "622P", GeometricCrystalClass::D6, BravaisClass::hP),
     ArithmeticCrystalClassEntry::new(55, "6mmP", GeometricCrystalClass::C6v, BravaisClass::hP),
-    ArithmeticCrystalClassEntry::new(56, "-62mP", GeometricCrystalClass::D3h, BravaisClass::hP),
-    ArithmeticCrystalClassEntry::new(57, "-6m2P", GeometricCrystalClass::D3h, BravaisClass::hP),
+    ArithmeticCrystalClassEntry::new(56, "-6m2P", GeometricCrystalClass::D3h, BravaisClass::hP),
+    ArithmeticCrystalClassEntry::new(57, "-62mP", GeometricCrystalClass::D3h, BravaisClass::hP),
     ArithmeticCrystalClassEntry::new(58, "6/mmmP", GeometricCrystalClass::D6h, BravaisClass::hP),
     // Crystal system: cubic
     ArithmeticCrystalClassEntry::new(59, "23P", GeometricCrystalClass::T, BravaisClass::cP),
