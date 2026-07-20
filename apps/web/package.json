@@ -16,7 +16,7 @@
     "svelte-spa-router": "^4.0.1"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@sveltejs/vite-plugin-svelte": "^6.0.0",
     "@tailwindcss/vite": "^4.0.0",
     "@tsconfig/svelte": "^5.0.4",
     "@types/katex": "^0.16.8",
