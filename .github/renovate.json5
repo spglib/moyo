@@ -52,7 +52,7 @@
     {
       "description": "Automerge CI and devDependencies non-major updates",
       "matchManagers": ["github-actions", "pre-commit"],
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
       "automerge": true,
       "platformAutomerge": true
     },
