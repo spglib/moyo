@@ -11,7 +11,7 @@ jobs:
     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
     - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
     - name: Install cargo-llvm-cov
-      uses: taiki-e/install-action@9458fed45835344deb5e69e06e831be047c96abf # cargo-llvm-cov
+      uses: taiki-e/install-action@b98dda19e8b67e904c9e78a0cbd773be4105a74f # cargo-llvm-cov
     - name: Test
       run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
     - name: Upload coverage to Codecov
