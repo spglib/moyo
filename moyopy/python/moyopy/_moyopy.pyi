@@ -1,4 +1,4 @@
-from moyopy._base import (  # noqa: F401
+from moyopy._base import (
     Cell,
     CollinearMagneticCell,
     MagneticOperations,
@@ -22,15 +22,15 @@ from moyopy._data import (
     magnetic_operations_from_uni_number,
     operations_from_layer_number,
     operations_from_number,
-)  # noqa: F401
+)
 from moyopy._dataset import (
     MoyoCollinearMagneticDataset,
     MoyoDataset,
     MoyoLayerDataset,
     MoyoNonCollinearMagneticDataset,
     NormalizerWyckoffPositions,
-)  # noqa: F401
-from moyopy._identify import (  # noqa: F401
+)
+from moyopy._identify import (
     LayerGroup,
     MagneticSpaceGroup,
     PointGroup,

@@ -1,4 +1,3 @@
-# ruff: noqa: E501
 from moyopy import SpaceGroupType
 
 map_hm_short_to_number = {
