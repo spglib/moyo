@@ -84,6 +84,7 @@ extend-select = [
     "UP",          # pyupgrade
 ]
 extend-ignore = [
+    "RUF022",  # Keep `__all__` grouped by module instead of sorted
     "D100",
     "D101",
     "D102",
