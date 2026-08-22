@@ -148,13 +148,19 @@ fn make_translationengleiche_subgroup(
 }
 
 fn subgroup_depths(subgroups: &[Vec<usize>]) -> BTreeMap<Vec<usize>, usize> {
-    let mut depths = BTreeMap::new();
-    depths.insert(subgroups[0].clone(), 0);
+    let mut ordered_subgroups = subgroups.iter().collect::<Vec<_>>();
+    ordered_subgroups.sort_by(|lhs, rhs| rhs.len().cmp(&lhs.len()).then_with(|| lhs.cmp(rhs)));
+    let Some((parent, proper_subgroups)) = ordered_subgroups.split_first() else {
+        return BTreeMap::new();
+    };
 
-    for subgroup in subgroups.iter().skip(1) {
-        let covering_supergroups = subgroups.iter().filter(|candidate| {
+    let mut depths = BTreeMap::new();
+    depths.insert((*parent).clone(), 0);
+
+    for &subgroup in proper_subgroups {
+        let covering_supergroups = ordered_subgroups.iter().copied().filter(|candidate| {
             is_proper_subset(subgroup, candidate)
-                && !subgroups.iter().any(|between| {
+                && !ordered_subgroups.iter().copied().any(|between| {
                     is_proper_subset(subgroup, between) && is_proper_subset(between, candidate)
                 })
         });
@@ -196,6 +202,17 @@ mod tests {
             .into_iter()
             .map(|rotation| Operation::new(rotation, vector![0.0, 0.0, 0.0]))
             .collect()
+    }
+
+    #[test]
+    fn test_subgroup_depths_without_ordering_assumption() {
+        assert!(subgroup_depths(&[]).is_empty());
+
+        let subgroups = vec![vec![0], vec![0, 1, 2, 3], vec![0, 2]];
+        let depths = subgroup_depths(&subgroups);
+        assert_eq!(depths[&[0, 1, 2, 3][..]], 0);
+        assert_eq!(depths[&[0, 2][..]], 1);
+        assert_eq!(depths[&[0][..]], 2);
     }
 
     #[test]
