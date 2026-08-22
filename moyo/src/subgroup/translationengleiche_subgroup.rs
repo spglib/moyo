@@ -240,7 +240,7 @@ mod tests {
     }
 
     #[test]
-    fn test_lift_nonsymmorphic_translationengleiche_subgroups() {
+    fn test_preserve_nonsymmorphic_subgroup_embeddings() {
         let operations = operations_from_number(19, Setting::Spglib, true).unwrap();
         let classes = enumerate_translationengleiche_subgroups(&operations, 1e-8).unwrap();
 
