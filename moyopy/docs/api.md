@@ -55,6 +55,13 @@ operations.
 
 ::: moyopy.SpaceGroup
 
+::: moyopy.integral_normalizer
+
+## Subgroup enumeration
+
+Enumerate subgroups of a space group while preserving their embedding in the
+parent group.
+
 ::: moyopy.enumerate_translationengleiche_subgroups
 
 ::: moyopy.TranslationengleicheSubgroup
@@ -62,8 +69,6 @@ operations.
 ::: moyopy.TranslationengleicheSubgroupConjugate
 
 ::: moyopy.TranslationengleicheSubgroupConjugacyClass
-
-::: moyopy.integral_normalizer
 
 ## Adapters
 

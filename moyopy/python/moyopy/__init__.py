@@ -72,11 +72,12 @@ __all__ = [
     "MagneticSpaceGroup",
     "PointGroup",
     "SpaceGroup",
+    "integral_normalizer",
+    # subgroup
     "TranslationengleicheSubgroup",
     "TranslationengleicheSubgroupConjugacyClass",
     "TranslationengleicheSubgroupConjugate",
     "enumerate_translationengleiche_subgroups",
-    "integral_normalizer",
     # lib
     "__version__",
 ]

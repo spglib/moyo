@@ -19,13 +19,6 @@ use moyo::utils::{to_3x3_slice, to_matrix3, to_vector3};
 use crate::base::{PyMoyoError, PyUnimodularTransformation};
 use crate::data::{PyLayerSetting, PySetting};
 
-mod translationengleiche_subgroup;
-
-pub use translationengleiche_subgroup::{
-    PyTranslationengleicheSubgroup, PyTranslationengleicheSubgroupConjugacyClass,
-    PyTranslationengleicheSubgroupConjugate, enumerate_translationengleiche_subgroups,
-};
-
 fn has_same_rotation(lhs: &Operation, rhs: &Operation) -> bool {
     lhs.rotation == rhs.rotation
 }
