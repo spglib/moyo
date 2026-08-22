@@ -70,6 +70,16 @@ parent group.
 
 ::: moyopy.TranslationengleicheSubgroupConjugacyClass
 
+::: moyopy.enumerate_klassengleiche_subgroups
+
+::: moyopy.enumerate_klassengleiche_subgroups_by_index
+
+::: moyopy.KlassengleicheSubgroup
+
+::: moyopy.KlassengleicheSubgroupConjugate
+
+::: moyopy.KlassengleicheSubgroupConjugacyClass
+
 ## Adapters
 
 Convert between [`moyopy.Cell`][moyopy.Cell] and pymatgen `Structure` / ASE
