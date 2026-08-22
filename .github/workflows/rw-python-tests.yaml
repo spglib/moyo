@@ -35,7 +35,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          uv pip install --system --find-links dist moyopy
+          uv pip install --system dist/moyopy-*.whl
           uv pip install --system moyopy[interface]
           find moyopy/examples -name "*.py" | xargs -I {} python {}
 
@@ -64,6 +64,6 @@ jobs:
         shell: bash
         run: |
           set -e
-          uv pip install --system --find-links dist moyopy
+          uv pip install --system dist/moyopy-*.whl
           uv pip install --system moyopy[testing,interface]
           pytest -v
