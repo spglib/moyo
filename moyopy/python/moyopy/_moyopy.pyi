@@ -35,6 +35,10 @@ from moyopy._identify import (
     MagneticSpaceGroup,
     PointGroup,
     SpaceGroup,
+    TranslationengleicheSubgroup,
+    TranslationengleicheSubgroupConjugacyClass,
+    TranslationengleicheSubgroupConjugate,
+    enumerate_translationengleiche_subgroups,
     integral_normalizer,
 )
 
@@ -75,6 +79,10 @@ __all__ = [
     "SpaceGroup",
     "LayerGroup",
     "MagneticSpaceGroup",
+    "TranslationengleicheSubgroup",
+    "TranslationengleicheSubgroupConjugacyClass",
+    "TranslationengleicheSubgroupConjugate",
+    "enumerate_translationengleiche_subgroups",
     "integral_normalizer",
     # lib
     "__version__",

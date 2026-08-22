@@ -55,6 +55,14 @@ operations.
 
 ::: moyopy.SpaceGroup
 
+::: moyopy.enumerate_translationengleiche_subgroups
+
+::: moyopy.TranslationengleicheSubgroup
+
+::: moyopy.TranslationengleicheSubgroupConjugate
+
+::: moyopy.TranslationengleicheSubgroupConjugacyClass
+
 ::: moyopy.integral_normalizer
 
 ## Adapters

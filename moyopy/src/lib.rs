@@ -21,7 +21,9 @@ use crate::dataset::{
     PyMoyoNonCollinearMagneticDataset, PyNormalizerWyckoffPositions,
 };
 use crate::identify::{
-    PyLayerGroup, PyMagneticSpaceGroup, PyPointGroup, PySpaceGroup, integral_normalizer,
+    PyLayerGroup, PyMagneticSpaceGroup, PyPointGroup, PySpaceGroup, PyTranslationengleicheSubgroup,
+    PyTranslationengleicheSubgroupConjugacyClass, PyTranslationengleicheSubgroupConjugate,
+    enumerate_translationengleiche_subgroups, integral_normalizer,
 };
 
 // https://github.com/pydantic/pydantic-core/blob/main/src/lib.rs
@@ -88,6 +90,10 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PySpaceGroup>()?;
     m.add_class::<PyLayerGroup>()?;
     m.add_class::<PyMagneticSpaceGroup>()?;
+    m.add_class::<PyTranslationengleicheSubgroup>()?;
+    m.add_class::<PyTranslationengleicheSubgroupConjugate>()?;
+    m.add_class::<PyTranslationengleicheSubgroupConjugacyClass>()?;
+    m.add_wrapped(wrap_pyfunction!(enumerate_translationengleiche_subgroups))?;
     m.add_wrapped(wrap_pyfunction!(integral_normalizer))?;
 
     Ok(())
