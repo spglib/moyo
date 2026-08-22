@@ -12,7 +12,8 @@ pub use normalizer::{Normalizer, integral_normalizer};
 pub use point_group::PointGroup;
 pub use space_group::SpaceGroup;
 pub use translationengleiche_subgroup::{
-    TSubgroup, TSubgroupConjugacyClass, TSubgroupConjugate, enumerate_t_subgroups,
+    TranslationengleicheSubgroup, TranslationengleicheSubgroupConjugacyClass,
+    TranslationengleicheSubgroupConjugate, enumerate_translationengleiche_subgroups,
 };
 
 pub(super) use magnetic_space_group::{
