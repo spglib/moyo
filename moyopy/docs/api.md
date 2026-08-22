@@ -57,6 +57,19 @@ operations.
 
 ::: moyopy.integral_normalizer
 
+## Subgroup enumeration
+
+Enumerate subgroups of a space group while preserving their embedding in the
+parent group.
+
+::: moyopy.enumerate_translationengleiche_subgroups
+
+::: moyopy.TranslationengleicheSubgroup
+
+::: moyopy.TranslationengleicheSubgroupConjugate
+
+::: moyopy.TranslationengleicheSubgroupConjugacyClass
+
 ## Adapters
 
 Convert between [`moyopy.Cell`][moyopy.Cell] and pymatgen `Structure` / ASE

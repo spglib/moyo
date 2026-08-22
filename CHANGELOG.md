@@ -12,6 +12,10 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 
 - Add `enumerate_translationengleiche_subgroups` and embedded subgroup/conjugacy result types for Translationengleiche subgroup enumeration from primitive space-group operations.
 
+### moyopy
+
+- Add the `enumerate_translationengleiche_subgroups` Python binding and expose embedded operations, parent-operation mappings, conjugacy witnesses, normalizer actions, Translationengleiche index, and subgroup depth.
+
 ## v0.15.0 - 2026-07-13
 
 ### moyo

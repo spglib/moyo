@@ -24,9 +24,13 @@ from moyopy._moyopy import (
     Setting,
     SpaceGroup,
     SpaceGroupType,
+    TranslationengleicheSubgroup,
+    TranslationengleicheSubgroupConjugacyClass,
+    TranslationengleicheSubgroupConjugate,
     UnimodularTransformation,
     WyckoffPosition,
     __version__,
+    enumerate_translationengleiche_subgroups,
     integral_normalizer,
     magnetic_operations_from_uni_number,
     operations_from_layer_number,
@@ -69,6 +73,11 @@ __all__ = [
     "PointGroup",
     "SpaceGroup",
     "integral_normalizer",
+    # subgroup
+    "TranslationengleicheSubgroup",
+    "TranslationengleicheSubgroupConjugacyClass",
+    "TranslationengleicheSubgroupConjugate",
+    "enumerate_translationengleiche_subgroups",
     # lib
     "__version__",
 ]
