@@ -88,6 +88,7 @@ pub mod math;
 pub mod search; // Public for benchmarking
 pub mod utils;
 
+mod subgroup;
 mod symmetrize;
 
 pub use base::MoyoError as Error;
