@@ -2,14 +2,14 @@ use std::collections::{BTreeSet, HashMap, VecDeque};
 
 use crate::base::{MoyoError, Operations, Rotation};
 
-pub(crate) struct FiniteGroup {
+pub(super) struct FiniteGroup {
     table: Vec<Vec<usize>>,
     inverses: Vec<usize>,
     identity: usize,
 }
 
 impl FiniteGroup {
-    pub(crate) fn from_operations(
+    pub(super) fn from_operations(
         operations: &Operations,
         epsilon: f64,
     ) -> Result<Self, MoyoError> {
@@ -64,15 +64,15 @@ impl FiniteGroup {
         })
     }
 
-    pub(crate) fn identity(&self) -> usize {
+    pub(super) fn identity(&self) -> usize {
         self.identity
     }
 
-    pub(crate) fn order(&self) -> usize {
+    pub(super) fn order(&self) -> usize {
         self.table.len()
     }
 
-    pub(crate) fn enumerate_subgroups(&self) -> Vec<Vec<usize>> {
+    pub(super) fn enumerate_subgroups(&self) -> Vec<Vec<usize>> {
         let trivial = vec![self.identity];
         let mut seen = BTreeSet::from([trivial.clone()]);
         let mut queue = VecDeque::from([trivial]);
@@ -130,7 +130,7 @@ impl FiniteGroup {
             .collect()
     }
 
-    pub(crate) fn conjugate(&self, subgroup: &[usize], conjugator: usize) -> Vec<usize> {
+    pub(super) fn conjugate(&self, subgroup: &[usize], conjugator: usize) -> Vec<usize> {
         let inverse = self.inverses[conjugator];
         let mut conjugate = subgroup
             .iter()
@@ -140,7 +140,7 @@ impl FiniteGroup {
         conjugate
     }
 
-    pub(crate) fn normalizer_action(&self, subgroup: &[usize]) -> (Vec<usize>, Vec<Vec<usize>>) {
+    pub(super) fn normalizer_action(&self, subgroup: &[usize]) -> (Vec<usize>, Vec<Vec<usize>>) {
         let local_indices = subgroup
             .iter()
             .enumerate()
