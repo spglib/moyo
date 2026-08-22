@@ -4,14 +4,14 @@ mod normalizer;
 mod point_group;
 mod rotation_type;
 mod space_group;
-mod t_subgroup;
+mod translationengleiche_subgroup;
 
 pub use layer::{LayerGroup, LayerPointGroup, integral_normalizer_2_1};
 pub use magnetic_space_group::MagneticSpaceGroup;
 pub use normalizer::{Normalizer, integral_normalizer};
 pub use point_group::PointGroup;
 pub use space_group::SpaceGroup;
-pub use t_subgroup::{
+pub use translationengleiche_subgroup::{
     TSubgroup, TSubgroupConjugacyClass, TSubgroupConjugate, enumerate_t_subgroups,
 };
 
