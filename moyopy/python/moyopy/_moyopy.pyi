@@ -38,9 +38,14 @@ from moyopy._identify import (
     integral_normalizer,
 )
 from moyopy._subgroup import (
+    KlassengleicheSubgroup,
+    KlassengleicheSubgroupConjugacyClass,
+    KlassengleicheSubgroupConjugate,
     TranslationengleicheSubgroup,
     TranslationengleicheSubgroupConjugacyClass,
     TranslationengleicheSubgroupConjugate,
+    enumerate_klassengleiche_subgroups,
+    enumerate_klassengleiche_subgroups_by_index,
     enumerate_translationengleiche_subgroups,
 )
 
@@ -83,9 +88,14 @@ __all__ = [
     "MagneticSpaceGroup",
     "integral_normalizer",
     # subgroup
+    "KlassengleicheSubgroup",
+    "KlassengleicheSubgroupConjugacyClass",
+    "KlassengleicheSubgroupConjugate",
     "TranslationengleicheSubgroup",
     "TranslationengleicheSubgroupConjugacyClass",
     "TranslationengleicheSubgroupConjugate",
+    "enumerate_klassengleiche_subgroups",
+    "enumerate_klassengleiche_subgroups_by_index",
     "enumerate_translationengleiche_subgroups",
     # lib
     "__version__",
