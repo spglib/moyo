@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only dependency or build updates with no user-visible changes.
 
+## Unreleased
+
+### moyo
+
+- Add `enumerate_translationengleiche_subgroups` and embedded subgroup/conjugacy result types for Translationengleiche subgroup enumeration from primitive space-group operations.
+
 ## v0.15.0 - 2026-07-13
 
 ### moyo

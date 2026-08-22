@@ -39,6 +39,10 @@ pub enum MoyoError {
     ConstructTypeIdentificationError,
     #[error("Magnetic space group type identification failed")]
     MagneticSpaceGroupTypeIdentificationError,
+    #[error(
+        "Invalid primitive space-group operations: rotations must be unique and operations must form a group modulo lattice translations"
+    )]
+    InvalidPrimitiveOperationsError,
     // Standardization errors
     #[error("Standardization failed")]
     StandardizationError,
