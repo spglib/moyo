@@ -27,26 +27,26 @@ jobs:
           - os: ubuntu-latest
             system: linux
             target: x86_64
+            sccache: false
           - os: ubuntu-latest
             system: linux
             target: aarch64
+            sccache: false
           - os: macos-latest
             system: darwin
             target: x86_64
+            sccache: true
           - os: macos-latest
             system: darwin
             target: aarch64
+            sccache: true
           - os: windows-latest
             system: windows
             target: x64
+            sccache: true
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
-      - name: Install uv
-        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
-        with:
-          enable-cache: true
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: ${{ env.PYTHON_VERSION }}
@@ -55,7 +55,7 @@ jobs:
         with:
           target: ${{ matrix.target }}
           args: --release --out dist --find-interpreter --manifest-path moyopy/Cargo.toml
-          sccache: 'true'
+          sccache: ${{ matrix.sccache }}
           manylinux: auto
       - name: Upload wheels
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
