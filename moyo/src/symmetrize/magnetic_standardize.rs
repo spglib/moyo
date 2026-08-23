@@ -29,6 +29,9 @@ pub struct StandardizedMagneticCell<M: MagneticMoment> {
     // Miscellaneous
     // ------------------------------------------------------------------------
     pub rotation_matrix: Matrix3<f64>,
+    /// Mapping from the site in the `mag_cell` to that in the `prim_mag_cell`
+    #[allow(dead_code)]
+    pub site_mapping: Vec<usize>,
 }
 
 impl<M: MagneticMoment> StandardizedMagneticCell<M> {
@@ -136,6 +139,7 @@ impl<M: MagneticMoment> StandardizedMagneticCell<M> {
             transformation: ref_std_cell.transformation.clone(),
             // Miscellaneous
             rotation_matrix: ref_std_cell.rotation_matrix,
+            site_mapping: ref_std_cell.site_mapping.clone(),
         })
     }
 

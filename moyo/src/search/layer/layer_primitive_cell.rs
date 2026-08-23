@@ -5,7 +5,7 @@ use super::super::primitive_cell::{
     search_pure_translations,
 };
 use crate::base::{
-    Cell, Lattice, Lattice2D, LayerCell, LayerLattice, Linear, MoyoError, Translation,
+    Cell, Lattice, Lattice2D, LayerCell, LayerLattice, Linear, MoyoError, Permutation, Translation,
     UnimodularTransformation,
 };
 
@@ -32,6 +32,11 @@ pub(crate) struct LayerPrimitiveCell {
     pub site_mapping: Vec<usize>,
     /// Pure translations in the **input** cell (all have zero `c`-component).
     pub translations: Vec<Translation>,
+    /// Permutations induced by the translations. Mirrors `PrimitiveCell` for
+    /// API parity; the layer pipeline uses `LayerPrimitiveSymmetrySearch`'s
+    /// own permutations downstream rather than this field.
+    #[allow(dead_code)]
+    pub permutations: Vec<Permutation>,
 }
 
 impl LayerPrimitiveCell {
@@ -144,6 +149,7 @@ impl LayerPrimitiveCell {
             linear,
             site_mapping,
             translations: translations_in_input,
+            permutations,
         })
     }
 }

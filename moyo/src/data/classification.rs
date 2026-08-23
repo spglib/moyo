@@ -95,6 +95,58 @@ impl ToString for GeometricCrystalClass {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
+pub enum LaueClass {
+    Ci,  // -1
+    C2h, // 2/m,
+    D2h, // mmm
+    C4h, // 4/m
+    D4h, // 4/mmm
+    C3i, // -3
+    D3d, // -3m
+    C6h, // 6/m
+    D6h, // 6/mmm
+    Th,  // m-3
+    Oh,  // m-3m
+}
+
+impl LaueClass {
+    #[allow(dead_code)]
+    pub fn from_geometric_crystal_class(geometric_crystal_class: GeometricCrystalClass) -> Self {
+        match geometric_crystal_class {
+            GeometricCrystalClass::C1 | GeometricCrystalClass::Ci => LaueClass::Ci,
+            GeometricCrystalClass::C2 | GeometricCrystalClass::C1h | GeometricCrystalClass::C2h => {
+                LaueClass::C2h
+            }
+            GeometricCrystalClass::D2 | GeometricCrystalClass::C2v | GeometricCrystalClass::D2h => {
+                LaueClass::D2h
+            }
+            GeometricCrystalClass::C4 | GeometricCrystalClass::S4 | GeometricCrystalClass::C4h => {
+                LaueClass::C4h
+            }
+            GeometricCrystalClass::D4
+            | GeometricCrystalClass::C4v
+            | GeometricCrystalClass::D2d
+            | GeometricCrystalClass::D4h => LaueClass::D4h,
+            GeometricCrystalClass::C3 | GeometricCrystalClass::C3i => LaueClass::C3i,
+            GeometricCrystalClass::D3 | GeometricCrystalClass::C3v | GeometricCrystalClass::D3d => {
+                LaueClass::D3d
+            }
+            GeometricCrystalClass::C6 | GeometricCrystalClass::C3h | GeometricCrystalClass::C6h => {
+                LaueClass::C6h
+            }
+            GeometricCrystalClass::D6
+            | GeometricCrystalClass::C6v
+            | GeometricCrystalClass::D3h
+            | GeometricCrystalClass::D6h => LaueClass::D6h,
+            GeometricCrystalClass::T | GeometricCrystalClass::Th => LaueClass::Th,
+            GeometricCrystalClass::O | GeometricCrystalClass::Td | GeometricCrystalClass::Oh => {
+                LaueClass::Oh
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter)]
 pub enum CrystalSystem {
     Triclinic,
     Monoclinic,
