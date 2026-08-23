@@ -108,6 +108,7 @@ use crate::identify::{LayerGroup, MagneticSpaceGroup, Normalizer, SpaceGroup};
 use crate::search::{
     LayerPrimitiveCell, iterative_layer_symmetry_search, iterative_magnetic_symmetry_search,
     iterative_symmetry_search, magnetic_operations_in_magnetic_cell, operations_in_cell,
+    operations_in_cell_from_linear_and_translations,
 };
 use crate::symmetrize::{
     StandardizedCell, StandardizedLayerCell, StandardizedMagneticCell, orbits_in_cell,
@@ -732,17 +733,11 @@ impl MoyoLayerDataset {
 /// Mirrors [`crate::search::operations_in_cell`] but consumes
 /// [`LayerPrimitiveCell`] (whose pure-translation set is in-plane only).
 fn layer_operations_in_cell(prim: &LayerPrimitiveCell, prim_operations: &Operations) -> Operations {
-    let input_operations =
-        Transformation::from_linear(prim.linear).transform_operations(prim_operations);
-    let mut operations = vec![];
-    for t1 in prim.translations.iter() {
-        for op2 in input_operations.iter() {
-            // (E, t1) (rotation, t2) = (rotation, t1 + t2)
-            let t12 = (t1 + op2.translation).map(|e| e % 1.);
-            operations.push(Operation::new(op2.rotation, t12));
-        }
-    }
-    operations
+    operations_in_cell_from_linear_and_translations(
+        &prim.linear,
+        &prim.translations,
+        prim_operations,
+    )
 }
 
 /// Lift Wyckoff assignments from the standardized cell back to the input cell.
