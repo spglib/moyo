@@ -1,11 +1,11 @@
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 
-use itertools::iproduct;
 use nalgebra::Vector3;
 use serde::Serialize;
 
-use crate::base::{Linear, MoyoError, Operation, Operations, Rotation, Transformation};
-use crate::math::SNF;
+use crate::base::{
+    Linear, MoyoError, Operation, Operations, Rotation, Transformation, lattice_points,
+};
 use crate::subgroup::finite_group::FiniteGroup;
 
 /// A Klassengleiche subgroup embedded in its parent space group.
@@ -274,20 +274,6 @@ impl AffineQuotient {
             klassengleiche_index: self.sublattice_index,
         }
     }
-}
-
-fn lattice_points(transformation: &Linear) -> Vec<Vector3<i32>> {
-    let snf = SNF::new(transformation);
-    let linear_inverse = snf
-        .l
-        .map(|element| element as f64)
-        .try_inverse()
-        .expect("Smith transformation is unimodular")
-        .map(|element| element.round() as i32);
-
-    iproduct!(0..snf.d[(0, 0)], 0..snf.d[(1, 1)], 0..snf.d[(2, 2)])
-        .map(|(f0, f1, f2)| linear_inverse * Vector3::new(f0, f1, f2))
-        .collect()
 }
 
 fn exact_determinant(matrix: &Linear) -> i128 {
