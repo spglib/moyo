@@ -25,8 +25,11 @@ use crate::identify::{
     PyLayerGroup, PyMagneticSpaceGroup, PyPointGroup, PySpaceGroup, integral_normalizer,
 };
 use crate::subgroup::{
-    PyTranslationengleicheSubgroup, PyTranslationengleicheSubgroupConjugacyClass,
-    PyTranslationengleicheSubgroupConjugate, enumerate_translationengleiche_subgroups,
+    PyKlassengleicheSubgroup, PyKlassengleicheSubgroupConjugacyClass,
+    PyKlassengleicheSubgroupConjugate, PyTranslationengleicheSubgroup,
+    PyTranslationengleicheSubgroupConjugacyClass, PyTranslationengleicheSubgroupConjugate,
+    enumerate_klassengleiche_subgroups, enumerate_klassengleiche_subgroups_by_index,
+    enumerate_translationengleiche_subgroups,
 };
 
 // https://github.com/pydantic/pydantic-core/blob/main/src/lib.rs
@@ -96,10 +99,17 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(integral_normalizer))?;
 
     // subgroup
+    m.add_class::<PyKlassengleicheSubgroup>()?;
+    m.add_class::<PyKlassengleicheSubgroupConjugate>()?;
+    m.add_class::<PyKlassengleicheSubgroupConjugacyClass>()?;
     m.add_class::<PyTranslationengleicheSubgroup>()?;
     m.add_class::<PyTranslationengleicheSubgroupConjugate>()?;
     m.add_class::<PyTranslationengleicheSubgroupConjugacyClass>()?;
     m.add_wrapped(wrap_pyfunction!(enumerate_translationengleiche_subgroups))?;
+    m.add_wrapped(wrap_pyfunction!(enumerate_klassengleiche_subgroups))?;
+    m.add_wrapped(wrap_pyfunction!(
+        enumerate_klassengleiche_subgroups_by_index
+    ))?;
 
     Ok(())
 }

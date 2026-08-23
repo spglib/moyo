@@ -16,6 +16,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 ### moyopy
 
 - Add the `enumerate_translationengleiche_subgroups` Python binding and expose embedded operations, parent-operation mappings, conjugacy witnesses, normalizer actions, Translationengleiche index, and subgroup depth.
+- Add Python bindings for Klassengleiche subgroup enumeration by translation sublattice or index, including subgroup- and parent-basis operations, conjugacy witnesses, and normalizer actions.
 
 ## v0.15.0 - 2026-07-13
 
