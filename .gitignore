@@ -398,3 +398,5 @@ package-lock.json
 # roborev snapshots
 /.roborev/
 .claude/
+
+mise.local.toml
