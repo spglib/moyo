@@ -1,3 +1,4 @@
+mod affine_quotient;
 mod finite_group;
 mod klassengleiche_subgroup;
 mod translationengleiche_subgroup;
