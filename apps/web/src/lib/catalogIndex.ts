@@ -8,15 +8,15 @@ import { getMoyo } from './wasm'
 import { SPACE_GROUP_COUNT, LAYER_GROUP_COUNT, MAGNETIC_SG_COUNT } from './catalog'
 import { constructTypeLabel } from './format'
 
-export interface SpaceGroupRow extends MoyoSpaceGroupType {
+interface SpaceGroupRow extends MoyoSpaceGroupType {
   searchText: string
 }
 
-export interface LayerGroupRow extends MoyoLayerGroupType {
+interface LayerGroupRow extends MoyoLayerGroupType {
   searchText: string
 }
 
-export interface MagneticSpaceGroupRow extends MoyoMagneticSpaceGroupType {
+interface MagneticSpaceGroupRow extends MoyoMagneticSpaceGroupType {
   magnetic_hall_symbol: string
   parent_hm_short: string
   construct_label: string

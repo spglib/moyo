@@ -12,12 +12,12 @@
  *   "P 2_1"         -> P  2₁
  */
 
-export type Segment =
+type Segment =
   | { kind: 'plain'; text: string }
   | { kind: 'over'; text: string }
   | { kind: 'sub'; text: string }
 
-export type Token = Segment[]
+type Token = Segment[]
 
 export function parseHmShort(symbol: string): Token[] {
   return symbol.trim().split(/\s+/).filter(Boolean).map(parseToken)
