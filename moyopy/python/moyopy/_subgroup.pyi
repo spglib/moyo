@@ -7,7 +7,7 @@ class KlassengleicheSubgroup:
         """Coset representatives in the subgroup primitive basis."""
     @property
     def parent_operations(self) -> Operations:
-        """The same representatives lifted to the parent primitive basis."""
+        """The same symmetry operations expressed in the parent primitive basis."""
     @property
     def operation_indices(self) -> list[int]:
         """Mapping from ``operations`` to the input parent operations."""

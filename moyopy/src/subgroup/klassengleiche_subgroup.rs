@@ -25,7 +25,7 @@ impl PyKlassengleicheSubgroup {
         self.0.operations.clone().into()
     }
 
-    /// The same representatives lifted to the parent primitive basis.
+    /// The same symmetry operations expressed in the parent primitive basis.
     #[getter]
     pub fn parent_operations(&self) -> PyOperations {
         self.0.parent_operations.clone().into()

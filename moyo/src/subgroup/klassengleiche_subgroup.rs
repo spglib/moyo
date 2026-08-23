@@ -1,24 +1,21 @@
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::{BTreeMap, BTreeSet};
 
-use itertools::iproduct;
-use nalgebra::Vector3;
 use serde::Serialize;
 
-use crate::base::{Linear, MoyoError, Operation, Operations, Rotation, Transformation};
-use crate::math::SNF;
+use crate::base::{Linear, MoyoError, Operation, Operations, Transformation};
+use crate::subgroup::affine_quotient::AffineQuotient;
 use crate::subgroup::finite_group::FiniteGroup;
 
 /// A Klassengleiche subgroup embedded in its parent space group.
 ///
 /// A Klassengleiche subgroup has the same point group as its parent but a
 /// finite-index translation sublattice. Its operations are given both in the
-/// subgroup translation basis and as affine lifts in the parent primitive
-/// basis.
+/// subgroup translation basis and in the parent primitive basis.
 #[derive(Debug, Clone, Serialize)]
 pub struct KlassengleicheSubgroup {
     /// Coset representatives in the subgroup primitive basis.
     pub operations: Operations,
-    /// The same representatives lifted to the parent primitive basis.
+    /// The same symmetry operations expressed in the parent primitive basis.
     pub parent_operations: Operations,
     /// Mapping from [`operations`](Self::operations) to the input parent operations.
     pub operation_indices: Vec<usize>,
@@ -64,9 +61,9 @@ pub struct KlassengleicheSubgroupConjugacyClass {
 /// positive determinant and be preserved by every parent rotation.
 ///
 /// The finite affine quotient `G/L` is formed explicitly. Its complements to
-/// `T/L` lift exactly to the Klassengleiche subgroups of `G` whose translation
-/// lattice is `L`. The result contains all such subgroups, partitioned into
-/// conjugacy classes under the parent space group.
+/// `T/L` correspond exactly to the Klassengleiche subgroups of `G` whose
+/// translation lattice is `L`. The result contains all such subgroups,
+/// partitioned into conjugacy classes under the parent space group.
 pub fn enumerate_klassengleiche_subgroups(
     prim_operations: &Operations,
     transformation: &Linear,
@@ -160,128 +157,6 @@ pub fn enumerate_klassengleiche_subgroups_by_index(
     Ok(classes)
 }
 
-struct AffineQuotient {
-    group: FiniteGroup,
-    operations: Operations,
-    parent_operations: Operations,
-    point_indices: Vec<usize>,
-    transformation: Linear,
-    sublattice_index: usize,
-    point_order: usize,
-}
-
-impl AffineQuotient {
-    fn new(
-        prim_operations: &Operations,
-        transformation: &Linear,
-        epsilon: f64,
-    ) -> Result<Self, MoyoError> {
-        let determinant = exact_determinant(transformation);
-        if determinant <= 0 || determinant > i32::MAX as i128 {
-            return Err(MoyoError::InvalidSublatticeTransformationError);
-        }
-        let sublattice_index = determinant as usize;
-        let lattice_points = lattice_points(transformation);
-        if lattice_points.len() != sublattice_index {
-            return Err(MoyoError::InvalidSublatticeTransformationError);
-        }
-
-        let to_sublattice = Transformation::from_linear(*transformation);
-        let quotient_order = prim_operations.len() * sublattice_index;
-        let mut operations = Vec::with_capacity(quotient_order);
-        let mut parent_operations = Vec::with_capacity(quotient_order);
-        let mut point_indices = Vec::with_capacity(quotient_order);
-        for (point_index, operation) in prim_operations.iter().enumerate() {
-            for lattice_point in &lattice_points {
-                let parent_operation = Operation::new(
-                    operation.rotation,
-                    operation.translation + lattice_point.map(|element| element as f64),
-                );
-                let mut transformed = to_sublattice
-                    .transform_operation(&parent_operation)
-                    .ok_or(MoyoError::InvalidSublatticeTransformationError)?;
-                transformed.translation = transformed
-                    .translation
-                    .map(|element| reduce_mod_one(element, epsilon));
-                operations.push(transformed);
-                parent_operations.push(parent_operation);
-                point_indices.push(point_index);
-            }
-        }
-
-        let table = affine_cayley_table(&operations, epsilon)
-            .ok_or(MoyoError::InvalidSublatticeTransformationError)?;
-        let group = FiniteGroup::from_table(table)
-            .ok_or(MoyoError::InvalidSublatticeTransformationError)?;
-
-        Ok(Self {
-            group,
-            operations,
-            parent_operations,
-            point_indices,
-            transformation: *transformation,
-            sublattice_index,
-            point_order: prim_operations.len(),
-        })
-    }
-
-    fn is_complement(&self, subgroup: &[usize]) -> bool {
-        if subgroup.len() != self.point_order {
-            return false;
-        }
-
-        let mut covered = vec![false; self.point_order];
-        for &index in subgroup {
-            let point_index = self.point_indices[index];
-            if covered[point_index] {
-                return false;
-            }
-            covered[point_index] = true;
-        }
-        covered.into_iter().all(|value| value)
-    }
-
-    fn make_subgroup(&self, indices: &[usize]) -> KlassengleicheSubgroup {
-        KlassengleicheSubgroup {
-            operations: indices
-                .iter()
-                .map(|&index| self.operations[index].clone())
-                .collect(),
-            parent_operations: indices
-                .iter()
-                .map(|&index| self.parent_operations[index].clone())
-                .collect(),
-            operation_indices: indices
-                .iter()
-                .map(|&index| self.point_indices[index])
-                .collect(),
-            transformation: self.transformation,
-            klassengleiche_index: self.sublattice_index,
-        }
-    }
-}
-
-fn lattice_points(transformation: &Linear) -> Vec<Vector3<i32>> {
-    let snf = SNF::new(transformation);
-    let linear_inverse = snf
-        .l
-        .map(|element| element as f64)
-        .try_inverse()
-        .expect("Smith transformation is unimodular")
-        .map(|element| element.round() as i32);
-
-    iproduct!(0..snf.d[(0, 0)], 0..snf.d[(1, 1)], 0..snf.d[(2, 2)])
-        .map(|(f0, f1, f2)| linear_inverse * Vector3::new(f0, f1, f2))
-        .collect()
-}
-
-fn exact_determinant(matrix: &Linear) -> i128 {
-    let value = |row, column| matrix[(row, column)] as i128;
-    value(0, 0) * (value(1, 1) * value(2, 2) - value(1, 2) * value(2, 1))
-        - value(0, 1) * (value(1, 0) * value(2, 2) - value(1, 2) * value(2, 0))
-        + value(0, 2) * (value(1, 0) * value(2, 1) - value(1, 1) * value(2, 0))
-}
-
 fn is_sublattice_preserved(prim_operations: &Operations, transformation: &Linear) -> bool {
     let to_sublattice = Transformation::from_linear(*transformation);
     prim_operations
@@ -317,64 +192,14 @@ fn sublattice_transformations(index: usize) -> Result<Vec<Linear>, MoyoError> {
     Ok(transformations)
 }
 
-fn affine_cayley_table(operations: &Operations, epsilon: f64) -> Option<Vec<Vec<usize>>> {
-    let mut rotation_indices = HashMap::<Rotation, Vec<usize>>::new();
-    for (index, operation) in operations.iter().enumerate() {
-        let candidates = rotation_indices.entry(operation.rotation).or_default();
-        if candidates.iter().any(|&candidate| {
-            translations_equivalent(
-                &operation.translation,
-                &operations[candidate].translation,
-                epsilon,
-            )
-        }) {
-            return None;
-        }
-        candidates.push(index);
-    }
-
-    let mut table = vec![vec![0; operations.len()]; operations.len()];
-    for (lhs_index, lhs) in operations.iter().enumerate() {
-        for (rhs_index, rhs) in operations.iter().enumerate() {
-            let product = lhs.clone() * rhs.clone();
-            let product_index =
-                rotation_indices
-                    .get(&product.rotation)?
-                    .iter()
-                    .find(|&&candidate| {
-                        translations_equivalent(
-                            &product.translation,
-                            &operations[candidate].translation,
-                            epsilon,
-                        )
-                    })?;
-            table[lhs_index][rhs_index] = *product_index;
-        }
-    }
-    Some(table)
-}
-
-fn translations_equivalent(lhs: &Vector3<f64>, rhs: &Vector3<f64>, epsilon: f64) -> bool {
-    (lhs - rhs)
-        .iter()
-        .all(|&value| (value - value.round()).abs() < epsilon)
-}
-
-fn reduce_mod_one(value: f64, epsilon: f64) -> f64 {
-    let reduced = value.rem_euclid(1.0);
-    if reduced < epsilon || 1.0 - reduced < epsilon {
-        0.0
-    } else {
-        reduced
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use nalgebra::{matrix, vector};
 
     use super::*;
+    use crate::base::Rotation;
     use crate::data::{Setting, operations_from_number};
+    use crate::subgroup::affine_quotient::translations_equivalent;
 
     #[test]
     fn test_enumerate_translation_sublattice() {
