@@ -28,4 +28,4 @@ pub(super) use operation::project_rotations;
 #[allow(unused_imports)]
 pub(super) use operation::traverse;
 pub(super) use tolerance::{EPS, MagneticSymmetryTolerances, SymmetryTolerances, ToleranceHandler};
-pub(super) use transformation::UnimodularLinear;
+pub(super) use transformation::{UnimodularLinear, lattice_points};

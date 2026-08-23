@@ -11,6 +11,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 ### moyo
 
 - Add `enumerate_translationengleiche_subgroups` and embedded subgroup/conjugacy result types for Translationengleiche subgroup enumeration from primitive space-group operations.
+- Add `enumerate_klassengleiche_subgroups` and `enumerate_klassengleiche_subgroups_by_index` for enumerating embedded Klassengleiche subgroups through finite affine quotients.
 
 ### moyopy
 

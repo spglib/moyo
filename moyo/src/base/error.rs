@@ -43,6 +43,12 @@ pub enum MoyoError {
         "Invalid primitive space-group operations: rotations must be unique and operations must form a group modulo lattice translations"
     )]
     InvalidPrimitiveOperationsError,
+    #[error(
+        "Invalid translation sublattice: the transformation must have a positive 32-bit determinant and be preserved by every parent rotation"
+    )]
+    InvalidSublatticeTransformationError,
+    #[error("Invalid translation-sublattice index: the index must be a positive 32-bit integer")]
+    InvalidSublatticeIndexError,
     // Standardization errors
     #[error("Standardization failed")]
     StandardizationError,

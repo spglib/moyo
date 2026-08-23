@@ -9,6 +9,36 @@ pub(super) struct FiniteGroup {
 }
 
 impl FiniteGroup {
+    pub(super) fn from_table(table: Vec<Vec<usize>>) -> Option<Self> {
+        let order = table.len();
+        if order == 0
+            || table
+                .iter()
+                .any(|row| row.len() != order || row.iter().any(|&element| element >= order))
+        {
+            return None;
+        }
+
+        let identity = (0..order).find(|&candidate| {
+            (0..order).all(|element| {
+                table[candidate][element] == element && table[element][candidate] == element
+            })
+        })?;
+        let inverses = (0..order)
+            .map(|element| {
+                (0..order).find(|&candidate| {
+                    table[element][candidate] == identity && table[candidate][element] == identity
+                })
+            })
+            .collect::<Option<Vec<_>>>()?;
+
+        Some(Self {
+            table,
+            inverses,
+            identity,
+        })
+    }
+
     pub(super) fn from_operations(
         operations: &Operations,
         epsilon: f64,
@@ -24,9 +54,9 @@ impl FiniteGroup {
             }
         }
 
-        let identity = *rotation_indices
-            .get(&Rotation::identity())
-            .ok_or(MoyoError::InvalidPrimitiveOperationsError)?;
+        if !rotation_indices.contains_key(&Rotation::identity()) {
+            return Err(MoyoError::InvalidPrimitiveOperationsError);
+        }
         let mut table = vec![vec![0; operations.len()]; operations.len()];
         for (lhs_index, lhs) in operations.iter().enumerate() {
             for (rhs_index, rhs) in operations.iter().enumerate() {
@@ -46,22 +76,7 @@ impl FiniteGroup {
             }
         }
 
-        let inverses = (0..operations.len())
-            .map(|element| {
-                (0..operations.len())
-                    .find(|&candidate| {
-                        table[element][candidate] == identity
-                            && table[candidate][element] == identity
-                    })
-                    .ok_or(MoyoError::InvalidPrimitiveOperationsError)
-            })
-            .collect::<Result<Vec<_>, _>>()?;
-
-        Ok(Self {
-            table,
-            inverses,
-            identity,
-        })
+        Self::from_table(table).ok_or(MoyoError::InvalidPrimitiveOperationsError)
     }
 
     pub(super) fn identity(&self) -> usize {
