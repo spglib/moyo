@@ -1,5 +1,3 @@
-use std::collections::{BTreeMap, BTreeSet};
-
 use serde::Serialize;
 
 use crate::base::{Linear, MoyoError, Operation, Operations, Transformation};
@@ -78,43 +76,27 @@ pub fn enumerate_klassengleiche_subgroups(
         .filter(|subgroup| quotient.is_complement(subgroup))
         .collect::<Vec<_>>();
 
-    let mut remaining = subgroups.iter().cloned().collect::<BTreeSet<_>>();
     let mut classes = Vec::new();
-    for representative_indices in &subgroups {
-        if !remaining.remove(representative_indices) {
-            continue;
-        }
-
-        let mut conjugate_witnesses =
-            BTreeMap::from([(representative_indices.clone(), quotient.group.identity())]);
-        for conjugator in 0..quotient.group.order() {
-            let conjugate = quotient.group.conjugate(representative_indices, conjugator);
-            debug_assert!(quotient.is_complement(&conjugate));
-            conjugate_witnesses.entry(conjugate).or_insert(conjugator);
-        }
-        for conjugate in conjugate_witnesses.keys() {
-            remaining.remove(conjugate);
-        }
-
+    for conjugacy_class in quotient.group.conjugacy_classes(&subgroups) {
+        let representative_indices = &conjugacy_class.representative;
+        debug_assert!(
+            conjugacy_class
+                .conjugates
+                .iter()
+                .all(|conjugate| quotient.is_complement(&conjugate.subgroup))
+        );
         let representative = quotient.make_subgroup(representative_indices);
-        let identity_index = quotient.group.identity();
-        let mut conjugate_witnesses = conjugate_witnesses.into_iter().collect::<Vec<_>>();
-        conjugate_witnesses
-            .sort_by_key(|(indices, _)| (indices != representative_indices, indices.clone()));
-        debug_assert_eq!(conjugate_witnesses[0].1, identity_index);
-        let conjugates = conjugate_witnesses
+        let conjugates = conjugacy_class
+            .conjugates
             .into_iter()
-            .map(
-                |(indices, conjugator_index)| KlassengleicheSubgroupConjugate {
-                    subgroup: quotient.make_subgroup(&indices),
-                    conjugator: quotient.parent_operations[conjugator_index].clone(),
-                },
-            )
+            .map(|conjugate| KlassengleicheSubgroupConjugate {
+                subgroup: quotient.make_subgroup(&conjugate.subgroup),
+                conjugator: quotient.parent_operations[conjugate.conjugator_index].clone(),
+            })
             .collect::<Vec<_>>();
 
-        let (normalizer_indices, normalizer_permutations) =
-            quotient.group.normalizer_action(representative_indices);
-        let normalizer_operations = normalizer_indices
+        let normalizer_operations = conjugacy_class
+            .normalizer_indices
             .into_iter()
             .map(|index| quotient.parent_operations[index].clone())
             .collect();
@@ -122,7 +104,7 @@ pub fn enumerate_klassengleiche_subgroups(
             representative,
             conjugates,
             normalizer_operations,
-            normalizer_permutations,
+            normalizer_permutations: conjugacy_class.normalizer_permutations,
         });
     }
 
@@ -194,6 +176,8 @@ fn sublattice_transformations(index: usize) -> Result<Vec<Linear>, MoyoError> {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeSet;
+
     use nalgebra::{matrix, vector};
 
     use super::*;

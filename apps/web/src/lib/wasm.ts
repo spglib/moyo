@@ -2,7 +2,7 @@ import init, * as moyo from '@spglib/moyo-wasm'
 // Vite resolves `?url` imports to a hashed asset URL at build time.
 import wasmUrl from '@spglib/moyo-wasm/moyo_wasm_bg.wasm?url'
 
-export type Moyo = typeof moyo
+type Moyo = typeof moyo
 
 let pending: Promise<Moyo> | null = null
 

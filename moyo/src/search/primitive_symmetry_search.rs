@@ -13,9 +13,10 @@ use super::{
     },
 };
 use crate::base::{
-    AngleTolerance, Cell, EPS, Lattice, MagneticCell, MagneticMoment, MagneticOperation,
+    AngleTolerance, Cell, EPS, Lattice, Linear, MagneticCell, MagneticMoment, MagneticOperation,
     MagneticOperations, MoyoError, Operation, Operations, Permutation, Rotation,
-    RotationMagneticMomentAction, Rotations, Transformation, is_angle_within_tolerance, traverse,
+    RotationMagneticMomentAction, Rotations, Transformation, Translation,
+    is_angle_within_tolerance, traverse,
 };
 
 #[derive(Debug)]
@@ -292,10 +293,22 @@ impl PrimitiveMagneticSymmetrySearch {
 }
 
 pub fn operations_in_cell(prim_cell: &PrimitiveCell, prim_operations: &Operations) -> Operations {
+    operations_in_cell_from_linear_and_translations(
+        &prim_cell.linear,
+        &prim_cell.translations,
+        prim_operations,
+    )
+}
+
+pub(crate) fn operations_in_cell_from_linear_and_translations(
+    linear: &Linear,
+    translations: &[Translation],
+    prim_operations: &Operations,
+) -> Operations {
     let input_operations =
-        Transformation::from_linear(prim_cell.linear).transform_operations(prim_operations);
+        Transformation::from_linear(*linear).transform_operations(prim_operations);
     let mut operations = vec![];
-    for t1 in prim_cell.translations.iter() {
+    for t1 in translations {
         for operation2 in input_operations.iter() {
             // (E, t1) (rotation, t2) = (rotation, t1 + t2)
             let t12 = (t1 + operation2.translation).map(|e| e % 1.);

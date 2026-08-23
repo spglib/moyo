@@ -2,7 +2,6 @@
 extern crate approx;
 
 use nalgebra::{Matrix3, matrix, vector};
-use serde_json;
 use std::fs;
 use std::path::Path;
 use test_log::test;

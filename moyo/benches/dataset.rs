@@ -1,12 +1,10 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 
-use serde_json;
 use std::fs;
 use std::path::Path;
 
 use moyo::MoyoDataset;
-use moyo::base::{AngleTolerance, Cell};
-use moyo::data::Setting;
+use moyo::base::Cell;
 
 pub fn benchmark(c: &mut Criterion) {
     let path = Path::new("tests/assets/mp-1201492.json");
