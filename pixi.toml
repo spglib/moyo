@@ -1,0 +1,13 @@
+# GAP and Cryst are GPL-licensed external validation tools. They are installed
+# only in this opt-in Pixi environment and are not linked into or distributed
+# with Moyo.
+[workspace]
+channels = ["conda-forge"]
+name = "moyo-cryst-validation"
+platforms = ["linux-64", "osx-64", "osx-arm64"]
+
+[tasks]
+test-cryst = "cargo test -p moyo --test test_cryst_subgroup_enumeration -- --ignored --nocapture"
+
+[dependencies]
+gap = "4.15.1.*"
