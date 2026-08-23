@@ -38,7 +38,6 @@ from __future__ import annotations
 import json
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Iterable
 
 import click
 from jarvis.core.atoms import Atoms as JarvisAtoms
@@ -85,7 +84,6 @@ def run(out: Path, setting: str) -> None:
     cell_build_fails: list[dict] = []
     failures: list[dict] = []
     successes = 0
-    per_jid_status: dict[str, dict[float, str]] = {}
 
     for entry in tqdm(entries):
         jid = entry["jid"]
@@ -107,16 +105,13 @@ def run(out: Path, setting: str) -> None:
             )
             continue
 
-        per_jid_status[jid] = {}
         for symprec in SYMPREC_LIST:
             try:
                 moyopy.MoyoLayerDataset(cell, symprec=symprec, setting=layer_setting)
                 successes += 1
-                per_jid_status[jid][symprec] = "OK"
             except Exception as e:
                 kind = type(e).__name__
                 msg = str(e).strip() or "<empty>"
-                key = f"{kind}: {msg}"
                 failures.append(
                     {
                         "jid": jid,
@@ -127,7 +122,6 @@ def run(out: Path, setting: str) -> None:
                         "formula": formula,
                     }
                 )
-                per_jid_status[jid][symprec] = key
 
     payload = {
         "n_entries": len(entries),
@@ -269,13 +263,11 @@ def _print_report(payload: dict) -> None:
 
     # Per-jid pattern: count materials by always-fail / partial / always-OK.
     by_jid: dict[str, set[float]] = defaultdict(set)
-    all_jids: set[str] = set()
     for f in failures:
         by_jid[f["jid"]].add(f["symprec"])
-        all_jids.add(f["jid"])
     n_symprec_set = set(payload["symprec_list"])
-    full_fail = sum(1 for j, sps in by_jid.items() if sps == n_symprec_set)
-    partial_fail = sum(1 for j, sps in by_jid.items() if sps != n_symprec_set)
+    full_fail = sum(1 for sps in by_jid.values() if sps == n_symprec_set)
+    partial_fail = sum(1 for sps in by_jid.values() if sps != n_symprec_set)
 
     n_seen = n_entries - len(cell_build_fails)
     click.echo("\nPer-jid failure pattern:")
@@ -291,14 +283,6 @@ def _print_report(payload: dict) -> None:
         for sg, n in sg_counts.most_common(10):
             n_jids = len({f["jid"] for f in top_occs if f["bulk_spg"] == sg})
             click.echo(f"  bulk SG {sg}: {n} (in {n_jids} jids)")
-
-
-def _iter_failure_jids(failures: Iterable[dict]) -> Iterable[str]:
-    seen: set[str] = set()
-    for f in failures:
-        if f["jid"] not in seen:
-            seen.add(f["jid"])
-            yield f["jid"]
 
 
 if __name__ == "__main__":
