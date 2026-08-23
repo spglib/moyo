@@ -12,13 +12,12 @@ use crate::subgroup::finite_group::FiniteGroup;
 ///
 /// A Klassengleiche subgroup has the same point group as its parent but a
 /// finite-index translation sublattice. Its operations are given both in the
-/// subgroup translation basis and as affine lifts in the parent primitive
-/// basis.
+/// subgroup translation basis and in the parent primitive basis.
 #[derive(Debug, Clone, Serialize)]
 pub struct KlassengleicheSubgroup {
     /// Coset representatives in the subgroup primitive basis.
     pub operations: Operations,
-    /// The same representatives lifted to the parent primitive basis.
+    /// The same symmetry operations expressed in the parent primitive basis.
     pub parent_operations: Operations,
     /// Mapping from [`operations`](Self::operations) to the input parent operations.
     pub operation_indices: Vec<usize>,
@@ -64,9 +63,9 @@ pub struct KlassengleicheSubgroupConjugacyClass {
 /// positive determinant and be preserved by every parent rotation.
 ///
 /// The finite affine quotient `G/L` is formed explicitly. Its complements to
-/// `T/L` lift exactly to the Klassengleiche subgroups of `G` whose translation
-/// lattice is `L`. The result contains all such subgroups, partitioned into
-/// conjugacy classes under the parent space group.
+/// `T/L` correspond exactly to the Klassengleiche subgroups of `G` whose
+/// translation lattice is `L`. The result contains all such subgroups,
+/// partitioned into conjugacy classes under the parent space group.
 pub fn enumerate_klassengleiche_subgroups(
     prim_operations: &Operations,
     transformation: &Linear,
