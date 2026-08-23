@@ -1,4 +1,4 @@
-use std::collections::{BTreeSet, HashMap, VecDeque};
+use std::collections::{BTreeMap, BTreeSet, HashMap, VecDeque};
 
 use crate::base::{MoyoError, Operations, Rotation};
 
@@ -6,6 +6,18 @@ pub(super) struct FiniteGroup {
     table: Vec<Vec<usize>>,
     inverses: Vec<usize>,
     identity: usize,
+}
+
+pub(super) struct FiniteSubgroupConjugate {
+    pub(super) subgroup: Vec<usize>,
+    pub(super) conjugator_index: usize,
+}
+
+pub(super) struct FiniteSubgroupConjugacyClass {
+    pub(super) representative: Vec<usize>,
+    pub(super) conjugates: Vec<FiniteSubgroupConjugate>,
+    pub(super) normalizer_indices: Vec<usize>,
+    pub(super) normalizer_permutations: Vec<Vec<usize>>,
 }
 
 impl FiniteGroup {
@@ -153,6 +165,54 @@ impl FiniteGroup {
             .collect::<Vec<_>>();
         conjugate.sort_unstable();
         conjugate
+    }
+
+    pub(super) fn conjugacy_classes(
+        &self,
+        subgroups: &[Vec<usize>],
+    ) -> Vec<FiniteSubgroupConjugacyClass> {
+        let mut remaining = subgroups.iter().cloned().collect::<BTreeSet<_>>();
+        let mut classes = Vec::new();
+        for representative in subgroups {
+            if !remaining.remove(representative) {
+                continue;
+            }
+
+            let mut conjugate_witnesses =
+                BTreeMap::from([(representative.clone(), self.identity())]);
+            for conjugator in 0..self.order() {
+                let conjugate = self.conjugate(representative, conjugator);
+                conjugate_witnesses.entry(conjugate).or_insert(conjugator);
+            }
+            for conjugate in conjugate_witnesses.keys() {
+                remaining.remove(conjugate);
+            }
+
+            let mut conjugates = conjugate_witnesses
+                .into_iter()
+                .map(|(subgroup, conjugator_index)| FiniteSubgroupConjugate {
+                    subgroup,
+                    conjugator_index,
+                })
+                .collect::<Vec<_>>();
+            conjugates.sort_by_key(|conjugate| {
+                (
+                    conjugate.subgroup != *representative,
+                    conjugate.subgroup.clone(),
+                )
+            });
+            debug_assert_eq!(conjugates[0].conjugator_index, self.identity());
+
+            let (normalizer_indices, normalizer_permutations) =
+                self.normalizer_action(representative);
+            classes.push(FiniteSubgroupConjugacyClass {
+                representative: representative.clone(),
+                conjugates,
+                normalizer_indices,
+                normalizer_permutations,
+            });
+        }
+        classes
     }
 
     pub(super) fn normalizer_action(&self, subgroup: &[usize]) -> (Vec<usize>, Vec<Vec<usize>>) {

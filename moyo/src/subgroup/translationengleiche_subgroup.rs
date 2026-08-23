@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeMap;
 
 use serde::Serialize;
 
@@ -71,59 +71,33 @@ pub fn enumerate_translationengleiche_subgroups(
     let subgroups = finite_group.enumerate_subgroups();
     let depths = subgroup_depths(&subgroups);
 
-    let mut remaining = subgroups.iter().cloned().collect::<BTreeSet<_>>();
     let mut classes = Vec::new();
-    for representative_indices in &subgroups {
-        if !remaining.remove(representative_indices) {
-            continue;
-        }
-
-        let mut conjugate_witnesses =
-            BTreeMap::from([(representative_indices.clone(), finite_group.identity())]);
-        for conjugator in 0..finite_group.order() {
-            let conjugate = finite_group.conjugate(representative_indices, conjugator);
-            conjugate_witnesses.entry(conjugate).or_insert(conjugator);
-        }
-        for conjugate in conjugate_witnesses.keys() {
-            remaining.remove(conjugate);
-        }
-
+    for conjugacy_class in finite_group.conjugacy_classes(&subgroups) {
+        let representative_indices = &conjugacy_class.representative;
         let representative = make_translationengleiche_subgroup(
             representative_indices,
             prim_operations,
             finite_group.order(),
             &depths,
         );
-        let identity_index = finite_group.identity();
-        let mut conjugates = conjugate_witnesses
+        let conjugates = conjugacy_class
+            .conjugates
             .into_iter()
-            .map(
-                |(indices, conjugator_index)| TranslationengleicheSubgroupConjugate {
-                    subgroup: make_translationengleiche_subgroup(
-                        &indices,
-                        prim_operations,
-                        finite_group.order(),
-                        &depths,
-                    ),
-                    conjugator_index,
-                },
-            )
+            .map(|conjugate| TranslationengleicheSubgroupConjugate {
+                subgroup: make_translationengleiche_subgroup(
+                    &conjugate.subgroup,
+                    prim_operations,
+                    finite_group.order(),
+                    &depths,
+                ),
+                conjugator_index: conjugate.conjugator_index,
+            })
             .collect::<Vec<_>>();
-        conjugates.sort_by_key(|conjugate| {
-            (
-                conjugate.subgroup.operation_indices != *representative_indices,
-                conjugate.subgroup.operation_indices.clone(),
-            )
-        });
-        debug_assert_eq!(conjugates[0].conjugator_index, identity_index);
-
-        let (normalizer_indices, normalizer_permutations) =
-            finite_group.normalizer_action(representative_indices);
         classes.push(TranslationengleicheSubgroupConjugacyClass {
             representative,
             conjugates,
-            normalizer_indices,
-            normalizer_permutations,
+            normalizer_indices: conjugacy_class.normalizer_indices,
+            normalizer_permutations: conjugacy_class.normalizer_permutations,
         });
     }
 
