@@ -11,6 +11,8 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 ### moyo
 
 - Derive the primitive standardized cell from the conventional one so that `A_std = A_prim Q` holds with the fixed primitive-to-conventional matrix `Q` of the centering, as documented. Previously the conventional-cell correction for monoclinic and orthorhombic systems was applied on the conventional side only, so `prim_std_cell` was not `std_cell` transformed by `Q^-1` (#431)
+- Fix orthorhombic standardized cells not being sorted `a <= b <= c` for `F`-centered lattices and for settings whose axis permutation needs an origin shift (e.g. the `a <-> b` swap of `Imma`). The centering check now compares the centering translations as a set, and a candidate change of basis is admitted when it maps the space group onto itself up to an origin shift solved by `match_origin_shift`, i.e. when it is an element of the affine normalizer (#428)
+- Wyckoff letters can change where the chosen standardized cell needs an origin shift (e.g. `4a` -> `4d` in `C2/c`), matching spglib (#428)
 
 ## v0.16.0 - 2026-08-23
 
