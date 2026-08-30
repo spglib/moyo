@@ -100,6 +100,6 @@ $$
 
 [^std-cell-7]: moyo brings $\beta$ as close to $\pi / 2$ as possible and, following the ITA convention, chooses the non-acute value ($\pi / 2 \le \beta \lt \pi$, i.e. $\cos \beta \le 0$) when the acute and obtuse choices are equally close to $\pi / 2$.
 
-[^std-cell-6]: moyo orders the basis vectors as $a \le b \le c$ as far as the space-group setting allows. Among the six axis permutations, only those that preserve both the matrix representations of the symmetry operations (as a set) and the centering are admissible, and moyo picks the admissible one with the lexicographically smallest $(a, b, c)$. The number of admissible permutations equals seekpath's "number of distinct projections", so full ordering is not always attainable; for example, side-face-centered cells (oS) admit only the $\mathbf{a} \leftrightarrow \mathbf{b}$ swap, enforcing $a \le b$ alone.
+[^std-cell-6]: moyo orders the basis vectors as $a \le b \le c$ as far as the space-group setting allows. Among the six axis permutations, only those that preserve the centering and map the space group onto itself up to an origin shift (i.e. elements of the affine normalizer) are admissible, and moyo picks the admissible one with the lexicographically smallest $(a, b, c)$. Full ordering is not always attainable; for example, side-face-centered cells (oS) admit only the $\mathbf{a} \leftrightarrow \mathbf{b}$ swap, enforcing $a \le b$ alone.
 
 [^std-cell-5]: Negative (z, z)-component for left-handed input basis vectors.

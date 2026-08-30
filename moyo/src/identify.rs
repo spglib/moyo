@@ -10,6 +10,7 @@ pub use magnetic_space_group::MagneticSpaceGroup;
 pub use normalizer::{Normalizer, integral_normalizer};
 pub use point_group::PointGroup;
 pub use space_group::SpaceGroup;
+pub(crate) use space_group::match_origin_shift;
 
 pub(super) use magnetic_space_group::{
     family_space_group_from_magnetic_space_group,

@@ -799,12 +799,55 @@ fn test_wyckoff_position_assignment() {
 
     {
         // https://github.com/CompRhys/aviary/pull/96#issuecomment-2628703353
+        // The input C2/c cell is strongly skewed: a = 7.65, b = 13.18, c = 11.74 A,
+        // beta = 38.9 deg.
+        //
+        // Behavior before the affine-normalizer admissibility test: the correction
+        // search could only flip signs of the in-plane axes (c' = c - a changes the
+        // c-glide into an n-glide unless the origin is shifted), so the standardized
+        // cell kept |c| = 11.74 A with beta = 141.1 deg and assigned the Fe sites to
+        // 4a, giving the Wyckoff sequence `eeeeaaaa` of the AFLOW label of this asset.
+        //
+        // Behavior now: c' = c - a with the origin shift (1/4, 1/4, 0) is admitted, so
+        // c is reduced to 7.52 A and the Fe sites land on the equivalent 4d, which is
+        // the Wyckoff sequence `eeeedddd` that spglib 2.7.0 returns for this input.
+        // The a axis is still unreduced here (a = 18.18 A, beta = 155.6 deg): shortening
+        // it needs a' = a - 2c', outside the bounded [-1, 1] candidate search. The
+        // Delaunay-triple candidates of the next layer reduce it to spglib's cell
+        // (a = 7.65, b = 13.18, c = 7.52 A, beta = 101.4 deg).
         let path = Path::new("tests/assets/AB_mC8_15_e_a.json");
         let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
         let dataset = MoyoDataset::with_default(&cell, symprec).unwrap();
+        assert_eq!(dataset.number, 15); // C2/c
+        let (a, b, c) = std_cell_lengths(&dataset);
+        assert_relative_eq!(a, 18.1755, epsilon = 1e-4);
+        assert_relative_eq!(b, 13.1793, epsilon = 1e-4);
+        assert_relative_eq!(c, 7.5231, epsilon = 1e-4);
+        let basis = dataset.std_cell.lattice.basis;
+        let beta = (basis.column(0).dot(&basis.column(2)) / (a * c))
+            .acos()
+            .to_degrees();
+        assert_relative_eq!(beta, 155.62, epsilon = 1e-2);
         assert_eq!(
             dataset.wyckoffs,
-            vec!['e', 'e', 'e', 'e', 'a', 'a', 'a', 'a']
+            vec!['e', 'e', 'e', 'e', 'd', 'd', 'd', 'd']
+        );
+
+        // The shear c' = c - a is an affine but not a Euclidean normalizer element
+        // for this metric, so 4a is not reachable from the chosen cell by an
+        // isometry: the Euclidean normalizer of C2/c (P 1 2/m 1 with halved axes)
+        // only exchanges 4d with 4c, via the origin shift (0, 0, 1/2).
+        let result = dataset.normalizer_wyckoff_positions(false, false).unwrap();
+        let sequences: std::collections::BTreeSet<String> = result
+            .coset_representatives
+            .iter()
+            .map(|(_, seq)| seq.iter().map(|w| w.letter).collect())
+            .collect();
+        assert_eq!(
+            sequences,
+            ["eeeecccc".to_string(), "eeeedddd".to_string()]
+                .into_iter()
+                .collect()
         );
     }
 
@@ -947,6 +990,85 @@ fn test_monoclinic_non_acute_angle() {
             "acute angle between basis vectors {i} and {j}: cos = {cos_angle}"
         );
     }
+}
+
+#[test]
+fn test_orthorhombic_axis_order_imma() {
+    // BaZn2 in Imma (#74), given with a > b. Source: seekpath's test suite,
+    // https://github.com/giovannipizzi/seekpath/blob/develop/seekpath/hpkot/band_path_data/oI3/POSCAR_inversion
+    // (oI3Y, BPOSCAR-0030435). Swapping a and b maps Imma onto itself only together
+    // with an origin shift by (1/4, 1/4, 1/4), so the swap is admissible and a <= b
+    // must be imposed.
+    let lattice = Lattice::new(matrix![
+        8.1511447228, 0.0, 0.0;
+        0.0, 5.0461430197, 0.0;
+        0.0, 0.0, 7.8659149208;
+    ]);
+    let positions = vec![
+        Vector3::new(0.672436615, 0.75, 0.410128745),
+        Vector3::new(0.827563385, 0.75, 0.089871255),
+        Vector3::new(0.672436615, 0.25, 0.589871255),
+        Vector3::new(0.827563385, 0.25, 0.910128745),
+        Vector3::new(0.172436615, 0.25, 0.910128745),
+        Vector3::new(0.327563385, 0.25, 0.589871255),
+        Vector3::new(0.172436615, 0.75, 0.089871255),
+        Vector3::new(0.327563385, 0.75, 0.410128745),
+        Vector3::new(0.5, 0.75, 0.8073779),
+        Vector3::new(0.0, 0.75, 0.6926221),
+        Vector3::new(0.0, 0.25, 0.3073779),
+        Vector3::new(0.5, 0.25, 0.1926221),
+    ];
+    let numbers = vec![0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let dataset = assert_dataset_with_default(&cell, symprec);
+    assert_eq!(dataset.number, 74); // Imma
+
+    let (a, b, c) = std_cell_lengths(&dataset);
+    assert_relative_eq!(a, 5.0461430197, epsilon = 1e-6);
+    assert_relative_eq!(b, 8.1511447228, epsilon = 1e-6);
+    assert_relative_eq!(c, 7.8659149208, epsilon = 1e-6);
+}
+
+#[test]
+fn test_orthorhombic_axis_order_f_centered() {
+    // CuO in Fmmm (#69), given with the axes unsorted. Source: seekpath's test suite,
+    // https://github.com/giovannipizzi/seekpath/blob/develop/seekpath/hpkot/band_path_data/oF1/POSCAR_inversion
+    // (oF1Y, BPOSCAR-0614565), with the axes permuted. All six axis permutations keep
+    // Fmmm, but a permutation maps the three F-centering translations onto each other
+    // rather than fixing each one, so the centering check must compare them as a set.
+    // Lengths must be fully sorted.
+    let lattice = Lattice::new(matrix![
+        11.4917672795, 0.0, 0.0;
+        0.0, 2.7462061223, 0.0;
+        0.0, 0.0, 7.26235854;
+    ]);
+    let positions = vec![
+        Vector3::new(0.5, 0.5, 0.5),
+        Vector3::new(0.0, 0.5, 0.0),
+        Vector3::new(0.0, 0.0, 0.5),
+        Vector3::new(0.5, 0.0, 0.0),
+        Vector3::new(0.60212009, 0.0, 0.5),
+        Vector3::new(0.89787991, 0.5, 0.5),
+        Vector3::new(0.10212009, 0.0, 0.0),
+        Vector3::new(0.39787991, 0.5, 0.0),
+        Vector3::new(0.10212009, 0.5, 0.5),
+        Vector3::new(0.39787991, 0.0, 0.5),
+        Vector3::new(0.60212009, 0.5, 0.0),
+        Vector3::new(0.89787991, 0.0, 0.0),
+    ];
+    let numbers = vec![0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let dataset = assert_dataset_with_default(&cell, symprec);
+    assert_eq!(dataset.number, 69); // Fmmm
+
+    let (a, b, c) = std_cell_lengths(&dataset);
+    assert_relative_eq!(a, 2.7462061223, epsilon = 1e-6);
+    assert_relative_eq!(b, 7.26235854, epsilon = 1e-6);
+    assert_relative_eq!(c, 11.4917672795, epsilon = 1e-6);
 }
 
 /// Lengths of the standardized conventional basis vectors `(a, b, c)`.
