@@ -4,8 +4,8 @@ use nalgebra::{Matrix3, Vector3, vector};
 use std::collections::HashMap;
 
 use super::conventional_cell::{
-    AXIS_PERMUTATIONS3, UNIMODULAR3_RANGE1, monoclinic_rank_key, orthorhombic_rank_key,
-    select_conventional_correction,
+    AXIS_PERMUTATIONS3, monoclinic_candidate_corrections, monoclinic_rank_key,
+    orthorhombic_rank_key, select_conventional_correction,
 };
 use super::wyckoff::{assign_wyckoffs_by_orbit, group_sites_by_orbit, match_wyckoff_coordinates};
 use crate::base::{
@@ -147,7 +147,7 @@ impl StandardizedCell {
                     entry.centering,
                     &prim_std_operations,
                     &hs.primitive_generators(),
-                    &UNIMODULAR3_RANGE1,
+                    &monoclinic_candidate_corrections(&conv_lattice_tmp),
                     monoclinic_rank_key,
                     epsilon,
                 );

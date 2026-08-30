@@ -993,6 +993,51 @@ fn test_monoclinic_non_acute_angle() {
 }
 
 #[test]
+fn test_monoclinic_c_centered_reduced_cell() {
+    // CrS-like C2/c (#15) structure from the seekpath test suite (mC2_inv), given in
+    // its reduced conventional cell (beta = 101.6 deg). Standardization used to return
+    // the equivalent but far longer cell a' = 2c - a (a = 13.5 A, beta = 164 deg)
+    // because the correction search was bounded to matrix entries in [-1, 1] and the
+    // C-centering forbids a' = a + c. The reduced a-c basis must be recovered, with
+    // beta non-acute and the primitive cell derived from the conventional one.
+    let lattice = Lattice::new(matrix![
+        3.826, 0.0, 0.0;
+        0.0, 5.913, 0.0;
+        -1.2243633483, 0.0, 5.9646339479;
+    ]);
+    let positions = vec![
+        Vector3::new(0.0, 0.0, 0.0),
+        Vector3::new(0.0, 0.0, 0.5),
+        Vector3::new(0.5, 0.5, 0.0),
+        Vector3::new(0.5, 0.5, 0.5),
+        Vector3::new(0.0, 0.32, 0.25),
+        Vector3::new(0.0, 0.68, 0.75),
+        Vector3::new(0.5, 0.82, 0.25),
+        Vector3::new(0.5, 0.18, 0.75),
+    ];
+    let numbers = vec![0, 0, 0, 0, 1, 1, 1, 1];
+    let cell = Cell::new(lattice, positions, numbers);
+
+    let symprec = 1e-4;
+    let dataset = assert_dataset_with_default(&cell, symprec);
+    assert_eq!(dataset.number, 15); // C2/c
+
+    let (a, b, c) = std_cell_lengths(&dataset);
+    assert_relative_eq!(a, 3.826, epsilon = 1e-6);
+    assert_relative_eq!(b, 5.913, epsilon = 1e-6);
+    assert_relative_eq!(c, 6.0890, epsilon = 1e-4);
+    let basis = dataset.std_cell.lattice.basis;
+    let cos_beta = basis.column(0).dot(&basis.column(2)) / (a * c);
+    assert_relative_eq!(cos_beta.acos().to_degrees(), 101.6, epsilon = 1e-3);
+
+    // The primitive standardized cell is the reduced one, too (not a' = 2c - a).
+    let prim_basis = dataset.prim_std_cell.lattice.basis;
+    for i in 0..3 {
+        assert!(prim_basis.column(i).norm() < 6.1);
+    }
+}
+
+#[test]
 fn test_orthorhombic_axis_order_imma() {
     // BaZn2 in Imma (#74), given with a > b. Source: seekpath's test suite,
     // https://github.com/giovannipizzi/seekpath/blob/develop/seekpath/hpkot/band_path_data/oI3/POSCAR_inversion
