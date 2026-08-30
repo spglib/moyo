@@ -1,5 +1,5 @@
 use itertools::Itertools;
-use log::debug;
+use log::warn;
 use nalgebra::Matrix3;
 use once_cell::sync::Lazy;
 
@@ -131,7 +131,10 @@ where
     match best {
         Some((_, correction)) => correction,
         None => {
-            debug!("No admissible correction of the conventional cell; keep the identified one");
+            // Unreachable when the identity is among the candidates; a candidate set
+            // that misses it (or a bug in the admissibility test) would otherwise pass
+            // an uncorrected cell through unnoticed.
+            warn!("No admissible correction of the conventional cell; keep the identified one");
             UnimodularTransformation::from_linear(UnimodularLinear::identity())
         }
     }
