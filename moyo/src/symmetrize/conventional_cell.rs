@@ -38,9 +38,23 @@ pub(super) static AXIS_PERMUTATIONS3: Lazy<Vec<UnimodularLinear>> = Lazy::new(||
 /// pairwise non-acute. The candidates are all ordered pairs of distinct triple vectors,
 /// with every sign choice for the pair and for the unique axis.
 ///
-/// The triple always contains a pair compatible with the Hall setting: the centering
-/// and glide translations constrain the parity of the integer coefficients of the new
-/// in-plane axes, and the three triple vectors cover all three non-zero parity classes.
+/// Pairs from the triple are sufficient for the following reasons.
+///
+/// 1. Any two of the three vectors form a basis of the plane lattice, since
+///    `v3 = -(v1 + v2)`.
+/// 2. Whether a change of basis keeps the Hall setting depends only on the integer
+///    coefficients modulo 2: the centering and glide translations are half-integer
+///    vectors, so `preserves_centering` and `match_origin_shift` only see the class of
+///    each new axis in `L / 2L`. The triple vectors realize all three non-zero classes,
+///    hence every admissible basis has an admissible "parity twin" in the triple, and
+///    the search never falls back to the identity.
+/// 3. For an obtuse superbase in two dimensions, `+-v1, +-v2, +-v3` are the
+///    Voronoi-relevant vectors, i.e. the shortest vectors of their classes modulo `2L`.
+///    Among the equally admissible bases of a parity signature, the triple pair thus
+///    has the shortest in-plane axes, which is the convention (ITA, Parthe-Gelato,
+///    spglib): the shortest axes compatible with the setting first, and only then the
+///    angle. Bases with longer axes in the same class, e.g. `(v1, v3 + 2 v1)`, may have
+///    an angle closer to 90 deg but are deliberately excluded.
 pub(super) fn monoclinic_candidate_corrections(conv_lattice: &Lattice) -> Vec<UnimodularLinear> {
     let unique_axis = monoclinic_unique_axis(conv_lattice);
     let i = (unique_axis + 1) % 3;
