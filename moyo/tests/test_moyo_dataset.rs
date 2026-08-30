@@ -992,6 +992,15 @@ fn test_monoclinic_non_acute_angle() {
             "acute angle between basis vectors {i} and {j}: cos = {cos_angle}"
         );
     }
+
+    // P2/m admits the a <-> c swap, and both assignments of the reduced in-plane pair
+    // (|a| = 4.0, |c| = sqrt(1 + 3.1^2) ~ 3.2573) tie on skewness and on the signed
+    // cosine, so the lexicographic (a, b, c) tie-break must put the shorter one on a.
+    let (a, b, c) = std_cell_lengths(&dataset);
+    assert!(a <= c + 1e-6, "a={a} should be <= c={c}");
+    assert_relative_eq!(a, (1.0_f64 + 3.1_f64 * 3.1_f64).sqrt(), epsilon = 1e-6);
+    assert_relative_eq!(b, 5.0, epsilon = 1e-6);
+    assert_relative_eq!(c, 4.0, epsilon = 1e-6);
 }
 
 #[test]
