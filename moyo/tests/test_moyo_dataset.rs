@@ -8,7 +8,7 @@ use test_log::test;
 
 use moyo::MoyoDataset;
 use moyo::base::{AngleTolerance, Cell, Lattice, Operation, Permutation, Rotation, Translation};
-use moyo::data::{Setting, operations_from_number};
+use moyo::data::{Setting, hall_symbol_entry, operations_from_number};
 
 fn assert_dataset_with_default(cell: &Cell, symprec: f64) -> MoyoDataset {
     assert_dataset(cell, symprec, AngleTolerance::default(), Setting::default())
@@ -114,6 +114,19 @@ fn assert_dataset(
     );
     // TODO: std_origin_shift
     // TODO: prim_origin_shift
+
+    // The primitive standardized cell is related to the standardized cell by the fixed
+    // primitive-to-conventional matrix of the centering: A_std = A_prim * Q
+    let centering_linear = hall_symbol_entry(dataset.hall_number)
+        .unwrap()
+        .centering
+        .linear()
+        .map(|e| e as f64);
+    assert_relative_eq!(
+        dataset.prim_std_cell.lattice.basis * centering_linear,
+        dataset.std_cell.lattice.basis,
+        epsilon = 1e-8
+    );
 
     assert_eq!(dataset.mapping_std_prim.len(), cell.num_atoms());
 
