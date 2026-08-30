@@ -808,26 +808,28 @@ fn test_wyckoff_position_assignment() {
         // cell kept |c| = 11.74 A with beta = 141.1 deg and assigned the Fe sites to
         // 4a, giving the Wyckoff sequence `eeeeaaaa` of the AFLOW label of this asset.
         //
-        // Behavior now: c' = c - a with the origin shift (1/4, 1/4, 0) is admitted, so
-        // c is reduced to 7.52 A and the Fe sites land on the equivalent 4d, which is
-        // the Wyckoff sequence `eeeedddd` that spglib 2.7.0 returns for this input.
-        // The a axis is still unreduced here (a = 18.18 A, beta = 155.6 deg): shortening
-        // it needs a' = a - 2c', outside the bounded [-1, 1] candidate search. The
-        // Delaunay-triple candidates of the next layer reduce it to spglib's cell
-        // (a = 7.65, b = 13.18, c = 7.52 A, beta = 101.4 deg).
+        // Behavior after admitting affine-normalizer corrections (bounded [-1, 1]
+        // candidates): c' = c - a with the origin shift (1/4, 1/4, 0) is admitted, so
+        // c is reduced to 7.52 A and the Fe sites land on the equivalent 4d, but the a
+        // axis stays unreduced (a = 18.18 A, beta = 155.6 deg) because a' = a - 2c'
+        // is outside the candidate search.
+        //
+        // Behavior now: the Delaunay-triple candidates reduce the a-c plane, giving
+        // spglib 2.7.0's standardized cell (a = 7.65, b = 13.18, c = 7.52 A,
+        // beta = 101.4 deg) with the same Wyckoff sequence `eeeedddd`.
         let path = Path::new("tests/assets/AB_mC8_15_e_a.json");
         let cell: Cell = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
         let dataset = MoyoDataset::with_default(&cell, symprec).unwrap();
         assert_eq!(dataset.number, 15); // C2/c
         let (a, b, c) = std_cell_lengths(&dataset);
-        assert_relative_eq!(a, 18.1755, epsilon = 1e-4);
+        assert_relative_eq!(a, 7.6539, epsilon = 1e-4);
         assert_relative_eq!(b, 13.1793, epsilon = 1e-4);
         assert_relative_eq!(c, 7.5231, epsilon = 1e-4);
         let basis = dataset.std_cell.lattice.basis;
         let beta = (basis.column(0).dot(&basis.column(2)) / (a * c))
             .acos()
             .to_degrees();
-        assert_relative_eq!(beta, 155.62, epsilon = 1e-2);
+        assert_relative_eq!(beta, 101.36, epsilon = 1e-2);
         assert_eq!(
             dataset.wyckoffs,
             vec!['e', 'e', 'e', 'e', 'd', 'd', 'd', 'd']
@@ -994,8 +996,10 @@ fn test_monoclinic_non_acute_angle() {
 
 #[test]
 fn test_monoclinic_c_centered_reduced_cell() {
-    // CrS-like C2/c (#15) structure from the seekpath test suite (mC2_inv), given in
-    // its reduced conventional cell (beta = 101.6 deg). Standardization used to return
+    // CrS in C2/c (#15), given in its reduced conventional cell (beta = 101.6 deg).
+    // Source: seekpath's test suite,
+    // https://github.com/giovannipizzi/seekpath/blob/develop/seekpath/hpkot/band_path_data/mC2/POSCAR_inversion
+    // (Cr1 S1). Standardization used to return
     // the equivalent but far longer cell a' = 2c - a (a = 13.5 A, beta = 164 deg)
     // because the correction search was bounded to matrix entries in [-1, 1] and the
     // C-centering forbids a' = a + c. The reduced a-c basis must be recovered, with
