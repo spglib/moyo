@@ -1,7 +1,7 @@
 # Moyo conventions of standardized cell
 
 !!! note
-    This document is based on moyo==0.13.0.
+    This document is based on moyo==0.17.0.
 
 This document describes how the standardized cell `MoyoDataset.std_cell` and the primitive standardized cell `MoyoDataset.prim_std_cell` are specified in Moyo.
 The conventions described here apply uniformly to the core Rust implementation as well as all other language bindings.
@@ -98,7 +98,7 @@ $$
 
 [^std-cell-4]: $c < 0$ for left-handed input basis vectors.
 
-[^std-cell-7]: moyo brings $\beta$ as close to $\pi / 2$ as possible and, following the ITA convention, chooses the non-acute value ($\pi / 2 \le \beta \lt \pi$, i.e. $\cos \beta \le 0$) when the acute and obtuse choices are equally close to $\pi / 2$.
+[^std-cell-7]: The basis vectors $\mathbf{a}$ and $\mathbf{c}$ are taken from the Delaunay-reduced triple $\mathbf{v}_1, \mathbf{v}_2, -(\mathbf{v}_1 + \mathbf{v}_2)$ of the lattice plane perpendicular to the unique axis, whose members are pairwise non-acute. Among the pairs that keep the Hall setting (the centering and the glide translations, up to an origin shift), moyo chooses the one with $\beta$ closest to $\pi / 2$, prefers the non-acute value ($\pi / 2 \le \beta \lt \pi$, i.e. $\cos \beta \le 0$) between the supplements following the ITA convention, and finally the lexicographically smallest $(a, b, c)$, which gives $a \le c$ for the settings that allow the $\mathbf{a} \leftrightarrow \mathbf{c}$ swap ($P2$, $P2_1$, $Pm$, $P2/m$, $P2_1/m$) following E. Parthe and L. M. Gelato, Acta Cryst. A**39**, 169-173 (1983), as spglib does. Consequently $\pi / 2 \le \beta \le 2\pi / 3$.
 
 [^std-cell-6]: moyo orders the basis vectors as $a \le b \le c$ as far as the space-group setting allows. Among the six axis permutations, only those that preserve the centering and map the space group onto itself up to an origin shift (i.e. elements of the affine normalizer) are admissible, and moyo picks the admissible one with the lexicographically smallest $(a, b, c)$. Full ordering is not always attainable; for example, side-face-centered cells (oS) admit only the $\mathbf{a} \leftrightarrow \mathbf{b}$ swap, enforcing $a \le b$ alone.
 

@@ -1,11 +1,12 @@
-use itertools::Itertools;
+use itertools::iproduct;
 use log::warn;
-use nalgebra::Matrix3;
+use nalgebra::{Matrix2, Matrix3, Vector2};
 use once_cell::sync::Lazy;
 
 use crate::base::{EPS, Lattice, Operations, UnimodularLinear, UnimodularTransformation};
 use crate::data::Centering;
 use crate::identify::match_origin_shift;
+use crate::math::minkowski_reduce_2d;
 
 /// The six axis permutations as proper (det = +1) signed-permutation matrices. The
 /// three odd permutations (transpositions) are made right-handed by negating their
@@ -30,33 +31,102 @@ pub(super) static AXIS_PERMUTATIONS3: Lazy<Vec<UnimodularLinear>> = Lazy::new(||
     ]
 });
 
-/// Candidate unimodular corrections with entries in `[-1, 1]`.
+/// Candidate changes of basis for a monoclinic conventional cell.
 ///
-/// This bounded search is used as a best-effort search space for monoclinic
-/// conventional-cell standardization. Exhaustiveness is not claimed here.
-pub(super) static UNIMODULAR3_RANGE1: Lazy<Vec<UnimodularLinear>> = Lazy::new(|| {
-    (0..9)
-        .map(|_| -1_i32..=1_i32)
-        .multi_cartesian_product()
-        .filter_map(|v| {
-            let mat = Matrix3::new(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]);
-            let det = mat.map(|e| e as f64).determinant().round() as i32;
-            if det == 1 { Some(mat) } else { None }
+/// The two basis vectors perpendicular to the unique axis are Lagrange-reduced in their
+/// plane and completed to the Delaunay triple `v1, v2, -(v1 + v2)`, whose members are
+/// pairwise non-acute. The candidates are all ordered pairs of distinct triple vectors,
+/// with every sign choice for the pair and for the unique axis.
+///
+/// Pairs from the triple are sufficient for the following reasons.
+///
+/// 1. Any two of the three vectors form a basis of the plane lattice, since
+///    `v3 = -(v1 + v2)`.
+/// 2. Whether a change of basis keeps the Hall setting depends only on the integer
+///    coefficients modulo 2: the centering and glide translations are half-integer
+///    vectors, so `preserves_centering` and `match_origin_shift` only see the class of
+///    each new axis in `L / 2L`. The triple vectors realize all three non-zero classes,
+///    hence every admissible basis has an admissible "parity twin" in the triple, and
+///    the search never falls back to the identity.
+/// 3. For an obtuse superbase in two dimensions, `+-v1, +-v2, +-v3` are the
+///    Voronoi-relevant vectors, i.e. the shortest vectors of their classes modulo `2L`.
+///    Among the equally admissible bases of a parity signature, the triple pair thus
+///    has the shortest in-plane axes, which is the convention (ITA, Parthe-Gelato,
+///    spglib): the shortest axes compatible with the setting first, and only then the
+///    angle. Bases with longer axes in the same class, e.g. `(v1, v3 + 2 v1)`, may have
+///    an angle closer to 90 deg but are deliberately excluded.
+pub(super) fn monoclinic_candidate_corrections(conv_lattice: &Lattice) -> Vec<UnimodularLinear> {
+    let unique_axis = monoclinic_unique_axis(conv_lattice);
+    let i = (unique_axis + 1) % 3;
+    let j = (unique_axis + 2) % 3;
+    let basis = conv_lattice.basis; // column-wise
+    let vi = basis.column(i).into_owned();
+    let vj = basis.column(j).into_owned();
+
+    // Coordinates of the in-plane basis in an orthonormal frame of the plane.
+    let e1 = vi.normalize();
+    let e2 = (vj - vj.dot(&e1) * e1).normalize();
+    let basis_2d = Matrix2::new(vi.dot(&e1), vj.dot(&e1), vi.dot(&e2), vj.dot(&e2));
+    let (reduced_2d, trans_2d) = minkowski_reduce_2d(&basis_2d);
+
+    // Integer coefficients of the Delaunay triple with respect to `(vi, vj)`.
+    let c1 = Vector2::new(trans_2d[(0, 0)], trans_2d[(1, 0)]);
+    let mut c2 = Vector2::new(trans_2d[(0, 1)], trans_2d[(1, 1)]);
+    if reduced_2d.column(0).dot(&reduced_2d.column(1)) > 0.0 {
+        c2 = -c2;
+    }
+    let c3 = -(c1 + c2);
+    let triple = [c1, c2, c3];
+
+    let mut candidates = vec![];
+    for (x, y) in iproduct!(0..3, 0..3).filter(|(x, y)| x != y) {
+        for (sign_x, sign_y, sign_unique) in iproduct!([1, -1], [1, -1], [1, -1]) {
+            let mut corr = UnimodularLinear::zeros();
+            corr[(i, i)] = sign_x * triple[x][0];
+            corr[(j, i)] = sign_x * triple[x][1];
+            corr[(i, j)] = sign_y * triple[y][0];
+            corr[(j, j)] = sign_y * triple[y][1];
+            corr[(unique_axis, unique_axis)] = sign_unique;
+            candidates.push(corr);
+        }
+    }
+    candidates
+}
+
+/// Index of the unique axis of a monoclinic conventional cell, read off the metric: the
+/// unique axis is perpendicular to the other two, so it is the axis opposite the angle
+/// farthest from 90 deg (`alpha` <-> `a`, `beta` <-> `b`, `gamma` <-> `c`). This works for
+/// every unique-axis setting of the Hall-symbol database. If all three angles are 90 deg
+/// within noise, the in-plane basis is orthogonal, hence already reduced, and any choice
+/// leaves the identity among the candidates.
+fn monoclinic_unique_axis(conv_lattice: &Lattice) -> usize {
+    let lc = conv_lattice.lattice_constant();
+    (0..3)
+        .max_by(|&i, &j| {
+            (lc[3 + i] - 90.0)
+                .abs()
+                .partial_cmp(&(lc[3 + j] - 90.0).abs())
+                .unwrap()
         })
-        .collect()
-});
+        .unwrap()
+}
 
 /// Ranking key for monoclinic conventional cells: closest to orthogonal first, then
-/// (following the ITA convention) the non-acute monoclinic angle among the supplements,
-/// which have the same `|cos|`.
+/// (following the ITA convention) the non-acute monoclinic angle among the supplements
+/// -- they have the same `|cos|` -- and finally the lexicographically shortest
+/// `(a, b, c)`. The last key orders `a <= c` when the setting allows the `a <-> c` swap
+/// (P2, P2_1, Pm, P2/m, P2_1/m), the convention of E. Parthe and L. M. Gelato, "The
+/// best unit cell for monoclinic structures compatible with b axis unique and cell
+/// choice 1", Acta Cryst. A39, 169-173 (1983), which spglib follows as well.
 pub(super) fn monoclinic_rank_key(lattice: &Lattice) -> Vec<f64> {
-    let cos_angles = lattice.lattice_constant()[3..]
+    let lc = lattice.lattice_constant();
+    let cos_angles = lc[3..]
         .iter()
         .map(|angle_deg| angle_deg.to_radians().cos())
         .collect::<Vec<_>>();
     let skewness = cos_angles.iter().map(|cos| cos.abs()).sum::<f64>();
     let signed_cos_sum = cos_angles.iter().sum::<f64>();
-    vec![skewness, signed_cos_sum]
+    vec![skewness, signed_cos_sum, lc[0], lc[1], lc[2]]
 }
 
 /// Ranking key for orthorhombic conventional cells: lexicographically shortest
