@@ -12,8 +12,8 @@ use crate::base::{
     Transformation, UnimodularTransformation, project_rotations,
 };
 use crate::data::{
-    HallNumber, HallSymbol, LatticeSystem, WyckoffPosition, arithmetic_crystal_class_entry,
-    hall_symbol_entry, iter_wyckoff_positions,
+    Centering, HallNumber, HallSymbol, LatticeSystem, WyckoffPosition,
+    arithmetic_crystal_class_entry, hall_symbol_entry, iter_wyckoff_positions,
 };
 use crate::identify::SpaceGroup;
 
@@ -126,6 +126,11 @@ impl StandardizedCell {
         let lattice_system = arithmetic_crystal_class_entry(entry.arithmetic_number)
             .unwrap()
             .lattice_system();
+        // For monoclinic and orthorhombic systems, the identified setting leaves some
+        // freedom in the conventional basis. The chosen correction is folded into
+        // `prim_transformation` so that the primitive standardized cell is always
+        // related to the conventional one by the fixed centering matrix
+        // `entry.centering.linear()`.
         let (prim_transformation, conv_trans_linear) = match lattice_system {
             LatticeSystem::Triclinic => (
                 standardize_triclinic_cell(&prim_cell.lattice, &space_group.transformation),
@@ -139,7 +144,14 @@ impl StandardizedCell {
                     &hs.generators,
                     epsilon,
                 );
-                (space_group.transformation.clone(), trans_std_prim_to_conv)
+                (
+                    fold_conventional_correction(
+                        &space_group.transformation,
+                        &trans_std_prim_to_conv,
+                        entry.centering,
+                    ),
+                    entry.centering.linear(),
+                )
             }
             LatticeSystem::Orthorhombic => {
                 let trans_std_prim_to_conv = standardize_orthorhombic_conv_cell(
@@ -149,7 +161,14 @@ impl StandardizedCell {
                     &conv_std_operations,
                     epsilon,
                 );
-                (space_group.transformation.clone(), trans_std_prim_to_conv)
+                (
+                    fold_conventional_correction(
+                        &space_group.transformation,
+                        &trans_std_prim_to_conv,
+                        entry.centering,
+                    ),
+                    entry.centering.linear(),
+                )
             }
             _ => (space_group.transformation.clone(), entry.centering.linear()),
         };
@@ -268,6 +287,23 @@ pub(super) fn align_primitive_permutations(
                 .ok_or(MoyoError::StandardizationError)
         })
         .collect()
+}
+
+/// Fold a primitive-to-conventional transformation `Q corr` (as returned by the
+/// conventional-cell standardization, with `Q = centering.linear()`) into the
+/// primitive transformation, so that the primitive standardized cell is the
+/// conventional one transformed by the fixed `Q^-1`. The correction in the primitive
+/// basis is `Q corr Q^-1 = (Q corr) Q^-1`, which is integral because `corr` maps the
+/// centering lattice onto itself.
+fn fold_conventional_correction(
+    transformation_to_prim_std: &UnimodularTransformation,
+    trans_std_prim_to_conv: &Linear,
+    centering: Centering,
+) -> UnimodularTransformation {
+    let centering_linear_inv = centering.linear().map(|e| e as f64).try_inverse().unwrap();
+    let prim_correction =
+        (trans_std_prim_to_conv.map(|e| e as f64) * centering_linear_inv).map(|e| e.round() as i32);
+    transformation_to_prim_std.clone() * UnimodularTransformation::from_linear(prim_correction)
 }
 
 /// Niggli reduction for distorted triclinic lattice systems is numerically so challenging.
