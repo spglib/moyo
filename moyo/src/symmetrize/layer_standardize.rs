@@ -3,10 +3,8 @@ use std::collections::HashMap;
 use nalgebra::Matrix3;
 use nalgebra::linalg::QR;
 
-use super::standardize::{
-    align_primitive_permutations, assign_wyckoffs_by_orbit, group_sites_by_orbit,
-    match_wyckoff_coordinates, symmetrize_positions,
-};
+use super::standardize::{align_primitive_permutations, symmetrize_positions};
+use super::wyckoff::{assign_wyckoffs_by_orbit, group_sites_by_orbit, match_wyckoff_coordinates};
 use crate::base::{
     EPS, Lattice, Lattice2D, LayerCell, LayerLattice, Linear, MoyoError, Operations, Permutation,
     Rotations, Transformation, UnimodularTransformation, project_rotations,
