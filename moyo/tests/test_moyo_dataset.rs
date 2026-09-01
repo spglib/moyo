@@ -1291,9 +1291,7 @@ fn test_with_rocksalt_supercell() {
     assert_eq!(cell.num_atoms(), 8 * n * n * n);
 
     let symprec = 1e-5;
-    // Not `assert_dataset_with_default`: that uses `Setting::Standard`, and the
-    // slowdown was reported under `Setting::Spglib`.
-    let dataset = assert_dataset(&cell, symprec, AngleTolerance::default(), Setting::Spglib);
+    let dataset = assert_dataset_with_default(&cell, symprec);
 
     assert_eq!(dataset.number, 225); // Fm-3m
     // 48 point-group operations x 4 fcc centerings x n^3 supercell translations
