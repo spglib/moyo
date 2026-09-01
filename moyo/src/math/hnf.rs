@@ -1,10 +1,6 @@
 use nalgebra::base::allocator::Allocator;
 use nalgebra::{DefaultAllocator, Dim, OMatrix};
 
-use super::elementary::{
-    adding_column_matrix, changing_column_sign_matrix, swapping_column_matrix,
-};
-
 /// Hermite normal form of (M, N) matrix such that h = basis * r
 #[derive(Debug)]
 #[allow(clippy::upper_case_acronyms)]
@@ -39,14 +35,16 @@ where
                     .min_by_key(|&j| h[(s, j)].abs())
                     .unwrap();
                 h.swap_columns(s, pivot);
-                r *= swapping_column_matrix(n, s, pivot);
+                r.swap_columns(s, pivot);
 
                 // Guarantee that h[(s, s)] is positive
                 if h[(s, s)] < 0 {
                     for i in 0..m.value() {
                         h[(i, s)] *= -1;
                     }
-                    r *= changing_column_sign_matrix(n, s);
+                    for i in 0..n.value() {
+                        r[(i, s)] *= -1;
+                    }
                 }
                 assert_ne!(h[(s, s)], 0);
 
@@ -64,7 +62,10 @@ where
                         for i in 0..m.value() {
                             h[(i, j)] -= k * h[(i, s)];
                         }
-                        r *= adding_column_matrix(n, s, j, -k);
+                        // r[(:, j)] -= k * r[(:, s)]
+                        for i in 0..n.value() {
+                            r[(i, j)] -= k * r[(i, s)];
+                        }
                     }
                 }
 
@@ -81,7 +82,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::{SMatrix, matrix};
+    use itertools::iproduct;
+    use nalgebra::{Dyn, Matrix3, OMatrix, SMatrix, U3, Vector3, matrix};
     use rand::SeedableRng;
     use rand::prelude::*;
     use rand::rngs::StdRng;
@@ -126,6 +128,39 @@ mod tests {
             ];
             assert_eq!(hnf.h, expect);
         }
+    }
+
+    #[test]
+    fn test_hnf_wide() {
+        // The 3 x (3 + n) shape `transformation_matrix_from_translations` builds, one
+        // column per pure translation -- here the 256 of an fcc 4x4x4 supercell, scaled
+        // by 256. Accumulating `r` by matrix product made this shape cost O(n^4).
+        let n = 256;
+        let mut columns = vec![
+            Vector3::new(n, 0, 0),
+            Vector3::new(0, n, 0),
+            Vector3::new(0, 0, n),
+        ];
+        for (i, j, k) in iproduct!(0..4, 0..4, 0..4) {
+            for (di, dj, dk) in [(0, 0, 0), (0, 32, 32), (32, 0, 32), (32, 32, 0)] {
+                columns.push(Vector3::new(64 * i + di, 64 * j + dj, 64 * k + dk));
+            }
+        }
+        let basis = OMatrix::<i32, U3, Dyn>::from_columns(&columns);
+        assert_eq!(basis.ncols(), 3 + n as usize);
+
+        let hnf = HNF::new(&basis);
+        // Also asserted inside `HNF::new`; kept here in case that is ever relaxed.
+        assert_eq!(hnf.h, basis * &hnf.r);
+
+        // The leading block spans the translation lattice, of index 256.
+        let leading = Matrix3::from_columns(&[hnf.h.column(0), hnf.h.column(1), hnf.h.column(2)]);
+        assert_relative_eq!(
+            leading.map(|e| e as f64).determinant(),
+            (n as f64).powi(3) / n as f64
+        );
+        // The reduction clears everything past it.
+        assert!((3..hnf.h.ncols()).all(|j| hnf.h.column(j).iter().all(|&e| e == 0)));
     }
 
     #[test]

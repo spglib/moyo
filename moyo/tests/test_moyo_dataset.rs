@@ -1251,3 +1251,62 @@ fn test_orthorhombic_axis_order_pnma() {
     assert_eq!(dataset.number, 62); // Pnma
     assert_eq!(dataset.num_operations(), 8);
 }
+
+#[test]
+fn test_with_rocksalt_supercell() {
+    // Rocksalt 3x3x3 supercell, Fm-3m (No. 225). Each pure translation becomes an
+    // extra column of the matrix `transformation_matrix_from_translations` hands to
+    // `HNF::new`, so a perfect supercell is the worst case for the primitive-cell
+    // reduction. 3x3x3 rather than 2x2x2 puts the coordinates on sixths, making the
+    // supercell periodicity coprime to the fcc centering instead of refining it.
+    // The wide `HNF` itself is covered by `math::hnf::tests::test_hnf_wide`.
+    let n = 3;
+    let base_positions = [
+        vector![0.0, 0.0, 0.0],
+        vector![0.0, 0.5, 0.5],
+        vector![0.5, 0.0, 0.5],
+        vector![0.5, 0.5, 0.0],
+        vector![0.5, 0.5, 0.5],
+        vector![0.5, 0.0, 0.0],
+        vector![0.0, 0.5, 0.0],
+        vector![0.0, 0.0, 0.5],
+    ];
+    let base_numbers = [0, 0, 0, 0, 1, 1, 1, 1];
+
+    let lattice = Lattice::new(Matrix3::identity() * (5.0 * n as f64));
+    let mut positions = vec![];
+    let mut numbers = vec![];
+    for i in 0..n {
+        for j in 0..n {
+            for k in 0..n {
+                let shift = vector![i as f64, j as f64, k as f64];
+                for (position, number) in base_positions.iter().zip(base_numbers.iter()) {
+                    positions.push((position + shift) / n as f64);
+                    numbers.push(*number);
+                }
+            }
+        }
+    }
+    let cell = Cell::new(lattice, positions, numbers);
+    assert_eq!(cell.num_atoms(), 8 * n * n * n);
+
+    let symprec = 1e-5;
+    let dataset = assert_dataset_with_default(&cell, symprec);
+
+    assert_eq!(dataset.number, 225); // Fm-3m
+    // 48 point-group operations x 4 fcc centerings x n^3 supercell translations
+    assert_eq!(dataset.num_operations(), 48 * 4 * n * n * n);
+    // Reduced back to the 2-atom rocksalt primitive cell
+    assert_eq!(dataset.prim_std_cell.num_atoms(), 2);
+    assert_eq!(dataset.std_cell.num_atoms(), 8);
+    assert_eq!(dataset.pearson_symbol, "cF8");
+    // Every Na is one orbit, every Cl the other
+    assert_eq!(
+        dataset
+            .orbits
+            .iter()
+            .collect::<std::collections::HashSet<_>>()
+            .len(),
+        2
+    );
+}
