@@ -35,7 +35,6 @@ where
                     .min_by_key(|&j| h[(s, j)].abs())
                     .unwrap();
                 h.swap_columns(s, pivot);
-                // r *= swapping_column_matrix(n, s, pivot);
                 r.swap_columns(s, pivot);
 
                 // Guarantee that h[(s, s)] is positive
@@ -43,7 +42,6 @@ where
                     for i in 0..m.value() {
                         h[(i, s)] *= -1;
                     }
-                    // r *= changing_column_sign_matrix(n, s);
                     for i in 0..n.value() {
                         r[(i, s)] *= -1;
                     }
@@ -64,7 +62,6 @@ where
                         for i in 0..m.value() {
                             h[(i, j)] -= k * h[(i, s)];
                         }
-                        // r *= adding_column_matrix(n, s, j, -k);
                         // r[(:, j)] -= k * r[(:, s)]
                         for i in 0..n.value() {
                             r[(i, j)] -= k * r[(i, s)];
