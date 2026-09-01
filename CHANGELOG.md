@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only dependency or build updates with no user-visible changes.
 
+## v0.18.0 - 2026-09-01
+
+### moyo
+
+- Fix `O(N^4)` scaling of `HNF::new` in the number of columns `N`. The transformation matrix was accumulated by multiplying in a dense `N x N` elementary matrix per column operation; the operations are now applied to it in place, as `SNF::new` already did. `N` is the number of pure lattice translations in `PrimitiveCell::new`, so perfect supercells were pathological: a 4x4x4 rocksalt supercell (512 atoms, 256 translations) took 1.05 s and now takes 3.9 ms, faster than spglib across the tested range (#436, thanks to @t-reents)
+
 ## v0.17.0 - 2026-08-30
 
 ### moyo
