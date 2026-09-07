@@ -3,6 +3,7 @@ repos:
     rev: v0.16.5
     hooks:
       - id: ruff-format
+        types_or: [python, pyi, jupyter]
       - id: ruff-check
         args: [ "--fix", "--show-fixes"]
         types_or: [python, pyi]
