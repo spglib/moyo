@@ -71,6 +71,9 @@ jobs:
             apps/web/package.json
             moyo-wasm/package.json
 
+      - name: Install npm 11
+        run: npm install --global npm@11.19.0
+
       - name: Install web app dependencies
         working-directory: apps/web
         run: npm install --no-audit --no-fund
