@@ -6,6 +6,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only dependency or build updates with no user-visible changes.
 
+## Unreleased
+
+### moyo
+
+- Fix singular or lattice-incompatible rotations in dataset operations for anisotropic and skew supercells. Transformed rotations are checked for integrality in the input-cell basis before acceptance (#446, fixes #445, thanks to @jevandezande).
+- Omit symmetry operations incompatible with the input-cell lattice and log one warning per dataset when any are omitted. This also applies to magnetic and layer datasets (#446).
+
+### moyopy
+
+- Forward the warning about omitted incompatible operations to Python's `logging` system at `WARNING` level. Dataset construction succeeds and returns only compatible operations (#446).
+
 ## v0.18.0 - 2026-09-01
 
 ### moyo
