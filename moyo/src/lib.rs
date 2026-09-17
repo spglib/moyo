@@ -208,6 +208,8 @@ impl MoyoDataset {
     /// `symprec` controls the tolerance for searching symmetry operations in the unit of `cell.lattice.basis`.
     /// `setting` determines the preference for the "standardized" setting of a detected space-group type.
     /// `rotate_basis` specifies whether to rotate the basis vectors of the input cell to those of the standardized cell.
+    /// Operations with non-integer rotations in the input-cell basis are omitted,
+    /// with one warning emitted through [`log`] if any are omitted.
     /// If the search fails, [`MoyoError`] is returned.
     pub fn new(
         cell: &Cell,
@@ -592,6 +594,8 @@ impl MoyoLayerDataset {
     /// `cell` must satisfy the layer-group periodicity contract (`c`
     /// perpendicular to `a, b`); inputs that violate it are rejected with
     /// [`MoyoError::AperiodicAxisNotOrthogonal`].
+    /// Operations with non-integer rotations in the input-cell basis are omitted,
+    /// with one warning emitted through [`log`] if any are omitted.
     pub fn new(
         cell: &Cell,
         symprec: f64,
@@ -869,6 +873,8 @@ impl<M: MagneticMoment> MoyoMagneticDataset<M> {
     /// `mag_symprec` controls the tolerance for searching magnetic symmetry operations in the unit of `magnetic_cell.magnetic_moments`.
     /// `action` specifies how a magnetic symmetry operation acts on magnetic moments.
     /// `rotate_basis` specifies whether to rotate the basis vectors of the input cell to those of the standardized cell.
+    /// Operations with non-integer rotations in the input-cell basis are omitted,
+    /// with one warning emitted through [`log`] if any are omitted.
     /// If the search fails, [`MoyoError`] is returned.
     pub fn new(
         magnetic_cell: &MagneticCell<M>,
