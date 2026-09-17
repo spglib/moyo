@@ -1,7 +1,7 @@
 use itertools::iproduct;
 use std::collections::{HashMap, HashSet, VecDeque};
 
-use log::{debug, warn};
+use log::debug;
 use nalgebra::{Matrix3, Vector3};
 
 use super::{
@@ -307,12 +307,6 @@ pub(crate) fn operations_in_cell_from_linear_and_translations(
 ) -> Operations {
     let input_operations =
         Transformation::from_linear(*linear).transform_operations(prim_operations);
-    if input_operations.len() < prim_operations.len() {
-        warn!(
-            "Omitted {} primitive-cell symmetry operations with non-integer rotation matrices in the input-cell basis; returning only operations compatible with the input-cell lattice",
-            prim_operations.len() - input_operations.len()
-        );
-    }
     let mut operations = vec![];
     for t1 in translations {
         for operation2 in input_operations.iter() {
@@ -330,12 +324,6 @@ pub fn magnetic_operations_in_magnetic_cell<M: MagneticMoment>(
 ) -> MagneticOperations {
     let input_mag_operations = Transformation::from_linear(prim_mag_cell.linear)
         .transform_magnetic_operations(prim_mag_operations);
-    if input_mag_operations.len() < prim_mag_operations.len() {
-        warn!(
-            "Omitted {} primitive-cell magnetic symmetry operations with non-integer rotation matrices in the input-cell basis; returning only operations compatible with the input-cell lattice",
-            prim_mag_operations.len() - input_mag_operations.len()
-        );
-    }
     let mut mag_operations = vec![];
     for t1 in prim_mag_cell.translations.iter() {
         for ops2 in input_mag_operations.iter() {

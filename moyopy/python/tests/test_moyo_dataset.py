@@ -43,7 +43,7 @@ def test_supercell_rotation_warning(caplog: pytest.LogCaptureFixture, n: int, ma
     basis = [[5.64 * n, 0.0, 0.0], [0.0, 5.64, 0.0], [0.0, 0.0, 5.64]]
     positions = [[(p[0] + copy) / n, p[1], p[2]] for copy in range(n) for p, _ in base]
     numbers = [number for _ in range(n) for _, number in base]
-    logger = "moyo.search.primitive_symmetry_search"
+    logger = "moyo"
 
     with caplog.at_level(logging.WARNING, logger=logger):
         if magnetic:
@@ -70,6 +70,29 @@ def test_supercell_rotation_warning(caplog: pytest.LogCaptureFixture, n: int, ma
     metric = np.array(basis) @ np.array(basis).T
     for rotation in np.array(operations.rotations):
         np.testing.assert_allclose(rotation.T @ metric @ rotation, metric, atol=1e-8)
+
+
+@pytest.mark.parametrize("ny, expected_operations", [(1, 32), (3, 48)])
+def test_antiferromagnetic_supercell_warning(
+    caplog: pytest.LogCaptureFixture, ny: int, expected_operations: int
+):
+    # Alternating moments double the primitive magnetic cell along x. Preparing
+    # candidates from the nonmagnetic cell must not emit an intermediate warning.
+    cell = CollinearMagneticCell(
+        [[2.0, 0.0, 0.0], [0.0, float(ny), 0.0], [0.0, 0.0, 1.0]],
+        [[i / 2, j / ny, 0.0] for i in range(2) for j in range(ny)],
+        [1] * (2 * ny),
+        [(-1.0) ** i for i in range(2) for _ in range(ny)],
+    )
+    with caplog.at_level(logging.WARNING, logger="moyo"):
+        dataset = MoyoCollinearMagneticDataset(cell)
+
+    assert len(dataset.magnetic_operations) == expected_operations
+    records = [record for record in caplog.records if record.name.startswith("moyo")]
+    assert len(records) == (ny > 1)
+    for record in records:
+        assert record.levelno == logging.WARNING
+        assert "magnetic symmetry operations with non-integer rotation" in record.getMessage()
 
 
 def test_moyo_dataset_serialization(wurtzite: Cell):
