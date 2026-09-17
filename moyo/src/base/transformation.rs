@@ -9,6 +9,7 @@ use super::lattice::Lattice;
 use super::layer::{LayerCell, LayerLattice};
 use super::magnetic_cell::{MagneticCell, MagneticMoment};
 use super::operation::{MagneticOperation, Operation};
+use super::tolerance::EPS;
 use crate::math::SNF;
 use crate::utils::{to_3_slice, to_3x3_slice};
 
@@ -413,13 +414,12 @@ fn transform_operation_as_f64(
     linear_inv: &Matrix3<f64>,
     origin_shift: &OriginShift,
 ) -> Option<Operation> {
-    let new_rotation =
-        (linear_inv * operation.rotation.map(|e| e as f64) * linear).map(|e| e.round() as i32);
+    let rotation = linear_inv * operation.rotation.map(|e| e as f64) * linear;
+    let new_rotation = rotation.map(|e| e.round() as i32);
 
-    // Check if `new_rotation` is an integer matrix
-    let recovered =
-        (linear * new_rotation.map(|e| e as f64) * linear_inv).map(|e| e.round() as i32);
-    if recovered != operation.rotation {
+    // Test integrality in the target basis: conjugating the rounding error back
+    // to the source basis can hide a non-integer rotation.
+    if (rotation - new_rotation.map(|e| e as f64)).abs().max() > EPS {
         return None;
     }
 
@@ -504,6 +504,26 @@ mod tests {
             ],
             Translation::zeros(),
         );
+        assert!(transformation.transform_operation(&operation).is_none());
+    }
+
+    #[test]
+    fn test_incompatible_transformation_with_integer_round_trip() {
+        let transformation = Transformation::from_linear(matrix![
+            1, 0, 0;
+            0, 3, 1;
+            0, 0, 2;
+        ]);
+        let operation = Operation::new(
+            matrix![
+                -1, 0, 0;
+                 0, 0, 1;
+                 0, -1, 0;
+            ],
+            Translation::zeros(),
+        );
+        // The conjugate contains 1/2 and 5/6. Rounding it and conjugating back
+        // nevertheless recovers the original integer rotation after rounding.
         assert!(transformation.transform_operation(&operation).is_none());
     }
 
