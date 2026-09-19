@@ -8,8 +8,8 @@ use rstest::rstest;
 use moyo::base::{
     AngleTolerance, Cell, Collinear, Lattice, MagneticCell, Operation, RotationMagneticMomentAction,
 };
-use moyo::data::Setting;
-use moyo::{MoyoDataset, MoyoMagneticDataset};
+use moyo::data::{LayerSetting, Setting};
+use moyo::{MoyoDataset, MoyoLayerDataset, MoyoMagneticDataset};
 
 struct WarningLogger;
 
@@ -176,5 +176,31 @@ fn test_skew_simple_cubic_supercell() {
     assert_eq!(dataset.number, 221);
     assert_eq!(dataset.operations.len(), 24);
     WARNINGS.with(|count| assert_eq!(count.get(), 1));
+    assert_valid_operations(&cell, &dataset.operations);
+}
+
+#[rstest]
+#[case::primitive(1, 16)]
+#[case::supercell(3, 24)]
+fn test_layer_supercell_warning(#[case] n: usize, #[case] expected_operations: usize) {
+    let cell = Cell::new(
+        Lattice::from_basis([[n as f64, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 5.0]]),
+        (0..n)
+            .map(|i| vector![i as f64 / n as f64, 0.0, 0.0])
+            .collect(),
+        vec![1; n],
+    );
+    start_warning_capture();
+    let dataset = MoyoLayerDataset::new(
+        &cell,
+        1e-4,
+        AngleTolerance::Default,
+        LayerSetting::Standard,
+        true,
+    )
+    .unwrap();
+    assert_eq!(dataset.number, 61);
+    assert_eq!(dataset.operations.len(), expected_operations);
+    WARNINGS.with(|count| assert_eq!(count.get(), usize::from(n > 1)));
     assert_valid_operations(&cell, &dataset.operations);
 }
