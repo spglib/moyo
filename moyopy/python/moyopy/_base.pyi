@@ -144,7 +144,7 @@ class NonCollinearMagneticCell:
 class Operations:
     """A list of crystallographic symmetry operations (rotation + translation)."""
     @property
-    def rotations(self) -> list[list[list[float]]]:
+    def rotations(self) -> list[list[list[int]]]:
         """Rotation parts of the symmetry operations."""
     @property
     def translations(self) -> list[list[float]]:
@@ -168,7 +168,7 @@ class Operations:
 class MagneticOperations:
     """A list of magnetic symmetry operations (rotation + translation + time reversal)."""
     @property
-    def rotations(self) -> list[list[list[float]]]:
+    def rotations(self) -> list[list[list[int]]]:
         """Rotation parts of the magnetic symmetry operations."""
     @property
     def translations(self) -> list[list[float]]:
