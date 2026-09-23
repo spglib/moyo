@@ -5,7 +5,9 @@ from moyopy._data import LayerSetting, Setting
 
 class PointGroup:
     """Point group identified from a list of rotation matrices."""
-    def __init__(self, prim_rotations: list[list[int]], *, basis: list[list[float]] | None = None):
+    def __init__(
+        self, prim_rotations: list[list[list[int]]], *, basis: list[list[float]] | None = None
+    ):
         """Identify the point group of the given primitive rotations.
 
         Parameters
@@ -32,7 +34,7 @@ class SpaceGroup:
     """Space group identified from a list of primitive symmetry operations."""
     def __init__(
         self,
-        prim_rotations: list[list[int]],
+        prim_rotations: list[list[list[int]]],
         prim_translations: list[list[float]],
         *,
         basis: list[list[float]] | None = None,
@@ -128,7 +130,7 @@ class MagneticSpaceGroup:
     """Magnetic space group identified from a list of primitive magnetic operations."""
     def __init__(
         self,
-        prim_rotations: list[list[int]],
+        prim_rotations: list[list[list[int]]],
         prim_translations: list[list[float]],
         prim_time_reversals: list[bool],
         *,
