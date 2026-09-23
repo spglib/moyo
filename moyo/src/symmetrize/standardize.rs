@@ -3,19 +3,13 @@ use nalgebra::linalg::{Cholesky, QR};
 use nalgebra::{Matrix3, Vector3, vector};
 use std::collections::HashMap;
 
-use super::conventional_cell::{
-    AXIS_PERMUTATIONS3, monoclinic_candidate_corrections, monoclinic_rank_key,
-    orthorhombic_rank_key, select_conventional_correction,
-};
+use super::conventional_coordinate_system::ConventionalCoordinateSystem;
 use super::wyckoff::{assign_wyckoffs_by_orbit, group_sites_by_orbit, match_wyckoff_coordinates};
 use crate::base::{
-    Cell, EPS, Lattice, Linear, MoyoError, Operations, Permutation, Position, Rotations,
-    Transformation, UnimodularTransformation, project_rotations,
+    Cell, EPS, Lattice, MoyoError, Operations, Permutation, Position, Rotations, Transformation,
+    UnimodularTransformation, project_rotations,
 };
-use crate::data::{
-    HallNumber, HallSymbol, LatticeSystem, WyckoffPosition, arithmetic_crystal_class_entry,
-    hall_symbol_entry, iter_wyckoff_positions,
-};
+use crate::data::{HallNumber, WyckoffPosition, iter_wyckoff_positions};
 use crate::identify::SpaceGroup;
 
 pub struct StandardizedCell {
@@ -115,64 +109,13 @@ impl StandardizedCell {
         ),
         MoyoError,
     > {
-        let entry =
-            hall_symbol_entry(space_group.hall_number).ok_or(MoyoError::StandardizationError)?;
-
-        // Prepare operations in primitive standard
-        let hs = HallSymbol::from_hall_number(space_group.hall_number)
-            .ok_or(MoyoError::StandardizationError)?;
-        let (conv_std_operations, prim_std_operations) = hs.traverse_and_primitive_traverse();
-
-        // To standardized primitive cell
-        let lattice_system = arithmetic_crystal_class_entry(entry.arithmetic_number)
-            .unwrap()
-            .lattice_system();
-        // For monoclinic and orthorhombic systems, the identified setting leaves some
-        // freedom in the conventional basis (the affine normalizer). The chosen
-        // correction is folded into `prim_transformation` so that the primitive
-        // standardized cell is always related to the conventional one by the fixed
-        // centering matrix `entry.centering.linear()`.
-        let conv_lattice_tmp = Transformation::from_linear(
-            space_group.transformation.linear * entry.centering.linear(),
-        )
-        .transform_lattice(&prim_cell.lattice);
-        let (prim_transformation, conv_trans_linear) = match lattice_system {
-            LatticeSystem::Triclinic => (
-                standardize_triclinic_cell(&prim_cell.lattice, &space_group.transformation),
-                Linear::identity(),
-            ),
-            LatticeSystem::Monoclinic => {
-                let prim_correction = select_conventional_correction(
-                    &conv_lattice_tmp,
-                    entry.centering,
-                    &prim_std_operations,
-                    &hs.primitive_generators(),
-                    &monoclinic_candidate_corrections(&conv_lattice_tmp),
-                    monoclinic_rank_key,
-                    epsilon,
-                );
-                (
-                    space_group.transformation.clone() * prim_correction,
-                    entry.centering.linear(),
-                )
-            }
-            LatticeSystem::Orthorhombic => {
-                let prim_correction = select_conventional_correction(
-                    &conv_lattice_tmp,
-                    entry.centering,
-                    &prim_std_operations,
-                    &hs.primitive_generators(),
-                    &AXIS_PERMUTATIONS3,
-                    orthorhombic_rank_key,
-                    epsilon,
-                );
-                (
-                    space_group.transformation.clone() * prim_correction,
-                    entry.centering.linear(),
-                )
-            }
-            _ => (space_group.transformation.clone(), entry.centering.linear()),
-        };
+        let ConventionalCoordinateSystem {
+            prim_transformation,
+            conv_trans_linear,
+            transformation,
+            conv_std_operations,
+            prim_std_operations,
+        } = ConventionalCoordinateSystem::new(prim_cell, space_group, epsilon)?;
 
         let prim_std_cell_tmp = prim_transformation.transform_cell(prim_cell);
 
@@ -204,11 +147,6 @@ impl StandardizedCell {
         let (std_cell, site_mapping) =
             Transformation::from_linear(conv_trans_linear).transform_cell(&prim_std_cell);
 
-        // prim_transformation * (conv_trans_linear, 0)
-        let transformation = Transformation::new(
-            prim_transformation.linear * conv_trans_linear,
-            prim_transformation.origin_shift,
-        );
         if rotate_basis {
             // Symmetrize lattice
             let (_, rotation_matrix) =
@@ -288,20 +226,6 @@ pub(super) fn align_primitive_permutations(
                 .ok_or(MoyoError::StandardizationError)
         })
         .collect()
-}
-
-/// Niggli reduction for distorted triclinic lattice systems is numerically so challenging.
-/// Thus, we skip checking reduction condition.
-fn standardize_triclinic_cell(
-    lattice: &Lattice,
-    transformation_to_prim_std: &UnimodularTransformation,
-) -> UnimodularTransformation {
-    let lattice_prim_std_tmp = transformation_to_prim_std.transform_lattice(lattice);
-    let (_, niggli_linear) = lattice_prim_std_tmp.unchecked_niggli_reduce();
-    UnimodularTransformation::new(
-        niggli_linear * transformation_to_prim_std.linear,
-        transformation_to_prim_std.origin_shift,
-    )
 }
 
 /// Symmetrize positions by site symmetry groups. Operates on a slice rather
