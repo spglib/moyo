@@ -18,9 +18,11 @@ use crate::identify::SpaceGroup;
 /// applies the requested Cartesian orientation, and assigns Wyckoff positions.
 ///
 /// The [returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
-/// specifies the target symmetry guarantees, coordinate conventions, field
-/// semantics, and current implementation status. Its lattice-refinement and
-/// Cartesian-orientation requirements are not fully implemented yet.
+/// describes the target symmetry, coordinate transformations, and Cartesian orientation.
+///
+/// The current implementation refines positions but retains the input metric
+/// after the selected change of basis. Applying the refined lattice and the
+/// specified Cartesian orientation remains unimplemented.
 pub struct StandardizedCell {
     // ------------------------------------------------------------------------
     // Primitive standardized cell
@@ -35,7 +37,7 @@ pub struct StandardizedCell {
     // ------------------------------------------------------------------------
     /// Conventional output in the selected Hall setting.
     pub cell: Cell,
-    /// Wyckoff positions of sites in the `cell`
+    /// One Wyckoff position per conventional site, in `cell` order and the selected setting.
     pub wyckoffs: Vec<WyckoffPosition>,
     /// Coordinate transformation from the input primitive cell to the selected
     /// conventional system, before lattice and position refinement.
@@ -46,7 +48,8 @@ pub struct StandardizedCell {
     /// Proper Cartesian rotation applied to both output lattices.
     /// Identity when `rotate_basis` is false; it does not encode lattice refinement.
     pub rotation_matrix: Matrix3<f64>,
-    /// Mapping from the site in the `cell` to that in the `prim_cell`
+    /// One primitive site index per conventional site: `site_mapping[j]` gives
+    /// the site in `prim_cell` corresponding to site `j` in `cell`.
     pub site_mapping: Vec<usize>,
 }
 

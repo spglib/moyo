@@ -20,7 +20,9 @@ class MoyoDataset:
     """A dataset containing symmetry information of the input crystal structure.
 
     See the [returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
-    for the standardized cells and current implementation status.
+    for the geometry and symmetry of the standardized cells.
+    The current implementation refines atomic positions but preserves the input
+    lattice metric after the selected change of basis.
     """
     def __init__(
         self,

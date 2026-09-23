@@ -1,17 +1,12 @@
-# Moyo conventions of standardized cell
+# Standardization of crystal structures
 
-This document defines the returned-cell specification for the three-dimensional standardization pipeline.
-The core Rust result is `StandardizedCell`; its conventional and primitive cells become `MoyoDataset.std_cell` and `MoyoDataset.prim_std_cell`.
-The same cell conventions apply to the language bindings.
+Standardization describes a crystal in a conventional coordinate system and refines its lattice and atomic positions to satisfy the identified symmetry.
+This page specifies the intended conventional and primitive standardized cells, including their basis, origin, and Cartesian orientation.
 
-!!! note "Implementation status"
-    The exact-symmetry and Cartesian-orientation requirements below are the target specification.
-    The current implementation refines positions but uses only the rotation returned by lattice symmetrization, retaining the input metric after the selected change of basis.
-    Applying the refined lattice to both output cells, the polar-decomposition convention, and roundoff-level validation remain to be implemented.
+All basis matrices on this page store lattice vectors as columns.
+The Python and C interfaces use row-wise lattice arrays; transpose them when applying these equations.
 
-**Standardization** comprises selecting a conventional coordinate system, symmetrizing the lattice and positions under fixed target operations, and constructing the returned cells and metadata.
-
-## `setting` option in `MoyoDataset::new`
+## Space-group setting
 
 We refer to the criteria to choose a representative of each space-group type as a setting.
 After symmetry operations of an input crystal structure are determined, moyo transforms the space group into a representative of its space-group type defined by the chosen `setting`.
@@ -31,9 +26,7 @@ This change of the default behavior affects in centrosymmetric groups: moyo choo
 
 ### Target symmetry and numerical accuracy
 
-The target operations are those of the selected Hall symbol, expressed in the conventional and primitive coordinate systems chosen by `ConventionalCoordinateSystem`.
-The detected operations and their atom permutations establish the correspondence with that target symmetry.
-The returned cells must satisfy the target operations, including their refined translations.
+The conventional and primitive standardized cells must satisfy the space group of the selected Hall symbol, expressed in their respective coordinate systems.
 
 For either returned cell, let $\mathbf{A}_*$ contain its basis vectors as columns and let $\mathbf{G}_* = \mathbf{A}_*^\mathsf{T}\mathbf{A}_*$.
 Every target operation $(\mathbf{W}, \mathbf{w})$ must satisfy
@@ -50,8 +43,6 @@ $$
 
 These are exact identities in real arithmetic.
 In floating-point arithmetic, they must hold within numerical roundoff, independently of the tolerances used to recognize symmetry in the input.
-`symprec` and the fractional-coordinate tolerance `epsilon` are not the accuracy promised for the returned cells.
-If the target constraints cannot be met within numerical roundoff, construction must return `MoyoError::StandardizationError`.
 
 Both values of `rotate_basis` must satisfy this specification.
 Changing Cartesian orientation must leave the refined metric, fractional positions, site correspondences, and Wyckoff assignments invariant.
@@ -68,30 +59,11 @@ $$
 
 The origin shift $\mathbf{p}$ is expressed in the input basis.
 These equations describe the coordinate change before lattice and position refinement.
-The matrices and origin shifts returned by standardization record that coordinate change; they do not encode the subsequent corrections to the metric or fractional positions.
+They preserve the crystal's geometry, while refinement can change its metric and atomic positions to enforce symmetry.
 
-`StandardizedCell` takes a primitive input cell.
-Its `transformation` and `prim_transformation` fields describe the selected conventional and primitive coordinate systems relative to that input.
-`MoyoDataset` composes these transformations with the input-to-primitive transformation, so its corresponding fields refer to the original dataset input.
-On the dataset, $(\mathbf{P}_{\mathrm{std}},\mathbf{p}_{\mathrm{std}})$ means `(std_linear, std_origin_shift)`, and $(\mathbf{P}_{\mathrm{prim}},\mathbf{p}_{\mathrm{prim}})$ means `(prim_std_linear, prim_std_origin_shift)`.
-The returned Cartesian rotation is `std_rotation_matrix`.
+## Cartesian orientation
 
-| `StandardizedCell` field | Meaning |
-| --- | --- |
-| `cell` | Conventional output in the selected Hall setting; exposed as `MoyoDataset.std_cell`. |
-| `prim_cell` | Primitive description of the same refined crystal; exposed as `MoyoDataset.prim_std_cell`. |
-| `transformation` | $(\mathbf{P}_{\mathrm{std}},\mathbf{p}_{\mathrm{std}})$, selecting the conventional coordinates before refinement. |
-| `prim_transformation` | $(\mathbf{P}_{\mathrm{prim}},\mathbf{p}_{\mathrm{prim}})$, selecting the primitive coordinates before refinement. |
-| `rotation_matrix` | The common proper Cartesian rotation applied to both refined output lattices; identity when `rotate_basis=false`. |
-| `site_mapping` | Maps each conventional output site to its corresponding primitive output site. |
-| `wyckoffs` | One Wyckoff position for each conventional output site, in that site's order and in the selected setting. |
-
-The coordinate transformations preserve the selected setting while refinement enforces its symmetry.
-Recovering the original distorted lattice or positions requires retaining the input cell.
-
-## `rotate_basis` option in `MoyoDataset::new`
-
-This option controls the Cartesian orientation of the refined lattice.
+The `rotate_basis` option controls the Cartesian orientation of the refined lattice.
 Let $\mathbf{A}'_{\mathrm{std}}=\mathbf{A}\mathbf{P}_{\mathrm{std}}$ be the conventional basis before refinement and let $\mathbf{B}$ be the refined basis in the canonical orientation described below, with the same handedness.
 Define the right polar decomposition
 
@@ -106,27 +78,22 @@ $$
 The symmetric positive-definite stretch $\mathbf{U}$ describes lattice refinement in the input Cartesian frame.
 The proper rotation $\mathbf{R}$ takes that refined lattice to the canonical orientation.
 
-| Option | Returned conventional basis | Returned rotation matrix |
-| --- | --- | --- |
-| `rotate_basis=true` (default) | $\mathbf{A}_{\mathrm{std}}=\mathbf{B}=\mathbf{R}\mathbf{U}\mathbf{A}\mathbf{P}_{\mathrm{std}}$ | $\mathbf{R}$ |
-| `rotate_basis=false` | $\mathbf{A}_{\mathrm{std}}=\mathbf{R}^\mathsf{T}\mathbf{B}=\mathbf{U}\mathbf{A}\mathbf{P}_{\mathrm{std}}$ | $\mathbf{I}$ |
+| Option | Conventional basis |
+| --- | --- |
+| `rotate_basis=true` (default) | $\mathbf{A}_{\mathrm{std}}=\mathbf{B}=\mathbf{R}\mathbf{U}\mathbf{A}\mathbf{P}_{\mathrm{std}}$ |
+| `rotate_basis=false` | $\mathbf{A}_{\mathrm{std}}=\mathbf{R}^\mathsf{T}\mathbf{B}=\mathbf{U}\mathbf{A}\mathbf{P}_{\mathrm{std}}$ |
 
 The same stretch and rotation apply to the primitive output.
 Fractional positions are refined in the selected coordinates and are identical for both orientation options.
 When the input lattice already satisfies the target symmetry, $\mathbf{U}=\mathbf{I}$ up to roundoff, recovering the relation $\mathbf{A}_{\mathrm{std}}=\mathbf{R}\mathbf{A}\mathbf{P}_{\mathrm{std}}$ for `rotate_basis=true`.
-The current implementation uses this last relation even for distorted lattices, as noted in the implementation status above.
 
-## Standardized cell with `setting=Setting.Standard`, `rotate_basis=true`, and right-handed input basis vectors
+## Conventional standardized cell
 
-When `setting=Setting.Standard`, the conventional output gives the space group in the ITA setting.
-With `rotate_basis=true`, its refined basis $\mathbf{A}_{\mathrm{std}}=\mathbf{B}$ has the form below.
+With `Setting.Standard`, the conventional cell gives the space group in the ITA setting.
+For `rotate_basis=true` and right-handed input, its refined basis $\mathbf{A}_{\mathrm{std}}=\mathbf{B}$ has the form below.
 The parameters $a$, $b$, and $c$ denote positive lengths.
 
-!!! caution
-    The Rust field `Cell.lattice.basis` stores basis vectors as columns.
-    The other language bindings expose basis vectors as rows; transpose those arrays when using the equations on this page.
-
-| Crystal family | "Conventional" basis vectors $\mathbf{A}_{\mathrm{std}}$ <br> (`MoyoDataset.std_cell`) | Additional conditions                                             |
+| Crystal family | Conventional basis $\mathbf{A}_{\mathrm{std}}$ | Additional conditions                                             |
 | -------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | Triclinic      | $\begin{pmatrix} a_x & b_x & c_x \\ 0 & b_y & c_y \\ 0 & 0 & c_z \end{pmatrix}$        | Niggli reduced [^std-cell-2]; $a_x, b_y, c_z \gt 0$ |
 | Monoclinic     | $\begin{pmatrix} a & 0 & c \cos \beta \\ 0 & b & 0 \\ 0 & 0 & c \sin \beta \end{pmatrix}$    | $a, b, c \sin \beta \gt 0$; $\cos \beta \le 0$ [^std-cell-7] |
@@ -139,11 +106,10 @@ For left-handed input, use the same metric and negate the final Cartesian row of
 Equivalently, left-multiply by $\operatorname{diag}(1,1,-1)$, making the final diagonal entry negative while preserving all lengths and angles.
 This handedness convention also applies to other Hall settings; their canonical basis is upper triangular, with the first two diagonal entries positive.
 
-## Primitive standardized cell with `setting=Setting.Standard`, `rotate_basis=true`, and right-handed input basis vectors
+## Primitive standardized cell
 
-Let $\mathbf{P}_{\mathrm{prim}}$ be `MoyoDataset.prim_std_linear` and $\mathbf{p}_{\mathrm{prim}}$ be `MoyoDataset.prim_std_origin_shift`.
-The transformation $(\mathbf{P}_{\mathrm{prim}}, \mathbf{p}_{\mathrm{prim}})$ selects the primitive coordinates before refinement.
-Moyo chooses a transformation matrix $\mathbf{Q}$ from a primitive cell to the standardized cell as the following table.
+The primitive and conventional cells describe the same refined crystal.
+For `Setting.Standard`, the change of basis from primitive to conventional is given by the centering matrix $\mathbf{Q}$ below.
 
 | Crystal family | Bravais class | Transformation matrix from primitive to conventional, $\mathbf{Q}$                    | $\mathbf{Q}^{-1}$                                                                                            |
 | -------------- | ------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
@@ -165,25 +131,21 @@ Moyo chooses a transformation matrix $\mathbf{Q}$ from a primitive cell to the s
 The conventional and primitive outputs share an origin and satisfy the following relations for either orientation option:
 
 $$
-(\mathbf{P}_{\mathrm{prim}}, \mathbf{p}_{\mathrm{prim}}) = (\mathbf{P}_{\mathrm{std}}, \mathbf{p}_{\mathrm{std}}) (\mathbf{Q}, \mathbf{0})^{-1}
+\mathbf{A}_{\mathrm{prim}} = \mathbf{A}_{\mathrm{std}} \mathbf{Q}^{-1},\qquad
+\mathbf{P}_{\mathrm{prim}} = \mathbf{P}_{\mathrm{std}} \mathbf{Q}^{-1},\qquad
+\mathbf{p}_{\mathrm{prim}} = \mathbf{p}_{\mathrm{std}}.
 $$
 
-$$
-\mathbf{A}_{\mathrm{prim}} = \mathbf{A}_{\mathrm{std}} \mathbf{Q}^{-1}.
-$$
+Here $(\mathbf{P}_{\mathrm{std}},\mathbf{p}_{\mathrm{std}})$ and $(\mathbf{P}_{\mathrm{prim}},\mathbf{p}_{\mathrm{prim}})$ select the conventional and primitive coordinates before refinement.
+The centering matrix changes the description of the refined crystal; it introduces no further refinement.
 
-Thus $\mathbf{P}_{\mathrm{std}}=\mathbf{P}_{\mathrm{prim}}\mathbf{Q}$ and $\mathbf{p}_{\mathrm{std}}=\mathbf{p}_{\mathrm{prim}}$.
-The fixed centering matrix $\mathbf{Q}$ changes the description of the refined crystal; it introduces no further refinement.
-
-For `StandardizedCell`, the primitive output preserves the input primitive cell's site order and species.
-If $m(j)=$ `site_mapping[j]`, then every conventional output site $j$ has the same species as primitive output site $m(j)$ and satisfies
+Each conventional site corresponds to a primitive site of the same species, with fractional positions satisfying
 
 $$
-\mathbf{Q}\mathbf{x}_{\mathrm{std},j}-\mathbf{x}_{\mathrm{prim},m(j)}\in\mathbb{Z}^3.
+\mathbf{Q}\mathbf{x}_{\mathrm{std}}-\mathbf{x}_{\mathrm{prim}}\in\mathbb{Z}^3.
 $$
 
-Every primitive site has $|\det\mathbf{Q}|$ conventional copies, and `site_mapping` and `wyckoffs` each have one entry per conventional site.
-`MoyoDataset.mapping_std_prim` maps original input sites to primitive output sites, and `MoyoDataset.wyckoffs` is indexed by original input sites.
+Each primitive site has $|\det\mathbf{Q}|$ conventional copies.
 
 [^setting]: That being said, the order of the Hall symbols are the same as Table A1.4.2.7 in International Tables for Crystallography Volume B (2010).
 

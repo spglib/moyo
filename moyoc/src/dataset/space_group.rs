@@ -15,7 +15,9 @@ use crate::ffi::{free_cstring, free_slice, leak_cstring, leak_slice};
 /// by `moyo_dataset_free`.
 ///
 /// See the [returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
-/// for the standardized cells and current implementation status.
+/// for the geometry and symmetry of the standardized cells.
+/// The current implementation refines atomic positions but preserves the input
+/// lattice metric after the selected change of basis.
 #[derive(Debug, Clone)]
 #[repr(C)]
 pub struct MoyoDataset {
