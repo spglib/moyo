@@ -3,6 +3,7 @@ mod conventional_coordinate_system;
 mod layer_standardize;
 mod magnetic_standardize;
 mod standardize;
+mod symmetrization;
 mod wyckoff;
 
 pub(super) use layer_standardize::StandardizedLayerCell;
