@@ -12,6 +12,9 @@ use crate::base::{PyMoyoError, PyOperations, PyStructure, PyUnimodularTransforma
 use crate::data::{PySetting, PyWyckoffPosition};
 
 /// A dataset containing symmetry information of the input crystal structure.
+///
+/// See the [returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
+/// for the standardized cells and current implementation status.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[pyclass(name = "MoyoDataset", frozen, from_py_object)]
 #[pyo3(module = "moyopy")]

@@ -17,7 +17,7 @@ use crate::identify::SpaceGroup;
 /// refines atomic positions, constructs the primitive and conventional cells,
 /// applies the requested Cartesian orientation, and assigns Wyckoff positions.
 ///
-/// The [returned-cell contract](https://spglib.github.io/moyo/standardization/#returned-cell-contract)
+/// The [returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
 /// specifies the target symmetry guarantees, coordinate conventions, field
 /// semantics, and current implementation status. Its lattice-refinement and
 /// Cartesian-orientation requirements are not fully implemented yet.
@@ -52,7 +52,7 @@ pub struct StandardizedCell {
 
 impl StandardizedCell {
     /// Standardize the input **primitive** cell.
-    /// See [`Self`] for the returned-cell contract and implementation status.
+    /// See [`Self`] for the returned-cell specification and implementation status.
     pub fn new(
         prim_cell: &Cell,
         prim_operations: &Operations,

@@ -17,7 +17,11 @@ from moyopy._data import (
 )
 
 class MoyoDataset:
-    """A dataset containing symmetry information of the input crystal structure."""
+    """A dataset containing symmetry information of the input crystal structure.
+
+    See the [returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
+    for the standardized cells and current implementation status.
+    """
     def __init__(
         self,
         cell: Cell,

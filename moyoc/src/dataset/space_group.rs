@@ -13,6 +13,9 @@ use crate::ffi::{free_cstring, free_slice, leak_cstring, leak_slice};
 
 /// A dataset of the symmetry analysis, created by `moyo_dataset_new` and freed
 /// by `moyo_dataset_free`.
+///
+/// See the [returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
+/// for the standardized cells and current implementation status.
 #[derive(Debug, Clone)]
 #[repr(C)]
 pub struct MoyoDataset {

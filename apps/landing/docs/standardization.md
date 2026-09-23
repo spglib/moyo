@@ -1,16 +1,15 @@
 # Moyo conventions of standardized cell
 
-This document specifies the returned-cell contract for the three-dimensional standardization pipeline.
+This document defines the returned-cell specification for the three-dimensional standardization pipeline.
 The core Rust result is `StandardizedCell`; its conventional and primitive cells become `MoyoDataset.std_cell` and `MoyoDataset.prim_std_cell`.
 The same cell conventions apply to the language bindings.
 
 !!! note "Implementation status"
-    The exact-symmetry and Cartesian-orientation requirements below are the target contract.
+    The exact-symmetry and Cartesian-orientation requirements below are the target specification.
     The current implementation refines positions but uses only the rotation returned by lattice symmetrization, retaining the input metric after the selected change of basis.
     Applying the refined lattice to both output cells, the polar-decomposition convention, and roundoff-level validation remain to be implemented.
 
 **Standardization** comprises selecting a conventional coordinate system, symmetrizing the lattice and positions under fixed target operations, and constructing the returned cells and metadata.
-`ConventionalCoordinateSystem` owns the basis and origin selection; `StandardizedCell` owns the complete result.
 
 ## `setting` option in `MoyoDataset::new`
 
@@ -28,7 +27,7 @@ Moyo supports three settings;
 Moyo chooses `Setting.Standard` as the default setting, which is different from spglib's default `Setting.Spglib`.
 This change of the default behavior affects in centrosymmetric groups: moyo chooses origin choice 2 by default, while spglib chooses origin choice 1 by default.
 
-## Returned-cell contract
+## Returned-cell specification
 
 ### Target symmetry and numerical accuracy
 
@@ -50,36 +49,11 @@ $$
 $$
 
 These are exact identities in real arithmetic.
-In floating-point arithmetic, their residuals must be at roundoff scale, independently of the tolerances used to recognize symmetry in the input.
-For example, dimensionless residuals can be measured as
-
-$$
-r_G =
-\frac{
-  \lVert \mathbf{W}^\mathsf{T}\mathbf{G}_*\mathbf{W} - \mathbf{G}_* \rVert_F
-}{
-  (1 + \lVert \mathbf{W} \rVert_F^2)\lVert \mathbf{G}_* \rVert_F
-},
-$$
-
-$$
-r_{x,i} =
-\frac{
-  \min_{\mathbf{n}\in\mathbb{Z}^3}
-  \lVert \mathbf{A}_*(\mathbf{W}\mathbf{x}_i+\mathbf{w}-\mathbf{x}_{\pi(i)}-\mathbf{n}) \rVert_2
-}{
-  \lVert \mathbf{A}_* \rVert_F
-  (1+\lVert\mathbf{W}\rVert_F\lVert\mathbf{x}_i\rVert_2+\lVert\mathbf{w}\rVert_2+\lVert\mathbf{x}_{\pi(i)}\rVert_2)
-}.
-$$
-
-Here $\lVert\cdot\rVert_F$ is the Frobenius norm and $\lVert\cdot\rVert_2$ is the Euclidean vector norm.
-The required scale is $O(\epsilon_{\mathrm{mach}})$ for these residuals, allowing for numerical conditioning and accumulated floating-point operations.
+In floating-point arithmetic, they must hold within numerical roundoff, independently of the tolerances used to recognize symmetry in the input.
 `symprec` and the fractional-coordinate tolerance `epsilon` are not the accuracy promised for the returned cells.
-The concrete roundoff bounds must be established and tested with the numerical implementation.
-If the target constraints cannot be met within those bounds, construction must return `MoyoError::StandardizationError`.
+If the target constraints cannot be met within numerical roundoff, construction must return `MoyoError::StandardizationError`.
 
-Both values of `rotate_basis` must satisfy this contract.
+Both values of `rotate_basis` must satisfy this specification.
 Changing Cartesian orientation must leave the refined metric, fractional positions, site correspondences, and Wyckoff assignments invariant.
 If the input already satisfies the target symmetry, symmetrization preserves its metric and fractional positions up to roundoff; the selected coordinate change and Cartesian orientation still apply.
 
