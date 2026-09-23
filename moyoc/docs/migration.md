@@ -76,14 +76,17 @@ Replace with `moyo_dataset_new`, then read the symmetry operations from
 - `rotation` -> `dataset->operations.rotations`
 - `translation` -> `dataset->operations.translations`
 - (number of operations) -> `dataset->operations.num_operations`
-- `equivalent_atoms` is not directly available. Use `dataset->orbits`, which gives
-  spglib's `crystallographic_orbits`.
+- `equivalent_atoms` is not directly available. `dataset->orbits` corresponds to
+  spglib's `crystallographic_orbits`; see [Atomic equivalence](#atomic-equivalence)
+  for the difference.
 
 ### `spg_get_dataset()` and `spgat_get_dataset()`
 
 Replace with `moyo_dataset_new` (free the result with `moyo_dataset_free`).
 
-`SpglibDataset` fields correspond to `MoyoDataset` fields as follows:
+`SpglibDataset` fields correspond to `MoyoDataset` fields as follows. For
+standardized cells, also read the [standardization differences](#spg_standardize_cell)
+before comparing numerical values.
 
 - Space-group type
   - `spacegroup_number` -> `number`
@@ -108,16 +111,35 @@ Replace with `moyo_dataset_new` (free the result with `moyo_dataset_free`).
   - `std_positions` -> `std_cell.positions`
   - `std_types` -> `std_cell.numbers`
   - `n_std_atoms` -> `std_cell.num_atoms`
-  - `transformation_matrix` -> `std_linear`
-  - `origin_shift` -> `std_origin_shift`
+  - `transformation_matrix` -> `std_linear` (different convention; see
+    [Comparing positions](#comparing-positions))
+  - `origin_shift` -> `std_origin_shift` (different convention)
   - `std_rotation_matrix` -> `std_rotation_matrix`
 - Primitive standardized cell
   - `mapping_to_primitive` -> `mapping_std_prim`
 - Not supported in moyoc
-  - `equivalent_atoms` -> Use `orbits` to get crystallographic orbits instead
+  - `equivalent_atoms`: See [Atomic equivalence](#atomic-equivalence)
   - `primitive_lattice` -> Use `prim_std_cell` if you need a primitive
     standardized cell
   - `std_mapping_to_primitive` -> Recreate a `MoyoDataset` from `prim_std_cell`
+
+### Atomic equivalence
+
+`dataset->orbits` corresponds to spglib's `crystallographic_orbits`: it groups
+sites using the symmetry of the detected crystal, determined in a primitive
+cell. Spglib's `equivalent_atoms` instead uses the symmetry operations compatible
+with the input cell's periodicity.
+
+A supercell can exclude rotations that are symmetries of the underlying crystal.
+In that case, an orbit under the full crystal symmetry can split into smaller
+orbits under the input-cell operations. The two arrays can therefore describe
+different partitions, although they also agree for many supercells.
+
+If you need the input-cell equivalence relation, apply
+`dataset->operations` to the input sites and group the resulting site
+permutations, matching atomic numbers and positions modulo lattice translations
+within the symmetry tolerance. Orbit identifiers are representative atom indices;
+compare the partitions rather than the identifier values.
 
 ### `spg_get_spacegroup()`
 
@@ -200,8 +222,10 @@ Replace with `moyo_collinear_magnetic_dataset_new` (collinear) or
 - `translations` -> `magnetic_operations.translations`
 - `time_reversals` -> `magnetic_operations.time_reversals`
 - (number of operations) -> `magnetic_operations.num_operations`
-- `equivalent_atoms` is not directly available. Use `orbits`, which gives spglib's
-  `crystallographic_orbits`.
+- `equivalent_atoms` is not directly available. `orbits` groups sites using the
+  detected magnetic crystal symmetry. For equivalence under the input-cell
+  operations, use `magnetic_operations`; the same distinction described under
+  [Atomic equivalence](#atomic-equivalence) applies.
 - `primitive_lattice` -> `prim_std_mag_cell.basis` (transposed)
 
 ### `spg_get_magnetic_dataset()`
@@ -221,15 +245,17 @@ fields as follows (reread as `MoyoCollinearMagneticDataset` for the collinear ca
   - `time_reversals` -> `magnetic_operations.time_reversals`
   - `n_operations` -> `magnetic_operations.num_operations`
 - Site symmetry
-  - `equivalent_atoms` -> Use `orbits` to get crystallographic orbits instead
+  - `equivalent_atoms`: See the distinction under
+    [`spg_get_magnetic_symmetry()`](#spg_get_magnetic_symmetry)
 - Standardized magnetic cell
   - `std_lattice` -> `std_mag_cell.basis` (transposed)
   - `std_positions` -> `std_mag_cell.positions`
   - `std_types` -> `std_mag_cell.numbers`
   - `std_tensors` -> `std_mag_cell.magnetic_moments`
   - `n_std_atoms` -> `std_mag_cell.num_atoms`
-  - `transformation_matrix` -> `std_linear`
-  - `origin_shift` -> `std_origin_shift`
+  - `transformation_matrix` -> `std_linear` (different convention; see
+    [Comparing positions](#comparing-positions))
+  - `origin_shift` -> `std_origin_shift` (different convention)
   - `std_rotation_matrix` -> `std_rotation_matrix`
 - Secondary information
   - `msg_type` -> Access `moyo_magnetic_space_group_type_new(uni_number)->construct_type`
@@ -273,26 +299,82 @@ the result with `moyo_magnetic_operations_free`.
 
 ### `spg_standardize_cell()`
 
-`spg_standardize_cell(..., to_primitive, no_idealize, symprec)` is replaced with
-creating a `MoyoDataset` and reading the appropriate cell. The `no_idealize` flag
-is the **inverse** of moyoc's `rotate_basis` (idealizing the orientation
-corresponds to `rotate_basis = true`):
+Create a `MoyoDataset` and select the desired cell independently of
+`rotate_basis`:
 
-- `to_primitive = 1` -> `moyo_dataset_new(..., !no_idealize)->prim_std_cell`
-- `to_primitive = 0` -> `moyo_dataset_new(..., !no_idealize)->std_cell`
+| Desired cell | spglib | moyoc |
+| --- | --- | --- |
+| Primitive standardized cell | `to_primitive = 1` | `dataset->prim_std_cell` |
+| Conventional standardized cell | `to_primitive = 0` | `dataset->std_cell` |
+
+#### Standardization and `rotate_basis`
+
+Both libraries standardize the cell according to the detected space-group
+setting. Spglib's `no_idealize = 1` still performs standardization; it skips the
+additional idealization of lattice lengths, angles, and atomic positions.
+See [spglib's definition of the flag](https://spglib.readthedocs.io/en/v2.7.0/api.html#spg-standardize-cell).
+
+Moyo refines atomic positions to match the detected symmetry as part of its
+standardization, for either value of `rotate_basis`. The flag controls only
+whether a rigid Cartesian rotation is applied to the standardized lattice basis:
+
+- `rotate_basis = true`: apply the rotation returned as `std_rotation_matrix`.
+- `rotate_basis = false`: retain the Cartesian orientation after the change of
+  cell basis; `std_rotation_matrix` is the identity.
+
+Thus, `rotate_basis = false` still returns standardized cells with refined
+positions. There is no direct equivalent of spglib's `no_idealize` flag, and
+`rotate_basis = !no_idealize` is not a general migration rule.
+
+#### Lattice metric
+
+In moyo 0.19.0, the bulk standardized cells retain the lattice metric obtained
+from the input by the change of basis. A rigid rotation changes the Cartesian
+orientation but preserves lengths and angles, so `rotate_basis = true` does not
+remove lattice strain. The returned lattice can therefore satisfy the detected
+symmetry only approximately. Spglib's idealization (`no_idealize = 0`) also
+adjusts the lattice metric to satisfy that symmetry.
+
+#### Comparing positions
+
+Before comparing standardized structures, account for the chosen basis, origin,
+site ordering, and periodic images. Fractional coordinate triples alone do not
+establish whether the geometry changed.
+
+The two libraries also use different conventions for the coordinate change.
+For fractional positions written as column vectors, before position refinement:
+
+```text
+spglib: x_standard = transformation_matrix * x_input + origin_shift
+moyo:   x_standard = inverse(std_linear) * (x_input - std_origin_shift)
+```
+
+These transformation fields describe analogous quantities but cannot be copied
+directly between the libraries. Moyo's returned `std_cell.positions` also
+include the position refinement described above.
+The corresponding primitive fields are `prim_std_linear`,
+`prim_std_origin_shift`, and `prim_std_cell.positions`, with input sites mapped
+by `mapping_std_prim`.
+
+Moyo's standardized fractional positions can lie outside `[0, 1)`. If your
+application needs wrapped coordinates, copy them and replace each component `x`
+with `x - floor(x)` (`floor` is declared in `<math.h>`). The dataset's position
+arrays are read-only and owned by the dataset.
 
 Remember to transpose `std_cell.basis` / `prim_std_cell.basis` back to spglib's
 column-wise layout if you feed the result into spglib-style code.
 
 ### `spg_find_primitive()`
 
-moyoc does not provide a single-call equivalent.
-[See `spg_standardize_cell()`](#spg_standardize_cell).
+Spglib's function selects an idealized primitive cell. In moyoc, read
+`dataset->prim_std_cell`, with the
+[standardization differences above](#spg_standardize_cell).
 
 ### `spg_refine_cell()`
 
-moyoc does not provide a single-call equivalent.
-[See `spg_standardize_cell()`](#spg_standardize_cell).
+Spglib's function selects an idealized conventional cell. In moyoc, read
+`dataset->std_cell`, with the
+[standardization differences above](#spg_standardize_cell).
 
 ## Lattice reduction
 
