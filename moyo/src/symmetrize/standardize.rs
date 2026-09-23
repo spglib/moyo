@@ -16,25 +16,35 @@ use crate::identify::SpaceGroup;
 /// [`ConventionalCoordinateSystem`] selects the basis and origin. This type then
 /// refines atomic positions, constructs the primitive and conventional cells,
 /// applies the requested Cartesian orientation, and assigns Wyckoff positions.
+///
+/// The [returned-cell contract](https://spglib.github.io/moyo/standardization/#returned-cell-contract)
+/// specifies the target symmetry guarantees, coordinate conventions, field
+/// semantics, and current implementation status. Its lattice-refinement and
+/// Cartesian-orientation requirements are not fully implemented yet.
 pub struct StandardizedCell {
     // ------------------------------------------------------------------------
     // Primitive standardized cell
     // ------------------------------------------------------------------------
+    /// Primitive output, preserving the input primitive cell's site order and species.
     pub prim_cell: Cell,
-    /// Transformation from the input primitive cell to the primitive standardized cell.
+    /// Coordinate transformation from the input primitive cell to the selected
+    /// primitive system, before lattice and position refinement.
     pub prim_transformation: UnimodularTransformation,
     // ------------------------------------------------------------------------
     // Standardized cell
     // ------------------------------------------------------------------------
+    /// Conventional output in the selected Hall setting.
     pub cell: Cell,
     /// Wyckoff positions of sites in the `cell`
     pub wyckoffs: Vec<WyckoffPosition>,
-    /// Transformation from the input primitive cell to the standardized cell.
+    /// Coordinate transformation from the input primitive cell to the selected
+    /// conventional system, before lattice and position refinement.
     pub transformation: Transformation,
-    /// Rotation matrix to map the lattice of the input primitive cell to that of the standardized cell.
     // ------------------------------------------------------------------------
     // Miscellaneous
     // ------------------------------------------------------------------------
+    /// Proper Cartesian rotation applied to both output lattices.
+    /// Identity when `rotate_basis` is false; it does not encode lattice refinement.
     pub rotation_matrix: Matrix3<f64>,
     /// Mapping from the site in the `cell` to that in the `prim_cell`
     pub site_mapping: Vec<usize>,
@@ -42,8 +52,7 @@ pub struct StandardizedCell {
 
 impl StandardizedCell {
     /// Standardize the input **primitive** cell.
-    /// For triclinic space groups, Niggli reduction is performed.
-    /// Basis vectors are rotated to be a upper triangular matrix.
+    /// See [`Self`] for the returned-cell contract and implementation status.
     pub fn new(
         prim_cell: &Cell,
         prim_operations: &Operations,
