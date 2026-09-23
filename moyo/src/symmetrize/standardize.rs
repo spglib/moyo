@@ -12,6 +12,11 @@ use crate::base::{
 use crate::data::{HallNumber, WyckoffPosition, iter_wyckoff_positions};
 use crate::identify::SpaceGroup;
 
+/// Result of the full standardization pipeline for a primitive cell.
+///
+/// [`ConventionalCoordinateSystem`] selects the basis and origin. This type then
+/// refines atomic positions, constructs the primitive and conventional cells,
+/// applies the requested Cartesian orientation, and assigns Wyckoff positions.
 pub struct StandardizedCell {
     // ------------------------------------------------------------------------
     // Primitive standardized cell
@@ -49,6 +54,8 @@ impl StandardizedCell {
         epsilon: f64,
         rotate_basis: bool,
     ) -> Result<Self, MoyoError> {
+        let coordinate_system =
+            ConventionalCoordinateSystem::new(&prim_cell.lattice, space_group, epsilon)?;
         let (
             prim_std_cell,
             prim_std_permutations,
@@ -61,7 +68,7 @@ impl StandardizedCell {
             prim_cell,
             prim_operations,
             prim_permutations,
-            space_group,
+            coordinate_system,
             epsilon,
             rotate_basis,
         )?;
@@ -94,7 +101,7 @@ impl StandardizedCell {
         prim_cell: &Cell,
         prim_operations: &Operations,
         prim_permutations: &[Permutation],
-        space_group: &SpaceGroup,
+        coordinate_system: ConventionalCoordinateSystem,
         epsilon: f64,
         rotate_basis: bool,
     ) -> Result<
@@ -115,7 +122,7 @@ impl StandardizedCell {
             transformation,
             conv_std_operations,
             prim_std_operations,
-        } = ConventionalCoordinateSystem::new(prim_cell, space_group, epsilon)?;
+        } = coordinate_system;
 
         let prim_std_cell_tmp = prim_transformation.transform_cell(prim_cell);
 
