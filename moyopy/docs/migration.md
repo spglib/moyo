@@ -192,11 +192,28 @@ Replace it with `magnetic_operations_from_uni_number(uni_number)`.
 
 ### `spglib.standardize_cell()`
 
-`spglib.standardize_cell(..., to_primitive, no_idealize)` is replaced with creating `MoyoDataset` with appropriate arguments.
-Spglib's `no_idealize` is the **inverse** of moyopy's `rotate_basis` (idealizing the orientation corresponds to `rotate_basis=True`):
+Create a `MoyoDataset` and read the desired standardized cell:
 
-- `to_primitive=True` -> `MoyoDataset(..., rotate_basis=not no_idealize).prim_std_cell`
-- `to_primitive=False` -> `MoyoDataset(..., rotate_basis=not no_idealize).std_cell`
+| Desired cell | spglib | moyopy |
+| --- | --- | --- |
+| Primitive standardized cell | `to_primitive=True` | `dataset.prim_std_cell` |
+| Conventional standardized cell | `to_primitive=False` | `dataset.std_cell` |
+
+To avoid the additional Cartesian rotation of the standardized lattice basis,
+as with spglib's `no_idealize=True`, pass `rotate_basis=False` to `MoyoDataset`.
+Use `rotate_basis=True` to apply the rotation returned as `std_rotation_matrix`.
+
+Both libraries still standardize the cell when rotation is disabled. Moyo
+refines atomic positions to match the detected symmetry for either value of
+`rotate_basis`. If you need the original atomic positions, use your original
+input cell.
+
+Spglib's `no_idealize=True` skips its
+[idealization step](https://spglib.readthedocs.io/en/v2.7.0/api.html#spg-standardize-cell),
+but primitive-cell reduction can still
+[average translation-equivalent positions](https://github.com/spglib/spglib/blob/v2.7.0/src/cell.c#L399-L460).
+This can occur even with conventional output (`to_primitive=False`), so the flag
+does not guarantee unchanged atomic positions.
 
 ### `spglib.find_primitive()`
 
