@@ -1,13 +1,12 @@
-use log::warn;
-use nalgebra::linalg::{Cholesky, QR};
-use nalgebra::{Matrix3, Vector3, vector};
+use nalgebra::Matrix3;
 use std::collections::HashMap;
 
 use super::conventional_coordinate_system::ConventionalCoordinateSystem;
+use super::symmetrization::{symmetrize_lattice, symmetrize_positions};
 use super::wyckoff::{assign_wyckoffs_by_orbit, group_sites_by_orbit, match_wyckoff_coordinates};
 use crate::base::{
-    Cell, EPS, Lattice, MoyoError, Operations, Permutation, Position, Rotations, Transformation,
-    UnimodularTransformation, project_rotations,
+    Cell, MoyoError, Operations, Permutation, Transformation, UnimodularTransformation,
+    project_rotations,
 };
 use crate::data::{HallNumber, WyckoffPosition, iter_wyckoff_positions};
 use crate::identify::SpaceGroup;
@@ -233,125 +232,4 @@ pub(super) fn align_primitive_permutations(
                 .ok_or(MoyoError::StandardizationError)
         })
         .collect()
-}
-
-/// Symmetrize positions by site symmetry groups. Operates on a slice rather
-/// than `&Cell` so the layer pipeline (which threads `LayerCell::positions()`)
-/// can reuse it.
-pub(super) fn symmetrize_positions(
-    positions: &[Position],
-    operations: &Operations,
-    permutations: &[Permutation],
-    epsilon: f64,
-) -> Vec<Position> {
-    // operations[k] maps site-i to site-permutations[k].apply(i)
-    // Thus, it maps site-`inverse_permutations[k].apply(i)` to site-i.
-    let inverse_permutations = permutations
-        .iter()
-        .map(|permutation| permutation.inverse())
-        .collect::<Vec<_>>();
-
-    (0..positions.len())
-        .map(|i| {
-            let mut acc = Vector3::zeros();
-            for (inv_perm, operation) in inverse_permutations.iter().zip(operations.iter()) {
-                let mut frac_displacements = operation.rotation.map(|e| e as f64)
-                    * positions[inv_perm.apply(i)]
-                    + operation.translation
-                    - positions[i];
-                frac_displacements -= frac_displacements.map(|e| e.round()); // in [-0.5, 0.5]
-                acc += frac_displacements;
-            }
-            acc /= permutations.len() as f64;
-            if acc.abs().max() > epsilon {
-                warn!(
-                    "Large displacement during symmetrization: {:?} for site {}",
-                    acc, i
-                )
-            }
-            positions[i] + acc
-        })
-        .collect::<Vec<_>>()
-}
-
-fn symmetrize_lattice(lattice: &Lattice, rotations: &Rotations) -> (Lattice, Matrix3<f64>) {
-    let metric_tensor = lattice.metric_tensor();
-    let mut symmetrized_metric_tensor: Matrix3<f64> = rotations
-        .iter()
-        .map(|rotation| {
-            rotation.transpose().map(|e| e as f64) * metric_tensor * rotation.map(|e| e as f64)
-        })
-        .sum();
-    symmetrized_metric_tensor /= rotations.len() as f64;
-
-    // Upper-triangular basis
-    let mut tri_basis = Cholesky::new_unchecked(symmetrized_metric_tensor)
-        .l()
-        .transpose();
-    // Remove axis-direction freedom
-    let diagonal_signs = Matrix3::<f64>::from_diagonal(&vector![
-        sign(tri_basis[(0, 0)]),
-        sign(tri_basis[(1, 1)]),
-        sign(tri_basis[(2, 2)])
-    ]);
-    tri_basis *= diagonal_signs;
-    // Adjust handedness
-    if sign(lattice.basis.determinant()) * sign(tri_basis.determinant()) < 0.0 {
-        tri_basis *= Matrix3::<f64>::from_diagonal(&vector![1.0, 1.0, -1.0]);
-    }
-
-    // tri_basis \approx orthogonal_matrix * lattice.basis
-    // QR(tri_basis * lattice.basis^-1) = rotation_matrix * strain
-    let mut rotation_matrix = QR::new(tri_basis * lattice.basis.try_inverse().unwrap()).q();
-    if rotation_matrix.determinant() < 0.0 {
-        rotation_matrix *= -1.0;
-    }
-
-    (Lattice::new(tri_basis.transpose()), rotation_matrix)
-}
-
-fn sign(x: f64) -> f64 {
-    if x > EPS {
-        1.0
-    } else if x < -EPS {
-        -1.0
-    } else {
-        0.0
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use nalgebra::matrix;
-
-    use super::symmetrize_lattice;
-    use crate::base::{Lattice, traverse};
-    use crate::data::{GeometricCrystalClass, PointGroupRepresentative};
-
-    #[test]
-    fn test_symmetrize_lattice_cubic() {
-        let lattice = Lattice::new(matrix![
-            1.0, 0.0, 0.0001;
-            0.0, -0.999, 0.0;
-            0.0, 0.0, -1.0001;
-        ]);
-        let rep = PointGroupRepresentative::from_geometric_crystal_class(GeometricCrystalClass::Oh);
-        let rotations = traverse(&rep.generators);
-
-        let (new_lattice, rotation_matrix) = symmetrize_lattice(&lattice, &rotations);
-        assert_relative_eq!(new_lattice.basis[(1, 1)], new_lattice.basis[(0, 0)]);
-        assert_relative_eq!(new_lattice.basis[(2, 2)], new_lattice.basis[(0, 0)]);
-        assert_relative_eq!(new_lattice.basis[(0, 1)], 0.0);
-        assert_relative_eq!(new_lattice.basis[(0, 2)], 0.0);
-        assert_relative_eq!(new_lattice.basis[(1, 0)], 0.0);
-        assert_relative_eq!(new_lattice.basis[(1, 2)], 0.0);
-        assert_relative_eq!(new_lattice.basis[(2, 0)], 0.0);
-        assert_relative_eq!(new_lattice.basis[(2, 1)], 0.0);
-
-        assert_relative_eq!(
-            rotation_matrix * lattice.basis,
-            new_lattice.basis,
-            epsilon = 1e-2
-        );
-    }
 }
