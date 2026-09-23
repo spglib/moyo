@@ -78,10 +78,17 @@ $$
 The symmetric positive-definite stretch $\mathbf{U}$ describes lattice refinement in the input Cartesian frame.
 The proper rotation $\mathbf{R}$ takes that refined lattice to the canonical orientation.
 
-| Option | Conventional basis |
-| --- | --- |
-| `rotate_basis=true` (default) | $\mathbf{A}_{\mathrm{std}}=\mathbf{B}=\mathbf{R}\mathbf{U}\mathbf{A}\mathbf{P}_{\mathrm{std}}$ |
-| `rotate_basis=false` | $\mathbf{A}_{\mathrm{std}}=\mathbf{R}^\mathsf{T}\mathbf{B}=\mathbf{U}\mathbf{A}\mathbf{P}_{\mathrm{std}}$ |
+With `rotate_basis=true` (default), the conventional basis is
+
+$$
+\mathbf{A}_{\mathrm{std}}=\mathbf{B}=\mathbf{R}\mathbf{U}\mathbf{A}\mathbf{P}_{\mathrm{std}}.
+$$
+
+With `rotate_basis=false`, the conventional basis is
+
+$$
+\mathbf{A}_{\mathrm{std}}=\mathbf{R}^\mathsf{T}\mathbf{B}=\mathbf{U}\mathbf{A}\mathbf{P}_{\mathrm{std}}.
+$$
 
 The same stretch and rotation apply to the primitive output.
 Fractional positions are refined in the selected coordinates and are identical for both orientation options.
@@ -93,14 +100,55 @@ With `Setting.Standard`, the conventional cell gives the space group in the ITA 
 For `rotate_basis=true` and right-handed input, its refined basis $\mathbf{A}_{\mathrm{std}}=\mathbf{B}$ has the form below.
 The parameters $a$, $b$, and $c$ denote positive lengths.
 
-| Crystal family | Conventional basis $\mathbf{A}_{\mathrm{std}}$ | Additional conditions                                             |
-| -------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| Triclinic      | $\begin{pmatrix} a_x & b_x & c_x \\ 0 & b_y & c_y \\ 0 & 0 & c_z \end{pmatrix}$        | Niggli reduced [^std-cell-2]; $a_x, b_y, c_z \gt 0$ |
-| Monoclinic     | $\begin{pmatrix} a & 0 & c \cos \beta \\ 0 & b & 0 \\ 0 & 0 & c \sin \beta \end{pmatrix}$    | $a, b, c \sin \beta \gt 0$; $\cos \beta \le 0$ [^std-cell-7] |
-| Orthorhombic   | $\begin{pmatrix} a & 0 & 0 \\ 0 & b & 0 \\ 0 & 0 & c \end{pmatrix}$                          | $a, b, c \gt 0$; $a \le b \le c$ as far as possible [^std-cell-6] |
-| Tetragonal     | $\begin{pmatrix} a & 0 & 0 \\ 0 & a & 0 \\ 0 & 0 & c \end{pmatrix}$                          | $a, c \gt 0$                                        |
-| Hexagonal      | $\begin{pmatrix} a & -a / 2 & 0 \\0 & \sqrt{3} a / 2 & 0 \\ 0 & 0 & c \end{pmatrix}$         | $a, c > 0$                                          |
-| Cubic          | $\begin{pmatrix} a & 0 & 0 \\ 0 & a & 0 \\ 0 & 0 & a \end{pmatrix}$                          | $a > 0$                                             |
+### Triclinic
+
+$$
+\mathbf{A}_{\mathrm{std}} = \begin{pmatrix} a_x & b_x & c_x \\ 0 & b_y & c_y \\ 0 & 0 & c_z \end{pmatrix}.
+$$
+
+Niggli reduced [^std-cell-2]; $a_x, b_y, c_z \gt 0$.
+
+### Monoclinic
+
+$$
+\mathbf{A}_{\mathrm{std}} = \begin{pmatrix} a & 0 & c \cos \beta \\ 0 & b & 0 \\ 0 & 0 & c \sin \beta \end{pmatrix}.
+$$
+
+$a, b, c \sin \beta \gt 0$; $\cos \beta \le 0$ [^std-cell-7].
+
+### Orthorhombic
+
+$$
+\mathbf{A}_{\mathrm{std}} = \begin{pmatrix} a & 0 & 0 \\ 0 & b & 0 \\ 0 & 0 & c \end{pmatrix}.
+$$
+
+$a, b, c \gt 0$; $a \le b \le c$ as far as possible [^std-cell-6].
+
+### Tetragonal
+
+$$
+\mathbf{A}_{\mathrm{std}} = \begin{pmatrix} a & 0 & 0 \\ 0 & a & 0 \\ 0 & 0 & c \end{pmatrix}.
+$$
+
+$a, c \gt 0$.
+
+### Hexagonal
+
+$$
+\mathbf{A}_{\mathrm{std}} = \begin{pmatrix} a & -a / 2 & 0 \\0 & \sqrt{3} a / 2 & 0 \\ 0 & 0 & c \end{pmatrix}.
+$$
+
+$a, c > 0$.
+
+### Cubic
+
+$$
+\mathbf{A}_{\mathrm{std}} = \begin{pmatrix} a & 0 & 0 \\ 0 & a & 0 \\ 0 & 0 & a \end{pmatrix}.
+$$
+
+$a > 0$.
+
+### Handedness
 
 For left-handed input, use the same metric and negate the final Cartesian row of the displayed upper-triangular basis.
 Equivalently, left-multiply by $\operatorname{diag}(1,1,-1)$, making the final diagonal entry negative while preserving all lengths and angles.
@@ -111,22 +159,22 @@ This handedness convention also applies to other Hall settings; their canonical 
 The primitive and conventional cells describe the same refined crystal.
 For `Setting.Standard`, the change of basis from primitive to conventional is given by the centering matrix $\mathbf{Q}$ below.
 
-| Crystal family | Bravais class | Transformation matrix from primitive to conventional, $\mathbf{Q}$                    | $\mathbf{Q}^{-1}$                                                                                            |
-| -------------- | ------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Triclinic      | aP            | $\mathbf{Q}_P = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}$    | $\mathbf{Q}_P^{-1} = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}$                      |
-| Monoclinic     | mP            | $\mathbf{Q}_P$                                                                        | $\mathbf{Q}_P^{-1}$                                                                                          |
-|                | mC            | $\mathbf{Q}_C = \begin{pmatrix} 1 & -1 & 0 \\ 1 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}$   | $\mathbf{Q}_C^{-1} = \begin{pmatrix} 1/2 & 1/2 & 0 \\ -1/2 & 1/2 & 0 \\ 0 & 0 & 1 \end{pmatrix}$             |
-| Orthorhombic   | oP            | $\mathbf{Q}_P$                                                                        | $\mathbf{Q}_P^{-1}$                                                                                          |
-|                | oS            | $\mathbf{Q}_C$                                                                        | $\mathbf{Q}_C^{-1}$                                                                                          |
-|                | oF            | $\mathbf{Q}_F = \begin{pmatrix} -1 & 1 & 1 \\ 1 & -1 & 1 \\ 1 & 1 & -1 \end{pmatrix}$ | $\mathbf{Q}_F^{-1} = \begin{pmatrix} 0 & 1/2 & 1/2 \\ 1/2 & 0 & 1/2 \\ 1/2 & 1/2 & 0 \end{pmatrix}$          |
-|                | oI            | $\mathbf{Q}_I = \begin{pmatrix} 0 & 1 & 1 \\ 1 & 0 & 1 \\ 1 & 1 & 0 \end{pmatrix}$    | $\mathbf{Q}_I^{-1} = \begin{pmatrix} -1/2 & 1/2 & 1/2 \\ 1/2 & -1/2 & 1/2 \\ 1/2 & 1/2 & -1/2 \end{pmatrix}$ |
-| Tetragonal     | tP            | $\mathbf{Q}_P$                                                                        | $\mathbf{Q}_P^{-1}$                                                                                          |
-|                | tI            | $\mathbf{Q}_I$                                                                        | $\mathbf{Q}_I^{-1}$                                                                                          |
-| Hexagonal      | hR            | $\mathbf{Q}_R = \begin{pmatrix} 1 & 0 & 1 \\ -1 & 1 & 1 \\ 0 & -1 & 1 \end{pmatrix}$  | $\mathbf{Q}_R^{-1} = \begin{pmatrix} 2/3 & -1/3 & -1/3 \\ 1/3 & 1/3 & -2/3 \\ 1/3 & 1/3 & 1/3 \end{pmatrix}$ |
-|                | hP            | $\mathbf{Q}_P$                                                                        | $\mathbf{Q}_P^{-1}$                                                                                          |
-| Cubic          | cP            | $\mathbf{Q}_P$                                                                        | $\mathbf{Q}_P^{-1}$                                                                                          |
-|                | cF            | $\mathbf{Q}_F$                                                                        | $\mathbf{Q}_F^{-1}$                                                                                          |
-|                | cI            | $\mathbf{Q}_I$                                                                        | $\mathbf{Q}_I^{-1}$                                                                                          |
+| Crystal family | Bravais class | Centering |
+| --- | --- | --- |
+| Triclinic | aP | [P](#p-centering) |
+| Monoclinic | mP | [P](#p-centering) |
+|  | mC | [C](#c-centering) |
+| Orthorhombic | oP | [P](#p-centering) |
+|  | oS | [C](#c-centering) |
+|  | oF | [F](#f-centering) |
+|  | oI | [I](#i-centering) |
+| Tetragonal | tP | [P](#p-centering) |
+|  | tI | [I](#i-centering) |
+| Hexagonal | hR | [R](#r-centering) |
+|  | hP | [P](#p-centering) |
+| Cubic | cP | [P](#p-centering) |
+|  | cF | [F](#f-centering) |
+|  | cI | [I](#i-centering) |
 
 The conventional and primitive outputs share an origin and satisfy the following relations for either orientation option:
 
@@ -146,6 +194,41 @@ $$
 $$
 
 Each primitive site has $|\det\mathbf{Q}|$ conventional copies.
+
+### P centering
+
+$$
+\mathbf{Q}_P = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix},\qquad
+\mathbf{Q}_P^{-1} = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}.
+$$
+
+### C centering
+
+$$
+\mathbf{Q}_C = \begin{pmatrix} 1 & -1 & 0 \\ 1 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix},\qquad
+\mathbf{Q}_C^{-1} = \begin{pmatrix} 1/2 & 1/2 & 0 \\ -1/2 & 1/2 & 0 \\ 0 & 0 & 1 \end{pmatrix}.
+$$
+
+### F centering
+
+$$
+\mathbf{Q}_F = \begin{pmatrix} -1 & 1 & 1 \\ 1 & -1 & 1 \\ 1 & 1 & -1 \end{pmatrix},\qquad
+\mathbf{Q}_F^{-1} = \begin{pmatrix} 0 & 1/2 & 1/2 \\ 1/2 & 0 & 1/2 \\ 1/2 & 1/2 & 0 \end{pmatrix}.
+$$
+
+### I centering
+
+$$
+\mathbf{Q}_I = \begin{pmatrix} 0 & 1 & 1 \\ 1 & 0 & 1 \\ 1 & 1 & 0 \end{pmatrix},\qquad
+\mathbf{Q}_I^{-1} = \begin{pmatrix} -1/2 & 1/2 & 1/2 \\ 1/2 & -1/2 & 1/2 \\ 1/2 & 1/2 & -1/2 \end{pmatrix}.
+$$
+
+### R centering
+
+$$
+\mathbf{Q}_R = \begin{pmatrix} 1 & 0 & 1 \\ -1 & 1 & 1 \\ 0 & -1 & 1 \end{pmatrix},\qquad
+\mathbf{Q}_R^{-1} = \begin{pmatrix} 2/3 & -1/3 & -1/3 \\ 1/3 & 1/3 & -2/3 \\ 1/3 & 1/3 & 1/3 \end{pmatrix}.
+$$
 
 [^setting]: That being said, the order of the Hall symbols are the same as Table A1.4.2.7 in International Tables for Crystallography Volume B (2010).
 
