@@ -35,8 +35,8 @@ impl PyMoyoCollinearMagneticDataset {
     ///     If ``True``, magnetic moments transform as axial vectors. Defaults to ``False``
     ///     for collinear moments.
     /// rotate_basis : bool
-    ///     Whether to rotate the basis vectors of the input cell to those of the standardized
-    ///     cell.
+    ///     Whether to apply the canonical Cartesian orientation to the refined lattice.
+    ///     Lattice, positions, and magnetic moments are refined for either value.
     #[new]
     #[pyo3(signature = (magnetic_cell, *, symprec=1e-4, angle_tolerance=None, mag_symprec=None, is_axial=false, rotate_basis=true))]
     pub fn new(
@@ -104,27 +104,29 @@ impl PyMoyoCollinearMagneticDataset {
     // ------------------------------------------------------------------------
     /// Standardized magnetic cell.
     ///
-    /// Same transformation convention as :attr:`MoyoDataset.std_cell`.
+    /// Uses the same pre-refinement coordinate convention as ``MoyoDataset.std_cell``.
+    /// Magnetic moments are rotated by ``std_rotation_matrix``, then averaged under
+    /// the magnetic group using the refined lattice. Lattice stretch is not applied
+    /// to magnetic moments.
     #[getter]
     pub fn std_mag_cell(&self) -> PyCollinearMagneticCell {
         self.0.std_mag_cell.clone().into()
     }
 
-    /// Linear part of the transformation from the input cell to the standardized magnetic
-    /// cell.
+    /// Linear part of the transformation from the input magnetic cell to ``std_mag_cell``.
     #[getter]
     pub fn std_linear(&self) -> [[f64; 3]; 3] {
         self.0.std_linear_as_array()
     }
 
-    /// Origin shift of the transformation from the input cell to the standardized magnetic
-    /// cell.
+    /// Origin shift of the transformation from the input magnetic cell to ``std_mag_cell``.
     #[getter]
     pub fn std_origin_shift(&self) -> [f64; 3] {
         self.0.std_origin_shift_as_array()
     }
 
-    /// Rigid rotation (orthogonal matrix) applied to the lattice basis.
+    /// Proper Cartesian rotation applied to the refined lattice and magnetic moments.
+    /// Identity when ``rotate_basis`` is false; it does not encode the lattice stretch.
     #[getter]
     pub fn std_rotation_matrix(&self) -> [[f64; 3]; 3] {
         self.0.std_rotation_matrix_as_array()
@@ -139,15 +141,13 @@ impl PyMoyoCollinearMagneticDataset {
         self.0.prim_std_mag_cell.clone().into()
     }
 
-    /// Linear part of the transformation from the input cell to the primitive standardized
-    /// magnetic cell.
+    /// Linear part of the transformation from the input magnetic cell to ``prim_std_mag_cell``.
     #[getter]
     pub fn prim_std_linear(&self) -> [[f64; 3]; 3] {
         self.0.prim_std_linear_as_array()
     }
 
-    /// Origin shift of the transformation from the input cell to the primitive standardized
-    /// magnetic cell.
+    /// Origin shift of the transformation from the input magnetic cell to ``prim_std_mag_cell``.
     #[getter]
     pub fn prim_std_origin_shift(&self) -> [f64; 3] {
         self.0.prim_std_origin_shift_as_array()
@@ -258,8 +258,8 @@ impl PyMoyoNonCollinearMagneticDataset {
     ///     If ``True``, magnetic moments transform as axial vectors. Defaults to ``True`` for
     ///     non-collinear moments.
     /// rotate_basis : bool
-    ///     Whether to rotate the basis vectors of the input cell to those of the standardized
-    ///     cell.
+    ///     Whether to apply the canonical Cartesian orientation to the refined lattice.
+    ///     Lattice, positions, and magnetic moments are refined for either value.
     #[new]
     #[pyo3(signature = (magnetic_cell, *, symprec=1e-4, angle_tolerance=None, mag_symprec=None, is_axial=true, rotate_basis=true))]
     pub fn new(
@@ -323,26 +323,30 @@ impl PyMoyoNonCollinearMagneticDataset {
     // Standardized magnetic cell
     // ------------------------------------------------------------------------
     /// Standardized magnetic cell.
+    ///
+    /// Uses the same pre-refinement coordinate convention as ``MoyoDataset.std_cell``.
+    /// Magnetic moments are rotated by ``std_rotation_matrix``, then averaged under
+    /// the magnetic group using the refined lattice. Lattice stretch is not applied
+    /// to magnetic moments.
     #[getter]
     pub fn std_mag_cell(&self) -> PyNonCollinearMagneticCell {
         self.0.std_mag_cell.clone().into()
     }
 
-    /// Linear part of the transformation from the input cell to the standardized magnetic
-    /// cell.
+    /// Linear part of the transformation from the input magnetic cell to ``std_mag_cell``.
     #[getter]
     pub fn std_linear(&self) -> [[f64; 3]; 3] {
         self.0.std_linear_as_array()
     }
 
-    /// Origin shift of the transformation from the input cell to the standardized magnetic
-    /// cell.
+    /// Origin shift of the transformation from the input magnetic cell to ``std_mag_cell``.
     #[getter]
     pub fn std_origin_shift(&self) -> [f64; 3] {
         self.0.std_origin_shift_as_array()
     }
 
-    /// Rigid rotation (orthogonal matrix) applied to the lattice basis.
+    /// Proper Cartesian rotation applied to the refined lattice and magnetic moments.
+    /// Identity when ``rotate_basis`` is false; it does not encode the lattice stretch.
     #[getter]
     pub fn std_rotation_matrix(&self) -> [[f64; 3]; 3] {
         self.0.std_rotation_matrix_as_array()
@@ -357,15 +361,13 @@ impl PyMoyoNonCollinearMagneticDataset {
         self.0.prim_std_mag_cell.clone().into()
     }
 
-    /// Linear part of the transformation from the input cell to the primitive standardized
-    /// magnetic cell.
+    /// Linear part of the transformation from the input magnetic cell to ``prim_std_mag_cell``.
     #[getter]
     pub fn prim_std_linear(&self) -> [[f64; 3]; 3] {
         self.0.prim_std_linear_as_array()
     }
 
-    /// Origin shift of the transformation from the input cell to the primitive standardized
-    /// magnetic cell.
+    /// Origin shift of the transformation from the input magnetic cell to ``prim_std_mag_cell``.
     #[getter]
     pub fn prim_std_origin_shift(&self) -> [f64; 3] {
         self.0.prim_std_origin_shift_as_array()
