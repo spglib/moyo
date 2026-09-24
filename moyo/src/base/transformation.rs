@@ -343,10 +343,10 @@ impl Transformation {
         let mut site_mapping = Vec::with_capacity(new_num_atoms);
         for (i, (pos, number)) in cell.positions.iter().zip(cell.numbers.iter()).enumerate() {
             for lattice_point in lattice_points.iter() {
-                // Fractional coordinates in the new sublattice
+                // Fractional coordinates in the new sublattice: P^-1 (x + n - p).
                 let new_position = (self.linear_inv
-                    * (pos + lattice_point.map(|element| element as f64)))
-                .map(|e| e % 1.);
+                    * (pos + lattice_point.map(|element| element as f64) - self.origin_shift))
+                    .map(|e| e % 1.);
                 new_positions.push(new_position);
                 new_numbers.push(*number);
                 site_mapping.push(i);
@@ -525,6 +525,53 @@ mod tests {
         // The conjugate contains 1/2 and 5/6. Rounding it and conjugating back
         // nevertheless recovers the original integer rotation after rounding.
         assert!(transformation.transform_operation(&operation).is_none());
+    }
+
+    #[test]
+    fn test_transform_cell_with_origin_shift() {
+        let transformation = Transformation::new(
+            matrix![2, 1, 0; 0, 1, 0; 0, 0, 1],
+            vector![0.37, -0.23, 1.19],
+        );
+        let cell = Cell::new(
+            Lattice::new(matrix![3.0, 0.0, 0.0; 0.2, 4.0, 0.0; 0.1, 0.3, 5.0]),
+            vec![vector![1.9, -0.96, 1.6], vector![-1.0, 1.94, -1.14]],
+            vec![14, 8],
+        );
+        let (transformed, mapping) = transformation.transform_cell(&cell);
+        assert_eq!(transformed.num_atoms(), 4);
+        assert_relative_eq!(
+            transformed.lattice.basis,
+            cell.lattice.basis * transformation.linear_as_f64(),
+            epsilon = 1e-12
+        );
+        // The doubled, sheared cell contains two images of each species.
+        // These coordinates include the origin shift before changing basis.
+        for (number, expected) in [
+            (14, vector![0.13, 0.27, 0.41]),
+            (14, vector![0.63, 0.27, 0.41]),
+            (8, vector![0.23, 0.17, 0.67]),
+            (8, vector![0.73, 0.17, 0.67]),
+        ] {
+            let matches = transformed
+                .positions
+                .iter()
+                .enumerate()
+                .filter(|(j, position)| {
+                    let delta = *position - expected;
+                    transformed.numbers[*j] == number
+                        && (delta - delta.map(f64::round)).norm() < 1e-12
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(
+                matches.len(),
+                1,
+                "missing image of species {number}: {expected:?}"
+            );
+            for (j, _) in matches {
+                assert_eq!(cell.numbers[mapping[j]], number);
+            }
+        }
     }
 
     #[test]

@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate approx;
 
-use nalgebra::{Matrix3, Rotation3, matrix, vector};
+use nalgebra::{Matrix3, Rotation3, Vector3, matrix, vector};
 use std::fs;
 use std::path::Path;
 use test_log::test;
@@ -456,16 +456,22 @@ fn test_with_large_mag_symprec() {
 #[case::centered_monoclinic(23, matrix![3.0, 0.0, 0.0; 0.0, 4.0, 0.0; -1.0, 0.0, 5.0])]
 #[case::nonsymmorphic_tetragonal(932, matrix![5.0, 0.0, 0.0; 0.0, 5.0, 0.0; 0.0, 0.0, 6.0])]
 #[test_log::test]
-fn test_type4_position_refinement(#[case] uni_number: i32, #[case] basis: Matrix3<f64>) {
+fn test_type4_position_refinement(
+    #[case] uni_number: i32,
+    #[case] basis: Matrix3<f64>,
+    #[values(Vector3::zeros(), vector![0.83, -0.31, 0.47])] origin_shift: Vector3<f64>,
+) {
     check_type4_position_refinement(
         uni_number,
         basis,
+        origin_shift,
         [Collinear(1.0), Collinear(2.0)],
         RotationMagneticMomentAction::Polar,
     );
     check_type4_position_refinement(
         uni_number,
         basis,
+        origin_shift,
         [
             NonCollinear(vector![0.2, 0.3, 1.0]),
             NonCollinear(vector![0.4, -0.2, 0.7]),
@@ -477,6 +483,7 @@ fn test_type4_position_refinement(#[case] uni_number: i32, #[case] basis: Matrix
 fn check_type4_position_refinement<M: MagneticMoment>(
     uni_number: i32,
     basis: Matrix3<f64>,
+    origin_shift: Vector3<f64>,
     seed_moments: [M; 2],
     action: RotationMagneticMomentAction,
 ) {
@@ -496,7 +503,7 @@ fn check_type4_position_refinement<M: MagneticMoment>(
         for operation in &operations {
             let rotation = operation.operation.rotation.map(f64::from);
             // Retain positions outside the unit cell.
-            exact_positions.push(rotation * seed + operation.operation.translation);
+            exact_positions.push(rotation * seed + operation.operation.translation + origin_shift);
             // Each unitary orbit stays exact, while anti-translation partners
             // receive opposite displacements. Their exact average is the seed orbit.
             let sign = if operation.time_reversal { -1.0 } else { 1.0 };
@@ -553,6 +560,38 @@ fn check_type4_position_refinement<M: MagneticMoment>(
                             1e-12,
                         )
                     );
+                }
+                // Both outputs must describe the same sites in their respective
+                // coordinate systems, including the selected origin.
+                let prim_cell = &dataset.prim_std_mag_cell;
+                let conv_cell = &dataset.std_mag_cell;
+                let mut multiplicities = vec![0; prim_cell.num_atoms()];
+                for (i, position) in conv_cell.cell.positions.iter().enumerate() {
+                    let prim_position = linear_inv
+                        * (dataset.std_linear * position + dataset.std_origin_shift
+                            - dataset.prim_std_origin_shift);
+                    let j = prim_cell
+                        .cell
+                        .positions
+                        .iter()
+                        .enumerate()
+                        .find_map(|(j, target)| {
+                            let delta = prim_position - target;
+                            (conv_cell.cell.numbers[i] == prim_cell.cell.numbers[j]
+                                && (delta - delta.map(f64::round)).norm() < 1e-12)
+                                .then_some(j)
+                        })
+                        .expect(
+                            "conventional site must match a primitive site at the selected origin",
+                        );
+                    multiplicities[j] += 1;
+                    assert!(
+                        conv_cell.magnetic_moments[i]
+                            .is_close(&prim_cell.magnetic_moments[j], 1e-12)
+                    );
+                }
+                for multiplicity in multiplicities {
+                    assert_eq!(multiplicity * prim_cell.num_atoms(), conv_cell.num_atoms());
                 }
                 for (cell, primitive) in [
                     (&dataset.std_mag_cell, false),
