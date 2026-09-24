@@ -198,6 +198,35 @@ mod tests {
     }
 
     #[test]
+    fn test_symmetrize_lattice_left_handed_monoclinic() {
+        let lattice = Lattice::new(matrix![
+            2.0, 0.001, 0.0;
+            0.003, 3.0, 0.002;
+            -0.7, 0.004, -4.0;
+        ])
+        .rotate(Rotation3::from_euler_angles(0.2, -0.3, 0.4).matrix());
+        let rotations = vec![Matrix3::identity(), matrix![-1, 0, 0; 0, 1, 0; 0, 0, -1]];
+        // The twofold axis along b cancels only ab and bc; ac keeps its sign.
+        let mut expected_metric = lattice.metric_tensor();
+        for index in [(0, 1), (1, 0), (1, 2), (2, 1)] {
+            expected_metric[index] = 0.0;
+        }
+
+        let (refined, rotation) = symmetrize_lattice(&lattice, &rotations).unwrap();
+        assert_relative_eq!(refined.metric_tensor(), expected_metric, epsilon = 1e-12);
+        assert!(refined.basis.determinant() < 0.0);
+        assert_relative_eq!(
+            rotation.transpose() * rotation,
+            Matrix3::identity(),
+            epsilon = 1e-12
+        );
+        assert_relative_eq!(rotation.determinant(), 1.0, epsilon = 1e-12);
+        let stretch = rotation.transpose() * refined.basis * lattice.basis.try_inverse().unwrap();
+        assert_relative_eq!(stretch, stretch.transpose(), epsilon = 1e-12);
+        assert!(stretch.symmetric_eigen().eigenvalues.min() > 0.0);
+    }
+
+    #[test]
     fn test_symmetrize_positions_screw_orbit() {
         let screw = Operation::new(
             matrix![0, -1, 0; 1, -1, 0; 0, 0, 1],
