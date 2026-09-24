@@ -19,6 +19,18 @@ That being said, moyopy is expected to work without specifying `angle_tolerance`
 
 Spglib's `cell = (lattice, positions, numbers)` corresponds to `moyopy.Cell(basis=lattice, positions=positions, numbers=numbers)`.
 
+### Atomic equivalence
+
+`MoyoDataset.orbits` corresponds to spglib's
+[`crystallographic_orbits`](https://spglib.readthedocs.io/en/v2.7.0/dataset.html#crystallographic-orbits).
+Both group the input atoms using the symmetry of the primitive cell. Spglib's
+`equivalent_atoms` uses the symmetry operations found for the input cell.
+
+These partitions usually agree, but the input-cell symmetry can be lower for
+some supercells. In that case, `equivalent_atoms` may split a crystallographic
+orbit into smaller groups. `MoyoDataset.orbits` is therefore not a general
+replacement for `equivalent_atoms`, which moyopy does not directly expose.
+
 ### Space-group symmetry search
 
 #### `spglib.get_symmetry()`
@@ -29,7 +41,8 @@ Let `symmetry` be the returned dictionary of `spglib.get_symmetry()`, the fields
 
 - `symmetry['rotations']` -> `MoyoDataset.operations.rotations`
 - `symmetry['translations']` -> `MoyoDataset.operations.translations`
-- `symmetry['equivalent_atoms']` is not directly available in `MoyoDataset`. However, `MoyoDataset.orbits` gives Spglib's `crystallographic_orbits`.
+- `symmetry['equivalent_atoms']` is not directly available in `MoyoDataset`; see
+  [Atomic equivalence](#atomic-equivalence) for the distinction from `MoyoDataset.orbits`.
 
 #### `spglib.get_symmetry_dataset()`
 
@@ -67,7 +80,7 @@ MoyoDataset(..., setting=Setting.hall_number(hall_number))
   - `choice` -> Obtain `hall_number` from `MoyoDataset.hall_number` and Access `HallSymbolEntry(hall_number).centering`
   - `international` -> Obtain `number` from `MoyoDataset.number` and Access `SpaceGroupType(number).hm_short`
 - Not supported in moyopy
-  - `equivalent_atoms`: Use `MoyoDataset.orbits` to get crystallographic orbits instead
+  - `equivalent_atoms`: See [Atomic equivalence](#atomic-equivalence) for the distinction from `MoyoDataset.orbits`
   - `primitive_lattice`: Use `MoyoDataset.prim_std_cell` if you need a primitive standardized cell
   - `std_mapping_to_primitive`: Recreate `MoyoDataset` again with `MoyoDataset.prim_std_cell`
   - `pointgroup`
