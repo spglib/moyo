@@ -58,9 +58,9 @@ pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     /// Standardized cell
     pub std_cell: MoyoCell,
-    /// Linear part of the coordinate change to the conventional system, before refinement.
+    /// Linear part of the transformation from the input cell to `std_cell`.
     pub std_linear: [[f64; 3]; 3],
-    /// Origin shift of the coordinate change to the conventional system, before refinement.
+    /// Origin shift of the transformation from the input cell to `std_cell`.
     pub std_origin_shift: [f64; 3],
     /// Proper Cartesian rotation applied after lattice refinement.
     /// Identity when `rotate_basis` is false; it does not encode the lattice stretch.
@@ -72,9 +72,9 @@ pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     /// Primitive standardized cell
     pub prim_std_cell: MoyoCell,
-    /// Linear part of the coordinate change to the primitive system, before refinement.
+    /// Linear part of the transformation from the input cell to `prim_std_cell`.
     pub prim_std_linear: [[f64; 3]; 3],
-    /// Origin shift of the coordinate change to the primitive system, before refinement.
+    /// Origin shift of the transformation from the input cell to `prim_std_cell`.
     pub prim_std_origin_shift: [f64; 3],
     /// Mapping sites in the input cell to those in the primitive standardized cell.
     /// The `i`th atom in the input cell is mapped to the `mapping_std_prim[i]`th atom in the primitive standardized cell.

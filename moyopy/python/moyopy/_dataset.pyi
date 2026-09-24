@@ -92,10 +92,10 @@ class MoyoDataset:
         """
     @property
     def std_linear(self) -> list[list[float]]:
-        """Linear part of the coordinate change to the conventional system, before refinement."""
+        """Linear part of the transformation from the input cell to ``std_cell``."""
     @property
     def std_origin_shift(self) -> list[float]:
-        """Origin shift of the coordinate change to the conventional system, before refinement."""
+        """Origin shift of the transformation from the input cell to ``std_cell``."""
     @property
     def std_rotation_matrix(self) -> list[list[float]]:
         """Proper Cartesian rotation applied after lattice refinement.
@@ -115,10 +115,10 @@ class MoyoDataset:
         """
     @property
     def prim_std_linear(self) -> list[list[float]]:
-        """Linear part of the coordinate change to the primitive system, before refinement."""
+        """Linear part of the transformation from the input cell to ``prim_std_cell``."""
     @property
     def prim_std_origin_shift(self) -> list[float]:
-        """Origin shift of the coordinate change to the primitive system, before refinement."""
+        """Origin shift of the transformation from the input cell to ``prim_std_cell``."""
     @property
     def mapping_std_prim(self) -> list[int]:
         """Mapping sites in the input cell to those in the primitive standardized cell.
@@ -253,10 +253,10 @@ class MoyoCollinearMagneticDataset:
         """
     @property
     def std_linear(self) -> list[list[float]]:
-        """Linear part of the coordinate change to the conventional system, before refinement."""
+        """Linear part of the transformation from the input magnetic cell to ``std_mag_cell``."""
     @property
     def std_origin_shift(self) -> list[float]:
-        """Origin shift of the coordinate change to the conventional system, before refinement."""
+        """Origin shift of the transformation from the input magnetic cell to ``std_mag_cell``."""
     @property
     def std_rotation_matrix(self) -> list[list[float]]:
         """Proper Cartesian rotation applied to the refined lattice and magnetic moments.
@@ -273,10 +273,14 @@ class MoyoCollinearMagneticDataset:
         """
     @property
     def prim_std_linear(self) -> list[list[float]]:
-        """Linear part of the coordinate change to the primitive system, before refinement."""
+        """Linear part of the transformation from the input magnetic cell to
+        ``prim_std_mag_cell``.
+        """
     @property
     def prim_std_origin_shift(self) -> list[float]:
-        """Origin shift of the coordinate change to the primitive system, before refinement."""
+        """Origin shift of the transformation from the input magnetic cell to
+        ``prim_std_mag_cell``.
+        """
     @property
     def mapping_std_prim(self) -> list[int]:
         """Mapping sites in the input magnetic cell to those in the primitive standardized
@@ -475,10 +479,10 @@ class MoyoNonCollinearMagneticDataset:
         """
     @property
     def std_linear(self) -> list[list[float]]:
-        """Linear part of the coordinate change to the conventional system, before refinement."""
+        """Linear part of the transformation from the input magnetic cell to ``std_mag_cell``."""
     @property
     def std_origin_shift(self) -> list[float]:
-        """Origin shift of the coordinate change to the conventional system, before refinement."""
+        """Origin shift of the transformation from the input magnetic cell to ``std_mag_cell``."""
     @property
     def std_rotation_matrix(self) -> list[list[float]]:
         """Proper Cartesian rotation applied to the refined lattice and magnetic moments.
@@ -495,10 +499,14 @@ class MoyoNonCollinearMagneticDataset:
         """
     @property
     def prim_std_linear(self) -> list[list[float]]:
-        """Linear part of the coordinate change to the primitive system, before refinement."""
+        """Linear part of the transformation from the input magnetic cell to
+        ``prim_std_mag_cell``.
+        """
     @property
     def prim_std_origin_shift(self) -> list[float]:
-        """Origin shift of the coordinate change to the primitive system, before refinement."""
+        """Origin shift of the transformation from the input magnetic cell to
+        ``prim_std_mag_cell``.
+        """
     @property
     def mapping_std_prim(self) -> list[int]:
         """Mapping sites in the input magnetic cell to those in the primitive standardized

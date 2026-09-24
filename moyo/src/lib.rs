@@ -164,9 +164,9 @@ pub struct MoyoDataset {
     /// See the [returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
     /// for refinement and Cartesian orientation.
     pub std_cell: Cell,
-    /// Linear part of the coordinate change to the conventional system, before refinement.
+    /// Linear part of the transformation from the input cell to [`Self::std_cell`].
     pub std_linear: Matrix3<f64>,
-    /// Origin shift of the coordinate change to the conventional system, before refinement.
+    /// Origin shift of the transformation from the input cell to [`Self::std_cell`].
     pub std_origin_shift: OriginShift,
     /// Proper Cartesian rotation applied after lattice refinement.
     /// Identity when `rotate_basis` is false; it does not encode the lattice stretch.
@@ -181,9 +181,9 @@ pub struct MoyoDataset {
     /// Uses `prim_std_linear` and `prim_std_origin_shift` with the same
     /// pre-refinement coordinate convention as [`Self::std_cell`].
     pub prim_std_cell: Cell,
-    /// Linear part of the coordinate change to the primitive system, before refinement.
+    /// Linear part of the transformation from the input cell to [`Self::prim_std_cell`].
     pub prim_std_linear: Matrix3<f64>,
-    /// Origin shift of the coordinate change to the primitive system, before refinement.
+    /// Origin shift of the transformation from the input cell to [`Self::prim_std_cell`].
     pub prim_std_origin_shift: OriginShift,
     /// Mapping sites in the input cell to those in the primitive standardized cell.
     /// The `i`th atom in the input cell is mapped to the `mapping_to_std_prim[i]`th atom in the primitive standardized cell.
@@ -831,9 +831,9 @@ pub struct MoyoMagneticDataset<M: MagneticMoment> {
     /// the magnetic group using the refined lattice. Lattice stretch is not applied
     /// to magnetic moments.
     pub std_mag_cell: MagneticCell<M>,
-    /// Linear part of the coordinate change to the conventional system, before refinement.
+    /// Linear part of the transformation from the input magnetic cell to [`Self::std_mag_cell`].
     pub std_linear: Matrix3<f64>,
-    /// Origin shift of the coordinate change to the conventional system, before refinement.
+    /// Origin shift of the transformation from the input magnetic cell to [`Self::std_mag_cell`].
     pub std_origin_shift: OriginShift,
     /// Proper Cartesian rotation applied to the refined lattice and magnetic moments.
     /// Identity when `rotate_basis` is false; it does not encode the lattice stretch.
@@ -846,9 +846,9 @@ pub struct MoyoMagneticDataset<M: MagneticMoment> {
     /// Uses `prim_std_linear` and `prim_std_origin_shift` with the same
     /// pre-refinement coordinate convention as [`Self::std_mag_cell`].
     pub prim_std_mag_cell: MagneticCell<M>,
-    /// Linear part of the coordinate change to the primitive system, before refinement.
+    /// Linear part of the transformation from the input magnetic cell to [`Self::prim_std_mag_cell`].
     pub prim_std_linear: Matrix3<f64>,
-    /// Origin shift of the coordinate change to the primitive system, before refinement.
+    /// Origin shift of the transformation from the input magnetic cell to [`Self::prim_std_mag_cell`].
     pub prim_std_origin_shift: OriginShift,
     /// Mapping sites in the input magnetic cell to those in the primitive standardized magnetic cell.
     /// The `i`th atom in the input magnetic cell is mapped to the `mapping_to_std_prim[i]`th atom in the primitive standardized magnetic cell.

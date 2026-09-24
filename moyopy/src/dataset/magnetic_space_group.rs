@@ -113,13 +113,13 @@ impl PyMoyoCollinearMagneticDataset {
         self.0.std_mag_cell.clone().into()
     }
 
-    /// Linear part of the coordinate change to the conventional system, before refinement.
+    /// Linear part of the transformation from the input magnetic cell to ``std_mag_cell``.
     #[getter]
     pub fn std_linear(&self) -> [[f64; 3]; 3] {
         self.0.std_linear_as_array()
     }
 
-    /// Origin shift of the coordinate change to the conventional system, before refinement.
+    /// Origin shift of the transformation from the input magnetic cell to ``std_mag_cell``.
     #[getter]
     pub fn std_origin_shift(&self) -> [f64; 3] {
         self.0.std_origin_shift_as_array()
@@ -141,13 +141,13 @@ impl PyMoyoCollinearMagneticDataset {
         self.0.prim_std_mag_cell.clone().into()
     }
 
-    /// Linear part of the coordinate change to the primitive system, before refinement.
+    /// Linear part of the transformation from the input magnetic cell to ``prim_std_mag_cell``.
     #[getter]
     pub fn prim_std_linear(&self) -> [[f64; 3]; 3] {
         self.0.prim_std_linear_as_array()
     }
 
-    /// Origin shift of the coordinate change to the primitive system, before refinement.
+    /// Origin shift of the transformation from the input magnetic cell to ``prim_std_mag_cell``.
     #[getter]
     pub fn prim_std_origin_shift(&self) -> [f64; 3] {
         self.0.prim_std_origin_shift_as_array()
@@ -333,13 +333,13 @@ impl PyMoyoNonCollinearMagneticDataset {
         self.0.std_mag_cell.clone().into()
     }
 
-    /// Linear part of the coordinate change to the conventional system, before refinement.
+    /// Linear part of the transformation from the input magnetic cell to ``std_mag_cell``.
     #[getter]
     pub fn std_linear(&self) -> [[f64; 3]; 3] {
         self.0.std_linear_as_array()
     }
 
-    /// Origin shift of the coordinate change to the conventional system, before refinement.
+    /// Origin shift of the transformation from the input magnetic cell to ``std_mag_cell``.
     #[getter]
     pub fn std_origin_shift(&self) -> [f64; 3] {
         self.0.std_origin_shift_as_array()
@@ -361,13 +361,13 @@ impl PyMoyoNonCollinearMagneticDataset {
         self.0.prim_std_mag_cell.clone().into()
     }
 
-    /// Linear part of the coordinate change to the primitive system, before refinement.
+    /// Linear part of the transformation from the input magnetic cell to ``prim_std_mag_cell``.
     #[getter]
     pub fn prim_std_linear(&self) -> [[f64; 3]; 3] {
         self.0.prim_std_linear_as_array()
     }
 
-    /// Origin shift of the coordinate change to the primitive system, before refinement.
+    /// Origin shift of the transformation from the input magnetic cell to ``prim_std_mag_cell``.
     #[getter]
     pub fn prim_std_origin_shift(&self) -> [f64; 3] {
         self.0.prim_std_origin_shift_as_array()
