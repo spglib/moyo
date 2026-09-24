@@ -450,3 +450,146 @@ fn test_with_large_mag_symprec() {
         rotate_basis,
     );
 }
+
+#[rstest::rstest]
+#[case::triclinic(3, matrix![3.0, 0.0, 0.0; 0.2, 4.0, 0.0; 0.1, 0.3, 5.0])]
+#[case::centered_monoclinic(23, matrix![3.0, 0.0, 0.0; 0.0, 4.0, 0.0; -1.0, 0.0, 5.0])]
+#[case::nonsymmorphic_tetragonal(932, matrix![5.0, 0.0, 0.0; 0.0, 5.0, 0.0; 0.0, 0.0, 6.0])]
+#[test_log::test]
+fn test_type4_position_refinement(#[case] uni_number: i32, #[case] basis: Matrix3<f64>) {
+    check_type4_position_refinement(
+        uni_number,
+        basis,
+        [Collinear(1.0), Collinear(2.0)],
+        RotationMagneticMomentAction::Polar,
+    );
+    check_type4_position_refinement(
+        uni_number,
+        basis,
+        [
+            NonCollinear(vector![0.2, 0.3, 1.0]),
+            NonCollinear(vector![0.4, -0.2, 0.7]),
+        ],
+        RotationMagneticMomentAction::Axial,
+    );
+}
+
+fn check_type4_position_refinement<M: MagneticMoment>(
+    uni_number: i32,
+    basis: Matrix3<f64>,
+    seed_moments: [M; 2],
+    action: RotationMagneticMomentAction,
+) {
+    let lattice = Lattice::new(basis);
+    let operations = magnetic_operations_from_uni_number(uni_number, false).unwrap();
+    let mut exact_positions = vec![];
+    let mut displacements = vec![];
+    let mut numbers = vec![];
+    let mut moments = vec![];
+    for ((species, seed), moment) in [
+        (1, vector![0.137, 0.239, 0.371]),
+        (2, vector![0.291, 0.113, 0.083]),
+    ]
+    .into_iter()
+    .zip(&seed_moments)
+    {
+        for operation in &operations {
+            let rotation = operation.operation.rotation.map(f64::from);
+            // Retain positions outside the unit cell.
+            exact_positions.push(rotation * seed + operation.operation.translation);
+            // Each unitary orbit stays exact, while anti-translation partners
+            // receive opposite displacements. Their exact average is the seed orbit.
+            let sign = if operation.time_reversal { -1.0 } else { 1.0 };
+            displacements.push(sign * rotation * vector![1.0, -2.0, 3.0]);
+            numbers.push(species);
+            moments.push(moment.act_magnetic_operation(
+                &operation.operation.cartesian_rotation(&lattice),
+                operation.time_reversal,
+                action,
+            ));
+        }
+    }
+
+    for handedness in [1.0, -1.0] {
+        let frame = Rotation3::from_euler_angles(0.37, -0.21, 0.13).into_inner()
+            * Matrix3::from_diagonal(&vector![1.0, 1.0, handedness]);
+        for perturbation in [0.0, 1e-4] {
+            let input = MagneticCell::new(
+                lattice.rotate(&frame),
+                exact_positions
+                    .iter()
+                    .zip(&displacements)
+                    .map(|(position, delta)| position + perturbation * delta)
+                    .collect(),
+                numbers.clone(),
+                moments
+                    .iter()
+                    .map(|moment| moment.act_rotation(&frame, action))
+                    .collect(),
+            );
+            for rotate_basis in [false, true] {
+                let dataset = MoyoMagneticDataset::new(
+                    &input,
+                    0.05,
+                    AngleTolerance::default(),
+                    Some(1e-4),
+                    action,
+                    rotate_basis,
+                )
+                .unwrap();
+                assert_eq!(dataset.uni_number, uni_number);
+                // The expected positions come from the unperturbed orbit, independently
+                // of the refinement algorithm. Use the returned input-to-output mapping.
+                let linear_inv = dataset.prim_std_linear.try_inverse().unwrap();
+                for (i, position) in exact_positions.iter().enumerate() {
+                    let j = dataset.mapping_std_prim[i];
+                    let expected = linear_inv * (position - dataset.prim_std_origin_shift);
+                    let delta = dataset.prim_std_mag_cell.cell.positions[j] - expected;
+                    assert!((delta - delta.map(f64::round)).norm() < 1e-12);
+                    assert!(
+                        dataset.prim_std_mag_cell.magnetic_moments[j].is_close(
+                            &input.magnetic_moments[i]
+                                .act_rotation(&dataset.std_rotation_matrix, action),
+                            1e-12,
+                        )
+                    );
+                }
+                for (cell, primitive) in [
+                    (&dataset.std_mag_cell, false),
+                    (&dataset.prim_std_mag_cell, true),
+                ] {
+                    let target =
+                        magnetic_operations_from_uni_number(uni_number, primitive).unwrap();
+                    for operation in target {
+                        let mut visited = vec![false; cell.num_atoms()];
+                        let cart_rotation =
+                            operation.operation.cartesian_rotation(&cell.cell.lattice);
+                        for (i, position) in cell.cell.positions.iter().enumerate() {
+                            let image = operation.operation.rotation.map(f64::from) * position
+                                + operation.operation.translation;
+                            let j = cell.cell.positions.iter().enumerate().find_map(|(j, target)| {
+                                let delta = image - target;
+                                (cell.cell.numbers[i] == cell.cell.numbers[j]
+                                    && (delta - delta.map(f64::round)).norm() < 1e-12).then_some(j)
+                            }).unwrap_or_else(|| panic!(
+                                "UNI {uni_number}, handedness {handedness}, perturbation {perturbation}, rotate_basis {rotate_basis}, primitive {primitive}: {operation:?}; linear {:?}; origin {:?}",
+                                dataset.std_linear, dataset.std_origin_shift,
+                            ));
+                            assert!(!visited[j]);
+                            visited[j] = true;
+                            assert!(
+                                cell.magnetic_moments[i]
+                                    .act_magnetic_operation(
+                                        &cart_rotation,
+                                        operation.time_reversal,
+                                        action,
+                                    )
+                                    .is_close(&cell.magnetic_moments[j], 1e-12)
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

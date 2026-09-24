@@ -2,9 +2,10 @@ use itertools::izip;
 use nalgebra::Matrix3;
 
 use super::standardize::StandardizedCell;
+use super::symmetrization::symmetrize_positions;
 use crate::base::{
-    MagneticCell, MagneticMoment, MoyoError, Operations, Permutation, RotationMagneticMomentAction,
-    Transformation, UnimodularTransformation,
+    MagneticCell, MagneticMoment, MoyoError, Operation, Operations, Permutation,
+    RotationMagneticMomentAction, Transformation, UnimodularTransformation,
 };
 use crate::data::{ConstructType, get_magnetic_space_group_type};
 use crate::identify::{
@@ -37,6 +38,7 @@ pub struct StandardizedMagneticCell<M: MagneticMoment> {
 impl<M: MagneticMoment> StandardizedMagneticCell<M> {
     /// Standardize the input **primitive** magnetic cell.
     /// For triclinic magnetic space groups, Niggli reduction is performed.
+    /// Type-IV positions are first refined under the anti-translation.
     /// Lattice and positions follow [`StandardizedCell`]; magnetic moments are
     /// rotated with its proper Cartesian rotation and averaged under the magnetic group.
     pub fn new(
@@ -53,6 +55,34 @@ impl<M: MagneticMoment> StandardizedMagneticCell<M> {
         let ref_space_group = magnetic_space_group.reference_space_group();
         let msg_type = get_magnetic_space_group_type(magnetic_space_group.uni_number)
             .ok_or(MoyoError::MagneticStandardizationError)?;
+        let mut ref_cell = prim_mag_cell.magnetic_cell.cell.clone();
+        if msg_type.construct_type == ConstructType::Type4 {
+            let (anti_translation, permutation) = magnetic_symmetry_search
+                .magnetic_operations
+                .iter()
+                .zip(&magnetic_symmetry_search.permutations)
+                .find(|(op, _)| op.time_reversal && op.operation.rotation == Matrix3::identity())
+                .unwrap();
+            // Its square is a magnetic lattice translation, so 2t is integral
+            // in this primitive basis. The unitary reference group preserves
+            // this constraint, but does not impose it by itself.
+            let translation = anti_translation
+                .operation
+                .translation
+                .map(|x| (2.0 * x).round() / 2.0);
+            ref_cell.positions = symmetrize_positions(
+                &ref_cell.positions,
+                &vec![
+                    Operation::identity(),
+                    Operation::new(Matrix3::identity(), translation),
+                ],
+                &[
+                    Permutation::identity(ref_cell.num_atoms()),
+                    permutation.clone(),
+                ],
+                epsilon,
+            );
+        }
         let (ref_prim_operations, ref_prim_permutations) =
             Self::reference_symmetry_operations_and_permutations(
                 magnetic_symmetry_search,
@@ -60,7 +90,7 @@ impl<M: MagneticMoment> StandardizedMagneticCell<M> {
                 mag_symprec,
             );
         let ref_std_cell = StandardizedCell::new(
-            &prim_mag_cell.magnetic_cell.cell,
+            &ref_cell,
             &ref_prim_operations,
             &ref_prim_permutations,
             &ref_space_group,
