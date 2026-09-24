@@ -28,7 +28,7 @@ This change of the default behavior affects in centrosymmetric groups: moyo choo
 
 The conventional and primitive standardized cells must satisfy the space group of the selected Hall symbol, expressed in their respective coordinate systems.
 
-For either returned cell, let $\mathbf{A}_*$ contain its basis vectors as columns and let $\mathbf{G}_* = \mathbf{A}_*^\mathsf{T}\mathbf{A}_*$.
+For either returned cell, let $\mathbf{A}\sb{\ast}$ contain its basis vectors as columns and let $\mathbf{G}\sb{\ast} = \mathbf{A}\sb{\ast}^\mathsf{T}\mathbf{A}\sb{\ast}$.
 Every target operation $(\mathbf{W}, \mathbf{w})$ must satisfy
 
 $$
@@ -64,7 +64,7 @@ They preserve the crystal's geometry, while refinement can change its metric and
 ## Cartesian orientation
 
 The `rotate_basis` option controls the Cartesian orientation of the refined lattice.
-Let $\mathbf{A}'_{\mathrm{std}}=\mathbf{A}\mathbf{P}_{\mathrm{std}}$ be the conventional basis before refinement and let $\mathbf{B}$ be the refined basis in the canonical orientation described below, with the same handedness.
+Let $\mathbf{A}'\sb{\mathrm{std}}=\mathbf{A}\mathbf{P}\sb{\mathrm{std}}$ be the conventional basis before refinement and let $\mathbf{B}$ be the refined basis in the canonical orientation described below, with the same handedness.
 Define the right polar decomposition
 
 $$
@@ -72,7 +72,7 @@ $$
 =\mathbf{R}\mathbf{U},\qquad
 \mathbf{R}^\mathsf{T}\mathbf{R}=\mathbf{I},\quad
 \det\mathbf{R}=1,\quad
-\mathbf{U}=\mathbf{U}^\mathsf{T}>0.
+\mathbf{U}=\mathbf{U}^\mathsf{T}\gt 0.
 $$
 
 The symmetric positive-definite stretch $\mathbf{U}$ describes lattice refinement in the input Cartesian frame.
@@ -92,42 +92,58 @@ $$
 
 The same stretch and rotation apply to the primitive output.
 Fractional positions are refined in the selected coordinates and are identical for both orientation options.
-When the input lattice already satisfies the target symmetry, $\mathbf{U}=\mathbf{I}$ up to roundoff, recovering the relation $\mathbf{A}_{\mathrm{std}}=\mathbf{R}\mathbf{A}\mathbf{P}_{\mathrm{std}}$ for `rotate_basis=true`.
+When the input lattice already satisfies the target symmetry, $\mathbf{U}=\mathbf{I}$ up to roundoff, recovering the relation $\mathbf{A}\sb{\mathrm{std}}=\mathbf{R}\mathbf{A}\mathbf{P}\sb{\mathrm{std}}$ for `rotate_basis=true`.
 
 ## Conventional standardized cell
 
 With `Setting.Standard`, the conventional cell gives the space group in the ITA setting.
-For `rotate_basis=true` and right-handed input, its refined basis $\mathbf{A}_{\mathrm{std}}=\mathbf{B}$ has the form below.
+For `rotate_basis=true` and right-handed input, its refined basis $\mathbf{A}\sb{\mathrm{std}}=\mathbf{B}$ has the form below.
 The parameters $a$, $b$, and $c$ denote positive lengths.
 
 ### Triclinic
 
 $$
-\mathbf{A}_{\mathrm{std}} = \begin{pmatrix} a_x & b_x & c_x \\ 0 & b_y & c_y \\ 0 & 0 & c_z \end{pmatrix}.
+\mathbf{A}_{\mathrm{std}} = \begin{pmatrix}
+a_x & b_x & c_x \cr
+0 & b_y & c_y \cr
+0 & 0 & c_z
+\end{pmatrix}.
 $$
 
-Niggli reduced [^std-cell-2]; $a_x, b_y, c_z \gt 0$.
+Niggli reduced [^std-cell-2]; $a\sb{x}, b\sb{y}, c\sb{z} \gt 0$.
 
 ### Monoclinic
 
 $$
-\mathbf{A}_{\mathrm{std}} = \begin{pmatrix} a & 0 & c \cos \beta \\ 0 & b & 0 \\ 0 & 0 & c \sin \beta \end{pmatrix}.
+\mathbf{A}_{\mathrm{std}} = \begin{pmatrix}
+a & 0 & c \cos \beta \cr
+0 & b & 0 \cr
+0 & 0 & c \sin \beta
+\end{pmatrix}.
 $$
 
-$a, b, c \sin \beta \gt 0$; $\cos \beta \le 0$ [^std-cell-7].
+$a, b, c \sin \beta \gt 0$; $\cos \beta \le 0$ (see [basis selection](#monoclinic-basis-selection)).
 
 ### Orthorhombic
 
 $$
-\mathbf{A}_{\mathrm{std}} = \begin{pmatrix} a & 0 & 0 \\ 0 & b & 0 \\ 0 & 0 & c \end{pmatrix}.
+\mathbf{A}_{\mathrm{std}} = \begin{pmatrix}
+a & 0 & 0 \cr
+0 & b & 0 \cr
+0 & 0 & c
+\end{pmatrix}.
 $$
 
-$a, b, c \gt 0$; $a \le b \le c$ as far as possible [^std-cell-6].
+$a, b, c \gt 0$; $a \le b \le c$ as far as possible (see [basis selection](#orthorhombic-basis-selection)).
 
 ### Tetragonal
 
 $$
-\mathbf{A}_{\mathrm{std}} = \begin{pmatrix} a & 0 & 0 \\ 0 & a & 0 \\ 0 & 0 & c \end{pmatrix}.
+\mathbf{A}_{\mathrm{std}} = \begin{pmatrix}
+a & 0 & 0 \cr
+0 & a & 0 \cr
+0 & 0 & c
+\end{pmatrix}.
 $$
 
 $a, c \gt 0$.
@@ -135,23 +151,31 @@ $a, c \gt 0$.
 ### Hexagonal
 
 $$
-\mathbf{A}_{\mathrm{std}} = \begin{pmatrix} a & -a / 2 & 0 \\0 & \sqrt{3} a / 2 & 0 \\ 0 & 0 & c \end{pmatrix}.
+\mathbf{A}_{\mathrm{std}} = \begin{pmatrix}
+a & -a / 2 & 0 \cr
+0 & \sqrt{3} a / 2 & 0 \cr
+0 & 0 & c
+\end{pmatrix}.
 $$
 
-$a, c > 0$.
+$a, c \gt 0$.
 
 ### Cubic
 
 $$
-\mathbf{A}_{\mathrm{std}} = \begin{pmatrix} a & 0 & 0 \\ 0 & a & 0 \\ 0 & 0 & a \end{pmatrix}.
+\mathbf{A}_{\mathrm{std}} = \begin{pmatrix}
+a & 0 & 0 \cr
+0 & a & 0 \cr
+0 & 0 & a
+\end{pmatrix}.
 $$
 
-$a > 0$.
+$a \gt 0$.
 
 ### Handedness
 
 For left-handed input, use the same metric and negate the final Cartesian row of the displayed upper-triangular basis.
-Equivalently, left-multiply by $\operatorname{diag}(1,1,-1)$, making the final diagonal entry negative while preserving all lengths and angles.
+Equivalently, left-multiply by $\mathrm{diag}(1,1,-1)$, making the final diagonal entry negative while preserving all lengths and angles.
 This handedness convention also applies to other Hall settings; their canonical basis is upper triangular, with the first two diagonal entries positive.
 
 ## Primitive standardized cell
@@ -184,7 +208,7 @@ $$
 \mathbf{p}_{\mathrm{prim}} = \mathbf{p}_{\mathrm{std}}.
 $$
 
-Here $(\mathbf{P}_{\mathrm{std}},\mathbf{p}_{\mathrm{std}})$ and $(\mathbf{P}_{\mathrm{prim}},\mathbf{p}_{\mathrm{prim}})$ select the conventional and primitive coordinates before refinement.
+Here $(\mathbf{P}\sb{\mathrm{std}},\mathbf{p}\sb{\mathrm{std}})$ and $(\mathbf{P}\sb{\mathrm{prim}},\mathbf{p}\sb{\mathrm{prim}})$ select the conventional and primitive coordinates before refinement.
 The centering matrix changes the description of the refined crystal; it introduces no further refinement.
 
 Each conventional site corresponds to a primitive site of the same species, with fractional positions satisfying
@@ -198,42 +222,88 @@ Each primitive site has $|\det\mathbf{Q}|$ conventional copies.
 ### P centering
 
 $$
-\mathbf{Q}_P = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix},\qquad
-\mathbf{Q}_P^{-1} = \begin{pmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix}.
+\mathbf{Q}_P = \begin{pmatrix}
+1 & 0 & 0 \cr
+0 & 1 & 0 \cr
+0 & 0 & 1
+\end{pmatrix},\qquad
+\mathbf{Q}_P^{-1} = \begin{pmatrix}
+1 & 0 & 0 \cr
+0 & 1 & 0 \cr
+0 & 0 & 1
+\end{pmatrix}.
 $$
 
 ### C centering
 
 $$
-\mathbf{Q}_C = \begin{pmatrix} 1 & -1 & 0 \\ 1 & 1 & 0 \\ 0 & 0 & 1 \end{pmatrix},\qquad
-\mathbf{Q}_C^{-1} = \begin{pmatrix} 1/2 & 1/2 & 0 \\ -1/2 & 1/2 & 0 \\ 0 & 0 & 1 \end{pmatrix}.
+\mathbf{Q}_C = \begin{pmatrix}
+1 & -1 & 0 \cr
+1 & 1 & 0 \cr
+0 & 0 & 1
+\end{pmatrix},\qquad
+\mathbf{Q}_C^{-1} = \begin{pmatrix}
+1/2 & 1/2 & 0 \cr
+-1/2 & 1/2 & 0 \cr
+0 & 0 & 1
+\end{pmatrix}.
 $$
 
 ### F centering
 
 $$
-\mathbf{Q}_F = \begin{pmatrix} -1 & 1 & 1 \\ 1 & -1 & 1 \\ 1 & 1 & -1 \end{pmatrix},\qquad
-\mathbf{Q}_F^{-1} = \begin{pmatrix} 0 & 1/2 & 1/2 \\ 1/2 & 0 & 1/2 \\ 1/2 & 1/2 & 0 \end{pmatrix}.
+\mathbf{Q}_F = \begin{pmatrix}
+-1 & 1 & 1 \cr
+1 & -1 & 1 \cr
+1 & 1 & -1
+\end{pmatrix},\qquad
+\mathbf{Q}_F^{-1} = \begin{pmatrix}
+0 & 1/2 & 1/2 \cr
+1/2 & 0 & 1/2 \cr
+1/2 & 1/2 & 0
+\end{pmatrix}.
 $$
 
 ### I centering
 
 $$
-\mathbf{Q}_I = \begin{pmatrix} 0 & 1 & 1 \\ 1 & 0 & 1 \\ 1 & 1 & 0 \end{pmatrix},\qquad
-\mathbf{Q}_I^{-1} = \begin{pmatrix} -1/2 & 1/2 & 1/2 \\ 1/2 & -1/2 & 1/2 \\ 1/2 & 1/2 & -1/2 \end{pmatrix}.
+\mathbf{Q}_I = \begin{pmatrix}
+0 & 1 & 1 \cr
+1 & 0 & 1 \cr
+1 & 1 & 0
+\end{pmatrix},\qquad
+\mathbf{Q}_I^{-1} = \begin{pmatrix}
+-1/2 & 1/2 & 1/2 \cr
+1/2 & -1/2 & 1/2 \cr
+1/2 & 1/2 & -1/2
+\end{pmatrix}.
 $$
 
 ### R centering
 
 $$
-\mathbf{Q}_R = \begin{pmatrix} 1 & 0 & 1 \\ -1 & 1 & 1 \\ 0 & -1 & 1 \end{pmatrix},\qquad
-\mathbf{Q}_R^{-1} = \begin{pmatrix} 2/3 & -1/3 & -1/3 \\ 1/3 & 1/3 & -2/3 \\ 1/3 & 1/3 & 1/3 \end{pmatrix}.
+\mathbf{Q}_R = \begin{pmatrix}
+1 & 0 & 1 \cr
+-1 & 1 & 1 \cr
+0 & -1 & 1
+\end{pmatrix},\qquad
+\mathbf{Q}_R^{-1} = \begin{pmatrix}
+2/3 & -1/3 & -1/3 \cr
+1/3 & 1/3 & -2/3 \cr
+1/3 & 1/3 & 1/3
+\end{pmatrix}.
 $$
 
 [^setting]: That being said, the order of the Hall symbols are the same as Table A1.4.2.7 in International Tables for Crystallography Volume B (2010).
 
 [^std-cell-2]: Applied regardless of `rotate_basis` value.
 
-[^std-cell-7]: The basis vectors $\mathbf{a}$ and $\mathbf{c}$ are taken from the Delaunay-reduced triple $\mathbf{v}_1, \mathbf{v}_2, -(\mathbf{v}_1 + \mathbf{v}_2)$ of the lattice plane perpendicular to the unique axis, whose members are pairwise non-acute. Among the pairs that keep the Hall setting (the centering and the glide translations, up to an origin shift), moyo chooses the one with $\beta$ closest to $\pi / 2$, prefers the non-acute value ($\pi / 2 \le \beta \lt \pi$, i.e. $\cos \beta \le 0$) between the supplements following the ITA convention, and finally the lexicographically smallest $(a, b, c)$, which gives $a \le c$ for the settings that allow the $\mathbf{a} \leftrightarrow \mathbf{c}$ swap ($P2$, $P2_1$, $Pm$, $P2/m$, $P2_1/m$) following E. Parthe and L. M. Gelato, Acta Cryst. A**39**, 169-173 (1983), as spglib does. Consequently $\pi / 2 \le \beta \le 2\pi / 3$.
+## Basis-selection notes
 
-[^std-cell-6]: moyo orders the basis vectors as $a \le b \le c$ as far as the space-group setting allows. Among the six axis permutations, only those that preserve the centering and map the space group onto itself up to an origin shift (i.e. elements of the affine normalizer) are admissible, and moyo picks the admissible one with the lexicographically smallest $(a, b, c)$. Full ordering is not always attainable; for example, side-face-centered cells (oS) admit only the $\mathbf{a} \leftrightarrow \mathbf{b}$ swap, enforcing $a \le b$ alone.
+### Monoclinic basis selection
+
+The basis vectors $\mathbf{a}$ and $\mathbf{c}$ are taken from the Delaunay-reduced triple $\mathbf{v}\sb{1}, \mathbf{v}\sb{2}, -(\mathbf{v}\sb{1} + \mathbf{v}\sb{2})$ of the lattice plane perpendicular to the unique axis, whose members are pairwise non-acute. Among the pairs that keep the Hall setting (the centering and the glide translations, up to an origin shift), moyo chooses the one with $\beta$ closest to $\pi / 2$, prefers the non-acute value ($\pi / 2 \le \beta \lt \pi$, i.e. $\cos \beta \le 0$) between the supplements following the ITA convention, and finally the lexicographically smallest $(a, b, c)$, which gives $a \le c$ for the settings that allow the $\mathbf{a} \leftrightarrow \mathbf{c}$ swap ($P2$, $P2\sb{1}$, $Pm$, $P2/m$, $P2\sb{1}/m$) following E. Parthe and L. M. Gelato, Acta Cryst. A**39**, 169-173 (1983), as spglib does. Consequently $\pi / 2 \le \beta \le 2\pi / 3$.
+
+### Orthorhombic basis selection
+
+moyo orders the basis vectors as $a \le b \le c$ as far as the space-group setting allows. Among the six axis permutations, only those that preserve the centering and map the space group onto itself up to an origin shift (i.e. elements of the affine normalizer) are admissible, and moyo picks the admissible one with the lexicographically smallest $(a, b, c)$. Full ordering is not always attainable; for example, side-face-centered cells (oS) admit only the $\mathbf{a} \leftrightarrow \mathbf{b}$ swap, enforcing $a \le b$ alone.
