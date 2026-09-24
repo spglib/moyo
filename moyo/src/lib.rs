@@ -153,18 +153,16 @@ pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     /// Standardized cell.
     ///
-    /// The input cell is related to the standardized cell by
-    /// `(std_linear, std_origin_shift)` and `std_rotation_matrix`:
+    /// The selected coordinate system, before lattice and position refinement, is
     ///
-    ///   Lattice (column-vector convention):
-    ///     std_cell.lattice.basis = std_rotation_matrix * cell.lattice.basis * std_linear
+    /// ```text
+    /// A_selected = cell.lattice.basis * std_linear
+    /// x_selected = std_linear^-1 * (x_input - std_origin_shift)
+    /// ```
     ///
-    ///   Fractional positions:
-    ///     x_std = std_linear^-1 * (x_input - std_origin_shift)
-    ///
-    /// `std_rotation_matrix` is a rigid rotation (orthogonal matrix) applied
-    /// only to the Cartesian lattice basis. It does not affect fractional
-    /// coordinates.
+    /// Both the lattice and positions are then refined to the detected symmetry.
+    /// See the [returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
+    /// for refinement and Cartesian orientation.
     pub std_cell: Cell,
     /// Linear part of transformation from the input cell to the standardized cell.
     pub std_linear: Matrix3<f64>,
@@ -179,13 +177,8 @@ pub struct MoyoDataset {
     // ------------------------------------------------------------------------
     /// Primitive standardized cell.
     ///
-    /// Same transformation convention as the standardized cell above:
-    ///
-    ///   Lattice:
-    ///     prim_std_cell.lattice.basis = std_rotation_matrix * cell.lattice.basis * prim_std_linear
-    ///
-    ///   Fractional positions:
-    ///     x_prim_std = prim_std_linear^-1 * (x_input - prim_std_origin_shift)
+    /// Uses `prim_std_linear` and `prim_std_origin_shift` with the same
+    /// pre-refinement coordinate convention as [`Self::std_cell`].
     pub prim_std_cell: Cell,
     /// Linear part of transformation from the input cell to the primitive standardized cell.
     pub prim_std_linear: Matrix3<f64>,
@@ -831,18 +824,10 @@ pub struct MoyoMagneticDataset<M: MagneticMoment> {
     // ------------------------------------------------------------------------
     /// Standardized magnetic cell.
     ///
-    /// The input magnetic cell is related to the standardized magnetic cell by
-    /// `(std_linear, std_origin_shift)` and `std_rotation_matrix`:
-    ///
-    ///   Lattice (column-vector convention):
-    ///     std_mag_cell.cell.lattice.basis = std_rotation_matrix * mag_cell.cell.lattice.basis * std_linear
-    ///
-    ///   Fractional positions:
-    ///     x_std = std_linear^-1 * (x_input - std_origin_shift)
-    ///
-    /// `std_rotation_matrix` is a rigid rotation (orthogonal matrix) applied
-    /// only to the Cartesian lattice basis. It does not affect fractional
-    /// coordinates.
+    /// Uses the same pre-refinement coordinate convention as [`MoyoDataset::std_cell`].
+    /// Magnetic moments are rotated by `std_rotation_matrix`, then averaged under
+    /// the magnetic group using the refined lattice. Lattice stretch is not applied
+    /// to magnetic moments.
     pub std_mag_cell: MagneticCell<M>,
     /// Linear part of transformation from the input magnetic cell to the standardized one.
     pub std_linear: Matrix3<f64>,
@@ -855,13 +840,8 @@ pub struct MoyoMagneticDataset<M: MagneticMoment> {
     // ------------------------------------------------------------------------
     /// Primitive standardized magnetic cell.
     ///
-    /// Same transformation convention as the standardized magnetic cell above:
-    ///
-    ///   Lattice:
-    ///     prim_std_mag_cell.cell.lattice.basis = std_rotation_matrix * mag_cell.cell.lattice.basis * prim_std_linear
-    ///
-    ///   Fractional positions:
-    ///     x_prim_std = prim_std_linear^-1 * (x_input - prim_std_origin_shift)
+    /// Uses `prim_std_linear` and `prim_std_origin_shift` with the same
+    /// pre-refinement coordinate convention as [`Self::std_mag_cell`].
     pub prim_std_mag_cell: MagneticCell<M>,
     /// Linear part of transformation from the input magnetic cell to the primitive standardized magnetic cell.
     pub prim_std_linear: Matrix3<f64>,

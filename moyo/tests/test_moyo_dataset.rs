@@ -100,17 +100,24 @@ fn assert_dataset(
         epsilon = 1e-8
     );
 
-    // Check std_rotation_matrix and std_linear
+    // Refinement adds a symmetric positive stretch before the rigid rotation.
+    let stretch = dataset.std_rotation_matrix.transpose()
+        * dataset.std_cell.lattice.basis
+        * (cell.lattice.basis * dataset.std_linear)
+            .try_inverse()
+            .unwrap();
+    assert_relative_eq!(stretch, stretch.transpose(), epsilon = 1e-12);
+    assert!(stretch.symmetric_eigen().eigenvalues.min() > 0.0);
     assert_relative_eq!(
-        dataset.std_rotation_matrix * cell.lattice.basis * dataset.std_linear,
-        dataset.std_cell.lattice.basis,
-        epsilon = 1e-8
+        dataset.std_rotation_matrix.transpose() * dataset.std_rotation_matrix,
+        Matrix3::identity(),
+        epsilon = 1e-12
     );
-    // Check std_rotation_matrix and prim_std_linear
+    // The same stretch and rotation apply to the primitive cell.
     assert_relative_eq!(
-        dataset.std_rotation_matrix * cell.lattice.basis * dataset.prim_std_linear,
+        dataset.std_rotation_matrix * stretch * cell.lattice.basis * dataset.prim_std_linear,
         dataset.prim_std_cell.lattice.basis,
-        epsilon = 1e-8
+        epsilon = 1e-10
     );
     // TODO: std_origin_shift
     // TODO: prim_origin_shift
