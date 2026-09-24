@@ -220,7 +220,8 @@ impl MoyoDataset {
             symmetry_search.operations.len() - operations.len() / prim_cell.translations.len();
         if omitted > 0 {
             log::warn!(
-                "Omitted {omitted} primitive-cell symmetry operations with non-integer rotation matrices in the input-cell basis; returning only operations compatible with the input-cell lattice"
+                "Omitted {omitted} primitive-cell symmetry operations with non-integer rotation matrices in the input-cell basis; returning only operations compatible with the input-cell lattice. \
+                The returned orbits use primitive-cell symmetry and may differ from spglib's equivalent_atoms based on input-cell symmetry."
             );
         }
 

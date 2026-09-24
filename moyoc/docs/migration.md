@@ -68,6 +68,21 @@ Otherwise use `MOYO_SETTING_SPGLIB` (smallest Hall number; spglib's default) or
 
 ## Space group
 
+### Atomic equivalence
+
+`MoyoDataset.orbits` corresponds to spglib's
+[`crystallographic_orbits`](https://spglib.readthedocs.io/en/v2.7.0/dataset.html#crystallographic-orbits).
+Both group the input atoms using the symmetry of the primitive cell. Spglib's
+`equivalent_atoms` uses the symmetry operations found for the input cell.
+
+These partitions usually agree, but the input-cell symmetry can be lower for
+some supercells. In that case, `equivalent_atoms` may split a crystallographic
+orbit into smaller groups. `orbits` is therefore not a general replacement for
+`equivalent_atoms`, which moyoc does not directly expose.
+
+When operations have non-integer rotation matrices in the input-cell basis,
+moyo omits them and warns about this possible difference.
+
 ### `spg_get_symmetry()`
 
 Replace with `moyo_dataset_new`, then read the symmetry operations from
@@ -76,8 +91,8 @@ Replace with `moyo_dataset_new`, then read the symmetry operations from
 - `rotation` -> `dataset->operations.rotations`
 - `translation` -> `dataset->operations.translations`
 - (number of operations) -> `dataset->operations.num_operations`
-- `equivalent_atoms` is not directly available. Use `dataset->orbits`, which gives
-  spglib's `crystallographic_orbits`.
+- `equivalent_atoms` is not directly available; see [Atomic equivalence](#atomic-equivalence)
+  for the distinction from `dataset->orbits`.
 
 ### `spg_get_dataset()` and `spgat_get_dataset()`
 
@@ -114,7 +129,7 @@ Replace with `moyo_dataset_new` (free the result with `moyo_dataset_free`).
 - Primitive standardized cell
   - `mapping_to_primitive` -> `mapping_std_prim`
 - Not supported in moyoc
-  - `equivalent_atoms` -> Use `orbits` to get crystallographic orbits instead
+  - `equivalent_atoms`: See [Atomic equivalence](#atomic-equivalence) for the distinction from `orbits`
   - `primitive_lattice` -> Use `prim_std_cell` if you need a primitive
     standardized cell
   - `std_mapping_to_primitive` -> Recreate a `MoyoDataset` from `prim_std_cell`

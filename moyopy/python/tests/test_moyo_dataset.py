@@ -66,6 +66,9 @@ def test_supercell_rotation_warning(caplog: pytest.LogCaptureFixture, n: int, ma
             "returning only operations compatible with the input-cell lattice"
             in record.getMessage()
         )
+        if not magnetic:
+            assert "orbits use primitive-cell symmetry" in record.getMessage()
+            assert "may differ from spglib's equivalent_atoms" in record.getMessage()
 
     metric = np.array(basis) @ np.array(basis).T
     for rotation in np.array(operations.rotations):
