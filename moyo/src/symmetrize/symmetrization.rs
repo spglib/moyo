@@ -5,10 +5,10 @@
 //! pipelines construct the output cells and choose their Cartesian orientation.
 
 use log::warn;
-use nalgebra::linalg::{Cholesky, QR};
-use nalgebra::{Matrix3, Vector3, vector};
+use nalgebra::linalg::{Cholesky, SVD};
+use nalgebra::{Matrix3, Vector3};
 
-use crate::base::{EPS, Lattice, Operations, Permutation, Position, Rotations};
+use crate::base::{Lattice, MoyoError, Operations, Permutation, Position, Rotations};
 
 /// Refine fractional positions under fixed symmetry operations and atom mappings.
 ///
@@ -64,18 +64,20 @@ pub(super) fn symmetrize_positions(
 ///
 /// `rotations` must form a finite group expressed in the input lattice basis.
 /// Average `W^T G W` over that group, where `G` is the input metric. Form an
-/// upper-triangular basis from its Cholesky factor, then adjust the axis signs to
-/// preserve the input handedness.
+/// upper-triangular basis from its Cholesky factor. For left-handed input, reflect
+/// the last Cartesian row to preserve handedness without changing the metric.
 ///
-/// The second result is the proper orthogonal factor from the QR decomposition
-/// of `A_refined A_input^-1`. It describes Cartesian orientation separately from
+/// The second result is the proper rotation from the right polar decomposition
+/// `A_refined A_input^-1 = R U`, where `U` is symmetric positive definite.
+/// It describes Cartesian orientation separately from
 /// metric refinement: rotating the input by this matrix generally does not yield
 /// the refined lattice. Fractional coordinates and the choice of basis and origin
 /// are outside this function's responsibility.
+/// Returns [`MoyoError::StandardizationError`] if the factorization fails.
 pub(super) fn symmetrize_lattice(
     lattice: &Lattice,
     rotations: &Rotations,
-) -> (Lattice, Matrix3<f64>) {
+) -> Result<(Lattice, Matrix3<f64>), MoyoError> {
     let metric_tensor = lattice.metric_tensor();
     let mut symmetrized_metric_tensor: Matrix3<f64> = rotations
         .iter()
@@ -86,39 +88,30 @@ pub(super) fn symmetrize_lattice(
     symmetrized_metric_tensor /= rotations.len() as f64;
 
     // Upper-triangular basis
-    let mut tri_basis = Cholesky::new_unchecked(symmetrized_metric_tensor)
+    let mut tri_basis = Cholesky::new(symmetrized_metric_tensor)
+        .ok_or(MoyoError::StandardizationError)?
         .l()
         .transpose();
-    // Remove axis-direction freedom
-    let diagonal_signs = Matrix3::<f64>::from_diagonal(&vector![
-        sign(tri_basis[(0, 0)]),
-        sign(tri_basis[(1, 1)]),
-        sign(tri_basis[(2, 2)])
-    ]);
-    tri_basis *= diagonal_signs;
-    // Adjust handedness
-    if sign(lattice.basis.determinant()) * sign(tri_basis.determinant()) < 0.0 {
-        tri_basis *= Matrix3::<f64>::from_diagonal(&vector![1.0, 1.0, -1.0]);
+    // Reflect a Cartesian row, not a lattice-vector column: the latter changes
+    // the off-diagonal entries of the metric for nonorthogonal cells.
+    if lattice.basis.determinant() < 0.0 {
+        tri_basis.row_mut(2).neg_mut();
     }
 
-    // tri_basis \approx orthogonal_matrix * lattice.basis
-    // QR(tri_basis * lattice.basis^-1) = rotation_matrix * strain
-    let mut rotation_matrix = QR::new(tri_basis * lattice.basis.try_inverse().unwrap()).q();
-    if rotation_matrix.determinant() < 0.0 {
-        rotation_matrix *= -1.0;
+    let deformation = tri_basis
+        * lattice
+            .basis
+            .try_inverse()
+            .ok_or(MoyoError::StandardizationError)?;
+    if !deformation.iter().all(|entry| entry.is_finite()) {
+        return Err(MoyoError::StandardizationError);
     }
+    // F = U_svd S V^T, so its proper polar rotation is U_svd V^T.
+    let svd = SVD::try_new(deformation, true, true, f64::EPSILON, 100)
+        .ok_or(MoyoError::StandardizationError)?;
+    let rotation_matrix = svd.u.unwrap() * svd.v_t.unwrap();
 
-    (Lattice::new(tri_basis.transpose()), rotation_matrix)
-}
-
-fn sign(x: f64) -> f64 {
-    if x > EPS {
-        1.0
-    } else if x < -EPS {
-        -1.0
-    } else {
-        0.0
-    }
+    Ok((Lattice::new(tri_basis.transpose()), rotation_matrix))
 }
 
 #[cfg(test)]
@@ -139,7 +132,7 @@ mod tests {
         let rep = PointGroupRepresentative::from_geometric_crystal_class(GeometricCrystalClass::Oh);
         let rotations = traverse(&rep.generators);
 
-        let (new_lattice, rotation_matrix) = symmetrize_lattice(&lattice, &rotations);
+        let (new_lattice, rotation_matrix) = symmetrize_lattice(&lattice, &rotations).unwrap();
         assert_relative_eq!(new_lattice.basis[(1, 1)], new_lattice.basis[(0, 0)]);
         assert_relative_eq!(new_lattice.basis[(2, 2)], new_lattice.basis[(0, 0)]);
         assert_relative_eq!(new_lattice.basis[(0, 1)], 0.0);
@@ -169,7 +162,7 @@ mod tests {
         let rep = PointGroupRepresentative::from_geometric_crystal_class(GeometricCrystalClass::Oh);
         let rotations = traverse(&rep.generators);
 
-        let (refined, rotation) = symmetrize_lattice(&lattice, &rotations);
+        let (refined, rotation) = symmetrize_lattice(&lattice, &rotations).unwrap();
 
         // Cubic averaging preserves the trace and makes all three lengths equal.
         let squared_length = lattice.metric_tensor().trace() / 3.0;
@@ -195,8 +188,12 @@ mod tests {
         );
         assert_relative_eq!(rotation.determinant(), 1.0, epsilon = 1e-12);
 
+        let stretch = rotation.transpose() * refined.basis * lattice.basis.try_inverse().unwrap();
+        assert_relative_eq!(stretch, stretch.transpose(), epsilon = 1e-12);
+        assert!(stretch.symmetric_eigen().eigenvalues.min() > 0.0);
+
         // The refined lattice is a fixed point of the metric projection.
-        let (refined_again, _) = symmetrize_lattice(&refined, &rotations);
+        let (refined_again, _) = symmetrize_lattice(&refined, &rotations).unwrap();
         assert_relative_eq!(refined_again.basis, refined.basis, epsilon = 1e-12);
     }
 
