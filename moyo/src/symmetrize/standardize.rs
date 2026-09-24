@@ -168,7 +168,7 @@ impl StandardizedCell {
         if rotate_basis {
             // Symmetrize lattice
             let (_, rotation_matrix) =
-                symmetrize_lattice(&std_cell.lattice, &project_rotations(&conv_std_operations));
+                symmetrize_lattice(&std_cell.lattice, &project_rotations(&conv_std_operations))?;
             Ok((
                 prim_std_cell.rotate(&rotation_matrix),
                 prim_std_permutations,
