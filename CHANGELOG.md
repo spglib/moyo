@@ -13,6 +13,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 - Return symmetry-refined lattices in the conventional and primitive standardized cells for space-group and magnetic datasets. Previously, the returned lattices retained the input distortion. Lattice refinement now applies for either value of `rotate_basis`; setting it to `false` omits the rigid Cartesian rotation while retaining the symmetric stretch (#461).
 - Use the refined lattice when symmetrizing magnetic moments, and apply only the rigid rotation to the moments before averaging (#461).
 - Refine atomic positions under anti-translations in type-IV magnetic datasets. Previously, averaging over only the unitary subgroup could leave anti-translation partners displaced in both standardized magnetic cells.
+- Apply origin shifts when transforming cells, keeping conventional standardized magnetic cells consistent with their primitive counterparts and returned transformation fields.
 
 ## v0.19.0 - 2026-09-19
 
