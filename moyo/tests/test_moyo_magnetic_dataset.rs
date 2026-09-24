@@ -371,6 +371,59 @@ fn test_strained_noncollinear_standardization() {
 }
 
 #[test]
+fn test_strained_left_handed_monoclinic_standardization() {
+    let action = RotationMagneticMomentAction::Axial;
+    let frame = Rotation3::from_euler_angles(0.37, -0.21, 0.13).into_inner();
+    let make_cell = |basis| {
+        MagneticCell::new(
+            Lattice::from_basis(basis).rotate(&frame),
+            vec![vector![0.0, 0.0, 0.0]],
+            vec![1],
+            vec![NonCollinear(frame * vector![0.0, 1.0, 0.0])],
+        )
+    };
+    let original = make_cell([[4.0, 0.0, 0.0], [0.0, 5.0, 0.0], [-0.7, 0.0, -6.0]]);
+    let reference = MoyoMagneticDataset::with_default(&original, 1e-4, action).unwrap();
+    let input = make_cell([
+        [4.01, 0.002, 0.0],
+        [0.003, 5.01, 0.002],
+        [-0.7, 0.004, -6.01],
+    ]);
+
+    // A twofold axis along b removes the ab and bc metric terms, preserving ac.
+    let mut expected_metric = input.cell.lattice.metric_tensor();
+    expected_metric[(0, 1)] = 0.0;
+    expected_metric[(1, 0)] = 0.0;
+    expected_metric[(1, 2)] = 0.0;
+    expected_metric[(2, 1)] = 0.0;
+    assert!(expected_metric[(0, 2)].abs() > 1.0);
+
+    for rotate_basis in [false, true] {
+        let dataset = MoyoMagneticDataset::new(
+            &input,
+            0.05,
+            AngleTolerance::default(),
+            Some(0.02),
+            action,
+            rotate_basis,
+        )
+        .unwrap();
+        assert_eq!(dataset.uni_number, reference.uni_number);
+        for (cell, linear) in [
+            (&dataset.std_mag_cell, dataset.std_linear),
+            (&dataset.prim_std_mag_cell, dataset.prim_std_linear),
+        ] {
+            assert!(cell.cell.lattice.basis.determinant() < 0.0);
+            assert_relative_eq!(
+                cell.cell.lattice.metric_tensor(),
+                linear.transpose() * expected_metric * linear,
+                epsilon = 1e-10
+            );
+        }
+    }
+}
+
+#[test]
 fn test_with_large_mag_symprec() {
     // https://github.com/spglib/moyo/issues/295
     // With these borderline tolerances the magnetic operation set may not be closed.
