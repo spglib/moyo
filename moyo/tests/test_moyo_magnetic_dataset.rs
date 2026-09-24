@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate approx;
 
-use nalgebra::{Matrix3, matrix, vector};
+use nalgebra::{Matrix3, Rotation3, matrix, vector};
 use std::fs;
 use std::path::Path;
 use test_log::test;
@@ -11,6 +11,7 @@ use moyo::base::{
     AngleTolerance, Collinear, Lattice, MagneticCell, MagneticMoment, NonCollinear,
     RotationMagneticMomentAction,
 };
+use moyo::data::magnetic_operations_from_uni_number;
 
 fn assert_magnetic_dataset_with_default<M: MagneticMoment>(
     magnetic_cell: &MagneticCell<M>,
@@ -81,17 +82,26 @@ fn assert_magnetic_dataset<M: MagneticMoment>(
         epsilon = 1e-8
     );
 
-    // Check std_rotation_matrix and std_linear
+    // Lattice refinement is a symmetric positive stretch before rotation.
+    let stretch = dataset.std_rotation_matrix.transpose()
+        * dataset.std_mag_cell.cell.lattice.basis
+        * (magnetic_cell.cell.lattice.basis * dataset.std_linear)
+            .try_inverse()
+            .unwrap();
+    assert_relative_eq!(stretch, stretch.transpose(), epsilon = 1e-12);
+    assert!(stretch.symmetric_eigen().eigenvalues.min() > 0.0);
     assert_relative_eq!(
-        dataset.std_rotation_matrix * magnetic_cell.cell.lattice.basis * dataset.std_linear,
-        dataset.std_mag_cell.cell.lattice.basis,
-        epsilon = 1e-8
+        dataset.std_rotation_matrix.transpose() * dataset.std_rotation_matrix,
+        Matrix3::identity(),
+        epsilon = 1e-12
     );
-    // Check std_rotation_matrix and prim_std_linear
     assert_relative_eq!(
-        dataset.std_rotation_matrix * magnetic_cell.cell.lattice.basis * dataset.prim_std_linear,
+        dataset.std_rotation_matrix
+            * stretch
+            * magnetic_cell.cell.lattice.basis
+            * dataset.prim_std_linear,
         dataset.prim_std_mag_cell.cell.lattice.basis,
-        epsilon = 1e-8
+        epsilon = 1e-10
     );
     // TODO: std_origin_shift
     // TODO: prim_origin_shift
@@ -240,6 +250,124 @@ fn test_with_pyrochlore() {
     let action = RotationMagneticMomentAction::Axial;
 
     let _dataset = assert_magnetic_dataset_with_default(&magnetic_cell, symprec, action);
+}
+
+#[test]
+fn test_strained_noncollinear_standardization() {
+    let original: MagneticCell<NonCollinear> =
+        serde_json::from_str(&fs::read_to_string("tests/assets/pyrochlore.json").unwrap()).unwrap();
+    let action = RotationMagneticMomentAction::Axial;
+    let reference = MoyoMagneticDataset::with_default(&original, 1e-4, action).unwrap();
+    let strain = matrix![
+        1.0007, 0.0002, -0.0003;
+        0.0002, 0.9995, 0.0001;
+        -0.0003, 0.0001, 1.0003;
+    ];
+    for handedness in [1.0, -1.0] {
+        let frame = Rotation3::from_euler_angles(0.37, -0.21, 0.13).into_inner()
+            * Matrix3::from_diagonal(&vector![1.0, 1.0, handedness]);
+        let input = MagneticCell::new(
+            original.cell.lattice.rotate(&(frame * strain)),
+            original.cell.positions.clone(),
+            original.cell.numbers.clone(),
+            original
+                .magnetic_moments
+                .iter()
+                .map(|m| m.act_rotation(&frame, action))
+                .collect(),
+        );
+        let mut outputs = Vec::new();
+        for rotate_basis in [false, true] {
+            let dataset = MoyoMagneticDataset::new(
+                &input,
+                0.05,
+                AngleTolerance::default(),
+                Some(0.02),
+                action,
+                rotate_basis,
+            )
+            .unwrap();
+            assert_eq!(dataset.uni_number, reference.uni_number);
+            for (cell, primitive) in [
+                (&dataset.std_mag_cell, false),
+                (&dataset.prim_std_mag_cell, true),
+            ] {
+                let operations =
+                    magnetic_operations_from_uni_number(dataset.uni_number, primitive).unwrap();
+                let metric = cell.cell.lattice.metric_tensor();
+                for operation in operations.iter() {
+                    let rotation = operation.operation.rotation.map(f64::from);
+                    assert_relative_eq!(
+                        rotation.transpose() * metric * rotation,
+                        metric,
+                        epsilon = 1e-10
+                    );
+                    let cart_rotation = operation.operation.cartesian_rotation(&cell.cell.lattice);
+                    assert_relative_eq!(
+                        cart_rotation.transpose() * cart_rotation,
+                        Matrix3::identity(),
+                        epsilon = 1e-12
+                    );
+                    for (i, position) in cell.cell.positions.iter().enumerate() {
+                        let image = rotation * position + operation.operation.translation;
+                        let j = cell
+                            .cell
+                            .positions
+                            .iter()
+                            .enumerate()
+                            .find_map(|(j, target)| {
+                                let delta = image - target;
+                                (cell.cell.numbers[i] == cell.cell.numbers[j]
+                                    && (delta - delta.map(f64::round)).norm() < 1e-12)
+                                    .then_some(j)
+                            })
+                            .unwrap();
+                        let image_moment = cell.magnetic_moments[i].act_magnetic_operation(
+                            &cart_rotation,
+                            operation.time_reversal,
+                            action,
+                        );
+                        assert_relative_eq!(
+                            image_moment.0,
+                            cell.magnetic_moments[j].0,
+                            epsilon = 1e-12
+                        );
+                    }
+                }
+            }
+            outputs.push(dataset);
+        }
+        let [fixed, rotated] = outputs.as_slice() else {
+            unreachable!()
+        };
+        assert_relative_eq!(
+            fixed.std_rotation_matrix,
+            Matrix3::identity(),
+            epsilon = 1e-12
+        );
+        assert_relative_eq!(
+            rotated.std_rotation_matrix.determinant(),
+            1.0,
+            epsilon = 1e-12
+        );
+        assert_relative_eq!(
+            rotated.std_rotation_matrix * fixed.std_mag_cell.cell.lattice.basis,
+            rotated.std_mag_cell.cell.lattice.basis,
+            epsilon = 1e-12,
+        );
+        for (fixed_moment, rotated_moment) in fixed
+            .std_mag_cell
+            .magnetic_moments
+            .iter()
+            .zip(&rotated.std_mag_cell.magnetic_moments)
+        {
+            assert_relative_eq!(
+                rotated.std_rotation_matrix * fixed_moment.0,
+                rotated_moment.0,
+                epsilon = 1e-12
+            );
+        }
+    }
 }
 
 #[test]

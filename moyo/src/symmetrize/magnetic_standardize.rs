@@ -37,7 +37,8 @@ pub struct StandardizedMagneticCell<M: MagneticMoment> {
 impl<M: MagneticMoment> StandardizedMagneticCell<M> {
     /// Standardize the input **primitive** magnetic cell.
     /// For triclinic magnetic space groups, Niggli reduction is performed.
-    /// Basis vectors are rotated to be a upper triangular matrix.
+    /// Lattice and positions follow [`StandardizedCell`]; magnetic moments are
+    /// rotated with its proper Cartesian rotation and averaged under the magnetic group.
     pub fn new(
         prim_mag_cell: &PrimitiveMagneticCell<M>,
         magnetic_symmetry_search: &PrimitiveMagneticSymmetrySearch,
@@ -76,15 +77,16 @@ impl<M: MagneticMoment> StandardizedMagneticCell<M> {
             .iter()
             .map(|m| m.act_rotation(&ref_std_cell.rotation_matrix, action))
             .collect::<Vec<_>>();
-        let rotated_lattice = prim_mag_cell
-            .magnetic_cell
-            .cell
-            .lattice
-            .rotate(&ref_std_cell.rotation_matrix);
+        // Operations still use the input primitive coordinates. Express the
+        // refined lattice in that basis, retaining its output Cartesian frame.
+        let refined_lattice = ref_std_cell
+            .prim_transformation
+            .inverse()
+            .transform_lattice(&ref_std_cell.prim_cell.lattice);
         let cart_rotations = magnetic_symmetry_search
             .magnetic_operations
             .iter()
-            .map(|mops| mops.operation.cartesian_rotation(&rotated_lattice))
+            .map(|mops| mops.operation.cartesian_rotation(&refined_lattice))
             .collect::<Vec<_>>();
         let time_reversals = magnetic_symmetry_search
             .magnetic_operations

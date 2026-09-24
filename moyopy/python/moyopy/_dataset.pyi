@@ -21,8 +21,7 @@ class MoyoDataset:
 
     See the [returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
     for the geometry and symmetry of the standardized cells.
-    The current implementation refines atomic positions but preserves the input
-    lattice metric after the selected change of basis.
+    Both the lattice and atomic positions are refined for either value of ``rotate_basis``.
     """
     def __init__(
         self,

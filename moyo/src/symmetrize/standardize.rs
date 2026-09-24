@@ -14,15 +14,15 @@ use crate::identify::SpaceGroup;
 /// Result of the full standardization pipeline for a primitive cell.
 ///
 /// [`ConventionalCoordinateSystem`] selects the basis and origin. This type then
-/// refines atomic positions, constructs the primitive and conventional cells,
+/// refines the lattice and atomic positions, constructs the primitive and conventional cells,
 /// applies the requested Cartesian orientation, and assigns Wyckoff positions.
 ///
 /// The [returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
 /// describes the target symmetry, coordinate transformations, and Cartesian orientation.
 ///
-/// The current implementation refines positions but retains the input metric
-/// after the selected change of basis. Applying the refined lattice and the
-/// specified Cartesian orientation remains unimplemented.
+/// Both output cells use the refined metric.
+/// Coordinate transformations describe the selected basis and origin before
+/// refinement; the rotation matrix describes only the final Cartesian rotation.
 pub struct StandardizedCell {
     // ------------------------------------------------------------------------
     // Primitive standardized cell
@@ -55,7 +55,9 @@ pub struct StandardizedCell {
 
 impl StandardizedCell {
     /// Standardize the input **primitive** cell.
-    /// See [`Self`] for the returned-cell specification and implementation status.
+    /// See [`Self`] for the returned-cell specification.
+    ///
+    /// Returns [`MoyoError::StandardizationError`] if lattice refinement fails.
     pub fn new(
         prim_cell: &Cell,
         prim_operations: &Operations,
@@ -154,41 +156,40 @@ impl StandardizedCell {
             epsilon,
         );
 
+        let centering = Transformation::from_linear(conv_trans_linear);
+        let conv_lattice = centering.transform_lattice(&prim_std_cell_tmp.lattice);
+        let (refined_lattice, rotation_matrix) =
+            symmetrize_lattice(&conv_lattice, &project_rotations(&conv_std_operations))?;
+        let (std_lattice, rotation_matrix) = if rotate_basis {
+            (refined_lattice, rotation_matrix)
+        } else {
+            // Undo only the polar rotation, retaining the symmetric stretch.
+            (
+                refined_lattice.rotate(&rotation_matrix.transpose()),
+                Matrix3::identity(),
+            )
+        };
+
         // Note: prim_transformation.transform_cell does not change the order of sites
         let prim_std_cell = Cell::new(
-            prim_std_cell_tmp.lattice.clone(),
+            centering.inverse_transform_lattice(&std_lattice),
             new_prim_std_positions,
             prim_std_cell_tmp.numbers.clone(),
         );
 
         // To (conventional) standardized cell
-        let (std_cell, site_mapping) =
-            Transformation::from_linear(conv_trans_linear).transform_cell(&prim_std_cell);
+        let (mut std_cell, site_mapping) = centering.transform_cell(&prim_std_cell);
+        std_cell.lattice = std_lattice;
 
-        if rotate_basis {
-            // Symmetrize lattice
-            let (_, rotation_matrix) =
-                symmetrize_lattice(&std_cell.lattice, &project_rotations(&conv_std_operations))?;
-            Ok((
-                prim_std_cell.rotate(&rotation_matrix),
-                prim_std_permutations,
-                prim_transformation.clone(),
-                std_cell.rotate(&rotation_matrix),
-                transformation,
-                rotation_matrix,
-                site_mapping,
-            ))
-        } else {
-            Ok((
-                prim_std_cell,
-                prim_std_permutations,
-                prim_transformation.clone(),
-                std_cell,
-                transformation,
-                Matrix3::identity(),
-                site_mapping,
-            ))
-        }
+        Ok((
+            prim_std_cell,
+            prim_std_permutations,
+            prim_transformation,
+            std_cell,
+            transformation,
+            rotation_matrix,
+            site_mapping,
+        ))
     }
 
     fn assign_wyckoffs(
