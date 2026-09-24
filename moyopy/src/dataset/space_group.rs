@@ -36,8 +36,8 @@ impl PyMoyoDataset {
     /// setting : Setting | None
     ///     Preference for the setting of the space group.
     /// rotate_basis : bool
-    ///     Whether to rotate the basis vectors of the input cell to those of the standardized
-    ///     cell.
+    ///     Whether to apply the canonical Cartesian orientation to the refined lattice.
+    ///     Lattice and positions are refined for either value.
     #[new]
     #[pyo3(signature = (cell, *, symprec=1e-4, angle_tolerance=None, setting=None, rotate_basis=true))]
     pub fn new(
@@ -140,19 +140,20 @@ impl PyMoyoDataset {
         self.0.std_cell.clone().into()
     }
 
-    /// Linear part of the transformation from the input cell to the standardized cell.
+    /// Linear part of the coordinate change to the conventional system, before refinement.
     #[getter]
     pub fn std_linear(&self) -> [[f64; 3]; 3] {
         self.0.std_linear_as_array()
     }
 
-    /// Origin shift of the transformation from the input cell to the standardized cell.
+    /// Origin shift of the coordinate change to the conventional system, before refinement.
     #[getter]
     pub fn std_origin_shift(&self) -> [f64; 3] {
         self.0.std_origin_shift_as_array()
     }
 
-    /// Rigid rotation (orthogonal matrix) applied to the lattice basis.
+    /// Proper Cartesian rotation applied after lattice refinement.
+    /// Identity when ``rotate_basis`` is false; it does not encode the lattice stretch.
     #[getter]
     pub fn std_rotation_matrix(&self) -> [[f64; 3]; 3] {
         self.0.std_rotation_matrix_as_array()
@@ -176,15 +177,13 @@ impl PyMoyoDataset {
         self.0.prim_std_cell.clone().into()
     }
 
-    /// Linear part of the transformation from the input cell to the primitive standardized
-    /// cell.
+    /// Linear part of the coordinate change to the primitive system, before refinement.
     #[getter]
     pub fn prim_std_linear(&self) -> [[f64; 3]; 3] {
         self.0.prim_std_linear_as_array()
     }
 
-    /// Origin shift of the transformation from the input cell to the primitive standardized
-    /// cell.
+    /// Origin shift of the coordinate change to the primitive system, before refinement.
     #[getter]
     pub fn prim_std_origin_shift(&self) -> [f64; 3] {
         self.0.prim_std_origin_shift_as_array()
