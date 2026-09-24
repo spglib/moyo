@@ -80,6 +80,9 @@ some supercells. In that case, `equivalent_atoms` may split a crystallographic
 orbit into smaller groups. `orbits` is therefore not a general replacement for
 `equivalent_atoms`, which moyoc does not directly expose.
 
+When operations have non-integer rotation matrices in the input-cell basis,
+moyo omits them and warns about this possible difference.
+
 ### `spg_get_symmetry()`
 
 Replace with `moyo_dataset_new`, then read the symmetry operations from

@@ -31,6 +31,9 @@ some supercells. In that case, `equivalent_atoms` may split a crystallographic
 orbit into smaller groups. `MoyoDataset.orbits` is therefore not a general
 replacement for `equivalent_atoms`, which moyopy does not directly expose.
 
+When operations have non-integer rotation matrices in the input-cell basis,
+moyo omits them and warns about this possible difference.
+
 ### Space-group symmetry search
 
 #### `spglib.get_symmetry()`
