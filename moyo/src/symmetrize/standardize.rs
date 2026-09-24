@@ -178,8 +178,7 @@ impl StandardizedCell {
         );
 
         // To (conventional) standardized cell
-        let (mut std_cell, site_mapping) = centering.transform_cell(&prim_std_cell);
-        std_cell.lattice = std_lattice;
+        let (std_cell, site_mapping) = centering.transform_cell(&prim_std_cell);
 
         Ok((
             prim_std_cell,
