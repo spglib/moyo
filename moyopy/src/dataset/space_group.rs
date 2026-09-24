@@ -125,16 +125,16 @@ impl PyMoyoDataset {
     // ------------------------------------------------------------------------
     /// Standardized cell.
     ///
-    /// The input cell is related to the standardized cell by ``(std_linear, std_origin_shift)``
-    /// and ``std_rotation_matrix``:
+    /// The selected coordinate system, before lattice and position refinement, is
     ///
     /// ```text
-    /// std_cell.basis.T = std_rotation_matrix @ cell.basis.T @ std_linear
-    /// x_std = np.linalg.inv(std_linear) @ (x_input - std_origin_shift)
+    /// basis_selected = cell.basis.T @ std_linear
+    /// x_selected = np.linalg.inv(std_linear) @ (x_input - std_origin_shift)
     /// ```
     ///
-    /// ``std_rotation_matrix`` is a rigid rotation (orthogonal matrix) applied only to the
-    /// Cartesian lattice basis. It does not affect fractional coordinates.
+    /// Both the lattice and positions are then refined to the detected symmetry.
+    /// See the [returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
+    /// for refinement and Cartesian orientation.
     #[getter]
     pub fn std_cell(&self) -> PyStructure {
         self.0.std_cell.clone().into()
@@ -169,12 +169,8 @@ impl PyMoyoDataset {
     // ------------------------------------------------------------------------
     /// Primitive standardized cell.
     ///
-    /// Same transformation convention as the standardized cell:
-    ///
-    /// ```text
-    /// prim_std_cell.basis.T = std_rotation_matrix @ cell.basis.T @ prim_std_linear
-    /// x_prim_std = np.linalg.inv(prim_std_linear) @ (x_input - prim_std_origin_shift)
-    /// ```
+    /// Uses ``prim_std_linear`` and ``prim_std_origin_shift`` with the same
+    /// pre-refinement coordinate convention as ``std_cell``.
     #[getter]
     pub fn prim_std_cell(&self) -> PyStructure {
         self.0.prim_std_cell.clone().into()
