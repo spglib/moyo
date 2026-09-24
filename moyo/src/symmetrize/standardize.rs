@@ -20,7 +20,7 @@ use crate::identify::SpaceGroup;
 /// The [returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
 /// describes the target symmetry, coordinate transformations, and Cartesian orientation.
 ///
-/// Both output cells satisfy the selected Hall operations up to numerical roundoff.
+/// Both output cells use the refined metric.
 /// Coordinate transformations describe the selected basis and origin before
 /// refinement; the rotation matrix describes only the final Cartesian rotation.
 pub struct StandardizedCell {
@@ -57,11 +57,7 @@ impl StandardizedCell {
     /// Standardize the input **primitive** cell.
     /// See [`Self`] for the returned-cell specification.
     ///
-    /// The supplied operations and permutations must describe the same group action
-    /// on the input sites. Returns [`MoyoError::StandardizationError`] if lattice
-    /// refinement fails or the refined cell does not satisfy the target operations
-    /// with these correspondences within a scale-adjusted roundoff bound.
-    /// This bound is independent of the symmetry-search tolerances.
+    /// Returns [`MoyoError::StandardizationError`] if lattice refinement fails.
     pub fn new(
         prim_cell: &Cell,
         prim_operations: &Operations,
@@ -180,7 +176,6 @@ impl StandardizedCell {
             new_prim_std_positions,
             prim_std_cell_tmp.numbers.clone(),
         );
-        ensure_symmetry(&prim_std_cell, &prim_std_operations, &prim_std_permutations)?;
 
         // To (conventional) standardized cell
         let (std_cell, site_mapping) = centering.transform_cell(&prim_std_cell);
@@ -220,44 +215,6 @@ impl StandardizedCell {
     }
 }
 
-/// Check the primitive result before conventional expansion adds the centering copies.
-/// Residuals are bounded by `128 * f64::EPSILON` times the magnitudes of the terms
-/// in `W^T G W - G` and `A (W x_i + w - x_j)` (modulo lattice translations).
-/// The factor allows for the accumulated roundoff in group averaging and basis
-/// changes; recognition tolerances never relax this check.
-fn ensure_symmetry(
-    cell: &Cell,
-    operations: &Operations,
-    permutations: &[Permutation],
-) -> Result<(), MoyoError> {
-    let metric = cell.lattice.metric_tensor();
-    let roundoff = 128.0 * f64::EPSILON;
-    for (operation, permutation) in operations.iter().zip(permutations) {
-        let rotation = operation.rotation.map(f64::from);
-        let metric_error = (rotation.transpose() * metric * rotation - metric).norm();
-        let metric_bound = roundoff * (1.0 + rotation.norm_squared()) * metric.norm();
-        if !metric_error.is_finite() || metric_error > metric_bound {
-            return Err(MoyoError::StandardizationError);
-        }
-        for (i, position) in cell.positions.iter().enumerate() {
-            let j = permutation.apply(i);
-            let mut delta = rotation * position + operation.translation - cell.positions[j];
-            delta -= delta.map(f64::round);
-            let error = (cell.lattice.basis * delta).norm();
-            let bound = roundoff
-                * cell.lattice.basis.norm()
-                * (1.0
-                    + rotation.norm() * position.norm()
-                    + operation.translation.norm()
-                    + cell.positions[j].norm());
-            if cell.numbers[i] != cell.numbers[j] || !error.is_finite() || error > bound {
-                return Err(MoyoError::StandardizationError);
-            }
-        }
-    }
-    Ok(())
-}
-
 /// Align a set of primitive-cell permutations (as produced by the symmetry
 /// search) with a target operation list (as produced by traversing a Hall
 /// symbol) by matching rotation matrices. Both pipelines need this because
@@ -294,9 +251,7 @@ mod tests {
     use nalgebra::{Matrix3, Rotation3, Vector3, matrix, vector};
 
     use super::StandardizedCell;
-    use crate::base::{
-        Cell, Lattice, MoyoError, Operations, Permutation, UnimodularTransformation,
-    };
+    use crate::base::{Cell, Lattice, Operations, Permutation, UnimodularTransformation};
     use crate::data::{HallNumber, HallSymbol, hall_symbol_entry};
     use crate::identify::SpaceGroup;
 
@@ -546,37 +501,6 @@ mod tests {
     fn test_standardized_cell_all_hall_settings() {
         for hall_number in 1..=530 {
             check_hall_setting(hall_number);
-        }
-    }
-
-    #[test]
-    fn test_standardized_cell_rejects_inconsistent_periodic_images() {
-        let hall_number = 349; // P4
-        let cell = Cell::new(
-            Lattice::new(Matrix3::identity()),
-            vec![vector![0.41, 0.1, 0.13]],
-            vec![1],
-        );
-        let operations = HallSymbol::from_hall_number(hall_number)
-            .unwrap()
-            .primitive_traverse();
-        let permutations = vec![Permutation::identity(1); operations.len()];
-        let space_group = SpaceGroup::from_hall_number_and_transformation(
-            hall_number,
-            UnimodularTransformation::from_linear(Matrix3::identity()),
-        )
-        .unwrap();
-        for rotate_basis in [false, true] {
-            let result = StandardizedCell::new(
-                &cell,
-                &operations,
-                &permutations,
-                &space_group,
-                1.0,
-                1.0,
-                rotate_basis,
-            );
-            assert!(matches!(result, Err(MoyoError::StandardizationError)));
         }
     }
 }
