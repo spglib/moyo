@@ -44,8 +44,8 @@ pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
         }
     }
 
-    // Select three shortest vectors from {b1, b2, b3, b4, b1 + b2, b2 + b3, b3 + b1}
-    let basis_candidates = [
+    // Select the shortest unimodular basis from {b1, b2, b3, b4, b1 + b2, b2 + b3, b3 + b1}.
+    let basis_candidates: [Vector3<i32>; 7] = [
         vector![1, 0, 0],
         vector![0, 1, 0],
         vector![0, 0, 1],
@@ -61,11 +61,18 @@ pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
     let mut argsort = (0..7).collect::<Vec<_>>();
     argsort.sort_by(|&i, &j| norms[i].partial_cmp(&norms[j]).unwrap());
 
-    let trans_mat_shortest = Matrix3::<i32>::from_columns(&[
-        basis_candidates[argsort[0]],
-        basis_candidates[argsort[1]],
-        basis_candidates[argsort[2]],
-    ]);
+    let first = basis_candidates[argsort[0]];
+    let second = basis_candidates[argsort[1]];
+    // The three shortest candidates may be coplanar, e.g. a, b, a + b for an
+    // elongated orthorhombic cell. Complete the basis using an exact integer
+    // determinant so that its volume is preserved.
+    let third = argsort
+        .iter()
+        .skip(2)
+        .map(|&i| basis_candidates[i])
+        .find(|candidate| first.cross(&second).dot(candidate).abs() == 1)
+        .expect("superbase candidates must contain a unimodular basis");
+    let trans_mat_shortest = Matrix3::<i32>::from_columns(&[first, second, third]);
     trans_mat *= trans_mat_shortest;
     reduced_basis *= trans_mat_shortest.map(|e| e as f64);
 
@@ -97,6 +104,14 @@ mod tests {
     use rand::rngs::StdRng;
 
     use super::delaunay_reduce;
+
+    #[test]
+    fn test_delaunay_elongated() {
+        let basis = Matrix3::from_diagonal(&vector![1.0, 2.0, 10.0]);
+        let (reduced_basis, trans_mat) = delaunay_reduce(&basis);
+        assert_relative_eq!(reduced_basis, basis);
+        assert_eq!(trans_mat, Matrix3::<i32>::identity());
+    }
 
     #[test]
     fn test_delaunay_small() {
