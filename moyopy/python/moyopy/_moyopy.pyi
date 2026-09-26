@@ -5,6 +5,11 @@ from moyopy._base import (
     NonCollinearMagneticCell,
     Operations,
     UnimodularTransformation,
+    delaunay_reduce,
+    is_minkowski_reduced,
+    is_niggli_reduced,
+    minkowski_reduce,
+    niggli_reduce,
 )
 from moyopy._data import (
     ArithmeticCrystalClass,
@@ -59,6 +64,11 @@ __all__ = [
     "NonCollinearMagneticCell",
     "Operations",
     "UnimodularTransformation",
+    "delaunay_reduce",
+    "is_minkowski_reduced",
+    "is_niggli_reduced",
+    "minkowski_reduce",
+    "niggli_reduce",
     # data
     "Setting",
     "LayerSetting",

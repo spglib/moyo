@@ -205,3 +205,81 @@ class UnimodularTransformation:
         """Serialize this object to a JSON string."""
     def as_dict(self) -> dict[str, Any]:
         """Convert this object to a dictionary."""
+
+def niggli_reduce(basis: list[list[float]]) -> tuple[list[list[float]], list[list[int]]]:
+    """Return a Niggli-reduced basis and its integer transformation matrix.
+
+    Parameters
+    ----------
+    basis : list[list[float]]
+        Three linearly independent, finite row-wise lattice vectors.
+
+    Returns
+    -------
+    reduced_basis : list[list[float]]
+        Row-wise basis vectors of the reduced lattice.
+    transformation : list[list[int]]
+        Unimodular matrix satisfying ``reduced_basis = transformation.T @ basis``
+        in NumPy notation.
+
+    Raises
+    ------
+    ValueError
+        If the basis is invalid or reduction fails.
+    """
+
+def delaunay_reduce(basis: list[list[float]]) -> tuple[list[list[float]], list[list[int]]]:
+    """Return a Delaunay-reduced basis and its integer transformation matrix.
+
+    Parameters
+    ----------
+    basis : list[list[float]]
+        Three linearly independent, finite row-wise lattice vectors.
+
+    Returns
+    -------
+    reduced_basis : list[list[float]]
+        Row-wise basis vectors of the reduced lattice.
+    transformation : list[list[int]]
+        Unimodular matrix satisfying ``reduced_basis = transformation.T @ basis``
+        in NumPy notation.
+
+    Raises
+    ------
+    ValueError
+        If the basis is invalid or reduction fails.
+    """
+
+def minkowski_reduce(basis: list[list[float]]) -> tuple[list[list[float]], list[list[int]]]:
+    """Return a Minkowski-reduced basis and its integer transformation matrix.
+
+    Parameters
+    ----------
+    basis : list[list[float]]
+        Three linearly independent, finite row-wise lattice vectors.
+
+    Returns
+    -------
+    reduced_basis : list[list[float]]
+        Row-wise basis vectors of the reduced lattice.
+    transformation : list[list[int]]
+        Unimodular matrix satisfying ``reduced_basis = transformation.T @ basis``
+        in NumPy notation.
+
+    Raises
+    ------
+    ValueError
+        If the basis is invalid or reduction fails.
+    """
+
+def is_niggli_reduced(basis: list[list[float]]) -> bool:
+    """Return whether the row-wise basis vectors are Niggli reduced.
+
+    Raises ``ValueError`` if the basis is not finite and linearly independent.
+    """
+
+def is_minkowski_reduced(basis: list[list[float]]) -> bool:
+    """Return whether the row-wise basis vectors are Minkowski reduced.
+
+    Raises ``ValueError`` if the basis is not finite and linearly independent.
+    """

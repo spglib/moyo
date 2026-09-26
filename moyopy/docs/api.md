@@ -23,6 +23,22 @@ transformation type used across all group families.
 
 ::: moyopy.UnimodularTransformation
 
+## Lattice reduction
+
+Reduce a lattice given by three row-wise basis vectors. Each reduction returns
+`(reduced_basis, transformation)` as nested lists, with an integer transformation
+matrix satisfying `reduced_basis = transformation.T @ basis` in NumPy notation.
+
+::: moyopy.niggli_reduce
+
+::: moyopy.delaunay_reduce
+
+::: moyopy.minkowski_reduce
+
+::: moyopy.is_niggli_reduced
+
+::: moyopy.is_minkowski_reduced
+
 ## Symmetry datasets
 
 Run a symmetry analysis on a [`moyopy.Cell`][moyopy.Cell] and inspect the result.

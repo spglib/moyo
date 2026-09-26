@@ -245,11 +245,40 @@ Moyopy does not directly support this function.
 
 ### `spglib.niggli_reduce()`
 
-TODO: not supported yet
+Use [`moyopy.niggli_reduce`][moyopy.niggli_reduce]. Both input and output bases
+contain lattice vectors as rows. Moyopy also returns the integer transformation
+matrix:
+
+```python
+import numpy as np
+from moyopy import niggli_reduce
+
+basis = np.array([[1.0, 0.0, 0.0], [5.0, 2.0, 0.0], [0.0, 0.0, 3.0]])
+reduced_basis, transformation = niggli_reduce(basis.tolist())
+assert np.allclose(reduced_basis, np.array(transformation).T @ basis)
+```
+
+Moyopy uses the Rust implementation's fixed numerical tolerance and has no
+`eps` argument. Invalid input or a failed reduction raises `ValueError`.
+The choice among equivalent reduced bases can differ from spglib, particularly
+on reduction boundaries; exact agreement with spglib's chosen cell is not
+guaranteed.
 
 ### `spglib.delaunay_reduce()`
 
-TODO: not supported yet
+Use [`moyopy.delaunay_reduce`][moyopy.delaunay_reduce] with the same input and
+return conventions:
+
+```python
+from moyopy import delaunay_reduce
+
+reduced_basis, transformation = delaunay_reduce(basis.tolist())
+```
+
+As with Niggli reduction, there is no `eps` argument and invalid input raises
+`ValueError`. Moyopy also provides [`moyopy.minkowski_reduce`][moyopy.minkowski_reduce]
+and the predicates [`moyopy.is_niggli_reduced`][moyopy.is_niggli_reduced] and
+[`moyopy.is_minkowski_reduced`][moyopy.is_minkowski_reduced].
 
 ## Kpoints: `spglib.get_ir_reciprocal_mesh()`
 

@@ -9,7 +9,8 @@ pub mod subgroup;
 
 use crate::base::{
     PyCollinearMagneticCell, PyMagneticOperations, PyMoyoError, PyNonCollinearMagneticCell,
-    PyOperations, PyStructure, PyUnimodularTransformation,
+    PyOperations, PyStructure, PyUnimodularTransformation, delaunay_reduce, is_minkowski_reduced,
+    is_niggli_reduced, minkowski_reduce, niggli_reduce,
 };
 use crate::data::{
     PyArithmeticCrystalClass, PyCentering, PyHallSymbolEntry, PyLayerArithmeticCrystalClass,
@@ -71,6 +72,11 @@ fn moyopy(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyOperations>()?;
     m.add_class::<PyMagneticOperations>()?;
     m.add_class::<PyUnimodularTransformation>()?;
+    m.add_wrapped(wrap_pyfunction!(niggli_reduce))?;
+    m.add_wrapped(wrap_pyfunction!(delaunay_reduce))?;
+    m.add_wrapped(wrap_pyfunction!(minkowski_reduce))?;
+    m.add_wrapped(wrap_pyfunction!(is_niggli_reduced))?;
+    m.add_wrapped(wrap_pyfunction!(is_minkowski_reduced))?;
 
     // data: Hall symbol data
     m.add_class::<PySetting>()?;
