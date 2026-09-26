@@ -258,8 +258,12 @@ reduced_basis, transformation = niggli_reduce(basis.tolist())
 assert np.allclose(reduced_basis, np.array(transformation).T @ basis)
 ```
 
-Moyopy uses the Rust implementation's fixed numerical tolerance and has no
-`eps` argument. Invalid input or a failed reduction raises `ValueError`.
+Moyopy uses the Rust implementation's fixed absolute tolerance and has no
+`eps` argument. Choose units with typical lattice-vector lengths near one;
+reduction and its predicates are not invariant under arbitrary rescaling.
+Transformation coefficients must fit signed 32-bit integers; more extreme
+shears are unsupported. Invalid input or a reported reduction failure raises
+`ValueError`.
 The choice among equivalent reduced bases can differ from spglib, particularly
 on reduction boundaries; exact agreement with spglib's chosen cell is not
 guaranteed.
