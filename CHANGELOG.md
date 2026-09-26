@@ -17,6 +17,11 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 - Apply origin shifts when transforming cells, keeping conventional standardized magnetic cells consistent with their primitive counterparts and returned transformation fields.
 - Extend the `MoyoDataset` warning about omitted operations to explain that `orbits` uses primitive-cell symmetry and may differ from spglib's `equivalent_atoms`.
 
+### moyopy
+
+- Expose `niggli_reduce`, `delaunay_reduce`, and `minkowski_reduce`, returning the reduced row-wise basis and integer transformation matrix (#469, fixes #452).
+- Add `is_niggli_reduced` and `is_minkowski_reduced` predicates (#469).
+
 ## v0.19.0 - 2026-09-19
 
 ### moyo
