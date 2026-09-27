@@ -16,12 +16,22 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 - Fix the returned transformations in lattice-aware point-, space-, magnetic-space-, and layer-group identification by composing reduction and database matching in input-to-database order, including the origin shift (#473).
 - Compose triclinic and oblique-layer standardization reductions after the identified coordinate transformation. Preserve the input-basis origin shift during layer reduction (#473).
 - Verify Euclidean normalizer covariance under passive rebasing, including discrete and continuous translations and `preserve_chirality` for either input handedness (#473).
+- State the right-handed bulk standardized-cell and signed-transformation contracts in the public dataset fields (#473).
 
 ### moyopy
 
 - Make `niggli_reduce`, `delaunay_reduce`, and `minkowski_reduce` return right-handed bases for either input handedness. Reduction predicates continue to test geometric conditions independently of handedness (#473).
 - Document the handedness and input-to-database transformation contracts of lattice-aware identification, including the right-handed reference convention when `basis` is omitted. Add end-to-end regression coverage of all 11 enantiomorphic pairs, centered cells, and supercells without an external symmetry-library dependency (#473).
 - Cover passive rebasing of magnetic datasets for construct types I–IV, collinear/noncollinear and polar/axial moments, centered cells, and supercells. Regressions check priming, standardized cells, signed transformations, moments, and site mappings without an external symmetry-library dependency (#473).
+- Validate exact and perturbed rutile/rocksalt cells under passive rebasing, including Wyckoff coordinates, refinement, centering, and site mappings. Align runtime docstrings, type stubs, and migration guidance with the bulk handedness contract (#473).
+
+### moyoc
+
+- Document right-handed ordinary/magnetic standardized cells and signed coordinate transformations. Check enantiomorphic identification and transformation geometry across the C interface for both input handednesses and Cartesian orientation options (#473).
+
+### moyo-wasm
+
+- Document standardized-cell handedness and column-major matrix storage. Verify passive rebasing and physical mirrors through `analyze_cell`, including returned coordinate transformations (#473).
 
 ## v0.20.0 - 2026-09-26
 

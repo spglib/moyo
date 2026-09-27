@@ -288,3 +288,155 @@ def test_operations_only_retains_reference_orientation():
     reflected = SpaceGroup(rotations.tolist(), translations.tolist())
     assert reflected.number == 78
     assert round(np.linalg.det(reflected.linear)) == 1
+
+
+@pytest.mark.parametrize("number,hall_number,centering", [(136, 419, 1), (225, 523, 4)])
+@pytest.mark.parametrize("perturbed", [False, True], ids=["exact", "perturbed"])
+@pytest.mark.parametrize("rebase", REBASES)
+@pytest.mark.parametrize("rotate_basis", [False, True])
+def test_refined_wyckoff_handedness(
+    number, hall_number, centering, perturbed, rebase, rotate_basis
+):
+    if number == 136:
+        # Rutile: 2a + 4f in P4_2/mnm, including a free Wyckoff parameter.
+        u = 0.3
+        basis = np.diag([4.6, 4.6, 2.95])
+        positions = np.array(
+            [
+                [0, 0, 0],
+                [0.5, 0.5, 0.5],
+                [u, u, 0],
+                [-u, -u, 0],
+                [0.5 + u, 0.5 - u, 0.5],
+                [0.5 - u, 0.5 + u, 0.5],
+            ]
+        )
+        numbers = np.array([1, 1, 2, 2, 2, 2])
+        site_symmetries = {1: "m.mm", 2: "m.2m"}
+    else:
+        # Rocksalt: two special orbits and an explicit F-centered primitive map.
+        basis = np.eye(3) * 5.6
+        face_centers = np.array([[0, 0, 0], [0, 0.5, 0.5], [0.5, 0, 0.5], [0.5, 0.5, 0]])
+        positions = np.concatenate([face_centers, face_centers + 0.5])
+        numbers = np.repeat([1, 2], 4)
+        site_symmetries = {1: "m-3m", 2: "m-3m"}
+
+    to_primitive = np.array([[-1, 1, 1], [1, -1, 1], [1, 1, -1]]) if centering == 4 else np.eye(3)
+    primitive_positions = positions @ to_primitive.T
+    differences = primitive_positions[:, None] - primitive_positions
+    differences -= np.rint(differences)
+    same_primitive_site = (np.linalg.norm(differences, axis=-1) < 1e-8) & np.equal.outer(
+        numbers, numbers
+    )
+    if perturbed:
+        basis = (
+            np.array(
+                [[1.0007, 0.0002, -0.0003], [0.0004, 0.9995, 0.0001], [0.0002, -0.0003, 1.0003]]
+            )
+            @ basis
+        )
+        positions += 1e-5 * np.sin(np.arange(positions.size).reshape(positions.shape))
+    cartesian_rotation = np.array([[1, 0, 0], [0, 0.6, -0.8], [0, 0.8, 0.6]])
+    input_basis = cartesian_rotation @ basis @ rebase
+    input_positions = (positions - [0.13, 0.27, 0.19]) @ np.linalg.inv(rebase).T
+    dataset = MoyoDataset(
+        Cell(input_basis.T.tolist(), input_positions.tolist(), numbers.tolist()),
+        symprec=1e-2,
+        rotate_basis=rotate_basis,
+    )
+    assert (dataset.number, dataset.hall_number) == (number, hall_number)
+    np.testing.assert_array_equal(
+        np.equal.outer(dataset.orbits, dataset.orbits), np.equal.outer(numbers, numbers)
+    )
+    np.testing.assert_array_equal(
+        np.equal.outer(dataset.mapping_std_prim, dataset.mapping_std_prim), same_primitive_site
+    )
+    rotation = np.array(dataset.std_rotation_matrix)
+    np.testing.assert_allclose(rotation.T @ rotation, np.eye(3), atol=1e-8)
+    assert np.linalg.det(rotation) == pytest.approx(1)
+    if not rotate_basis:
+        np.testing.assert_allclose(rotation, np.eye(3), atol=1e-8)
+    for cell, linear in [
+        (dataset.std_cell, dataset.std_linear),
+        (dataset.prim_std_cell, dataset.prim_std_linear),
+    ]:
+        assert np.linalg.det(cell.basis) > 0
+        assert np.sign(np.linalg.det(linear)) == np.sign(np.linalg.det(input_basis))
+        stretch = rotation.T @ np.array(cell.basis).T @ np.linalg.inv(input_basis @ linear)
+        np.testing.assert_allclose(stretch, stretch.T, atol=1e-8)
+        assert np.all(np.linalg.eigvalsh(stretch) > 0)
+        if perturbed:
+            assert np.linalg.norm(stretch - np.eye(3)) > 1e-4
+        else:
+            np.testing.assert_allclose(stretch, np.eye(3), atol=1e-8)
+    np.testing.assert_allclose(
+        np.array(dataset.prim_std_cell.basis).T @ to_primitive,
+        np.array(dataset.std_cell.basis).T,
+        atol=1e-8,
+    )
+    mapped = np.array(dataset.prim_std_cell.positions)[dataset.mapping_std_prim]
+    selected = (input_positions - dataset.prim_std_origin_shift) @ np.linalg.inv(
+        dataset.prim_std_linear
+    ).T
+    residuals = mapped - selected
+    residuals -= np.rint(residuals)
+    residual_norms = np.linalg.norm(residuals @ np.array(dataset.prim_std_cell.basis), axis=1)
+    assert np.max(residual_norms) < (1e-3 if perturbed else 1e-8)
+    if perturbed:
+        assert np.max(residual_norms) > 1e-6
+    np.testing.assert_array_equal(
+        np.array(dataset.prim_std_cell.numbers)[dataset.mapping_std_prim], numbers
+    )
+
+    reference = operations_from_number(number)
+    rotations, translations = np.array(reference.rotations), np.array(reference.translations)
+    std_basis = np.array(dataset.std_cell.basis).T
+    metric = std_basis.T @ std_basis
+    std_positions, std_numbers = (
+        np.array(dataset.std_cell.positions),
+        np.array(dataset.std_cell.numbers),
+    )
+    for w, t in zip(rotations, translations):
+        np.testing.assert_allclose(w.T @ metric @ w, metric, atol=1e-8)
+        differences = (std_positions @ w.T + t)[:, None] - std_positions
+        differences -= np.rint(differences)
+        matches = (np.linalg.norm(differences @ std_basis.T, axis=-1) < 1e-8) & np.equal.outer(
+            std_numbers, std_numbers
+        )
+        assert np.all(matches.sum(axis=1) == 1)
+
+    for species in [1, 2]:
+        # Equivalent origin choices can exchange a/b (and f/g in rutile).
+        # Check each reported letter against its defining coordinates instead
+        # of assuming that the algorithm chooses the input origin.
+        letters = set(np.array(dataset.wyckoffs)[numbers == species])
+        assert len(letters) == 1
+        letter = letters.pop()
+        assert set(np.array(dataset.site_symmetry_symbols)[numbers == species]) == {
+            site_symmetries[species]
+        }
+        sites = std_positions[std_numbers == species]
+        assert len(sites) == np.count_nonzero(numbers == species)
+        if number == 225:
+            assert letter in {"a", "b"}
+            representatives = [np.full(3, 0 if letter == "a" else 0.5)]
+        elif species == 1:
+            assert letter in {"a", "b"}
+            representatives = [np.array([0, 0, 0 if letter == "a" else 0.5])]
+        else:
+            assert letter in {"f", "g"}
+            # 4f: (u,u,0); 4g: (u,-u,0), modulo lattice translations.
+            constraints = np.column_stack(
+                (sites[:, 2], sites[:, 0] - (1 if letter == "f" else -1) * sites[:, 1])
+            )
+            candidates = sites[np.all(np.abs(constraints - np.rint(constraints)) < 1e-8, axis=1)]
+            assert len(candidates) > 0
+            # Every site satisfying the defining coordinates must generate the orbit.
+            representatives = candidates
+        for representative in representatives:
+            orbit = rotations @ representative + translations
+            differences = orbit[:, None] - sites
+            differences -= np.rint(differences)
+            matches = np.linalg.norm(differences, axis=-1) < 1e-8
+            assert np.all(matches.sum(axis=1) == 1)
+            assert np.all(matches.sum(axis=0) == len(reference) // len(sites))

@@ -81,6 +81,8 @@ class MoyoDataset:
     def std_cell(self) -> Cell:
         """Standardized cell.
 
+        Its basis is right-handed for either input handedness and either ``rotate_basis`` value.
+
         The selected coordinate system, before lattice and position refinement, is::
 
             basis_selected = cell.basis.T @ std_linear
@@ -92,7 +94,10 @@ class MoyoDataset:
         """
     @property
     def std_linear(self) -> list[list[float]]:
-        """Linear part of the transformation from the input cell to ``std_cell``."""
+        """Linear part of the transformation from the input cell to ``std_cell``.
+
+        Its determinant has the same sign as the input basis determinant.
+        """
     @property
     def std_origin_shift(self) -> list[float]:
         """Origin shift of the transformation from the input cell to ``std_cell``."""
@@ -110,12 +115,17 @@ class MoyoDataset:
     def prim_std_cell(self) -> Cell:
         """Primitive standardized cell.
 
+        Its basis is right-handed for either input handedness and either ``rotate_basis`` value.
+
         Uses ``prim_std_linear`` and ``prim_std_origin_shift`` with the same
         pre-refinement coordinate convention as ``std_cell``.
         """
     @property
     def prim_std_linear(self) -> list[list[float]]:
-        """Linear part of the transformation from the input cell to ``prim_std_cell``."""
+        """Linear part of the transformation from the input cell to ``prim_std_cell``.
+
+        Its determinant has the same sign as the input basis determinant.
+        """
     @property
     def prim_std_origin_shift(self) -> list[float]:
         """Origin shift of the transformation from the input cell to ``prim_std_cell``."""
@@ -246,14 +256,19 @@ class MoyoCollinearMagneticDataset:
     def std_mag_cell(self) -> CollinearMagneticCell:
         """Standardized magnetic cell.
 
+        Its basis is right-handed for either input handedness and either ``rotate_basis`` value.
+
         Uses the same pre-refinement coordinate convention as ``MoyoDataset.std_cell``.
         Magnetic moments are rotated by ``std_rotation_matrix``, then averaged under
         the magnetic group using the refined lattice. Lattice stretch is not applied
-        to magnetic moments.
+        to magnetic moments. Passive basis changes leave Cartesian magnetic moments unchanged.
         """
     @property
     def std_linear(self) -> list[list[float]]:
-        """Linear part of the transformation from the input magnetic cell to ``std_mag_cell``."""
+        """Linear part of the transformation from the input magnetic cell to ``std_mag_cell``.
+
+        Its determinant has the same sign as the input basis determinant.
+        """
     @property
     def std_origin_shift(self) -> list[float]:
         """Origin shift of the transformation from the input magnetic cell to ``std_mag_cell``."""
@@ -268,6 +283,8 @@ class MoyoCollinearMagneticDataset:
     def prim_std_mag_cell(self) -> CollinearMagneticCell:
         """Primitive standardized magnetic cell.
 
+        Its basis is right-handed for either input handedness and either ``rotate_basis`` value.
+
         Uses ``prim_std_linear`` and ``prim_std_origin_shift`` with the same
         pre-refinement coordinate convention as ``std_mag_cell``.
         """
@@ -275,6 +292,8 @@ class MoyoCollinearMagneticDataset:
     def prim_std_linear(self) -> list[list[float]]:
         """Linear part of the transformation from the input magnetic cell to
         ``prim_std_mag_cell``.
+
+        Its determinant has the same sign as the input basis determinant.
         """
     @property
     def prim_std_origin_shift(self) -> list[float]:
@@ -472,14 +491,19 @@ class MoyoNonCollinearMagneticDataset:
     def std_mag_cell(self) -> NonCollinearMagneticCell:
         """Standardized magnetic cell.
 
+        Its basis is right-handed for either input handedness and either ``rotate_basis`` value.
+
         Uses the same pre-refinement coordinate convention as ``MoyoDataset.std_cell``.
         Magnetic moments are rotated by ``std_rotation_matrix``, then averaged under
         the magnetic group using the refined lattice. Lattice stretch is not applied
-        to magnetic moments.
+        to magnetic moments. Passive basis changes leave Cartesian magnetic moments unchanged.
         """
     @property
     def std_linear(self) -> list[list[float]]:
-        """Linear part of the transformation from the input magnetic cell to ``std_mag_cell``."""
+        """Linear part of the transformation from the input magnetic cell to ``std_mag_cell``.
+
+        Its determinant has the same sign as the input basis determinant.
+        """
     @property
     def std_origin_shift(self) -> list[float]:
         """Origin shift of the transformation from the input magnetic cell to ``std_mag_cell``."""
@@ -494,6 +518,8 @@ class MoyoNonCollinearMagneticDataset:
     def prim_std_mag_cell(self) -> NonCollinearMagneticCell:
         """Primitive standardized magnetic cell.
 
+        Its basis is right-handed for either input handedness and either ``rotate_basis`` value.
+
         Uses ``prim_std_linear`` and ``prim_std_origin_shift`` with the same
         pre-refinement coordinate convention as ``std_mag_cell``.
         """
@@ -501,6 +527,8 @@ class MoyoNonCollinearMagneticDataset:
     def prim_std_linear(self) -> list[list[float]]:
         """Linear part of the transformation from the input magnetic cell to
         ``prim_std_mag_cell``.
+
+        Its determinant has the same sign as the input basis determinant.
         """
     @property
     def prim_std_origin_shift(self) -> list[float]:

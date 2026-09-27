@@ -103,17 +103,20 @@ impl PyMoyoCollinearMagneticDataset {
     // Standardized magnetic cell
     // ------------------------------------------------------------------------
     /// Standardized magnetic cell.
+    /// Its basis is right-handed for either input handedness and either `rotate_basis` value.
     ///
     /// Uses the same pre-refinement coordinate convention as ``MoyoDataset.std_cell``.
     /// Magnetic moments are rotated by ``std_rotation_matrix``, then averaged under
     /// the magnetic group using the refined lattice. Lattice stretch is not applied
     /// to magnetic moments.
+    /// Passive basis changes leave Cartesian magnetic moments unchanged.
     #[getter]
     pub fn std_mag_cell(&self) -> PyCollinearMagneticCell {
         self.0.std_mag_cell.clone().into()
     }
 
     /// Linear part of the transformation from the input magnetic cell to ``std_mag_cell``.
+    /// Its determinant has the same sign as the input basis determinant.
     #[getter]
     pub fn std_linear(&self) -> [[f64; 3]; 3] {
         self.0.std_linear_as_array()
@@ -136,12 +139,14 @@ impl PyMoyoCollinearMagneticDataset {
     // Primitive standardized magnetic cell
     // ------------------------------------------------------------------------
     /// Primitive standardized magnetic cell.
+    /// Its basis is right-handed for either input handedness and either `rotate_basis` value.
     #[getter]
     pub fn prim_std_mag_cell(&self) -> PyCollinearMagneticCell {
         self.0.prim_std_mag_cell.clone().into()
     }
 
     /// Linear part of the transformation from the input magnetic cell to ``prim_std_mag_cell``.
+    /// Its determinant has the same sign as the input basis determinant.
     #[getter]
     pub fn prim_std_linear(&self) -> [[f64; 3]; 3] {
         self.0.prim_std_linear_as_array()
@@ -323,17 +328,20 @@ impl PyMoyoNonCollinearMagneticDataset {
     // Standardized magnetic cell
     // ------------------------------------------------------------------------
     /// Standardized magnetic cell.
+    /// Its basis is right-handed for either input handedness and either `rotate_basis` value.
     ///
     /// Uses the same pre-refinement coordinate convention as ``MoyoDataset.std_cell``.
     /// Magnetic moments are rotated by ``std_rotation_matrix``, then averaged under
     /// the magnetic group using the refined lattice. Lattice stretch is not applied
     /// to magnetic moments.
+    /// Passive basis changes leave Cartesian magnetic moments unchanged.
     #[getter]
     pub fn std_mag_cell(&self) -> PyNonCollinearMagneticCell {
         self.0.std_mag_cell.clone().into()
     }
 
     /// Linear part of the transformation from the input magnetic cell to ``std_mag_cell``.
+    /// Its determinant has the same sign as the input basis determinant.
     #[getter]
     pub fn std_linear(&self) -> [[f64; 3]; 3] {
         self.0.std_linear_as_array()
@@ -356,12 +364,14 @@ impl PyMoyoNonCollinearMagneticDataset {
     // Primitive standardized magnetic cell
     // ------------------------------------------------------------------------
     /// Primitive standardized magnetic cell.
+    /// Its basis is right-handed for either input handedness and either `rotate_basis` value.
     #[getter]
     pub fn prim_std_mag_cell(&self) -> PyNonCollinearMagneticCell {
         self.0.prim_std_mag_cell.clone().into()
     }
 
     /// Linear part of the transformation from the input magnetic cell to ``prim_std_mag_cell``.
+    /// Its determinant has the same sign as the input basis determinant.
     #[getter]
     pub fn prim_std_linear(&self) -> [[f64; 3]; 3] {
         self.0.prim_std_linear_as_array()
