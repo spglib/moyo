@@ -4,6 +4,8 @@ use super::cycle_checker::CycleChecker;
 
 const EPS: f64 = 1e-8;
 
+/// Return a right-handed Niggli-reduced column-wise basis and its unimodular
+/// transformation.
 pub fn niggli_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
     let mut reduced_basis = *basis;
     let mut trans_mat = Matrix3::<i32>::identity();
@@ -38,8 +40,8 @@ pub fn niggli_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
         }
     }
 
-    // Preserve parity
-    if trans_mat.map(|e| e as f64).determinant() < 0. {
+    // Normalize handedness without changing the reduced metric.
+    if reduced_basis.determinant() < 0. {
         reduced_basis *= -1.;
         trans_mat *= -1;
     }

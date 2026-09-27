@@ -258,6 +258,10 @@ reduced_basis, transformation = niggli_reduce(basis.tolist())
 assert np.allclose(reduced_basis, np.array(transformation).T @ basis)
 ```
 
+The returned basis is always right-handed. The transformation has determinant
+`+1` for right-handed input and `-1` for left-handed input. To express the same
+structure in that basis, also transform fractional coordinates by its inverse.
+
 Moyopy uses the Rust implementation's fixed absolute tolerance and has no
 `eps` argument. Choose units with typical lattice-vector lengths near one;
 reduction and its predicates are not invariant under arbitrary rescaling.

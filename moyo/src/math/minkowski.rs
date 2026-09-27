@@ -10,19 +10,17 @@ use super::elementary::swapping_column_matrix;
 
 const EPS: f64 = 1e-8;
 
-/// basis is column-wise
-/// If the basis is already Minkowski reduced, return the input basis and identity matrix
+/// Return a right-handed Minkowski-reduced column-wise basis and its unimodular
+/// transformation. An already reduced, right-handed basis returns unchanged.
 pub fn minkowski_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
-    if is_minkowski_reduced(basis) {
-        return (*basis, Matrix3::<i32>::identity());
-    }
-
     let mut reduced_basis = *basis;
     let mut trans_mat = Matrix3::<i32>::identity();
-    minkowski_reduce_greedy(U3, &mut reduced_basis, &mut trans_mat, 3);
+    if !is_minkowski_reduced(basis) {
+        minkowski_reduce_greedy(U3, &mut reduced_basis, &mut trans_mat, 3);
+    }
 
-    // Preserve parity
-    if trans_mat.map(|e| e as f64).determinant() < 0. {
+    // Normalize handedness without changing the reduced metric.
+    if reduced_basis.determinant() < 0. {
         reduced_basis *= -1.;
         trans_mat *= -1;
     }
@@ -276,7 +274,7 @@ mod tests {
         let (reduced_basis, _) = minkowski_reduce(&basis);
         assert_relative_eq!(
             reduced_basis,
-            Matrix3::<f64>::from_columns(&[
+            -Matrix3::<f64>::from_columns(&[
                 Vector3::new(0.0, 1.0, 0.0),
                 Vector3::new(1.0, 0.0, 0.0),
                 Vector3::new(0.0, 0.0, 1.0),

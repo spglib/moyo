@@ -28,6 +28,14 @@ transformation type used across all group families.
 Reduce a lattice given by three row-wise basis vectors. Each reduction returns
 `(reduced_basis, transformation)` as nested lists, with an integer transformation
 matrix satisfying `reduced_basis = transformation.T @ basis` in NumPy notation.
+The reduced basis is always right-handed. The transformation has determinant
+`+1` for right-handed input and `-1` for left-handed input, preserving the lattice
+and its absolute volume. Fractional coordinates must be transformed by the inverse
+matrix to describe the same Cartesian positions in the reduced basis.
+
+The `is_niggli_reduced` and `is_minkowski_reduced` predicates test geometric
+reduction conditions independently of handedness. Reducing an already reduced
+left-handed basis still changes its orientation.
 
 These functions use the Rust implementations' fixed absolute tolerances. Choose
 units with typical lattice-vector lengths near one; changing the length scale

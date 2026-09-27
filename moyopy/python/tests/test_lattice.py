@@ -25,7 +25,12 @@ def test_niggli_triclinic_reference():
     "basis",
     [
         pytest.param(np.eye(3), id="cubic"),
+        pytest.param(np.diag([1.0, 1.0, -1.0]), id="left-handed-cubic"),
         pytest.param(np.diag([1.0, 2.0, 10.0]), id="elongated"),
+        pytest.param(np.diag([1.0, 2.0, -10.0]), id="left-handed-elongated"),
+        pytest.param(
+            [[0.0, 1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]], id="odd-axis-permutation"
+        ),
         pytest.param([[4.0, 0.0, 0.0], [3.0, 2.0, 0.0], [1.0, 1.0, 3.0]], id="skew"),
         pytest.param([[4.0, 0.0, 0.0], [3.0, 2.0, 0.0], [1.0, 1.0, -3.0]], id="left-handed"),
     ],
@@ -42,8 +47,9 @@ def test_lattice_reduction(reduce, basis):
     reduced = np.array(reduced)
     transformation = np.array(transformation)
     np.testing.assert_allclose(reduced, transformation.T @ basis, atol=1e-12)
-    assert round(np.linalg.det(transformation)) == 1
-    np.testing.assert_allclose(np.linalg.det(reduced), np.linalg.det(basis))
+    assert round(np.linalg.det(transformation)) == np.sign(np.linalg.det(basis))
+    assert np.linalg.det(reduced) > 0
+    np.testing.assert_allclose(np.linalg.det(reduced), abs(np.linalg.det(basis)))
     np.testing.assert_array_equal(input_basis, basis)
 
     # Every reduction produces a Minkowski-reduced basis in three dimensions.
@@ -56,14 +62,27 @@ def test_lattice_reduction(reduce, basis):
     ("reduce", "is_reduced"),
     [(niggli_reduce, is_niggli_reduced), (minkowski_reduce, is_minkowski_reduced)],
 )
-def test_reduction_predicates_and_idempotence(reduce, is_reduced):
-    basis = [[1.0, 0.0, 0.0], [5.0, 2.0, 0.0], [0.0, 0.0, 3.0]]
+@pytest.mark.parametrize("handedness", [1, -1])
+def test_reduction_predicates_and_idempotence(reduce, is_reduced, handedness):
+    basis = [[1.0, 0.0, 0.0], [5.0, 2.0, 0.0], [0.0, 0.0, handedness * 3.0]]
     assert not is_reduced(basis)
     reduced, _ = reduce(basis)
     assert is_reduced(reduced)
     twice_reduced, transformation = reduce(reduced)
     np.testing.assert_allclose(twice_reduced, reduced)
     np.testing.assert_array_equal(transformation, np.eye(3, dtype=int))
+
+
+@pytest.mark.parametrize(
+    ("reduce", "is_reduced"),
+    [(niggli_reduce, is_niggli_reduced), (minkowski_reduce, is_minkowski_reduced)],
+)
+def test_already_reduced_left_handed_basis(reduce, is_reduced):
+    basis = np.diag([1.0, 2.0, -3.0])
+    assert is_reduced(basis.tolist())
+    reduced, transformation = reduce(basis.tolist())
+    np.testing.assert_array_equal(reduced, -basis)
+    np.testing.assert_array_equal(transformation, -np.eye(3, dtype=int))
 
 
 @pytest.mark.parametrize("function", LATTICE_FUNCTIONS)

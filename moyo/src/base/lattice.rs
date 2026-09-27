@@ -10,6 +10,10 @@ use super::error::MoyoError;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 /// Representing basis vectors of a lattice
+///
+/// Three-dimensional reductions return a right-handed basis `B = self.basis * T`.
+/// The integer transformation `T` is unimodular: its determinant is +1 for
+/// right-handed input and -1 for left-handed input. Absolute volume is preserved.
 pub struct Lattice {
     /// basis.column(i) is the i-th basis vector
     pub basis: Matrix3<f64>,
@@ -32,7 +36,7 @@ impl Lattice {
         ]))
     }
 
-    /// Return Minkowski reduced lattice and transformation matrix to it
+    /// Return a right-handed Minkowski reduced lattice and transformation matrix to it.
     pub fn minkowski_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
         let (reduced_basis, trans_mat) = minkowski_reduce(&self.basis);
         let reduced_lattice = Self {
@@ -46,12 +50,12 @@ impl Lattice {
         Ok((reduced_lattice, trans_mat))
     }
 
-    /// Return true if basis vectors are Minkowski reduced
+    /// Return true if basis vectors are Minkowski reduced, independently of handedness.
     pub fn is_minkowski_reduced(&self) -> bool {
         is_minkowski_reduced(&self.basis)
     }
 
-    /// Return Niggli reduced lattice and transformation matrix to it
+    /// Return a right-handed Niggli reduced lattice and transformation matrix to it.
     pub fn niggli_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
         let (reduced_lattice, trans_mat) = self.unchecked_niggli_reduce();
 
@@ -62,7 +66,8 @@ impl Lattice {
         Ok((reduced_lattice, trans_mat))
     }
 
-    /// Return Niggli reduced lattice and transformation matrix to it without checking reduction condition
+    /// Return a right-handed Niggli reduced lattice and transformation matrix to it
+    /// without checking the reduction condition.
     pub fn unchecked_niggli_reduce(&self) -> (Self, Matrix3<i32>) {
         let (reduced_basis, trans_mat) = niggli_reduce(&self.basis);
         let reduced_lattice = Self {
@@ -71,12 +76,12 @@ impl Lattice {
         (reduced_lattice, trans_mat)
     }
 
-    /// Return true if basis vectors are Niggli reduced
+    /// Return true if basis vectors are Niggli reduced, independently of handedness.
     pub fn is_niggli_reduced(&self) -> bool {
         is_niggli_reduced(&self.basis)
     }
 
-    /// Return Delaunay reduced lattice and transformation matrix to it
+    /// Return a right-handed Delaunay reduced lattice and transformation matrix to it.
     pub fn delaunay_reduce(&self) -> Result<(Self, Matrix3<i32>), MoyoError> {
         let (reduced_basis, trans_mat) = delaunay_reduce(&self.basis);
         let reduced_lattice = Self {
@@ -135,9 +140,62 @@ impl Lattice {
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::matrix;
+    use nalgebra::{Matrix3, matrix, vector};
+    use rstest::rstest;
 
-    use super::Lattice;
+    use super::{Lattice, MoyoError};
+
+    #[rstest]
+    #[case::niggli(Lattice::niggli_reduce, true)]
+    #[case::unchecked_niggli(|lattice: &Lattice| Ok(lattice.unchecked_niggli_reduce()), true)]
+    #[case::delaunay(Lattice::delaunay_reduce, false)]
+    #[case::minkowski(Lattice::minkowski_reduce, false)]
+    fn test_reduction_handedness(
+        #[case] reduce: fn(&Lattice) -> Result<(Lattice, Matrix3<i32>), MoyoError>,
+        #[case] niggli: bool,
+        #[values(1.0, -1.0)] handedness: f64,
+    ) {
+        for row_basis in [
+            Matrix3::identity(),
+            Matrix3::from_diagonal(&vector![1.0, 2.0, 10.0]),
+            matrix![4.0, 0.0, 0.0; 3.0, 2.0, 0.0; 1.0, 1.0, 3.0],
+        ] {
+            let lattice =
+                Lattice::new(Matrix3::from_diagonal(&vector![1.0, 1.0, handedness]) * row_basis);
+            let (reduced, transformation) = reduce(&lattice).unwrap();
+            assert_relative_eq!(
+                reduced.basis,
+                lattice.basis * transformation.map(f64::from),
+                epsilon = 1e-12
+            );
+            let determinant = transformation
+                .column(0)
+                .cross(&transformation.column(1))
+                .dot(&transformation.column(2));
+            assert_eq!(determinant, handedness as i32);
+            assert!(reduced.basis.determinant() > 0.0);
+            assert_relative_eq!(reduced.volume(), lattice.volume(), epsilon = 1e-12);
+            assert!(reduced.is_minkowski_reduced());
+            if niggli {
+                assert!(reduced.is_niggli_reduced());
+            }
+        }
+    }
+
+    #[test]
+    fn test_left_handed_reduced_predicates_and_idempotence() {
+        let lattice = Lattice::new(Matrix3::from_diagonal(&vector![1.0, 2.0, -3.0]));
+        assert!(lattice.is_niggli_reduced());
+        assert!(lattice.is_minkowski_reduced());
+        for reduce in [Lattice::niggli_reduce, Lattice::minkowski_reduce] {
+            let (reduced, transformation) = reduce(&lattice).unwrap();
+            assert_relative_eq!(reduced.basis, -lattice.basis);
+            assert_eq!(transformation, -Matrix3::<i32>::identity());
+            let (twice_reduced, second_transformation) = reduce(&reduced).unwrap();
+            assert_relative_eq!(twice_reduced.basis, reduced.basis);
+            assert_eq!(second_transformation, Matrix3::<i32>::identity());
+        }
+    }
 
     #[test]
     fn test_metric_tensor() {

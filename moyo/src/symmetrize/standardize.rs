@@ -373,17 +373,26 @@ mod tests {
         let centering = hall_symbol_entry(hall_number).unwrap().centering;
         let rotation = Rotation3::from_euler_angles(0.37, -0.21, 0.13).into_inner();
         for handedness in [1.0, -1.0] {
+            // Rebase the same crystal, including its supplied identification.
+            let rebase = UnimodularTransformation::from_linear(Matrix3::from_diagonal(&vector![
+                1,
+                1,
+                handedness as i32
+            ]));
+            let operations = rebase.transform_operations(&operations);
+            let space_group = SpaceGroup::from_hall_number_and_transformation(
+                hall_number,
+                rebase.inverse() * space_group.transformation.clone(),
+            )
+            .unwrap();
             for perturbed in [false, true] {
-                let mut input = exact.clone();
+                let mut input = rebase.transform_cell(&exact);
                 let distortion = if perturbed {
                     matrix![1.0007, 0.0002, -0.0003; 0.0004, 0.9995, 0.0001; 0.0002, -0.0003, 1.0003]
                 } else {
                     Matrix3::identity()
                 };
-                input.lattice.basis = rotation
-                    * Matrix3::from_diagonal(&vector![1.0, 1.0, handedness])
-                    * distortion
-                    * input.lattice.basis;
+                input.lattice.basis = rotation * distortion * input.lattice.basis;
                 if perturbed {
                     for (i, position) in input.positions.iter_mut().enumerate() {
                         *position += 1e-5
@@ -413,10 +422,8 @@ mod tests {
                         standardized.cell.lattice.basis,
                         epsilon = 1e-12
                     );
-                    assert_eq!(
-                        standardized.cell.lattice.basis.determinant().signum(),
-                        handedness
-                    );
+                    assert!(standardized.cell.lattice.basis.determinant() > 0.0);
+                    assert!(standardized.prim_cell.lattice.basis.determinant() > 0.0);
                     let mut copies = vec![0; input.num_atoms()];
                     for (j, &i) in standardized.site_mapping.iter().enumerate() {
                         copies[i] += 1;
