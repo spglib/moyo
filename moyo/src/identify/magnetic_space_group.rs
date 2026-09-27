@@ -27,9 +27,7 @@ impl MagneticSpaceGroup {
     /// Identify the magnetic space group type from the primitive magnetic operations.
     /// epsilon: tolerance for comparing translation parts
     ///
-    /// The input primitive magnetic operations must use a reduced basis with a
-    /// right-handed reference orientation. Use [`Self::from_lattice`] when the
-    /// input lattice is available.
+    /// Be careful that the input primitive magnetic operations should be in a reduced basis.
     pub fn new(prim_mag_operations: &MagneticOperations, epsilon: f64) -> Result<Self, MoyoError> {
         let (ref_spg, construct_type) =
             identify_reference_space_group(prim_mag_operations, epsilon)
@@ -144,12 +142,6 @@ impl MagneticSpaceGroup {
         Err(MoyoError::MagneticSpaceGroupTypeIdentificationError)
     }
 
-    /// Identify primitive magnetic operations expressed in either handedness.
-    ///
-    /// The returned `(P, p)` maps the original input to the database primitive
-    /// setting: `A_db = A_input P` and `x_db = P^-1 (x_input - p)`.
-    /// Its determinant has the sign of the input basis determinant. A passive
-    /// basis change leaves time-reversal flags unchanged.
     pub fn from_lattice(
         lattice: &Lattice,
         prim_mag_operations: &MagneticOperations,

@@ -1956,7 +1956,6 @@ dev = [
     { name = "pymatgen", version = "2026.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pytest" },
     { name = "seaborn" },
-    { name = "spglib" },
     { name = "zensical" },
 ]
 docs = [
@@ -1975,7 +1974,6 @@ testing = [
     { name = "numpy", version = "2.4.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "prek" },
     { name = "pytest" },
-    { name = "spglib" },
 ]
 
 [package.dev-dependencies]
@@ -2004,7 +2002,6 @@ requires-dist = [
     { name = "pymatgen", marker = "extra == 'interface'" },
     { name = "pytest", marker = "extra == 'testing'" },
     { name = "seaborn", marker = "extra == 'dev'" },
-    { name = "spglib", marker = "extra == 'testing'", specifier = ">=2.7" },
     { name = "typing-extensions" },
     { name = "zensical", marker = "extra == 'docs'", specifier = ">=0.0.46" },
 ]

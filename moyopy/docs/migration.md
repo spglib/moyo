@@ -129,29 +129,6 @@ An ITA number, `number`, can be obtained from `HallSymbolEntry(hall_number).numb
 Replace `spglib.get_spacegroup_type_from_symmetry(rotations, translations, lattice)` it with `SpaceGroup(prim_rotations, prim_translations, basis=lattice)`.
 Be careful that `SpaceGroup` works only with symmetry operations in primitive.
 
-Pass `basis` to identify a physical space group independently of the primitive
-basis's handedness. `SpaceGroup`, `PointGroup`, and `MagneticSpaceGroup` reduce
-the supplied lattice to a right-handed basis before matching. Their returned
-transformations refer to the original input basis. For `SpaceGroup` and
-`MagneticSpaceGroup`, writing `P = group.linear` and `p = group.origin_shift`,
-the database primitive coordinates satisfy:
-
-```text
-A_db = A_input @ P
-x_db = inv(P) @ (x_input - p)
-```
-
-Here `A_input` is the column-wise basis (`np.array(basis).T`). The determinant
-of `P` is -1 for left-handed input and +1 for right-handed input. This is a
-passive coordinate change, so it preserves the physical crystal and its
-enantiomorphic space-group type.
-
-When `basis` is omitted, operations must already use a reduced primitive basis
-with a right-handed reference orientation. Only proper transformations are
-used for matching; the operations alone cannot reveal the actual Cartesian
-handedness. Reflecting a crystal physically still exchanges the two members of
-an enantiomorphic pair.
-
 ## Magnetic symmetry
 
 ### Magnetic cell representation

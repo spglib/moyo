@@ -18,7 +18,6 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 ### moyopy
 
 - Make `niggli_reduce`, `delaunay_reduce`, and `minkowski_reduce` return right-handed bases for either input handedness. Reduction predicates continue to test geometric conditions independently of handedness (#473).
-- Fix input-to-database transformations returned by `PointGroup`, `SpaceGroup`, `MagneticSpaceGroup`, and `LayerGroup` when `basis` is supplied. Document the right-handed reference convention when a bulk identification call omits `basis`.
 
 ## v0.20.0 - 2026-09-26
 
