@@ -128,10 +128,7 @@ fn standardize_triclinic_cell(
 ) -> UnimodularTransformation {
     let lattice_prim_std_tmp = transformation_to_prim_std.transform_lattice(lattice);
     let (_, niggli_linear) = lattice_prim_std_tmp.unchecked_niggli_reduce();
-    UnimodularTransformation::new(
-        niggli_linear * transformation_to_prim_std.linear(),
-        *transformation_to_prim_std.origin_shift(),
-    )
+    transformation_to_prim_std.clone() * UnimodularTransformation::from_linear(niggli_linear)
 }
 
 #[cfg(test)]
@@ -142,6 +139,54 @@ mod tests {
     use crate::base::{Lattice, UnimodularTransformation};
     use crate::data::{Centering, HallSymbol};
     use crate::identify::SpaceGroup;
+
+    #[rstest::rstest]
+    fn test_triclinic_reduction_after_identification(#[values(1, -1)] handedness: i32) {
+        // The identified P-1 basis still needs a reduction that does not commute
+        // with the input-to-identified shear.
+        let identified_lattice = Lattice::new(matrix![
+            4.0, 0.0, 0.0;
+            3.0, 2.0, 0.0;
+            0.2, 0.1, 5.0;
+        ]);
+        let to_identified = UnimodularTransformation::new(
+            matrix![handedness, 1, 0; 0, 1, 1; 0, 0, 1],
+            vector![0.17, 0.23, 0.31],
+        );
+        let lattice = to_identified
+            .inverse()
+            .transform_lattice(&identified_lattice);
+        let space_group =
+            SpaceGroup::from_hall_number_and_transformation(2, to_identified.clone()).unwrap();
+        let operations = to_identified.inverse().transform_operations(
+            &HallSymbol::from_hall_number(2)
+                .unwrap()
+                .primitive_traverse(),
+        );
+
+        let selected = ConventionalCoordinateSystem::new(&lattice, &space_group, 1e-8).unwrap();
+        let reduced = selected.prim_transformation.transform_lattice(&lattice);
+        assert!(reduced.is_niggli_reduced());
+        assert!(reduced.basis.determinant() > 0.0);
+        assert_relative_eq!(reduced.volume(), lattice.volume(), epsilon = 1e-10);
+        assert_relative_eq!(
+            selected.prim_transformation.origin_shift(),
+            to_identified.origin_shift(),
+            epsilon = 1e-12
+        );
+        for operation in selected
+            .prim_transformation
+            .transform_operations(&operations)
+        {
+            let target = selected
+                .prim_std_operations
+                .iter()
+                .find(|target| target.rotation == operation.rotation)
+                .unwrap();
+            let delta = operation.translation - target.translation;
+            assert!((delta - delta.map(f64::round)).norm() < 1e-12);
+        }
+    }
 
     #[test]
     fn test_imma_basis_and_origin_selection() {
