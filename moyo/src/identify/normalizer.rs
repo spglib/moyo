@@ -7,8 +7,8 @@ use super::point_group::{iter_trans_mat_basis, iter_unimodular_trans_mat};
 use super::rotation_type::identify_rotation_type;
 use super::space_group::match_origin_shift;
 use crate::base::{
-    AngleTolerance, EPS, Lattice, MoyoError, Operation, Operations, Rotation, Translation,
-    UnimodularTransformation, project_rotations,
+    AngleTolerance, EPS, Lattice, MoyoError, Operation, Operations, ProperUnimodularTransformation,
+    Rotation, Translation, UnimodularTransformation, project_rotations,
 };
 use crate::math::SNF;
 use crate::search::search_bravais_group;
@@ -23,11 +23,12 @@ use crate::search::search_bravais_group;
 /// Be careful that the input primitive operations should be in a reduced basis.
 /// This function relies on the bounded search in `iter_unimodular_trans_mat`.
 /// For a non-reduced basis, the output is only best effort and may not be exhaustive.
+/// Only orientation-preserving conjugators (determinant +1) are returned.
 pub fn integral_normalizer(
     prim_operations: &Operations,
     prim_generators: &Operations,
     epsilon: f64,
-) -> Vec<UnimodularTransformation> {
+) -> Vec<ProperUnimodularTransformation> {
     let prim_rotations = project_rotations(prim_operations);
     let prim_rotation_generators = project_rotations(prim_generators);
 
@@ -44,7 +45,10 @@ pub fn integral_normalizer(
             if let Some(origin_shift) =
                 match_origin_shift(prim_operations, &prim_trans_mat, prim_generators, epsilon)
             {
-                conjugators.push(UnimodularTransformation::new(prim_trans_mat, origin_shift));
+                conjugators.push(ProperUnimodularTransformation::new(
+                    prim_trans_mat,
+                    origin_shift,
+                ));
                 break;
             }
         }
@@ -151,7 +155,7 @@ impl Normalizer {
         let coset_representatives = coset_representatives_reduced
             .iter()
             .map(|cr| {
-                let op = Operation::new(cr.linear, cr.origin_shift);
+                let op = Operation::new(*cr.linear(), cr.origin_shift);
                 let mapped = to_input.transform_operation(&op);
                 UnimodularTransformation::new(
                     mapped.rotation,
@@ -206,7 +210,7 @@ impl Normalizer {
         // the remaining representatives is preserved).
         let mut coset_representatives = self.coset_representatives.clone();
         coset_representatives.sort_by_key(|cr| {
-            let is_identity = cr.linear == Matrix3::<i32>::identity()
+            let is_identity = *cr.linear() == Matrix3::<i32>::identity()
                 && cr
                     .origin_shift
                     .iter()
@@ -340,7 +344,7 @@ mod tests {
         .unwrap();
         let rotations: HashSet<Rotation> = prim_operations.iter().map(|op| op.rotation).collect();
         for cr in &normalizer.coset_representatives {
-            let p = cr.linear;
+            let p = *cr.linear();
             let p_f = p.map(|e| e as f64);
             let p_inv = p_f.try_inverse().unwrap().map(|e| e.round() as i32);
             let conjugated: HashSet<Rotation> = rotations.iter().map(|w| p_inv * w * p).collect();
@@ -353,7 +357,7 @@ mod tests {
         // Identity is always a coset rep.
         assert!(
             normalizer.coset_representatives.iter().any(|cr| {
-                cr.linear == UnimodularLinear::identity()
+                *cr.linear() == UnimodularLinear::identity()
                     && cr
                         .origin_shift
                         .iter()
@@ -480,7 +484,7 @@ mod tests {
         assert!(preserving.coset_representatives.len() < full.coset_representatives.len());
         // All preserving reps must have det = +1.
         for cr in &preserving.coset_representatives {
-            let det = cr.linear.map(|e| e as f64).determinant().round() as i32;
+            let det = cr.linear().map(|e| e as f64).determinant().round() as i32;
             assert_eq!(det, 1);
         }
     }
@@ -602,7 +606,7 @@ mod tests {
 
         // Index 0 is the identity coset representative composed with the zero
         // translation (the unchanged setting).
-        assert_eq!(operations[0].linear, UnimodularLinear::identity());
+        assert_eq!(*operations[0].linear(), UnimodularLinear::identity());
         assert!(
             operations[0]
                 .origin_shift

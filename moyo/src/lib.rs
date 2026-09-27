@@ -408,7 +408,7 @@ impl MoyoDataset {
             .iter()
             .map(|op| {
                 prim_to_conv
-                    .transform_operation(&Operation::new(op.linear, op.origin_shift))
+                    .transform_operation(&Operation::new(*op.linear(), op.origin_shift))
                     .map(|conv| UnimodularTransformation::new(conv.rotation, conv.translation))
                     .ok_or(MoyoError::WyckoffPositionAssignmentError)
             })

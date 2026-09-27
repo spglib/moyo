@@ -6,8 +6,8 @@ use serde::Serialize;
 
 use super::point_group::PointGroup;
 use crate::base::{
-    Lattice, MoyoError, Operations, OriginShift, UnimodularLinear, UnimodularTransformation,
-    project_rotations,
+    Lattice, MoyoError, Operations, OriginShift, ProperUnimodularTransformation, UnimodularLinear,
+    UnimodularTransformation, project_rotations,
 };
 use crate::data::{
     ArithmeticNumber, GeometricCrystalClass, HallNumber, HallSymbol, Number,
@@ -62,7 +62,11 @@ impl SpaceGroup {
                     return Ok(Self {
                         number: entry.number,
                         hall_number,
-                        transformation: UnimodularTransformation::new(trans_mat, origin_shift),
+                        transformation: ProperUnimodularTransformation::new(
+                            trans_mat,
+                            origin_shift,
+                        )
+                        .into(),
                     });
                 }
             }

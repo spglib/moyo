@@ -63,7 +63,7 @@ impl ConventionalCoordinateSystem {
         // standardized cell is always related to the conventional one by the fixed
         // centering matrix `entry.centering.linear()`.
         let conv_lattice_tmp = Transformation::from_linear(
-            space_group.transformation.linear * entry.centering.linear(),
+            space_group.transformation.linear() * entry.centering.linear(),
         )
         .transform_lattice(prim_lattice);
         let (prim_transformation, conv_trans_linear) = match lattice_system {
@@ -106,7 +106,7 @@ impl ConventionalCoordinateSystem {
 
         // prim_transformation * (conv_trans_linear, 0)
         let transformation = Transformation::new(
-            prim_transformation.linear * conv_trans_linear,
+            prim_transformation.linear() * conv_trans_linear,
             prim_transformation.origin_shift,
         );
 
@@ -129,7 +129,7 @@ fn standardize_triclinic_cell(
     let lattice_prim_std_tmp = transformation_to_prim_std.transform_lattice(lattice);
     let (_, niggli_linear) = lattice_prim_std_tmp.unchecked_niggli_reduce();
     UnimodularTransformation::new(
-        niggli_linear * transformation_to_prim_std.linear,
+        niggli_linear * transformation_to_prim_std.linear(),
         transformation_to_prim_std.origin_shift,
     )
 }
@@ -184,7 +184,7 @@ mod tests {
         assert_eq!(selected.conv_trans_linear, Centering::I.linear());
         assert_eq!(
             selected.transformation.linear,
-            selected.prim_transformation.linear * selected.conv_trans_linear
+            selected.prim_transformation.linear() * selected.conv_trans_linear
         );
         assert_relative_eq!(
             selected.transformation.origin_shift,

@@ -153,7 +153,7 @@ pub(crate) fn wyckoff_positions_under_normalizer(
 
     let mut result = Vec::with_capacity(conventional_ops.len());
     for op in conventional_ops {
-        let linear = op.linear.map(|e| e as f64);
+        let linear = op.linear().map(|e| e as f64);
 
         // Apply the active map `x -> P x + p` (reduced mod 1) to each atom and
         // assign a Wyckoff position per orbit. `match_wyckoff_coordinates` only
