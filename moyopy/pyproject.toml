@@ -42,6 +42,7 @@ testing = [
     "pytest",
     "prek",
     "numpy",
+    "spglib>=2.7",
 ]
 docs = [
     "zensical >= 0.0.46",

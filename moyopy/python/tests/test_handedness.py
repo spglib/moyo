@@ -1,0 +1,258 @@
+from __future__ import annotations
+
+import numpy as np
+import pytest
+import spglib
+
+from moyopy import Cell, MoyoDataset, Setting, SpaceGroup, operations_from_number
+
+ENANTIOMORPHIC_PAIRS = [
+    (76, 78),
+    (91, 95),
+    (92, 96),
+    (144, 145),
+    (151, 153),
+    (152, 154),
+    (169, 170),
+    (171, 172),
+    (178, 179),
+    (180, 181),
+    (212, 213),
+]
+REBASES = [
+    pytest.param(np.eye(3, dtype=int), id="identity"),
+    pytest.param(np.diag([-1, 1, 1]), id="axis-flip"),
+    pytest.param(np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]]), id="odd-permutation"),
+    pytest.param(np.array([[0, -1, 2], [1, 0, 1], [0, 0, -1]]), id="skew-left"),
+]
+
+
+@pytest.fixture(autouse=True)
+def _spglib_exceptions(monkeypatch):
+    monkeypatch.setenv("SPGLIB_OLD_ERROR_HANDLING", "0")
+
+
+def _operation_keys(rotations, translations):
+    return {
+        (tuple(np.asarray(w).flatten()), tuple(np.rint(np.asarray(t) * 1e8).astype(int) % 10**8))
+        for w, t in zip(rotations, translations)
+    }
+
+
+def _transform_operations(rotations, translations, linear, origin):
+    inverse = np.linalg.inv(linear)
+    rotations = np.asarray(rotations)
+    translations = np.asarray(translations)
+    transformed_rotations = inverse @ rotations @ linear
+    np.testing.assert_allclose(transformed_rotations, np.rint(transformed_rotations), atol=1e-8)
+    transformed_translations = (rotations @ origin + translations - origin) @ inverse.T
+    return np.rint(transformed_rotations).astype(int), transformed_translations
+
+
+@pytest.mark.parametrize("pair", ENANTIOMORPHIC_PAIRS, ids=lambda pair: f"{pair[0]}-{pair[1]}")
+@pytest.mark.parametrize("mirrored", [False, True], ids=["original", "mirror"])
+@pytest.mark.parametrize("rebase", REBASES)
+@pytest.mark.parametrize("rotate_basis", [False, True])
+def test_enantiomorphic_handedness(pair, mirrored, rebase, rotate_basis):
+    number, mirror_number = pair
+    expected_number = mirror_number if mirrored else number
+    if number >= 195:
+        basis = np.diag([4.0, 4.0, 4.0])
+    elif number >= 143:
+        basis = np.array([[4.0, -2.0, 0.0], [0.0, np.sqrt(12), 0.0], [0.0, 0.0, 6.0]])
+    else:
+        basis = np.diag([4.0, 4.0, 6.0])
+
+    reference = operations_from_number(number, primitive=True)
+    rotations = np.array(reference.rotations)
+    translations = np.array(reference.translations)
+    # Two generic, differently labelled orbits avoid accidental extra symmetries.
+    positions = np.concatenate(
+        [
+            rotations @ site + translations
+            for site in ([0.137, 0.271, 0.389], [0.219, 0.413, 0.157])
+        ]
+    )
+    numbers = np.repeat([1, 2], len(reference))
+    # This is an active Cartesian reflection, so it must exchange the pair.
+    if mirrored:
+        basis = np.diag([-1, 1, 1]) @ basis
+    cartesian_rotation = np.array([[1.0, 0.0, 0.0], [0.0, 0.6, -0.8], [0.0, 0.8, 0.6]])
+    basis = cartesian_rotation @ basis
+
+    origin = np.array([0.13, 0.27, 0.19])
+    input_basis = basis @ rebase
+    input_positions = (positions - origin) @ np.linalg.inv(rebase).T
+    # Rebasing and shifting the origin preserve the Cartesian sites.
+    np.testing.assert_allclose(
+        input_positions @ input_basis.T + basis @ origin, positions @ basis.T, atol=1e-12
+    )
+    input_positions %= 1
+    cell = Cell(input_basis.T.tolist(), input_positions.tolist(), numbers.tolist())
+    oracle = spglib.get_symmetry_dataset((input_basis.T, input_positions, numbers), symprec=1e-5)
+    assert oracle is not None
+    assert oracle.number == expected_number
+    input_rotations, input_translations = _transform_operations(
+        rotations, translations, rebase, origin
+    )
+    target = operations_from_number(expected_number, primitive=True)
+    target_keys = _operation_keys(target.rotations, target.translations)
+    sign = np.sign(np.linalg.det(input_basis))
+
+    for setting in [None, Setting.spglib(), Setting.hall_number(oracle.hall_number)]:
+        group = SpaceGroup(
+            input_rotations.tolist(),
+            input_translations.tolist(),
+            basis=cell.basis,
+            setting=setting,
+        )
+        assert group.number == expected_number
+        assert group.hall_number == oracle.hall_number
+        assert round(np.linalg.det(group.linear)) == sign
+        assert (
+            _operation_keys(
+                *_transform_operations(
+                    input_rotations, input_translations, group.linear, np.array(group.origin_shift)
+                )
+            )
+            == target_keys
+        )
+
+        dataset = MoyoDataset(cell, setting=setting, rotate_basis=rotate_basis, symprec=1e-5)
+        assert dataset.number == expected_number
+        assert dataset.hall_number == oracle.hall_number
+        assert _operation_keys(dataset.operations.rotations, dataset.operations.translations) == (
+            _operation_keys(input_rotations, input_translations)
+        )
+        # Compare partitions, rather than arbitrary representative site indices.
+        same_orbit = np.equal.outer(dataset.orbits, dataset.orbits)
+        np.testing.assert_array_equal(same_orbit, np.equal.outer(numbers, numbers))
+        np.testing.assert_array_equal(
+            same_orbit,
+            np.equal.outer(oracle.crystallographic_orbits, oracle.crystallographic_orbits),
+        )
+        rotation = np.array(dataset.std_rotation_matrix)
+        np.testing.assert_allclose(rotation.T @ rotation, np.eye(3), atol=1e-8)
+        assert np.linalg.det(rotation) == pytest.approx(1)
+        if not rotate_basis:
+            np.testing.assert_allclose(rotation, np.eye(3), atol=1e-8)
+
+        for standardized, linear, shift in [
+            (dataset.std_cell, dataset.std_linear, dataset.std_origin_shift),
+            (dataset.prim_std_cell, dataset.prim_std_linear, dataset.prim_std_origin_shift),
+        ]:
+            assert np.linalg.det(standardized.basis) > 0
+            assert np.sign(np.linalg.det(linear)) == sign
+            np.testing.assert_allclose(
+                np.array(standardized.basis).T, rotation @ input_basis @ linear, atol=1e-8
+            )
+            transformed_positions = (input_positions - shift) @ np.linalg.inv(linear).T
+            differences = transformed_positions[:, None] - np.array(standardized.positions)
+            differences -= np.rint(differences)
+            matches = (np.linalg.norm(differences, axis=-1) < 1e-7) & (
+                numbers[:, None] == np.array(standardized.numbers)
+            )
+            assert np.all(matches.sum(axis=1) == 1)
+            assert (
+                _operation_keys(
+                    *_transform_operations(
+                        input_rotations, input_translations, linear, np.array(shift)
+                    )
+                )
+                == target_keys
+            )
+
+        mapping = np.array(dataset.mapping_std_prim)
+        prim_positions = np.array(dataset.prim_std_cell.positions)[mapping]
+        expected_positions = (input_positions - dataset.prim_std_origin_shift) @ np.linalg.inv(
+            dataset.prim_std_linear
+        ).T
+        diff = prim_positions - expected_positions
+        np.testing.assert_allclose(diff - np.rint(diff), 0, atol=1e-7)
+        np.testing.assert_array_equal(np.array(dataset.prim_std_cell.numbers)[mapping], numbers)
+
+
+@pytest.mark.parametrize("number,index,centering", [(5, 1, 2), (76, 2, 1)])
+@pytest.mark.parametrize("rotate_basis", [False, True])
+def test_centered_and_supercell_handedness(number, index, centering, rotate_basis):
+    reference = operations_from_number(number)
+    rotations = np.array(reference.rotations)
+    translations = np.array(reference.translations)
+    positions = np.concatenate(
+        [
+            rotations @ site + translations
+            for site in ([0.137, 0.271, 0.389], [0.219, 0.413, 0.157])
+        ]
+    )
+    numbers = np.repeat([1, 2], len(reference))
+    basis = (
+        np.array([[3.0, 0.0, -1.0], [0.0, 4.0, 0.0], [0.0, 0.0, 5.0]])
+        if number == 5
+        else np.diag([4.0, 4.0, 6.0])
+    )
+    supercell = np.diag([1, 1, index])
+    positions = np.concatenate(
+        [(positions + [0, 0, k]) @ np.linalg.inv(supercell).T for k in range(index)]
+    )
+    numbers = np.tile(numbers, index)
+    basis = basis @ supercell
+    rebase = np.array([[0, -1, 2], [1, 0, 1], [0, 0, -1]])
+    positions = (positions - [0.13, 0.27, 0.19]) @ np.linalg.inv(rebase).T
+    input_basis = basis @ rebase
+    cell = Cell(input_basis.T.tolist(), positions.tolist(), numbers.tolist())
+    oracle = spglib.get_symmetry_dataset((input_basis.T, positions, numbers), symprec=1e-5)
+    assert oracle is not None
+    assert oracle.number == number
+    dataset = MoyoDataset(cell, symprec=1e-5, rotate_basis=rotate_basis)
+    assert dataset.number == number
+    assert dataset.hall_number == oracle.hall_number
+    assert _operation_keys(dataset.operations.rotations, dataset.operations.translations) == (
+        _operation_keys(oracle.rotations, oracle.translations)
+    )
+    np.testing.assert_array_equal(
+        np.equal.outer(dataset.orbits, dataset.orbits), np.equal.outer(numbers, numbers)
+    )
+    np.testing.assert_array_equal(
+        np.equal.outer(dataset.mapping_std_prim, dataset.mapping_std_prim),
+        np.equal.outer(oracle.mapping_to_primitive, oracle.mapping_to_primitive),
+    )
+    for standardized, linear, expected_volume in [
+        (dataset.std_cell, dataset.std_linear, abs(np.linalg.det(basis)) / index),
+        (
+            dataset.prim_std_cell,
+            dataset.prim_std_linear,
+            abs(np.linalg.det(basis)) / index / centering,
+        ),
+    ]:
+        assert np.linalg.det(standardized.basis) == pytest.approx(expected_volume)
+        assert np.linalg.det(linear) < 0
+        np.testing.assert_allclose(
+            np.array(standardized.basis).T,
+            np.array(dataset.std_rotation_matrix) @ input_basis @ linear,
+            atol=1e-8,
+        )
+    assert np.linalg.det(dataset.std_rotation_matrix) == pytest.approx(1)
+    prim_positions = np.array(dataset.prim_std_cell.positions)[dataset.mapping_std_prim]
+    expected_positions = (positions - dataset.prim_std_origin_shift) @ np.linalg.inv(
+        dataset.prim_std_linear
+    ).T
+    diff = prim_positions - expected_positions
+    np.testing.assert_allclose(diff - np.rint(diff), 0, atol=1e-7)
+    np.testing.assert_array_equal(
+        np.array(dataset.prim_std_cell.numbers)[dataset.mapping_std_prim], numbers
+    )
+
+
+def test_operations_only_retains_reference_orientation():
+    # Without a lattice, the same fractional operations always use a right-handed
+    # reference orientation. They cannot reveal the actual Cartesian handedness.
+    reference = operations_from_number(76, primitive=True)
+    group = SpaceGroup(reference.rotations, reference.translations)
+    assert group.number == 76
+    assert round(np.linalg.det(group.linear)) == 1
+    rotations, translations = _transform_operations(
+        reference.rotations, reference.translations, np.diag([-1, 1, 1]), np.zeros(3)
+    )
+    reflected = SpaceGroup(rotations.tolist(), translations.tolist())
+    assert reflected.number == 78
+    assert round(np.linalg.det(reflected.linear)) == 1

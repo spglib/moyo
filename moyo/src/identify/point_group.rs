@@ -26,7 +26,8 @@ pub struct PointGroup {
 
 impl PointGroup {
     /// Given rotations, identify the arithmetic crystal class and transformation matrix into the representative
-    /// Assume the rotations are given in the (reduced) primitive basis
+    /// Assume the rotations are given in a reduced primitive basis with a
+    /// right-handed reference orientation.
     pub fn new(prim_rotations: &Rotations) -> Result<Self, MoyoError> {
         let rotation_types = prim_rotations.iter().map(identify_rotation_type).collect();
         let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types)?;
@@ -56,6 +57,8 @@ impl PointGroup {
     }
 
     /// Given lattice and rotations, identify the arithmetic crystal class and transformation matrix into the representative
+    /// The matrix `P` refers to the original input basis: `A_db = A_input P`.
+    /// Its determinant has the sign of the input basis determinant.
     pub fn from_lattice(lattice: &Lattice, prim_rotations: &Rotations) -> Result<Self, MoyoError> {
         let (_, reduced_trans_mat) = lattice.minkowski_reduce()?;
         let reduced_prim_operations = UnimodularTransformation::from_linear(reduced_trans_mat)
@@ -70,7 +73,7 @@ impl PointGroup {
         let reduced_point_group = Self::new(&reduced_prim_rotations)?;
         Ok(PointGroup {
             arithmetic_number: reduced_point_group.arithmetic_number,
-            prim_trans_mat: reduced_point_group.prim_trans_mat * reduced_trans_mat,
+            prim_trans_mat: reduced_trans_mat * reduced_point_group.prim_trans_mat,
         })
     }
 }
