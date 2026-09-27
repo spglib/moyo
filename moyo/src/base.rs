@@ -21,7 +21,10 @@ pub use operation::{
 };
 pub use permutation::Permutation;
 pub use tolerance::{AngleTolerance, is_angle_within_tolerance};
-pub use transformation::{Linear, OriginShift, Transformation, UnimodularTransformation};
+pub use transformation::{
+    ImproperTransformationError, Linear, OriginShift, ProperUnimodularTransformation,
+    Transformation, UnimodularTransformation,
+};
 
 pub(super) use cell::orbits_from_permutations;
 pub(super) use operation::project_rotations;

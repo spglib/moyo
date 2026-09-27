@@ -8,8 +8,8 @@ use super::point_group::{iter_trans_mat_basis, iter_unimodular_trans_mat};
 use super::rotation_type::identify_rotation_type;
 use super::space_group::{SpaceGroup, match_origin_shift};
 use crate::base::{
-    Lattice, MagneticOperations, MoyoError, Operation, Operations, Rotation, Translation,
-    UnimodularTransformation, project_rotations,
+    Lattice, MagneticOperations, MoyoError, Operation, Operations, ProperUnimodularTransformation,
+    Rotation, Translation, UnimodularTransformation, project_rotations,
 };
 use crate::data::{
     ConstructType, HallSymbol, MagneticHallSymbol, MagneticHallSymbolEntry, Setting, UNINumber,
@@ -332,7 +332,7 @@ fn find_conjugator_type4(
     src_translation: &Translation,
     dst_translation: &Translation,
     epsilon: f64,
-) -> Option<UnimodularTransformation> {
+) -> Option<ProperUnimodularTransformation> {
     let stabilized_prim_rotations = project_rotations(stabilized_prim_operations);
     let stabilized_prim_rotation_generators = project_rotations(stabilized_prim_generators);
 
@@ -358,7 +358,10 @@ fn find_conjugator_type4(
                 stabilized_prim_generators,
                 epsilon,
             ) {
-                return Some(UnimodularTransformation::new(prim_trans_mat, origin_shift));
+                return Some(ProperUnimodularTransformation::new(
+                    prim_trans_mat,
+                    origin_shift,
+                ));
             }
         }
     }

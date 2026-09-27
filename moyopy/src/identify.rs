@@ -138,6 +138,7 @@ pub fn integral_normalizer(
     Ok(
         identify_integral_normalizer(&prim_operations, &prim_generators, epsilon)
             .into_iter()
+            .map(moyo::base::UnimodularTransformation::from)
             .map(PyUnimodularTransformation::from)
             .collect(),
     )

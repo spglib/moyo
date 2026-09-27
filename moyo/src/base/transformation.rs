@@ -1,4 +1,4 @@
-use std::ops::Mul;
+use std::ops::{Deref, Mul};
 
 use itertools::iproduct;
 use nalgebra::base::{Matrix3, Vector3};
@@ -37,27 +37,51 @@ pub(crate) fn lattice_points(linear: &Linear) -> Vec<Vector3<i32>> {
         .collect()
 }
 
-/// Represent change of origin and basis for an affine space
+/// Change of origin and primitive basis with determinant +1 or -1.
+///
+/// The linear part and origin shift are immutable. The linear part's immutability
+/// preserves unimodularity and its cached inverse.
+///
+/// ```compile_fail
+/// use moyo::base::UnimodularTransformation;
+/// use nalgebra::Matrix3;
+/// let mut transformation = UnimodularTransformation::from_linear(Matrix3::identity());
+/// transformation.linear = Matrix3::zeros();
+/// ```
+///
+/// ```compile_fail
+/// use moyo::base::UnimodularTransformation;
+/// use nalgebra::Vector3;
+/// let mut transformation = UnimodularTransformation::from_origin_shift(Vector3::zeros());
+/// transformation.origin_shift = Vector3::zeros();
+/// ```
 #[derive(Debug, Clone, Serialize)]
 pub struct UnimodularTransformation {
-    pub linear: UnimodularLinear,
-    pub origin_shift: OriginShift,
+    linear: UnimodularLinear,
+    origin_shift: OriginShift,
     // Inverse of unimodular matrix is also unimodular
     linear_inv: UnimodularLinear,
 }
 
 impl UnimodularTransformation {
+    /// Construct a transformation, panicking unless the determinant is +/- 1
+    /// and the integer inverse fits in `i32`.
     pub fn new(linear: UnimodularLinear, origin_shift: OriginShift) -> Self {
-        let det = linear.map(|e| e as f64).determinant().round() as i32;
+        // i128 accommodates products of three i32 entries without rounding.
+        let wide = linear.map(i128::from);
+        let cofactors = Matrix3::from_columns(&[
+            wide.column(1).cross(&wide.column(2)),
+            wide.column(2).cross(&wide.column(0)),
+            wide.column(0).cross(&wide.column(1)),
+        ]);
+        let det = wide.column(0).dot(&cofactors.column(0));
         if det.abs() != 1 {
             panic!("Determinant of unimodular transformation must be +/- 1.");
         }
 
-        let linear_inv = linear
-            .map(|e| e as f64)
-            .try_inverse()
-            .unwrap()
-            .map(|e| e.round() as i32);
+        let linear_inv = cofactors.transpose().map(|e| {
+            i32::try_from(e / det).expect("Inverse of unimodular transformation must fit in i32.")
+        });
 
         Self {
             linear,
@@ -81,6 +105,22 @@ impl UnimodularTransformation {
             self.linear_inv,
             -self.linear_inv.map(|e| e as f64) * self.origin_shift,
         )
+    }
+
+    /// Immutable linear part of this transformation.
+    pub fn linear(&self) -> &UnimodularLinear {
+        &self.linear
+    }
+
+    /// Immutable origin shift of this transformation.
+    pub fn origin_shift(&self) -> &OriginShift {
+        &self.origin_shift
+    }
+
+    /// Exact determinant of the linear part, either +1 or -1.
+    pub fn determinant(&self) -> i32 {
+        let wide = self.linear.map(i128::from);
+        wide.column(0).dot(&wide.column(1).cross(&wide.column(2))) as i32
     }
 
     pub fn linear_as_f64(&self) -> Matrix3<f64> {
@@ -185,6 +225,98 @@ impl Mul for UnimodularTransformation {
         let new_linear = self.linear * rhs.linear;
         let new_origin_shift = self.linear.map(|e| e as f64) * rhs.origin_shift + self.origin_shift;
         Self::new(new_linear, new_origin_shift)
+    }
+}
+
+/// Orientation-preserving change of origin and primitive basis (determinant +1).
+///
+/// Coordinate transformations are shared with [`UnimodularTransformation`] through
+/// immutable dereferencing. Inversion and composition of proper transformations
+/// return this type; conversion to the general type is infallible.
+///
+/// ```compile_fail
+/// use moyo::base::ProperUnimodularTransformation;
+/// use nalgebra::Matrix3;
+/// let mut transformation = ProperUnimodularTransformation::from_linear(Matrix3::identity());
+/// transformation.linear()[(0, 0)] = -1;
+/// ```
+#[derive(Debug, Clone, Serialize)]
+#[serde(transparent)]
+pub struct ProperUnimodularTransformation(UnimodularTransformation);
+
+/// An orientation-reversing transformation cannot be converted to a proper one.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+#[error("Determinant of proper unimodular transformation must be +1.")]
+pub struct ImproperTransformationError;
+
+impl ProperUnimodularTransformation {
+    /// Construct a transformation, panicking unless the determinant is +1
+    /// and the integer inverse fits in `i32`.
+    pub fn new(linear: UnimodularLinear, origin_shift: OriginShift) -> Self {
+        Self::try_from(UnimodularTransformation::new(linear, origin_shift))
+            .expect("Determinant of proper unimodular transformation must be +1.")
+    }
+
+    pub fn from_linear(linear: UnimodularLinear) -> Self {
+        Self::new(linear, OriginShift::zeros())
+    }
+
+    pub fn from_origin_shift(origin_shift: OriginShift) -> Self {
+        Self::new(UnimodularLinear::identity(), origin_shift)
+    }
+
+    pub fn inverse(&self) -> Self {
+        Self(self.0.inverse())
+    }
+}
+
+impl Deref for ProperUnimodularTransformation {
+    type Target = UnimodularTransformation;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl From<ProperUnimodularTransformation> for UnimodularTransformation {
+    fn from(value: ProperUnimodularTransformation) -> Self {
+        value.0
+    }
+}
+
+impl TryFrom<UnimodularTransformation> for ProperUnimodularTransformation {
+    type Error = ImproperTransformationError;
+
+    fn try_from(value: UnimodularTransformation) -> Result<Self, Self::Error> {
+        if value.determinant() == 1 {
+            Ok(Self(value))
+        } else {
+            Err(ImproperTransformationError)
+        }
+    }
+}
+
+impl Mul for ProperUnimodularTransformation {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        Self(self.0 * rhs.0)
+    }
+}
+
+impl Mul<ProperUnimodularTransformation> for UnimodularTransformation {
+    type Output = Self;
+
+    fn mul(self, rhs: ProperUnimodularTransformation) -> Self::Output {
+        self * rhs.0
+    }
+}
+
+impl Mul<UnimodularTransformation> for ProperUnimodularTransformation {
+    type Output = UnimodularTransformation;
+
+    fn mul(self, rhs: UnimodularTransformation) -> Self::Output {
+        self.0 * rhs
     }
 }
 
@@ -433,10 +565,112 @@ fn transform_operation_as_f64(
 mod tests {
     use nalgebra::{matrix, vector};
 
-    use super::{Lattice, LayerCell, Transformation, UnimodularTransformation};
+    use super::{
+        ImproperTransformationError, Lattice, LayerCell, ProperUnimodularTransformation,
+        Transformation, UnimodularTransformation,
+    };
     use crate::base::AngleTolerance;
     use crate::base::cell::Cell;
     use crate::base::operation::{Operation, Translation};
+
+    #[test]
+    fn test_proper_affine_composition_and_inverse() {
+        let left = ProperUnimodularTransformation::new(
+            matrix![1, 1, 0; 0, 1, 0; 0, 0, 1],
+            vector![0.25, 0.5, 0.0],
+        );
+        let right = ProperUnimodularTransformation::new(
+            matrix![1, 0, 0; 1, 1, 0; 0, 0, 1],
+            vector![0.5, 0.0, 0.25],
+        );
+        let product: ProperUnimodularTransformation = left.clone() * right.clone();
+        assert_eq!(*product.linear(), matrix![2, 1, 0; 1, 1, 0; 0, 0, 1]);
+        assert_relative_eq!(*product.origin_shift(), vector![0.75, 0.5, 0.25]);
+        assert_eq!(product.determinant(), 1);
+        let inverse: ProperUnimodularTransformation = product.inverse();
+        assert_eq!(*inverse.linear(), matrix![1, -1, 0; -1, 2, 0; 0, 0, 1]);
+        assert_relative_eq!(*inverse.origin_shift(), vector![-0.25, -0.25, -0.25]);
+        let cell = Cell::new(
+            Lattice::new(matrix![3.0, 0.0, 0.0; 0.2, 4.0, 0.0; 0.1, 0.3, 5.0]),
+            vec![vector![0.13, 0.27, 0.41]],
+            vec![14],
+        );
+        let sequential = right.transform_cell(&left.transform_cell(&cell));
+        let transformed = product.transform_cell(&cell);
+        assert_relative_eq!(transformed.lattice.basis, sequential.lattice.basis);
+        assert_relative_eq!(transformed.positions[0], sequential.positions[0]);
+        let back = inverse.transform_cell(&transformed);
+        assert_relative_eq!(back.lattice.basis, cell.lattice.basis);
+        assert_relative_eq!(back.positions[0], cell.positions[0]);
+        assert_eq!(back.numbers, cell.numbers);
+
+        let operation =
+            Operation::new(matrix![0, -1, 0; 1, 0, 0; 0, 0, 1], vector![0.0, 0.0, 0.25]);
+        let sequential = right.transform_operation(&left.transform_operation(&operation));
+        let transformed = product.transform_operation(&operation);
+        assert_eq!(transformed.rotation, sequential.rotation);
+        assert_relative_eq!(transformed.translation, sequential.translation);
+    }
+
+    #[test]
+    fn test_unimodular_type_conversions_and_mixed_composition() {
+        let proper = ProperUnimodularTransformation::from_origin_shift(vector![0.25, 0.0, 0.0]);
+        let general = UnimodularTransformation::from(proper.clone());
+        assert_eq!(
+            serde_json::to_value(&proper).unwrap(),
+            serde_json::to_value(&general).unwrap()
+        );
+        let restored = ProperUnimodularTransformation::try_from(general).unwrap();
+        assert_eq!(restored.linear(), proper.linear());
+        assert_relative_eq!(*restored.origin_shift(), *proper.origin_shift());
+
+        let mirror = UnimodularTransformation::from_linear(matrix![-1, 0, 0; 0, 1, 0; 0, 0, 1]);
+        assert_eq!(
+            ProperUnimodularTransformation::try_from(mirror.clone()).unwrap_err(),
+            ImproperTransformationError
+        );
+        let left: UnimodularTransformation = mirror.clone() * proper.clone();
+        let right: UnimodularTransformation = proper * mirror.clone();
+        assert_eq!(left.determinant(), -1);
+        assert_eq!(right.determinant(), -1);
+        assert_relative_eq!(*left.origin_shift(), vector![-0.25, 0.0, 0.0]);
+        assert_relative_eq!(*right.origin_shift(), vector![0.25, 0.0, 0.0]);
+        let even: UnimodularTransformation = mirror.clone() * mirror;
+        assert!(ProperUnimodularTransformation::try_from(even).is_ok());
+    }
+
+    #[rstest::rstest]
+    #[case(matrix![-1, 0, 0; 0, 1, 0; 0, 0, 1])]
+    #[case(matrix![2, 0, 0; 0, 1, 0; 0, 0, 1])]
+    #[case(matrix![0, 0, 0; 0, 1, 0; 0, 0, 1])]
+    #[should_panic]
+    fn test_proper_transformation_rejects_invalid_determinant(
+        #[case] linear: nalgebra::Matrix3<i32>,
+    ) {
+        ProperUnimodularTransformation::from_linear(linear);
+    }
+
+    #[rstest::rstest]
+    #[case(1)]
+    #[case(-1)]
+    fn test_unimodular_inverse_is_exact(#[case] sign: i32) {
+        // The two O(n^2) terms in the determinant differ by one, below f64 precision.
+        let n = 100_000_000;
+        let linear = matrix![sign * n, n - 1, 0; sign * (n + 1), n, 0; 0, 0, 1];
+        let transformation = UnimodularTransformation::from_linear(linear);
+        assert_eq!(transformation.determinant(), sign);
+        assert_eq!(
+            *transformation.inverse().linear(),
+            matrix![sign * n, sign * (1 - n), 0; -n - 1, n, 0; 0, 0, 1]
+        );
+        assert_eq!(*transformation.inverse().inverse().linear(), linear);
+    }
+
+    #[test]
+    #[should_panic(expected = "Inverse of unimodular transformation must fit in i32.")]
+    fn test_unimodular_transformation_rejects_inverse_overflow() {
+        UnimodularTransformation::from_linear(matrix![1, 50_000, 0; 0, 1, 50_000; 0, 0, 1]);
+    }
 
     #[test]
     fn test_unimodular_transformation_accepts_det_minus_one() {

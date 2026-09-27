@@ -408,7 +408,7 @@ impl MoyoDataset {
             .iter()
             .map(|op| {
                 prim_to_conv
-                    .transform_operation(&Operation::new(op.linear, op.origin_shift))
+                    .transform_operation(&Operation::new(*op.linear(), *op.origin_shift()))
                     .map(|conv| UnimodularTransformation::new(conv.rotation, conv.translation))
                     .ok_or(MoyoError::WyckoffPositionAssignmentError)
             })
@@ -801,7 +801,7 @@ fn compose_std_transformations(
         prim_inv * std_transformation.linear_as_f64(),
         prim_inv * std_transformation.origin_shift,
         prim_inv * prim_std_transformation.linear_as_f64(),
-        prim_inv * prim_std_transformation.origin_shift,
+        prim_inv * prim_std_transformation.origin_shift(),
     )
 }
 
@@ -951,7 +951,7 @@ impl<M: MagneticMoment> MoyoMagneticDataset<M> {
         let prim_std_linear =
             prim_mag_cell_linear_inv * std_mag_cell.prim_transformation.linear_as_f64();
         let prim_std_origin_shift =
-            prim_mag_cell_linear_inv * std_mag_cell.prim_transformation.origin_shift;
+            prim_mag_cell_linear_inv * std_mag_cell.prim_transformation.origin_shift();
 
         Ok(Self {
             // Magnetic space-group type

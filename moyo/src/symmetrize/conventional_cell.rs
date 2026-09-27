@@ -3,7 +3,7 @@ use log::warn;
 use nalgebra::{Matrix2, Matrix3, Vector2};
 use once_cell::sync::Lazy;
 
-use crate::base::{EPS, Lattice, Operations, UnimodularLinear, UnimodularTransformation};
+use crate::base::{EPS, Lattice, Operations, ProperUnimodularTransformation, UnimodularLinear};
 use crate::data::Centering;
 use crate::identify::match_origin_shift;
 use crate::math::minkowski_reduce_2d;
@@ -159,14 +159,14 @@ pub(super) fn select_conventional_correction<F>(
     candidates: &[UnimodularLinear],
     rank_key: F,
     epsilon: f64,
-) -> UnimodularTransformation
+) -> ProperUnimodularTransformation
 where
     F: Fn(&Lattice) -> Vec<f64>,
 {
     let q = centering.linear().map(|e| e as f64);
     let q_inv = q.try_inverse().unwrap();
 
-    let mut best: Option<(Vec<f64>, UnimodularTransformation)> = None;
+    let mut best: Option<(Vec<f64>, ProperUnimodularTransformation)> = None;
     for corr in candidates {
         let corr_f64 = corr.map(|e| e as f64);
         if corr_f64.determinant().round() as i32 != 1 {
@@ -187,14 +187,18 @@ where
             continue;
         };
 
-        let key =
-            rank_key(&UnimodularTransformation::from_linear(*corr).transform_lattice(conv_lattice));
+        let key = rank_key(
+            &ProperUnimodularTransformation::from_linear(*corr).transform_lattice(conv_lattice),
+        );
         let is_better = match &best {
             Some((best_key, _)) => lexicographic_less(&key, best_key),
             None => true,
         };
         if is_better {
-            best = Some((key, UnimodularTransformation::new(prim_corr, origin_shift)));
+            best = Some((
+                key,
+                ProperUnimodularTransformation::new(prim_corr, origin_shift),
+            ));
         }
     }
 
@@ -205,7 +209,7 @@ where
             // that misses it (or a bug in the admissibility test) would otherwise pass
             // an uncorrected cell through unnoticed.
             warn!("No admissible correction of the conventional cell; keep the identified one");
-            UnimodularTransformation::from_linear(UnimodularLinear::identity())
+            ProperUnimodularTransformation::from_linear(UnimodularLinear::identity())
         }
     }
 }

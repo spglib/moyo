@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only dependency or build updates with no user-visible changes.
 
+## Unreleased
+
+### moyo
+
+- Distinguish proper (determinant +1) affine basis changes with `ProperUnimodularTransformation` from general (determinant +/-1) `UnimodularTransformation`. Bulk integral normalizers and orientation-preserving setting corrections now return the proper type. Read the general type's immutable linear part and origin shift through `linear()` and `origin_shift()`; constructors validate and invert the linear part using exact integer arithmetic.
+
 ## v0.20.0 - 2026-09-26
 
 ### moyo
