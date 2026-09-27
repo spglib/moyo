@@ -320,11 +320,12 @@ impl Mul<UnimodularTransformation> for ProperUnimodularTransformation {
     }
 }
 
-/// Represent change of origin and basis for an affine space
+/// Represent a change of origin and basis, including orientation-reversing changes.
 #[derive(Debug, Clone)]
 pub struct Transformation {
     pub linear: Linear,
     pub origin_shift: OriginShift,
+    /// Lattice index, equal to the absolute determinant of `linear`.
     #[allow(dead_code)]
     pub size: usize,
     pub linear_inv: Matrix3<f64>,
@@ -332,17 +333,17 @@ pub struct Transformation {
 
 impl Transformation {
     pub fn new(linear: Linear, origin_shift: OriginShift) -> Self {
+        let det = linear.map(|e| e as f64).determinant().round();
+        assert!(
+            (1.0..=i32::MAX as f64).contains(&det.abs()),
+            "Absolute determinant of transformation matrix must be between 1 and i32::MAX."
+        );
         let linear_inv = linear.map(|e| e as f64).try_inverse().unwrap();
-
-        let det = linear.map(|e| e as f64).determinant().round() as i32;
-        if det <= 0 {
-            panic!("Determinant of transformation matrix should be positive.");
-        }
 
         Self {
             linear,
             origin_shift,
-            size: det as usize,
+            size: det.abs() as usize,
             linear_inv,
         }
     }
@@ -761,12 +762,15 @@ mod tests {
         assert!(transformation.transform_operation(&operation).is_none());
     }
 
-    #[test]
-    fn test_transform_cell_with_origin_shift() {
+    #[rstest::rstest]
+    #[case::right_handed(1)]
+    #[case::left_handed(-1)]
+    fn test_transform_cell_with_origin_shift(#[case] handedness: i32) {
         let transformation = Transformation::new(
-            matrix![2, 1, 0; 0, 1, 0; 0, 0, 1],
+            matrix![2 * handedness, 1, 0; 0, 1, 0; 0, 0, 1],
             vector![0.37, -0.23, 1.19],
         );
+        assert_eq!(transformation.size, 2);
         let cell = Cell::new(
             Lattice::new(matrix![3.0, 0.0, 0.0; 0.2, 4.0, 0.0; 0.1, 0.3, 5.0]),
             vec![vector![1.9, -0.96, 1.6], vector![-1.0, 1.94, -1.14]],
@@ -787,6 +791,7 @@ mod tests {
             (8, vector![0.23, 0.17, 0.67]),
             (8, vector![0.73, 0.17, 0.67]),
         ] {
+            let expected = vector![handedness as f64 * expected.x, expected.y, expected.z];
             let matches = transformed
                 .positions
                 .iter()
@@ -806,6 +811,39 @@ mod tests {
                 assert_eq!(cell.numbers[mapping[j]], number);
             }
         }
+    }
+
+    #[test]
+    fn test_transformation_negative_unimodular_round_trip() {
+        let linear = matrix![-1, 1, 0; 0, 1, 0; 0, 0, 1];
+        let origin_shift = vector![0.13, 0.17, 0.19];
+        let transformation = Transformation::new(linear, origin_shift);
+        let unimodular = UnimodularTransformation::new(linear, origin_shift);
+        assert_eq!(transformation.size, 1);
+        let operation =
+            Operation::new(matrix![0, -1, 0; 1, 0, 0; 0, 0, 1], vector![0.0, 0.0, 0.25]);
+        let transformed = transformation.transform_operation(&operation).unwrap();
+        let expected = unimodular.transform_operation(&operation);
+        assert_eq!(transformed.rotation, expected.rotation);
+        assert_relative_eq!(transformed.translation, expected.translation);
+        let recovered = transformation
+            .inverse_transform_operation(&transformed)
+            .unwrap();
+        assert_eq!(recovered.rotation, operation.rotation);
+        assert_relative_eq!(
+            recovered.translation,
+            operation.translation,
+            epsilon = 1e-12
+        );
+    }
+
+    #[rstest::rstest]
+    #[case::singular(matrix![1, 0, 0; 0, 1, 0; 0, 0, 0])]
+    #[case::positive_overflow(matrix![50000, 0, 0; 0, 50000, 0; 0, 0, 1])]
+    #[case::negative_overflow(matrix![-50000, 0, 0; 0, 50000, 0; 0, 0, 1])]
+    #[should_panic(expected = "Absolute determinant of transformation matrix")]
+    fn test_transformation_rejects_invalid_determinant(#[case] linear: super::Linear) {
+        Transformation::from_linear(linear);
     }
 
     #[test]

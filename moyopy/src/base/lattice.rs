@@ -24,7 +24,7 @@ fn lattice_from_basis(basis: [[f64; 3]; 3]) -> PyResult<Lattice> {
     Ok(lattice)
 }
 
-/// Return a Niggli-reduced basis and its integer transformation matrix.
+/// Return a right-handed Niggli-reduced basis and its integer transformation matrix.
 ///
 /// Parameters
 /// ----------
@@ -34,10 +34,11 @@ fn lattice_from_basis(basis: [[f64; 3]; 3]) -> PyResult<Lattice> {
 /// Returns
 /// -------
 /// reduced_basis : list\[list\[float\]\]
-///     Row-wise basis vectors of the reduced lattice.
+///     Right-handed row-wise basis vectors of the reduced lattice.
 /// transformation : list\[list\[int\]\]
 ///     Unimodular matrix satisfying ``reduced_basis = transformation.T @ basis``
-///     in NumPy notation.
+///     in NumPy notation. Its determinant is +1 for right-handed input and -1
+///     for left-handed input.
 ///
 /// Raises
 /// ------
@@ -51,7 +52,7 @@ pub fn niggli_reduce(basis: [[f64; 3]; 3]) -> PyResult<LatticeReduction> {
     Ok((reduced.basis_as_array(), to_3x3_slice(&transformation)))
 }
 
-/// Return a Delaunay-reduced basis and its integer transformation matrix.
+/// Return a right-handed Delaunay-reduced basis and its integer transformation matrix.
 ///
 /// Parameters
 /// ----------
@@ -61,10 +62,11 @@ pub fn niggli_reduce(basis: [[f64; 3]; 3]) -> PyResult<LatticeReduction> {
 /// Returns
 /// -------
 /// reduced_basis : list\[list\[float\]\]
-///     Row-wise basis vectors of the reduced lattice.
+///     Right-handed row-wise basis vectors of the reduced lattice.
 /// transformation : list\[list\[int\]\]
 ///     Unimodular matrix satisfying ``reduced_basis = transformation.T @ basis``
-///     in NumPy notation.
+///     in NumPy notation. Its determinant is +1 for right-handed input and -1
+///     for left-handed input.
 ///
 /// Raises
 /// ------
@@ -78,7 +80,7 @@ pub fn delaunay_reduce(basis: [[f64; 3]; 3]) -> PyResult<LatticeReduction> {
     Ok((reduced.basis_as_array(), to_3x3_slice(&transformation)))
 }
 
-/// Return a Minkowski-reduced basis and its integer transformation matrix.
+/// Return a right-handed Minkowski-reduced basis and its integer transformation matrix.
 ///
 /// Parameters
 /// ----------
@@ -88,10 +90,11 @@ pub fn delaunay_reduce(basis: [[f64; 3]; 3]) -> PyResult<LatticeReduction> {
 /// Returns
 /// -------
 /// reduced_basis : list\[list\[float\]\]
-///     Row-wise basis vectors of the reduced lattice.
+///     Right-handed row-wise basis vectors of the reduced lattice.
 /// transformation : list\[list\[int\]\]
 ///     Unimodular matrix satisfying ``reduced_basis = transformation.T @ basis``
-///     in NumPy notation.
+///     in NumPy notation. Its determinant is +1 for right-handed input and -1
+///     for left-handed input.
 ///
 /// Raises
 /// ------
@@ -107,6 +110,7 @@ pub fn minkowski_reduce(basis: [[f64; 3]; 3]) -> PyResult<LatticeReduction> {
 
 /// Return whether the row-wise basis vectors are Niggli reduced.
 ///
+/// Tests geometric reduction conditions independently of handedness.
 /// Raises ``ValueError`` if the basis is not finite and linearly independent.
 #[pyfunction]
 pub fn is_niggli_reduced(basis: [[f64; 3]; 3]) -> PyResult<bool> {
@@ -115,6 +119,7 @@ pub fn is_niggli_reduced(basis: [[f64; 3]; 3]) -> PyResult<bool> {
 
 /// Return whether the row-wise basis vectors are Minkowski reduced.
 ///
+/// Tests geometric reduction conditions independently of handedness.
 /// Raises ``ValueError`` if the basis is not finite and linearly independent.
 #[pyfunction]
 pub fn is_minkowski_reduced(basis: [[f64; 3]; 3]) -> PyResult<bool> {

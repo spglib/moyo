@@ -5,7 +5,8 @@ use super::elementary::{adding_column_matrix, changing_column_sign_matrix};
 
 const EPS: f64 = 1e-8;
 
-/// basis is column-wise
+/// Return a right-handed Delaunay-reduced column-wise basis and its unimodular
+/// transformation.
 pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
     let mut reduced_basis = *basis;
     let mut trans_mat = Matrix3::<i32>::identity();
@@ -76,8 +77,8 @@ pub fn delaunay_reduce(basis: &Matrix3<f64>) -> (Matrix3<f64>, Matrix3<i32>) {
     trans_mat *= trans_mat_shortest;
     reduced_basis *= trans_mat_shortest.map(|e| e as f64);
 
-    // Preserve parity
-    if trans_mat.map(|e| e as f64).determinant() < 0. {
+    // Normalize handedness without changing the reduced metric.
+    if reduced_basis.determinant() < 0. {
         reduced_basis *= -1.;
         trans_mat *= -1;
     }

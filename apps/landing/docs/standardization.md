@@ -64,7 +64,8 @@ They preserve the crystal's geometry, while refinement can change its metric and
 ## Cartesian orientation
 
 The `rotate_basis` option controls the Cartesian orientation of the refined lattice.
-Let $\mathbf{A}'\sb{\mathrm{std}}=\mathbf{A}\mathbf{P}\sb{\mathrm{std}}$ be the conventional basis before refinement and let $\mathbf{B}$ be the refined basis in the canonical orientation described below, with the same handedness.
+Let $\mathbf{A}'\sb{\mathrm{std}}=\mathbf{A}\mathbf{P}\sb{\mathrm{std}}$ be the conventional basis before refinement and let $\mathbf{B}$ be the refined basis in the canonical orientation described below, with the same handedness as the selected basis.
+Bulk datasets select a right-handed basis through lattice reduction, including for left-handed input.
 Define the right polar decomposition
 
 $$
@@ -97,7 +98,7 @@ When the input lattice already satisfies the target symmetry, $\mathbf{U}=\mathb
 ## Conventional standardized cell
 
 With `Setting.Standard`, the conventional cell gives the space group in the ITA setting.
-For `rotate_basis=true` and right-handed input, its refined basis $\mathbf{A}\sb{\mathrm{std}}=\mathbf{B}$ has the form below.
+For `rotate_basis=true`, its refined basis $\mathbf{A}\sb{\mathrm{std}}=\mathbf{B}$ has the form below for either input handedness.
 The parameters $a$, $b$, and $c$ denote positive lengths.
 
 ### Triclinic
@@ -174,9 +175,10 @@ $a \gt 0$.
 
 ### Handedness
 
-For left-handed input, use the same metric and negate the final Cartesian row of the displayed upper-triangular basis.
-Equivalently, left-multiply by $\mathrm{diag}(1,1,-1)$, making the final diagonal entry negative while preserving all lengths and angles.
-This handedness convention also applies to other Hall settings; their canonical basis is upper triangular, with the first two diagonal entries positive.
+Bulk datasets return right-handed conventional and primitive standardized cells for either input handedness and either value of `rotate_basis`.
+For left-handed input, `std_linear` and `prim_std_linear` have negative determinants: the basis change and its inverse action on fractional coordinates preserve the physical crystal.
+`std_rotation_matrix` remains a proper Cartesian rotation, with determinant $+1$; it is the identity when `rotate_basis=false`.
+This convention also applies to other Hall settings; their canonical basis is upper triangular with positive diagonal entries.
 
 ## Primitive standardized cell
 

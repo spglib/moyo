@@ -413,7 +413,8 @@ fn test_strained_left_handed_monoclinic_standardization() {
             (&dataset.std_mag_cell, dataset.std_linear),
             (&dataset.prim_std_mag_cell, dataset.prim_std_linear),
         ] {
-            assert!(cell.cell.lattice.basis.determinant() < 0.0);
+            assert!(cell.cell.lattice.basis.determinant() > 0.0);
+            assert!(linear.determinant() < 0.0);
             assert_relative_eq!(
                 cell.cell.lattice.metric_tensor(),
                 linear.transpose() * expected_metric * linear,

@@ -7,7 +7,10 @@ use std::path::Path;
 use test_log::test;
 
 use moyo::MoyoDataset;
-use moyo::base::{AngleTolerance, Cell, Lattice, Operation, Permutation, Rotation, Translation};
+use moyo::base::{
+    AngleTolerance, Cell, Lattice, Operation, Permutation, Rotation, Translation,
+    UnimodularTransformation,
+};
 use moyo::data::{Setting, hall_symbol_entry, operations_from_number};
 
 fn assert_dataset_with_default(cell: &Cell, symprec: f64) -> MoyoDataset {
@@ -138,8 +141,16 @@ fn assert_dataset(
     assert_eq!(dataset.mapping_std_prim.len(), cell.num_atoms());
 
     // Check handedness
-    assert!(dataset.std_linear.determinant() > 0.0);
-    assert!(dataset.prim_std_linear.determinant() > 0.0);
+    assert!(dataset.std_cell.lattice.basis.determinant() > 0.0);
+    assert!(dataset.prim_std_cell.lattice.basis.determinant() > 0.0);
+    assert_eq!(
+        dataset.std_linear.determinant().signum(),
+        cell.lattice.basis.determinant().signum()
+    );
+    assert_eq!(
+        dataset.prim_std_linear.determinant().signum(),
+        cell.lattice.basis.determinant().signum()
+    );
     assert!(dataset.std_rotation_matrix.determinant() > 0.0);
 
     dataset
@@ -946,7 +957,7 @@ fn test_wyckoff_position_assignment() {
 
 #[test]
 fn test_handedness() {
-    // P 3_1 (144)
+    // A P 3_1 fractional orbit in a left-handed basis is physically P 3_2 (145).
     let a = 1.0;
     let c = 2.0;
     let lattice = Lattice::new(matrix![
@@ -973,7 +984,19 @@ fn test_handedness() {
 
     let symprec = 1e-4;
     let dataset = assert_dataset_with_default(&cell, symprec);
-    assert_eq!(dataset.number, 144);
+    assert_eq!(dataset.number, 145);
+
+    let rebase = UnimodularTransformation::from_linear(matrix![1, 0, 0; 0, 1, 0; 0, 0, -1]);
+    let right_handed_cell = rebase.transform_cell(&cell);
+    for (original, rebased) in cell.positions.iter().zip(&right_handed_cell.positions) {
+        assert_relative_eq!(
+            cell.lattice.cartesian_coords(original),
+            right_handed_cell.lattice.cartesian_coords(rebased),
+            epsilon = 1e-12
+        );
+    }
+    let right_handed_dataset = assert_dataset_with_default(&right_handed_cell, symprec);
+    assert_eq!(right_handed_dataset.number, dataset.number);
 }
 
 #[test]

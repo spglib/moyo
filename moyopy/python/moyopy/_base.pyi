@@ -207,7 +207,7 @@ class UnimodularTransformation:
         """Convert this object to a dictionary."""
 
 def niggli_reduce(basis: list[list[float]]) -> tuple[list[list[float]], list[list[int]]]:
-    """Return a Niggli-reduced basis and its integer transformation matrix.
+    """Return a right-handed Niggli-reduced basis and its integer transformation matrix.
 
     Parameters
     ----------
@@ -217,10 +217,11 @@ def niggli_reduce(basis: list[list[float]]) -> tuple[list[list[float]], list[lis
     Returns
     -------
     reduced_basis : list[list[float]]
-        Row-wise basis vectors of the reduced lattice.
+        Right-handed row-wise basis vectors of the reduced lattice.
     transformation : list[list[int]]
         Unimodular matrix satisfying ``reduced_basis = transformation.T @ basis``
-        in NumPy notation.
+        in NumPy notation. Its determinant is +1 for right-handed input and -1
+        for left-handed input.
 
     Raises
     ------
@@ -229,7 +230,7 @@ def niggli_reduce(basis: list[list[float]]) -> tuple[list[list[float]], list[lis
     """
 
 def delaunay_reduce(basis: list[list[float]]) -> tuple[list[list[float]], list[list[int]]]:
-    """Return a Delaunay-reduced basis and its integer transformation matrix.
+    """Return a right-handed Delaunay-reduced basis and its integer transformation matrix.
 
     Parameters
     ----------
@@ -239,10 +240,11 @@ def delaunay_reduce(basis: list[list[float]]) -> tuple[list[list[float]], list[l
     Returns
     -------
     reduced_basis : list[list[float]]
-        Row-wise basis vectors of the reduced lattice.
+        Right-handed row-wise basis vectors of the reduced lattice.
     transformation : list[list[int]]
         Unimodular matrix satisfying ``reduced_basis = transformation.T @ basis``
-        in NumPy notation.
+        in NumPy notation. Its determinant is +1 for right-handed input and -1
+        for left-handed input.
 
     Raises
     ------
@@ -251,7 +253,7 @@ def delaunay_reduce(basis: list[list[float]]) -> tuple[list[list[float]], list[l
     """
 
 def minkowski_reduce(basis: list[list[float]]) -> tuple[list[list[float]], list[list[int]]]:
-    """Return a Minkowski-reduced basis and its integer transformation matrix.
+    """Return a right-handed Minkowski-reduced basis and its integer transformation matrix.
 
     Parameters
     ----------
@@ -261,10 +263,11 @@ def minkowski_reduce(basis: list[list[float]]) -> tuple[list[list[float]], list[
     Returns
     -------
     reduced_basis : list[list[float]]
-        Row-wise basis vectors of the reduced lattice.
+        Right-handed row-wise basis vectors of the reduced lattice.
     transformation : list[list[int]]
         Unimodular matrix satisfying ``reduced_basis = transformation.T @ basis``
-        in NumPy notation.
+        in NumPy notation. Its determinant is +1 for right-handed input and -1
+        for left-handed input.
 
     Raises
     ------
@@ -275,11 +278,13 @@ def minkowski_reduce(basis: list[list[float]]) -> tuple[list[list[float]], list[
 def is_niggli_reduced(basis: list[list[float]]) -> bool:
     """Return whether the row-wise basis vectors are Niggli reduced.
 
+    Tests geometric reduction conditions independently of handedness.
     Raises ``ValueError`` if the basis is not finite and linearly independent.
     """
 
 def is_minkowski_reduced(basis: list[list[float]]) -> bool:
     """Return whether the row-wise basis vectors are Minkowski reduced.
 
+    Tests geometric reduction conditions independently of handedness.
     Raises ``ValueError`` if the basis is not finite and linearly independent.
     """
