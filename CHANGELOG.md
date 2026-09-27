@@ -10,7 +10,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 
 ### moyo
 
-- Distinguish proper (determinant +1) affine basis changes with `ProperUnimodularTransformation` from general (determinant +/-1) `UnimodularTransformation`. Bulk integral normalizers and orientation-preserving setting corrections now return the proper type. The general type's linear part is read through `linear()`; constructors validate and invert it using exact integer arithmetic.
+- Distinguish proper (determinant +1) affine basis changes with `ProperUnimodularTransformation` from general (determinant +/-1) `UnimodularTransformation`. Bulk integral normalizers and orientation-preserving setting corrections now return the proper type. Read the general type's immutable linear part and origin shift through `linear()` and `origin_shift()`; constructors validate and invert the linear part using exact integer arithmetic.
 
 ## v0.20.0 - 2026-09-26
 

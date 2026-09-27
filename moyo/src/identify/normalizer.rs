@@ -155,7 +155,7 @@ impl Normalizer {
         let coset_representatives = coset_representatives_reduced
             .iter()
             .map(|cr| {
-                let op = Operation::new(*cr.linear(), cr.origin_shift);
+                let op = Operation::new(*cr.linear(), *cr.origin_shift());
                 let mapped = to_input.transform_operation(&op);
                 UnimodularTransformation::new(
                     mapped.rotation,
@@ -212,7 +212,7 @@ impl Normalizer {
         coset_representatives.sort_by_key(|cr| {
             let is_identity = *cr.linear() == Matrix3::<i32>::identity()
                 && cr
-                    .origin_shift
+                    .origin_shift()
                     .iter()
                     .all(|&v| (v - v.round()).abs() < 1e-8);
             !is_identity
@@ -359,7 +359,7 @@ mod tests {
             normalizer.coset_representatives.iter().any(|cr| {
                 *cr.linear() == UnimodularLinear::identity()
                     && cr
-                        .origin_shift
+                        .origin_shift()
                         .iter()
                         .all(|&v| (v - v.round()).abs() < 1e-6)
             }),
@@ -609,7 +609,7 @@ mod tests {
         assert_eq!(*operations[0].linear(), UnimodularLinear::identity());
         assert!(
             operations[0]
-                .origin_shift
+                .origin_shift()
                 .iter()
                 .all(|&v| (v - v.round()).abs() < 1e-8)
         );

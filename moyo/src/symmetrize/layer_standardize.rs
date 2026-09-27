@@ -184,7 +184,7 @@ impl StandardizedLayerCell {
         // prim_transformation * (conv_trans_linear, 0)
         let transformation = Transformation::new(
             prim_transformation.linear() * conv_trans_linear,
-            prim_transformation.origin_shift,
+            *prim_transformation.origin_shift(),
         );
 
         if rotate_basis {
@@ -292,7 +292,7 @@ fn standardize_oblique_layer_cell(
     }
     UnimodularTransformation::new(
         lifted * transformation_to_prim_std.linear(),
-        lifted.map(|e| e as f64) * transformation_to_prim_std.origin_shift,
+        lifted.map(|e| e as f64) * transformation_to_prim_std.origin_shift(),
     )
 }
 
