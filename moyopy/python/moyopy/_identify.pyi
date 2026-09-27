@@ -15,8 +15,12 @@ class PointGroup:
         prim_rotations : list[list[list[int]]]
             Rotation matrices in the primitive cell.
         basis : list[list[float]] | None
-            Row-wise basis vectors of the primitive lattice. If ``None``, an identity basis
-            is assumed.
+            Row-wise basis vectors of the primitive lattice, of either handedness.
+            When given, the lattice is reduced to a right-handed basis before matching;
+            the returned transformation refers to the original input basis.
+            If ``None``, operations must already use a reduced primitive basis with a
+            right-handed reference orientation. Matching then uses only proper
+            transformations; the actual Cartesian handedness cannot be inferred.
         """
     @property
     def arithmetic_number(self) -> int:
@@ -50,8 +54,12 @@ class SpaceGroup:
         prim_translations : list[list[float]]
             Translation vectors of the symmetry operations of the primitive cell.
         basis : list[list[float]] | None
-            Row-wise basis vectors of the primitive lattice. If ``None``, an identity basis
-            is assumed.
+            Row-wise basis vectors of the primitive lattice, of either handedness.
+            When given, the lattice is reduced to a right-handed basis before matching;
+            the returned transformation refers to the original input basis.
+            If ``None``, operations must already use a reduced primitive basis with a
+            right-handed reference orientation. Matching then uses only proper
+            transformations; the actual Cartesian handedness cannot be inferred.
         setting : Setting | None
             Preference for the standardized setting of the detected space-group type.
         epsilon : float
@@ -148,8 +156,12 @@ class MagneticSpaceGroup:
         prim_time_reversals : list[bool]
             Time-reversal flag for each magnetic operation of the primitive cell.
         basis : list[list[float]] | None
-            Row-wise basis vectors of the primitive lattice. If ``None``, an identity basis
-            is assumed.
+            Row-wise basis vectors of the primitive lattice, of either handedness.
+            When given, the lattice is reduced to a right-handed basis before matching;
+            the returned transformation refers to the original input basis.
+            If ``None``, operations must already use a reduced primitive basis with a
+            right-handed reference orientation. Matching then uses only proper
+            transformations; the actual Cartesian handedness cannot be inferred.
         epsilon : float
             Numerical tolerance for matching translations.
         """

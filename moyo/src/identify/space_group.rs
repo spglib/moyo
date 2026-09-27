@@ -25,6 +25,8 @@ pub struct SpaceGroup {
 
 impl SpaceGroup {
     /// Identify the space group from the primitive operations.
+    /// Operations must use a reduced primitive basis with a right-handed reference
+    /// orientation. Use [`Self::from_lattice`] when the input lattice is available.
     /// epsilon: tolerance for comparing translation parts
     pub fn new(
         prim_operations: &Operations,
@@ -75,6 +77,11 @@ impl SpaceGroup {
         Err(MoyoError::SpaceGroupTypeIdentificationError)
     }
 
+    /// Identify primitive operations expressed in either handedness.
+    ///
+    /// The returned `(P, p)` maps the original input to the database primitive
+    /// setting: `A_db = A_input P` and `x_db = P^-1 (x_input - p)`.
+    /// Its determinant has the sign of the input basis determinant.
     pub fn from_lattice(
         lattice: &Lattice,
         prim_operations: &Operations,
