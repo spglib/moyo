@@ -127,7 +127,7 @@ impl LayerGroup {
         Ok(LayerGroup {
             number: reduced.number,
             hall_number: reduced.hall_number,
-            transformation: reduced.transformation * to_reduced,
+            transformation: to_reduced * reduced.transformation,
         })
     }
 }

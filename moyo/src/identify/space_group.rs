@@ -89,7 +89,8 @@ impl SpaceGroup {
         Ok(SpaceGroup {
             number: reduced_space_group.number,
             hall_number: reduced_space_group.hall_number,
-            transformation: reduced_space_group.transformation * to_reduced,
+            // A_db = (A_input T) P; the reduced-basis origin shift also maps through T.
+            transformation: to_reduced * reduced_space_group.transformation,
         })
     }
 

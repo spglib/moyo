@@ -155,7 +155,7 @@ impl MagneticSpaceGroup {
         let reduced_magnetic_space_group = Self::new(&reduced_prim_mag_operations, epsilon)?;
         Ok(Self {
             uni_number: reduced_magnetic_space_group.uni_number,
-            transformation: reduced_magnetic_space_group.transformation * to_reduced,
+            transformation: to_reduced * reduced_magnetic_space_group.transformation,
         })
     }
 
