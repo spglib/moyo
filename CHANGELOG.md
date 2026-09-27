@@ -18,6 +18,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 ### moyopy
 
 - Make `niggli_reduce`, `delaunay_reduce`, and `minkowski_reduce` return right-handed bases for either input handedness. Reduction predicates continue to test geometric conditions independently of handedness (#473).
+- Document the handedness and input-to-database transformation contracts of lattice-aware identification, including the right-handed reference convention when `basis` is omitted. Add end-to-end regression coverage of all 11 enantiomorphic pairs, centered cells, and supercells without an external symmetry-library dependency (#473).
 
 ## v0.20.0 - 2026-09-26
 
