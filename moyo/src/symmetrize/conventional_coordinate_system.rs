@@ -107,7 +107,7 @@ impl ConventionalCoordinateSystem {
         // prim_transformation * (conv_trans_linear, 0)
         let transformation = Transformation::new(
             prim_transformation.linear() * conv_trans_linear,
-            prim_transformation.origin_shift,
+            *prim_transformation.origin_shift(),
         );
 
         Ok(Self {
@@ -130,7 +130,7 @@ fn standardize_triclinic_cell(
     let (_, niggli_linear) = lattice_prim_std_tmp.unchecked_niggli_reduce();
     UnimodularTransformation::new(
         niggli_linear * transformation_to_prim_std.linear(),
-        transformation_to_prim_std.origin_shift,
+        *transformation_to_prim_std.origin_shift(),
     )
 }
 
@@ -180,7 +180,7 @@ mod tests {
         assert_relative_eq!(conv_basis.column(2).norm(), 5.0, epsilon = 1e-8);
 
         let correction = to_input * selected.prim_transformation.clone();
-        assert!(correction.origin_shift.norm() > 1e-3);
+        assert!(correction.origin_shift().norm() > 1e-3);
         assert_eq!(selected.conv_trans_linear, Centering::I.linear());
         assert_eq!(
             selected.transformation.linear,
@@ -188,7 +188,7 @@ mod tests {
         );
         assert_relative_eq!(
             selected.transformation.origin_shift,
-            selected.prim_transformation.origin_shift
+            *selected.prim_transformation.origin_shift()
         );
 
         let transformed = selected

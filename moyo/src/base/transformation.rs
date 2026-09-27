@@ -39,7 +39,8 @@ pub(crate) fn lattice_points(linear: &Linear) -> Vec<Vector3<i32>> {
 
 /// Change of origin and primitive basis with determinant +1 or -1.
 ///
-/// The linear part is immutable to preserve unimodularity and its cached inverse.
+/// The linear part and origin shift are immutable. The linear part's immutability
+/// preserves unimodularity and its cached inverse.
 ///
 /// ```compile_fail
 /// use moyo::base::UnimodularTransformation;
@@ -47,10 +48,17 @@ pub(crate) fn lattice_points(linear: &Linear) -> Vec<Vector3<i32>> {
 /// let mut transformation = UnimodularTransformation::from_linear(Matrix3::identity());
 /// transformation.linear = Matrix3::zeros();
 /// ```
+///
+/// ```compile_fail
+/// use moyo::base::UnimodularTransformation;
+/// use nalgebra::Vector3;
+/// let mut transformation = UnimodularTransformation::from_origin_shift(Vector3::zeros());
+/// transformation.origin_shift = Vector3::zeros();
+/// ```
 #[derive(Debug, Clone, Serialize)]
 pub struct UnimodularTransformation {
     linear: UnimodularLinear,
-    pub origin_shift: OriginShift,
+    origin_shift: OriginShift,
     // Inverse of unimodular matrix is also unimodular
     linear_inv: UnimodularLinear,
 }
@@ -102,6 +110,11 @@ impl UnimodularTransformation {
     /// Immutable linear part of this transformation.
     pub fn linear(&self) -> &UnimodularLinear {
         &self.linear
+    }
+
+    /// Immutable origin shift of this transformation.
+    pub fn origin_shift(&self) -> &OriginShift {
+        &self.origin_shift
     }
 
     /// Exact determinant of the linear part, either +1 or -1.
@@ -573,11 +586,11 @@ mod tests {
         );
         let product: ProperUnimodularTransformation = left.clone() * right.clone();
         assert_eq!(*product.linear(), matrix![2, 1, 0; 1, 1, 0; 0, 0, 1]);
-        assert_relative_eq!(product.origin_shift, vector![0.75, 0.5, 0.25]);
+        assert_relative_eq!(*product.origin_shift(), vector![0.75, 0.5, 0.25]);
         assert_eq!(product.determinant(), 1);
         let inverse: ProperUnimodularTransformation = product.inverse();
         assert_eq!(*inverse.linear(), matrix![1, -1, 0; -1, 2, 0; 0, 0, 1]);
-        assert_relative_eq!(inverse.origin_shift, vector![-0.25, -0.25, -0.25]);
+        assert_relative_eq!(*inverse.origin_shift(), vector![-0.25, -0.25, -0.25]);
         let cell = Cell::new(
             Lattice::new(matrix![3.0, 0.0, 0.0; 0.2, 4.0, 0.0; 0.1, 0.3, 5.0]),
             vec![vector![0.13, 0.27, 0.41]],
@@ -610,7 +623,7 @@ mod tests {
         );
         let restored = ProperUnimodularTransformation::try_from(general).unwrap();
         assert_eq!(restored.linear(), proper.linear());
-        assert_relative_eq!(restored.origin_shift, proper.origin_shift);
+        assert_relative_eq!(*restored.origin_shift(), *proper.origin_shift());
 
         let mirror = UnimodularTransformation::from_linear(matrix![-1, 0, 0; 0, 1, 0; 0, 0, 1]);
         assert_eq!(
@@ -621,8 +634,8 @@ mod tests {
         let right: UnimodularTransformation = proper * mirror.clone();
         assert_eq!(left.determinant(), -1);
         assert_eq!(right.determinant(), -1);
-        assert_relative_eq!(left.origin_shift, vector![-0.25, 0.0, 0.0]);
-        assert_relative_eq!(right.origin_shift, vector![0.25, 0.0, 0.0]);
+        assert_relative_eq!(*left.origin_shift(), vector![-0.25, 0.0, 0.0]);
+        assert_relative_eq!(*right.origin_shift(), vector![0.25, 0.0, 0.0]);
         let even: UnimodularTransformation = mirror.clone() * mirror;
         assert!(ProperUnimodularTransformation::try_from(even).is_ok());
     }

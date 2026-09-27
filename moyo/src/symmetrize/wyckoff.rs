@@ -166,7 +166,8 @@ pub(crate) fn wyckoff_positions_under_normalizer(
             if representative_wyckoffs[orbit].is_some() {
                 continue;
             }
-            let transformed = (linear * positions[i] + op.origin_shift).map(|e| e.rem_euclid(1.0));
+            let transformed =
+                (linear * positions[i] + op.origin_shift()).map(|e| e.rem_euclid(1.0));
             if let Some(wyckoff) = iter_wyckoff_positions(hall_number, orbit_multiplicities[orbit])
                 .find(|w| match_wyckoff_coordinates(&transformed, w.coordinates, lattice, symprec))
                 .cloned()
