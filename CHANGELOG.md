@@ -15,11 +15,13 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 - Support orientation-reversing affine coordinate transformations with multiplicity given by the absolute determinant. Bulk primitive search consequently uses right-handed bases, and left-handed inputs produce right-handed standardized cells with signed input-to-standardized transformations.
 - Fix the returned transformations in lattice-aware point-, space-, magnetic-space-, and layer-group identification by composing reduction and database matching in input-to-database order, including the origin shift (#473).
 - Compose triclinic and oblique-layer standardization reductions after the identified coordinate transformation. Preserve the input-basis origin shift during layer reduction (#473).
+- Verify Euclidean normalizer covariance under passive rebasing, including discrete and continuous translations and `preserve_chirality` for either input handedness (#473).
 
 ### moyopy
 
 - Make `niggli_reduce`, `delaunay_reduce`, and `minkowski_reduce` return right-handed bases for either input handedness. Reduction predicates continue to test geometric conditions independently of handedness (#473).
 - Document the handedness and input-to-database transformation contracts of lattice-aware identification, including the right-handed reference convention when `basis` is omitted. Add end-to-end regression coverage of all 11 enantiomorphic pairs, centered cells, and supercells without an external symmetry-library dependency (#473).
+- Cover passive rebasing of magnetic datasets for construct types I–IV, collinear/noncollinear and polar/axial moments, centered cells, and supercells. Regressions check priming, standardized cells, signed transformations, moments, and site mappings without an external symmetry-library dependency (#473).
 
 ## v0.20.0 - 2026-09-26
 
