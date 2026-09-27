@@ -152,6 +152,7 @@ pub struct MoyoDataset {
     // Standardized cell
     // ------------------------------------------------------------------------
     /// Standardized cell.
+    /// Its basis is right-handed for either input handedness and either `rotate_basis` value.
     ///
     /// The selected coordinate system, before lattice and position refinement, is
     ///
@@ -165,6 +166,7 @@ pub struct MoyoDataset {
     /// for refinement and Cartesian orientation.
     pub std_cell: Cell,
     /// Linear part of the transformation from the input cell to [`Self::std_cell`].
+    /// Its determinant has the same sign as the input basis determinant.
     pub std_linear: Matrix3<f64>,
     /// Origin shift of the transformation from the input cell to [`Self::std_cell`].
     pub std_origin_shift: OriginShift,
@@ -177,11 +179,13 @@ pub struct MoyoDataset {
     // Primitive standardized cell
     // ------------------------------------------------------------------------
     /// Primitive standardized cell.
+    /// Its basis is right-handed for either input handedness and either `rotate_basis` value.
     ///
     /// Uses `prim_std_linear` and `prim_std_origin_shift` with the same
     /// pre-refinement coordinate convention as [`Self::std_cell`].
     pub prim_std_cell: Cell,
     /// Linear part of the transformation from the input cell to [`Self::prim_std_cell`].
+    /// Its determinant has the same sign as the input basis determinant.
     pub prim_std_linear: Matrix3<f64>,
     /// Origin shift of the transformation from the input cell to [`Self::prim_std_cell`].
     pub prim_std_origin_shift: OriginShift,
@@ -826,13 +830,16 @@ pub struct MoyoMagneticDataset<M: MagneticMoment> {
     // Standardized magnetic cell
     // ------------------------------------------------------------------------
     /// Standardized magnetic cell.
+    /// Its basis is right-handed for either input handedness and either `rotate_basis` value.
     ///
     /// Uses the same pre-refinement coordinate convention as [`MoyoDataset::std_cell`].
     /// Magnetic moments are rotated by `std_rotation_matrix`, then averaged under
     /// the magnetic group using the refined lattice. Lattice stretch is not applied
     /// to magnetic moments.
+    /// Passive basis changes leave Cartesian magnetic moments unchanged.
     pub std_mag_cell: MagneticCell<M>,
     /// Linear part of the transformation from the input magnetic cell to [`Self::std_mag_cell`].
+    /// Its determinant has the same sign as the input basis determinant.
     pub std_linear: Matrix3<f64>,
     /// Origin shift of the transformation from the input magnetic cell to [`Self::std_mag_cell`].
     pub std_origin_shift: OriginShift,
@@ -843,11 +850,13 @@ pub struct MoyoMagneticDataset<M: MagneticMoment> {
     // Primitive standardized magnetic cell
     // ------------------------------------------------------------------------
     /// Primitive standardized magnetic cell.
+    /// Its basis is right-handed for either input handedness and either `rotate_basis` value.
     ///
     /// Uses `prim_std_linear` and `prim_std_origin_shift` with the same
     /// pre-refinement coordinate convention as [`Self::std_mag_cell`].
     pub prim_std_mag_cell: MagneticCell<M>,
     /// Linear part of the transformation from the input magnetic cell to [`Self::prim_std_mag_cell`].
+    /// Its determinant has the same sign as the input basis determinant.
     pub prim_std_linear: Matrix3<f64>,
     /// Origin shift of the transformation from the input magnetic cell to [`Self::prim_std_mag_cell`].
     pub prim_std_origin_shift: OriginShift,

@@ -24,9 +24,9 @@ import wasm_url from '@spglib/moyo-wasm/moyo_wasm_bg.wasm?url'
 
 await init(wasm_url)
 
-// Build a JSON cell (row-major lattice matrix; fractional positions; atomic numbers)
+// Cartesian basis vectors a, b, c; fractional positions; atomic numbers
 const cell: MoyoCell = {
-  lattice: { basis: [m00, m01, m02, m10, m11, m12, m20, m21, m22] },
+  lattice: { basis: [ax, ay, az, bx, by, bz, cx, cy, cz] },
   positions: [[fx, fy, fz], ...],
   numbers: [int, ...],
 }
@@ -39,6 +39,28 @@ console.log(`Wyckoffs: ${result.wyckoffs.join(', ')}`)
 ```
 
 The package exports TypeScript types generated from Rust (e.g. `MoyoDataset`).
+
+## Standardized cells and handedness
+
+`analyze_cell` accepts either input handedness. A passive basis change, with
+fractional positions transformed consistently, preserves the physical
+space-group type. Physically reflecting a crystal instead exchanges the members
+of an enantiomorphic pair.
+
+Both `std_cell` and `prim_std_cell` have right-handed bases. Their coordinate
+transformations, `std_linear` and `prim_std_linear`, have negative determinants
+for left-handed input and positive determinants for right-handed input.
+`std_rotation_matrix` is a proper Cartesian rotation with determinant +1.
+
+All flat matrix fields use column-major storage: element `(i, j)` is at index
+`i + 3*j`. In particular, `lattice.basis` concatenates the three Cartesian basis
+vectors. With these column-wise matrices, the selected coordinates satisfy
+`A_selected = A_input * std_linear` and
+`x_selected = inverse(std_linear) * (x_input - std_origin_shift)`.
+Lattice and position refinement follow this coordinate selection, then the
+Cartesian rotation is applied. See the
+[returned-cell specification](https://spglib.github.io/moyo/standardization/#returned-cell-specification)
+for the symmetric refinement and primitive/conventional relation.
 
 ## Development
 

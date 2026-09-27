@@ -124,6 +124,7 @@ impl PyMoyoDataset {
     // Standardized cell
     // ------------------------------------------------------------------------
     /// Standardized cell.
+    /// Its basis is right-handed for either input handedness and either `rotate_basis` value.
     ///
     /// The selected coordinate system, before lattice and position refinement, is
     ///
@@ -141,6 +142,7 @@ impl PyMoyoDataset {
     }
 
     /// Linear part of the transformation from the input cell to ``std_cell``.
+    /// Its determinant has the same sign as the input basis determinant.
     #[getter]
     pub fn std_linear(&self) -> [[f64; 3]; 3] {
         self.0.std_linear_as_array()
@@ -169,6 +171,7 @@ impl PyMoyoDataset {
     // Primitive standardized cell
     // ------------------------------------------------------------------------
     /// Primitive standardized cell.
+    /// Its basis is right-handed for either input handedness and either `rotate_basis` value.
     ///
     /// Uses ``prim_std_linear`` and ``prim_std_origin_shift`` with the same
     /// pre-refinement coordinate convention as ``std_cell``.
@@ -178,6 +181,7 @@ impl PyMoyoDataset {
     }
 
     /// Linear part of the transformation from the input cell to ``prim_std_cell``.
+    /// Its determinant has the same sign as the input basis determinant.
     #[getter]
     pub fn prim_std_linear(&self) -> [[f64; 3]; 3] {
         self.0.prim_std_linear_as_array()

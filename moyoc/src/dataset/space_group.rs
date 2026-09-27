@@ -57,8 +57,10 @@ pub struct MoyoDataset {
     // Standardized cell
     // ------------------------------------------------------------------------
     /// Standardized cell
+    /// Its basis is right-handed for either input handedness and either `rotate_basis` value.
     pub std_cell: MoyoCell,
     /// Linear part of the transformation from the input cell to `std_cell`.
+    /// Its determinant has the same sign as the input basis determinant.
     pub std_linear: [[f64; 3]; 3],
     /// Origin shift of the transformation from the input cell to `std_cell`.
     pub std_origin_shift: [f64; 3],
@@ -71,8 +73,10 @@ pub struct MoyoDataset {
     // Primitive standardized cell
     // ------------------------------------------------------------------------
     /// Primitive standardized cell
+    /// Its basis is right-handed for either input handedness and either `rotate_basis` value.
     pub prim_std_cell: MoyoCell,
     /// Linear part of the transformation from the input cell to `prim_std_cell`.
+    /// Its determinant has the same sign as the input basis determinant.
     pub prim_std_linear: [[f64; 3]; 3],
     /// Origin shift of the transformation from the input cell to `prim_std_cell`.
     pub prim_std_origin_shift: [f64; 3],

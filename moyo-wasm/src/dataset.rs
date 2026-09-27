@@ -20,6 +20,8 @@ pub struct MoyoCell {
 #[derive(Serialize, Deserialize, Tsify)]
 #[tsify(into_wasm_abi, from_wasm_abi)]
 pub struct Lattice {
+    /// Cartesian basis vectors concatenated as `[ax, ay, az, bx, by, bz, cx, cy, cz]`.
+    /// This is the column-major storage of the column-wise basis matrix.
     pub basis: [f64; 9],
 }
 
@@ -41,12 +43,20 @@ pub struct MoyoDataset {
     pub orbits: Vec<usize>,
     pub wyckoffs: Vec<String>,
     pub site_symmetry_symbols: Vec<String>,
+    /// Symmetry-refined conventional cell with a right-handed basis.
     pub std_cell: MoyoCell,
+    /// Input-to-standardized coordinate transformation, stored column-major.
+    /// Its determinant has the same sign as the input basis determinant.
     pub std_linear: [f64; 9],
+    /// Input-basis origin shift: x_selected = inverse(std_linear) * (x_input - shift).
     pub std_origin_shift: [f64; 3],
+    /// Proper Cartesian rotation after symmetric lattice refinement, stored column-major.
     pub std_rotation_matrix: [f64; 9],
     pub pearson_symbol: String,
+    /// Symmetry-refined primitive cell with a right-handed basis.
     pub prim_std_cell: MoyoCell,
+    /// Input-to-primitive coordinate transformation, stored column-major.
+    /// Its determinant has the same sign as the input basis determinant.
     pub prim_std_linear: [f64; 9],
     pub prim_std_origin_shift: [f64; 3],
     pub mapping_std_prim: Vec<usize>,
@@ -104,11 +114,14 @@ fn convert_angle_tolerance(tol: InternalAngleTolerance) -> AngleTolerance {
 
 /// Analyze the symmetry of a crystal structure and return the full dataset.
 ///
-/// `cell_json` is a JSON-encoded [`MoyoCell`] (row-major `lattice.basis`,
+/// `cell_json` is a JSON-encoded [`MoyoCell`] (concatenated Cartesian basis vectors,
 /// fractional `positions`, atomic `numbers`). `symprec` is the distance
 /// tolerance (in the same length unit as the lattice). `setting` selects the
 /// standardization convention: `"Spglib"` for spglib-compatible settings,
 /// anything else (e.g. `"Standard"`) for the ITA standard setting.
+/// Both returned standardized bases are right-handed. Passive rebasing preserves
+/// the physical space-group type, while a Cartesian mirror exchanges enantiomorphs.
+/// Lattice and positions are refined, then a proper Cartesian rotation is applied.
 #[wasm_bindgen]
 pub fn analyze_cell(cell_json: &str, symprec: f64, setting: &str) -> Result<MoyoDataset, JsValue> {
     let json_value: serde_json::Value = serde_json::from_str(cell_json)

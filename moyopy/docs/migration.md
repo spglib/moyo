@@ -229,6 +229,19 @@ Replace it with `magnetic_operations_from_uni_number(uni_number)`.
 
 ## Standardization and finding primitive cell
 
+Both conventional and primitive standardized bulk bases are right-handed for
+either input handedness and either value of `rotate_basis`. The determinants of
+`std_linear` and `prim_std_linear` have the same sign as the input basis
+determinant; they are negative for left-handed input. `std_rotation_matrix`
+remains a proper Cartesian rotation (determinant +1), or identity when rotation
+is disabled. Lattice and position refinement still apply in both cases.
+
+These contracts also apply to magnetic datasets. A passive basis change requires
+transforming fractional positions with the basis and leaves Cartesian magnetic
+moments unchanged, including axial moments. This preserves the physical
+space-group type; a Cartesian reflection is a different operation. Layer
+datasets retain their separate orientation convention.
+
 ### `spglib.standardize_cell()`
 
 Create a `MoyoDataset` and read the desired standardized cell:
