@@ -264,8 +264,8 @@ impl StandardizedLayerCell {
 /// already accepted.
 ///
 /// The in-plane reduction `(lifted, 0)` is composed *after* the LG
-/// transformation `(L, s)`, giving `(lifted * L, lifted * s)` (the origin shift
-/// must be carried through `lifted`, not left bare). But the reduction is only
+/// transformation `(L, s)`, giving `(L * lifted, s)`; the origin shift remains
+/// expressed in the input basis. But the reduction is only
 /// applied when `lifted` *normalizes* the canonical operation set
 /// `canonical_prim_ops`: for non-symmorphic oblique groups (LG 5, 7) the glide
 /// has an intrinsic in-plane translation that a generic basis change rotates
@@ -290,10 +290,7 @@ fn standardize_oblique_layer_cell(
     if !normalizes_operations(&lifted_only, canonical_prim_ops) {
         return transformation_to_prim_std.clone();
     }
-    UnimodularTransformation::new(
-        lifted * transformation_to_prim_std.linear(),
-        lifted.map(|e| e as f64) * transformation_to_prim_std.origin_shift(),
-    )
+    transformation_to_prim_std.clone() * lifted_only
 }
 
 /// Whether the basis change `t` maps the operation set onto itself (same
@@ -392,7 +389,7 @@ fn symmetrize_layer_lattice(lattice: &Lattice, rotations: &Rotations) -> (Lattic
 
 #[cfg(test)]
 mod tests {
-    use nalgebra::{Vector3, matrix};
+    use nalgebra::{Vector3, matrix, vector};
 
     use super::*;
     use crate::base::{AngleTolerance, Cell, Lattice, traverse};
@@ -400,6 +397,71 @@ mod tests {
     use crate::search::{LayerPrimitiveCell, LayerPrimitiveSymmetrySearch};
 
     const SYMPREC: f64 = 1e-4;
+
+    #[rstest::rstest]
+    fn test_oblique_reduction_after_identification(#[values(1.0, -1.0)] handedness: f64) {
+        let identified = LayerCell::new(
+            Cell::new(
+                Lattice::new(matrix![
+                    4.0, 0.0, 0.0;
+                    3.0, 2.0, 0.0;
+                    0.0, 0.0, 5.0 * handedness;
+                ]),
+                vec![vector![0.17, 0.23, 1.2], vector![-0.17, -0.23, -1.2]],
+                vec![1, 1],
+            ),
+            SYMPREC,
+            AngleTolerance::Default,
+        )
+        .unwrap();
+        let to_identified = UnimodularTransformation::new(
+            matrix![1, 1, 0; 0, 1, 0; 0, 0, 1],
+            vector![0.13, 0.27, 1.7],
+        );
+        let input = to_identified.inverse().transform_layer_cell(&identified);
+        let canonical = LayerHallSymbol::from_hall_number(2)
+            .unwrap()
+            .primitive_traverse();
+        let input_operations = to_identified.inverse().transform_operations(&canonical);
+        let selected = standardize_oblique_layer_cell(&input, &to_identified, &canonical);
+        let reduced = selected.transform_layer_cell(&input);
+
+        // The input-basis origin is unchanged by a subsequent linear reduction.
+        assert_relative_eq!(
+            selected.origin_shift(),
+            to_identified.origin_shift(),
+            epsilon = 1e-12
+        );
+        let basis = reduced.lattice().basis();
+        let a = basis.column(0);
+        let b = basis.column(1);
+        assert!(a.norm_squared() <= b.norm_squared() + 1e-12);
+        assert!(2.0 * a.dot(&b).abs() <= a.norm_squared() + 1e-12);
+        assert_relative_eq!(
+            basis.determinant(),
+            input.lattice().basis().determinant(),
+            epsilon = 1e-10
+        );
+        assert_relative_eq!(
+            basis.column(2),
+            input.lattice().basis().column(2),
+            epsilon = 1e-12
+        );
+        for (position, reference) in reduced.positions().iter().zip(identified.positions()) {
+            // Heights outside the unit cell must not be wrapped.
+            assert_relative_eq!(position.z, reference.z, epsilon = 1e-12);
+        }
+        for operation in selected.transform_operations(&input_operations) {
+            let target = canonical
+                .iter()
+                .find(|target| target.rotation == operation.rotation)
+                .unwrap();
+            let mut delta = operation.translation - target.translation;
+            delta.x -= delta.x.round();
+            delta.y -= delta.y.round();
+            assert!(delta.norm() < 1e-12);
+        }
+    }
 
     /// Build a layer cell, run primitive search + symmetry search +
     /// identification + standardization, and return the resulting
