@@ -4,6 +4,8 @@ import pytest
 
 from moyopy import Cell, CollinearMagneticCell, NonCollinearMagneticCell
 
+pytest.register_assert_rewrite("_helpers")
+
 
 @pytest.fixture
 def wurtzite() -> Cell:
