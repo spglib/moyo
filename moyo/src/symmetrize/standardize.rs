@@ -500,11 +500,6 @@ mod tests {
     }
 
     #[test]
-    fn test_standardized_cell_cubic_specification() {
-        check_hall_setting(523); // Fm-3m, including a general orbit and a special orbit.
-    }
-
-    #[test]
     fn test_standardized_cell_all_hall_settings() {
         for hall_number in 1..=530 {
             check_hall_setting(hall_number);
