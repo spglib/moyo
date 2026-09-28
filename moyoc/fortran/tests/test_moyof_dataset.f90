@@ -3,7 +3,6 @@ program test_moyof_dataset
     use, intrinsic :: iso_c_binding
     implicit none
 
-    type(c_ptr) :: version_ptr
     type(c_ptr) :: dataset_ptr
     type(c_ptr) :: sgt_ptr
     type(c_ptr) :: operations_ptr
