@@ -32,7 +32,7 @@ def wurtzite() -> Cell:
 
 
 @pytest.fixture
-def rutile_type3() -> CollinearMagneticCell:
+def rutile_cell() -> Cell:
     basis = [
         [1.0, 0.0, 0.0],
         [0.0, 1.0, 0.0],
@@ -49,30 +49,21 @@ def rutile_type3() -> CollinearMagneticCell:
         [0.8, 0.2, 0.5],
     ]
     numbers = [2, 2, 1, 1, 1, 1]
+    return Cell(basis, positions, numbers)
+
+
+@pytest.fixture
+def rutile_type3(rutile_cell: Cell) -> CollinearMagneticCell:
     magnetic_moments = [0.7, -0.7, 0.0, 0.0, 0.0, 0.0]
 
-    magnetic_cell = CollinearMagneticCell(basis, positions, numbers, magnetic_moments)
+    magnetic_cell = CollinearMagneticCell(
+        rutile_cell.basis, rutile_cell.positions, rutile_cell.numbers, magnetic_moments
+    )
     return magnetic_cell
 
 
 @pytest.fixture
-def rutile_type3_noncollinear() -> NonCollinearMagneticCell:
-    basis = [
-        [1.0, 0.0, 0.0],
-        [0.0, 1.0, 0.0],
-        [0.0, 0.0, 1.0],
-    ]
-    positions = [
-        # Ti (2a)
-        [0.0, 0.0, 0.0],
-        [0.5, 0.5, 0.5],
-        # O (4f)
-        [0.3, 0.3, 0.0],
-        [0.7, 0.7, 0.0],
-        [0.2, 0.8, 0.5],
-        [0.8, 0.2, 0.5],
-    ]
-    numbers = [2, 2, 1, 1, 1, 1]
+def rutile_type3_noncollinear(rutile_cell: Cell) -> NonCollinearMagneticCell:
     magnetic_moments = [
         [0.7, 0.0, 0.0],
         [-0.7, 0.0, 0.0],
@@ -82,5 +73,7 @@ def rutile_type3_noncollinear() -> NonCollinearMagneticCell:
         [0.0, 0.0, 0.0],
     ]
 
-    magnetic_cell = NonCollinearMagneticCell(basis, positions, numbers, magnetic_moments)
+    magnetic_cell = NonCollinearMagneticCell(
+        rutile_cell.basis, rutile_cell.positions, rutile_cell.numbers, magnetic_moments
+    )
     return magnetic_cell

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from _helpers import REBASES, assert_proper_rotation
 
 from moyopy import (
     CollinearMagneticCell,
@@ -51,15 +52,7 @@ def _operation_keys(operations, linear=None, origin=None, index=1):
 @pytest.mark.parametrize("noncollinear", [False, True])
 @pytest.mark.parametrize("is_axial", [False, True])
 @pytest.mark.parametrize("rotate_basis", [False, True])
-@pytest.mark.parametrize(
-    "rebase",
-    [
-        pytest.param(np.eye(3, dtype=int), id="identity"),
-        pytest.param(np.diag([-1, 1, 1]), id="axis-flip"),
-        pytest.param(np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]]), id="odd-permutation"),
-        pytest.param(np.array([[0, -1, 2], [1, 0, 1], [0, 0, -1]]), id="skew-left"),
-    ],
-)
+@pytest.mark.parametrize("rebase", REBASES)
 def test_magnetic_passive_rebasing(
     uni_number, bns_number, index, noncollinear, is_axial, rotate_basis, rebase
 ):
@@ -135,10 +128,7 @@ def test_magnetic_passive_rebasing(
         np.equal.outer(dataset.orbits, dataset.orbits), np.equal.outer(numbers, numbers)
     )
     rotation = np.array(dataset.std_rotation_matrix)
-    np.testing.assert_allclose(rotation.T @ rotation, np.eye(3), atol=1e-8)
-    assert np.linalg.det(rotation) == pytest.approx(1)
-    if not rotate_basis:
-        np.testing.assert_allclose(rotation, np.eye(3), atol=1e-8)
+    assert_proper_rotation(rotation, rotate_basis)
     rotated_moments = moments @ rotation.T if noncollinear else moments
     for standardized, linear, shift, primitive in [
         (dataset.std_mag_cell, dataset.std_linear, dataset.std_origin_shift, False),

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+from _helpers import REBASES, assert_proper_rotation
 
 from moyopy import Cell, MoyoDataset, Setting, SpaceGroup, operations_from_number
 
@@ -44,12 +45,6 @@ HALL_NUMBERS = {
     212: 508,
     213: 509,
 }
-REBASES = [
-    pytest.param(np.eye(3, dtype=int), id="identity"),
-    pytest.param(np.diag([-1, 1, 1]), id="axis-flip"),
-    pytest.param(np.array([[0, 1, 0], [1, 0, 0], [0, 0, 1]]), id="odd-permutation"),
-    pytest.param(np.array([[0, -1, 2], [1, 0, 1], [0, 0, -1]]), id="skew-left"),
-]
 
 
 def _operation_keys(rotations, translations):
@@ -146,10 +141,7 @@ def test_enantiomorphic_handedness(pair, mirrored, rebase, rotate_basis):
         same_orbit = np.equal.outer(dataset.orbits, dataset.orbits)
         np.testing.assert_array_equal(same_orbit, np.equal.outer(numbers, numbers))
         rotation = np.array(dataset.std_rotation_matrix)
-        np.testing.assert_allclose(rotation.T @ rotation, np.eye(3), atol=1e-8)
-        assert np.linalg.det(rotation) == pytest.approx(1)
-        if not rotate_basis:
-            np.testing.assert_allclose(rotation, np.eye(3), atol=1e-8)
+        assert_proper_rotation(rotation, rotate_basis)
 
         for standardized, linear, shift in [
             (dataset.std_cell, dataset.std_linear, dataset.std_origin_shift),
@@ -352,10 +344,7 @@ def test_refined_wyckoff_handedness(
         np.equal.outer(dataset.mapping_std_prim, dataset.mapping_std_prim), same_primitive_site
     )
     rotation = np.array(dataset.std_rotation_matrix)
-    np.testing.assert_allclose(rotation.T @ rotation, np.eye(3), atol=1e-8)
-    assert np.linalg.det(rotation) == pytest.approx(1)
-    if not rotate_basis:
-        np.testing.assert_allclose(rotation, np.eye(3), atol=1e-8)
+    assert_proper_rotation(rotation, rotate_basis)
     for cell, linear in [
         (dataset.std_cell, dataset.std_linear),
         (dataset.prim_std_cell, dataset.prim_std_linear),
