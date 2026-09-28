@@ -123,15 +123,13 @@ describe("analyze_cell", () => {
   );
 
   // Settings tests
-  it.each([
-    ["Standard", "Standard"],
-    ["Spglib", "Spglib"],
-    ["spglib", "spglib"],
-    ["Unknown", "Unknown"],
-  ])("should work with %s setting", (setting) => {
-    const result = analyze_cell(JSON.stringify(simpleCubicCell), 1e-4, setting);
-    expect(result.hm_symbol).toBe("P m -3 m");
-  });
+  it.each(["Standard", "Spglib", "spglib", "Unknown"])(
+    "should work with %s setting",
+    (setting) => {
+      const result = analyze_cell(JSON.stringify(simpleCubicCell), 1e-4, setting);
+      expect(result.hm_symbol).toBe("P m -3 m");
+    },
+  );
 
   // Symprec tests
   it.each([1e-3, 1e-4, 1e-5, 1e-6])(
