@@ -2,6 +2,12 @@ import { describe, expect, it } from "vitest";
 import { analyze_cell } from "../pkg/moyo_wasm.js";
 
 describe("analyze_cell", () => {
+  const simpleCubicCell = {
+    lattice: { basis: [1, 0, 0, 0, 1, 0, 0, 0, 1] },
+    positions: [[0, 0, 0]],
+    numbers: [1],
+  };
+
   // Error handling tests
   it.each([
     ["invalid JSON", "not json", /Input is not valid JSON:/],
@@ -117,31 +123,19 @@ describe("analyze_cell", () => {
   );
 
   // Settings tests
-  it.each([
-    ["Standard", "Standard"],
-    ["Spglib", "Spglib"],
-    ["spglib", "spglib"],
-    ["Unknown", "Unknown"],
-  ])("should work with %s setting", (setting) => {
-    const cell = {
-      lattice: { basis: [1, 0, 0, 0, 1, 0, 0, 0, 1] },
-      positions: [[0, 0, 0]],
-      numbers: [1],
-    };
-    const result = analyze_cell(JSON.stringify(cell), 1e-4, setting);
-    expect(result.hm_symbol).toBe("P m -3 m");
-  });
+  it.each(["Standard", "Spglib", "spglib", "Unknown"])(
+    "should work with %s setting",
+    (setting) => {
+      const result = analyze_cell(JSON.stringify(simpleCubicCell), 1e-4, setting);
+      expect(result.hm_symbol).toBe("P m -3 m");
+    },
+  );
 
   // Symprec tests
   it.each([1e-3, 1e-4, 1e-5, 1e-6])(
     "should work with symprec %p",
     (symprec) => {
-      const cell = {
-        lattice: { basis: [1, 0, 0, 0, 1, 0, 0, 0, 1] },
-        positions: [[0, 0, 0]],
-        numbers: [1],
-      };
-      const result = analyze_cell(JSON.stringify(cell), symprec, "Standard");
+      const result = analyze_cell(JSON.stringify(simpleCubicCell), symprec, "Standard");
       expect(result.hm_symbol).toBe("P m -3 m");
       expect(result.symprec).toBe(symprec);
     },
