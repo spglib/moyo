@@ -1,3 +1,5 @@
+mod common;
+
 #[macro_use]
 extern crate approx;
 
@@ -91,36 +93,13 @@ fn assert_dataset(
     assert_eq!(prim_std_dataset.hall_number, dataset.hall_number);
     assert_eq!(prim_std_dataset.pearson_symbol, dataset.pearson_symbol);
 
-    // prim_std_linear should be an inverse of an integer matrix
-    let prim_std_linear_inv = dataset
-        .prim_std_linear
-        .map(|e| e as f64)
-        .try_inverse()
-        .unwrap();
-    assert_relative_eq!(
-        prim_std_linear_inv,
-        prim_std_linear_inv.map(|e| e.round()),
-        epsilon = 1e-8
-    );
-
-    // Refinement adds a symmetric positive stretch before the rigid rotation.
-    let stretch = dataset.std_rotation_matrix.transpose()
-        * dataset.std_cell.lattice.basis
-        * (cell.lattice.basis * dataset.std_linear)
-            .try_inverse()
-            .unwrap();
-    assert_relative_eq!(stretch, stretch.transpose(), epsilon = 1e-12);
-    assert!(stretch.symmetric_eigen().eigenvalues.min() > 0.0);
-    assert_relative_eq!(
-        dataset.std_rotation_matrix.transpose() * dataset.std_rotation_matrix,
-        Matrix3::identity(),
-        epsilon = 1e-12
-    );
-    // The same stretch and rotation apply to the primitive cell.
-    assert_relative_eq!(
-        dataset.std_rotation_matrix * stretch * cell.lattice.basis * dataset.prim_std_linear,
-        dataset.prim_std_cell.lattice.basis,
-        epsilon = 1e-10
+    common::assert_lattice_standardization(
+        &cell.lattice.basis,
+        &dataset.std_cell.lattice.basis,
+        &dataset.prim_std_cell.lattice.basis,
+        &dataset.std_linear,
+        &dataset.prim_std_linear,
+        &dataset.std_rotation_matrix,
     );
     // TODO: std_origin_shift
     // TODO: prim_origin_shift
