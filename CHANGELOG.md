@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only dependency or build updates with no user-visible changes.
 
+## Unreleased
+
+### moyopy
+
+- Drop Python 3.10 support. Require Python 3.11 or later and build wheels with the Python 3.11 stable ABI. Use `typing.Self` and remove the direct `typing-extensions` dependency (#487).
+
 ## v0.21.0 - 2026-09-28
 
 ### moyo
