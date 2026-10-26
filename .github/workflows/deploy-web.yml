@@ -44,12 +44,9 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install wasm-pack
-        uses: jetli/wasm-pack-action@0d096b08b4e5a7de8c28de67e11e945404e9eefa # v0.4.0
+        uses: taiki-e/install-action@4cef1412cce204788f482e778a0b9187f9626a29 # v2.87.21
         with:
-          # Pin instead of `latest`: the action's "latest" resolution falls back
-          # to the stale default v0.9.1, which predates Cargo workspace
-          # inheritance and fails to parse `license.workspace = true`.
-          version: 'v0.15.0'
+          tool: wasm-pack@0.15.0
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
