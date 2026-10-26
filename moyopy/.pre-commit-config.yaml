@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.17.0
+    rev: v0.17.1
     hooks:
       - id: ruff-format
         types_or: [python, pyi, jupyter]
@@ -8,6 +8,6 @@ repos:
         args: [ "--fix", "--show-fixes"]
         types_or: [python, pyi]
   - repo: https://github.com/astral-sh/uv-pre-commit
-    rev: 0.13.0  # uv version.
+    rev: 0.13.1  # uv version.
     hooks:
     - id: uv-lock
