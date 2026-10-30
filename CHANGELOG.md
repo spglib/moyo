@@ -8,6 +8,10 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 
 ## Unreleased
 
+### moyo
+
+- Fix periodic neighbor searches near cell boundaries by using per-axis padding based on reciprocal-plane spacing. This prevents missed translations and symmetry operations in elongated and skewed cells (#499, #500).
+
 ### moyopy
 
 - Drop Python 3.10 support. Require Python 3.11 or later and build wheels with the Python 3.11 stable ABI. Use `typing.Self` and remove the direct `typing-extensions` dependency (#487).
