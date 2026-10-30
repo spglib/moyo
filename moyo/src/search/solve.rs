@@ -171,6 +171,9 @@ pub fn solve_correspondence(
     )
 }
 
+/// Reuse scratch buffers to avoid repeated allocations for rejected candidates.
+/// Reset partial matches on each attempt, and move successful mappings into the
+/// returned permutations instead of cloning them.
 #[inline]
 pub(super) fn solve_correspondence_with(
     neighbor_search: &PeriodicNeighborSearch,
