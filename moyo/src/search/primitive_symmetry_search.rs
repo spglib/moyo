@@ -1,8 +1,9 @@
 use itertools::iproduct;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, VecDeque};
 
 use log::debug;
 use nalgebra::{Matrix3, Vector3};
+use rustc_hash::{FxHashMap, FxHashSet};
 
 use super::{
     PrimitiveCell,
@@ -101,7 +102,8 @@ impl PrimitiveSymmetrySearch {
 
         // Recover operations by group multiplication
         let mut queue = VecDeque::new();
-        let mut visited = HashSet::from([Rotation::identity()]);
+        let mut visited = FxHashSet::default();
+        visited.insert(Rotation::identity());
         let mut operations = vec![];
         let mut permutations = vec![];
         queue.push_back((
@@ -145,7 +147,7 @@ impl PrimitiveSymmetrySearch {
     }
 
     fn check_closure(operations: &Operations, lattice: &Lattice, symprec: f64) -> bool {
-        let mut translations_map = HashMap::new();
+        let mut translations_map = FxHashMap::default();
         for operation in operations.iter() {
             translations_map.insert(operation.rotation, operation.translation);
         }
