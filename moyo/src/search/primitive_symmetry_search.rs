@@ -55,6 +55,8 @@ impl PrimitiveSymmetrySearch {
         let pivot_site_indices = pivot_site_indices(&primitive_cell.numbers);
         let mut symmetries_tmp = vec![];
         let src = pivot_site_indices[0];
+        let mut mapping = Vec::with_capacity(primitive_cell.num_atoms());
+        let mut visited = vec![false; primitive_cell.num_atoms()];
         for rotation in bravais_group.iter() {
             let rotated_positions = primitive_cell
                 .positions
@@ -64,11 +66,13 @@ impl PrimitiveSymmetrySearch {
             for dst in pivot_site_indices.iter() {
                 // Try to overlap the `src`-th site to the `dst`-th site
                 let translation = primitive_cell.positions[*dst] - rotated_positions[src];
-                if let Some(permutation) =
-                    solve_correspondence_with(&neighbor_search, primitive_cell, |i| {
-                        rotated_positions[i] + translation
-                    })
-                {
+                if let Some(permutation) = solve_correspondence_with(
+                    &neighbor_search,
+                    primitive_cell,
+                    |i| rotated_positions[i] + translation,
+                    &mut mapping,
+                    &mut visited,
+                ) {
                     symmetries_tmp.push((*rotation, translation, permutation));
                     // Do not break here because there may be multiple translations with the rough tolerance
                 }
