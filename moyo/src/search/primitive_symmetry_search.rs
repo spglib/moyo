@@ -104,7 +104,7 @@ impl PrimitiveSymmetrySearch {
 
         // Recover operations by group multiplication
         let mut queue = VecDeque::new();
-        let mut visited = HashSet::new();
+        let mut visited = HashSet::from([Rotation::identity()]);
         let mut operations = vec![];
         let mut permutations = vec![];
         queue.push_back((
@@ -113,15 +113,14 @@ impl PrimitiveSymmetrySearch {
         ));
         while !queue.is_empty() {
             let (ops_lhs, permutation_lhs) = queue.pop_front().unwrap();
-            if visited.contains(&ops_lhs.rotation) {
-                continue;
-            }
-            visited.insert(ops_lhs.rotation);
             operations.push(ops_lhs.clone());
             permutations.push(permutation_lhs.clone());
 
             for (ops_rhs, permutation_rhs) in operations_and_permutations.iter() {
                 let mut new_ops = ops_lhs.clone() * ops_rhs.clone();
+                if !visited.insert(new_ops.rotation) {
+                    continue;
+                }
                 new_ops.translation -= new_ops.translation.map(|e| e.round()); // Consider up to the translation subgroup
                 let new_permutation = permutation_lhs.clone() * permutation_rhs.clone();
                 queue.push_back((new_ops, new_permutation));
@@ -484,11 +483,64 @@ mod tests {
     use nalgebra::{Matrix3, Vector3, matrix};
     use test_log::test;
 
-    use super::{PrimitiveMagneticSymmetrySearch, search_bravais_group};
+    use super::{PrimitiveMagneticSymmetrySearch, PrimitiveSymmetrySearch, search_bravais_group};
     use crate::base::{
-        AngleTolerance, Collinear, Lattice, MagneticCell, NonCollinear,
+        AngleTolerance, Cell, Collinear, Lattice, MagneticCell, NonCollinear,
         RotationMagneticMomentAction,
     };
+
+    #[test]
+    fn test_closure_preserves_site_permutations() {
+        let mut positions = vec![Vector3::zeros()];
+        for axis in 0..3 {
+            for sign in [-1.0, 1.0] {
+                let mut position = Vector3::zeros();
+                position[axis] = 0.2 * sign;
+                positions.push(position);
+            }
+        }
+        let cell = Cell::new(
+            Lattice::new(Matrix3::identity()),
+            positions,
+            vec![0, 1, 1, 1, 1, 1, 1],
+        );
+        let search = PrimitiveSymmetrySearch::new(&cell, 1e-5, AngleTolerance::default()).unwrap();
+        assert_eq!(search.operations.len(), 48);
+        assert_eq!(search.permutations.len(), 48);
+        assert_eq!(
+            search
+                .operations
+                .iter()
+                .map(|op| op.rotation)
+                .collect::<std::collections::HashSet<_>>()
+                .len(),
+            48
+        );
+        for (operation, permutation) in search.operations.iter().zip(&search.permutations) {
+            for (site, position) in cell.positions.iter().enumerate() {
+                assert_relative_eq!(
+                    operation.rotation.map(f64::from) * position + operation.translation,
+                    cell.positions[permutation.apply(site)],
+                    epsilon = 1e-12
+                );
+            }
+            for (rhs, rhs_permutation) in search.operations.iter().zip(&search.permutations) {
+                let rotation = operation.rotation * rhs.rotation;
+                let (_, product) = search
+                    .operations
+                    .iter()
+                    .zip(&search.permutations)
+                    .find(|(candidate, _)| candidate.rotation == rotation)
+                    .unwrap();
+                for site in 0..cell.num_atoms() {
+                    assert_eq!(
+                        product.apply(site),
+                        permutation.apply(rhs_permutation.apply(site))
+                    );
+                }
+            }
+        }
+    }
 
     #[test]
     fn test_search_bravais_group() {
