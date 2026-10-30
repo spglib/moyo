@@ -119,6 +119,13 @@ impl PrimitiveSymmetrySearch {
             operations.push(ops_lhs.clone());
             permutations.push(permutation_lhs.clone());
 
+            // Expand identity first to enqueue every candidate. Once all expected
+            // rotations are queued, keep their BFS order and let check_closure
+            // validate every product, including missing rotations.
+            if operations.len() > 1 && visited.len() == operations_and_permutations.len() {
+                continue;
+            }
+
             for (ops_rhs, permutation_rhs) in operations_and_permutations.iter() {
                 let mut new_ops = ops_lhs.clone() * ops_rhs.clone();
                 if !visited.insert(new_ops.rotation) {
@@ -158,8 +165,10 @@ impl PrimitiveSymmetrySearch {
         for ops1 in operations.iter() {
             for ops2 in operations.iter() {
                 let ops12 = ops1.clone() * ops2.clone();
-                let diff =
-                    (translations_map[&ops12.rotation] - ops12.translation).map(|e| e - e.round());
+                let Some(translation) = translations_map.get(&ops12.rotation) else {
+                    return false;
+                };
+                let diff = (translation - ops12.translation).map(|e| e - e.round());
                 if lattice.cartesian_coords(&diff).norm() > symprec {
                     return false;
                 }
@@ -488,9 +497,56 @@ mod tests {
 
     use super::{PrimitiveMagneticSymmetrySearch, PrimitiveSymmetrySearch, search_bravais_group};
     use crate::base::{
-        AngleTolerance, Cell, Collinear, Lattice, MagneticCell, NonCollinear,
+        AngleTolerance, Cell, Collinear, Lattice, MagneticCell, NonCollinear, Operation,
         RotationMagneticMomentAction,
     };
+
+    #[test]
+    fn test_closure_checks_rotations_and_translations() {
+        let lattice = Lattice::new(Matrix3::identity());
+        let quarter_turn = matrix![0, -1, 0; 1, 0, 0; 0, 0, 1];
+        let rotations = [
+            Matrix3::identity(),
+            quarter_turn,
+            quarter_turn * quarter_turn,
+            quarter_turn.transpose(),
+        ];
+        let operations = rotations
+            .iter()
+            .map(|&rotation| Operation::new(rotation, Vector3::zeros()))
+            .collect::<Vec<_>>();
+        assert!(PrimitiveSymmetrySearch::check_closure(
+            &operations,
+            &lattice,
+            1e-5
+        ));
+
+        let missing_rotation = operations
+            .iter()
+            .filter(|op| op.rotation != quarter_turn.transpose())
+            .cloned()
+            .collect();
+        assert!(!PrimitiveSymmetrySearch::check_closure(
+            &missing_rotation,
+            &lattice,
+            1e-5
+        ));
+
+        let wrong_translation = operations
+            .into_iter()
+            .map(|mut op| {
+                if op.rotation == quarter_turn {
+                    op.translation = Vector3::new(0.1, 0.0, 0.0);
+                }
+                op
+            })
+            .collect();
+        assert!(!PrimitiveSymmetrySearch::check_closure(
+            &wrong_translation,
+            &lattice,
+            1e-5
+        ));
+    }
 
     #[test]
     fn test_closure_preserves_site_permutations() {
