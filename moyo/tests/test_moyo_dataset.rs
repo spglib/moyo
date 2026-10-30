@@ -167,6 +167,38 @@ fn permutation_from_operation(
 }
 
 #[test]
+fn test_noisy_bcc_long_supercell() {
+    for n in [16, 24, 32] {
+        let lattice = Lattice::new(Matrix3::from_diagonal(&vector![
+            2.87 * n as f64,
+            2.87,
+            2.87
+        ]));
+        let inverse = lattice.basis.try_inverse().unwrap();
+        let positions = [0.0, 0.5]
+            .into_iter()
+            .flat_map(|x| (0..n).map(move |i| vector![(x + i as f64) / n as f64, x, x]))
+            .enumerate()
+            .map(|(i, position)| {
+                let i = i as f64;
+                position + inverse * (0.01 * vector![i.sin(), (1.7 * i).cos(), (2.3 * i).sin()])
+            })
+            .collect();
+        let cell = Cell::new(lattice, positions, vec![26; 2 * n]);
+        let dataset = MoyoDataset::with_default(&cell, 0.1).unwrap();
+
+        assert_eq!(dataset.number, 229, "{n} conventional bcc cells");
+        assert_eq!(dataset.prim_std_cell.num_atoms(), 1);
+        assert_eq!(dataset.mapping_std_prim, vec![0; 2 * n]);
+        assert_relative_eq!(
+            dataset.prim_std_linear.determinant().abs(),
+            1.0 / (2 * n) as f64,
+            epsilon = 1e-12
+        );
+    }
+}
+
+#[test]
 fn test_with_fcc() {
     let lattice = Lattice::new(Matrix3::identity());
     let positions = vec![
