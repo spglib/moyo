@@ -138,6 +138,7 @@ impl<M: MagneticMoment> PrimitiveMagneticCell<M> {
             );
             return Err(MoyoError::TooSmallToleranceError);
         }
+        validate_translation_orbits(magnetic_cell.cell.num_atoms(), &permutations)?;
         debug!("Found {} pure translations", size);
 
         // Recover a transformation matrix from primitive to input cell
@@ -234,7 +235,23 @@ pub(crate) fn search_pure_translations(
     (translations, permutations)
 }
 
-/// Validate the pure-translation count and build the primitive sub-cell.
+/// Each free translation orbit must contain one site per translation.
+fn validate_translation_orbits(
+    num_atoms: usize,
+    permutations: &[Permutation],
+) -> Result<(), MoyoError> {
+    let mut orbit_sizes = BTreeMap::new();
+    for representative in orbits_from_permutations(num_atoms, permutations) {
+        *orbit_sizes.entry(representative).or_insert(0usize) += 1;
+    }
+    if orbit_sizes.values().any(|&size| size != permutations.len()) {
+        debug!("Translation count disagrees with orbit sizes. Consider increasing symprec.");
+        return Err(MoyoError::TooSmallToleranceError);
+    }
+    Ok(())
+}
+
+/// Validate the pure-translation count and orbits, and build the primitive sub-cell.
 /// Shared post-search core of `PrimitiveCell::new` and
 /// `LayerPrimitiveCell::new`. Callers pass already-filtered
 /// translations + permutations (the bulk caller filters not at all;
@@ -253,6 +270,7 @@ pub(crate) fn primitive_cell_from_pure_translations(
         );
         return Err(MoyoError::TooSmallToleranceError);
     }
+    validate_translation_orbits(reduced_cell.num_atoms(), permutations)?;
     debug!("Found {} pure translations", size);
 
     let trans_mat = transformation_matrix_from_translations(translations).ok_or_else(|| {
@@ -398,13 +416,64 @@ mod tests {
     use nalgebra::{Matrix3, Vector3, matrix};
 
     use crate::base::{
-        Cell, Collinear, Lattice, MagneticCell, MagneticMoment, Transformation, Translation,
+        Cell, Collinear, Lattice, MagneticCell, MagneticMoment, MoyoError, Permutation,
+        Transformation, Translation,
     };
 
     use super::{
-        PrimitiveCell, PrimitiveMagneticCell, site_mapping_from_orbits,
-        transformation_matrix_from_translations,
+        PrimitiveCell, PrimitiveMagneticCell, primitive_cell_from_pure_translations,
+        site_mapping_from_orbits, transformation_matrix_from_translations,
     };
+
+    #[test]
+    fn test_incomplete_translation_orbits() {
+        let cell = Cell::new(
+            Lattice::new(Matrix3::from_diagonal(&Vector3::new(1.0, 1.0, 4.0))),
+            (0..4)
+                .map(|i| Vector3::new(0.0, 0.0, i as f64 / 4.0))
+                .collect(),
+            vec![26; 4],
+        );
+        // Identity and a quarter-cell translation generate four-site orbits,
+        // although the supplied translation count divides the atom count.
+        let result = primitive_cell_from_pure_translations(
+            &cell,
+            &[Vector3::zeros(), Vector3::new(0.0, 0.0, 0.25)],
+            &[Permutation::identity(4), Permutation::new(vec![1, 2, 3, 0])],
+        );
+        assert!(matches!(result, Err(MoyoError::TooSmallToleranceError)));
+
+        // A complete two-element subgroup remains valid even though the cell
+        // has additional translations.
+        let (primitive, linear, mapping) = primitive_cell_from_pure_translations(
+            &cell,
+            &[Vector3::zeros(), Vector3::new(0.0, 0.0, 0.5)],
+            &[Permutation::identity(4), Permutation::new(vec![2, 3, 0, 1])],
+        )
+        .unwrap();
+        assert_eq!(primitive.num_atoms(), 2);
+        assert_eq!(mapping, vec![0, 1, 0, 1]);
+        assert_relative_eq!(linear.map(|e| e as f64).determinant(), 2.0);
+    }
+
+    #[test]
+    fn test_incomplete_magnetic_translation_orbits() {
+        let cell = MagneticCell::new(
+            Lattice::new(Matrix3::from_diagonal(&Vector3::new(1.0, 1.0, 6.0))),
+            (0..6)
+                .map(|i| Vector3::new(0.0, 0.0, i as f64 / 6.0))
+                .collect(),
+            vec![26; 6],
+            [0.0, 0.04, 0.08, 0.12, 0.08, 0.04]
+                .into_iter()
+                .map(Collinear)
+                .collect(),
+        );
+        // Magnetic filtering retains identity and the +/-1/6 translations,
+        // which generate a six-site orbit rather than a three-site orbit.
+        let result = PrimitiveMagneticCell::new(&cell, 0.01, 0.05);
+        assert!(matches!(result, Err(MoyoError::TooSmallToleranceError)));
+    }
 
     #[test]
     fn test_transformation_matrix_from_translations() {
