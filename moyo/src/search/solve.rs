@@ -168,6 +168,7 @@ pub fn solve_correspondence(
 ) -> Option<Permutation> {
     let num_atoms = neighbor_search.num_sites;
     let mut mapping = vec![None; num_atoms];
+    let mut visited = vec![false; num_atoms];
 
     for i in 0..num_atoms {
         let neighbor = neighbor_search.nearest(&new_positions[i])?;
@@ -175,11 +176,12 @@ pub fn solve_correspondence(
         if reduced_cell.numbers[i] != reduced_cell.numbers[j] {
             return None;
         }
-        if mapping[i].is_some() {
+        if visited[j] {
             return None;
         }
 
         mapping[i] = Some(j);
+        visited[j] = true;
     }
 
     let mapping = mapping.into_iter().map(|v| v.unwrap()).collect::<Vec<_>>();
@@ -421,6 +423,27 @@ mod tests {
                 solve_correspondence(&neighbor_search, &reduced_cell, &new_positions);
             assert_eq!(actual_neighbor_search, None);
         }
+    }
+
+    #[test]
+    fn test_solve_correspondence_requires_bijection() {
+        let cell = Cell::new(
+            Lattice::new(Matrix3::identity()),
+            vec![Vector3::new(0.2, 0.5, 0.5), Vector3::new(0.5, 0.5, 0.5)],
+            vec![26, 26],
+        );
+        let search = PeriodicNeighborSearch::new(&cell, 0.05);
+        let duplicate_targets = [Vector3::new(0.2, 0.5, 0.5), Vector3::new(0.21, 0.5, 0.5)];
+        assert_eq!(
+            solve_correspondence(&search, &cell, &duplicate_targets),
+            None
+        );
+
+        let swapped = [Vector3::new(0.5, 0.5, 0.5), Vector3::new(0.2, 0.5, 0.5)];
+        assert_eq!(
+            solve_correspondence(&search, &cell, &swapped),
+            Some(Permutation::new(vec![1, 0]))
+        );
     }
 
     #[test]
