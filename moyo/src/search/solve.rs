@@ -162,6 +162,14 @@ pub fn solve_correspondence(
     reduced_cell: &Cell,
     new_positions: &[Position],
 ) -> Option<Permutation> {
+    solve_correspondence_with(neighbor_search, reduced_cell, new_positions)
+}
+
+pub(super) fn solve_correspondence_with(
+    neighbor_search: &PeriodicNeighborSearch,
+    reduced_cell: &Cell,
+    new_positions: &[Position],
+) -> Option<Permutation> {
     let num_atoms = neighbor_search.num_sites;
     let mut mapping = vec![None; num_atoms];
     let mut visited = vec![false; num_atoms];
