@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only dependency or build updates with no user-visible changes.
 
+## Unreleased
+
+### moyo
+
+- Speed up primitive symmetry searches with many candidate translations by computing translated positions only until a candidate fails and reducing correspondence allocations.
+
 ## v0.22.0 - 2026-10-30
 
 ### moyo
