@@ -10,6 +10,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 
 ### moyo
 
+- Speed up symmetry searches for cells with many point-group operations by avoiding redundant site-permutation compositions during group closure.
 - Speed up primitive symmetry searches with many candidate translations by computing translated positions only until a candidate fails and reducing correspondence allocations.
 
 ## v0.22.0 - 2026-10-30
