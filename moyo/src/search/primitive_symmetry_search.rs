@@ -9,7 +9,7 @@ use super::{
     primitive_cell::PrimitiveMagneticCell,
     solve::{
         PeriodicNeighborSearch, pivot_site_indices, solve_correspondence,
-        symmetrize_translation_from_permutation,
+        solve_correspondence_with, symmetrize_translation_from_permutation,
     },
 };
 use crate::base::{
@@ -63,13 +63,10 @@ impl PrimitiveSymmetrySearch {
             for dst in pivot_site_indices.iter() {
                 // Try to overlap the `src`-th site to the `dst`-th site
                 let translation = primitive_cell.positions[*dst] - rotated_positions[src];
-                let new_positions = rotated_positions
-                    .iter()
-                    .map(|pos| pos + translation)
-                    .collect::<Vec<_>>();
-
                 if let Some(permutation) =
-                    solve_correspondence(&neighbor_search, primitive_cell, &new_positions)
+                    solve_correspondence_with(&neighbor_search, primitive_cell, |i| {
+                        rotated_positions[i] + translation
+                    })
                 {
                     symmetries_tmp.push((*rotation, translation, permutation));
                     // Do not break here because there may be multiple translations with the rough tolerance
