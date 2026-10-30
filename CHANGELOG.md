@@ -11,6 +11,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 ### moyo
 
 - Fix periodic neighbor searches near cell boundaries by using per-axis padding based on reciprocal-plane spacing. This prevents missed translations and symmetry operations in elongated and skewed cells (#499, #500).
+- Reject incomplete translation sets whose orbit sizes disagree with the number of retained translations. Ordinary, layer, and magnetic primitive-cell searches now retry with adjusted tolerances instead of returning inconsistent cell volumes and site mappings (#499, #501).
 
 ### moyopy
 
