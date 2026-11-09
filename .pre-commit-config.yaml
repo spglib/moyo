@@ -23,12 +23,12 @@ repos:
       - id: check-merge-conflict
       - id: detect-private-key
   - repo: https://github.com/rvben/rumdl-pre-commit
-    rev: v0.3.0
+    rev: v0.3.2
     hooks:
       - id: rumdl
         args: [--fix]
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.38.2
+    rev: 0.39.0
     hooks:
       - id: check-github-workflows
   - repo: https://github.com/crate-ci/typos
