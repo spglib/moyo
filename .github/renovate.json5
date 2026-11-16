@@ -73,6 +73,12 @@
       "matchJsonata": ["isBreaking != true"],
       "matchManagers": ["cargo"]
     },
+    {
+      "description": "Keep PyO3 below 0.30 until pythonize and pyo3-log support it",
+      "matchManagers": ["cargo"],
+      "matchPackageNames": ["pyo3"],
+      "allowedVersions": "<0.30"
+    },
 
     // Python
     {
