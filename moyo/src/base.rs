@@ -28,7 +28,8 @@ pub use transformation::{
 
 pub(super) use cell::orbits_from_permutations;
 pub(super) use operation::project_rotations;
-#[allow(unused_imports)]
+#[cfg(test)]
 pub(super) use operation::traverse;
+pub(super) use operation::traverse_with_limit;
 pub(super) use tolerance::{EPS, MagneticSymmetryTolerances, SymmetryTolerances, ToleranceHandler};
 pub(super) use transformation::{UnimodularLinear, lattice_points};
