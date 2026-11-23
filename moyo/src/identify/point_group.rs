@@ -1,8 +1,10 @@
+use std::cell::RefCell;
 use std::cmp::Ordering;
 
 use itertools::Itertools;
 use log::debug;
 use nalgebra::Matrix3;
+use rustc_hash::FxHashMap;
 use serde::{Deserialize, Serialize};
 
 use super::rotation_type::{RotationType, identify_rotation_type};
@@ -29,6 +31,25 @@ impl PointGroup {
     /// Assume the rotations are given in a reduced primitive basis with a
     /// right-handed reference orientation.
     pub fn new(prim_rotations: &Rotations) -> Result<Self, MoyoError> {
+        // Identification is a pure function of the ordered rotations, which repeat across
+        // structures, so memoize per thread (cleared when full to bound memory).
+        thread_local! {
+            static CACHE: RefCell<FxHashMap<Rotations, PointGroup>> = RefCell::default();
+        }
+        if let Some(hit) = CACHE.with_borrow(|cache| cache.get(prim_rotations).cloned()) {
+            return Ok(hit);
+        }
+        let point_group = Self::identify(prim_rotations)?;
+        CACHE.with_borrow_mut(|cache| {
+            if cache.len() >= 1024 {
+                cache.clear();
+            }
+            cache.insert(prim_rotations.clone(), point_group.clone());
+        });
+        Ok(point_group)
+    }
+
+    fn identify(prim_rotations: &Rotations) -> Result<Self, MoyoError> {
         let rotation_types = prim_rotations.iter().map(identify_rotation_type).collect();
         let geometric_crystal_class = identify_geometric_crystal_class(&rotation_types)?;
         debug!("Geometric crystal class: {:?}", geometric_crystal_class);
@@ -351,6 +372,9 @@ mod tests {
             let primitive_generators = point_group_db.primitive_generators();
             let prim_rotations = traverse(&primitive_generators);
             let point_group = PointGroup::new(&prim_rotations).unwrap();
+            let cached = PointGroup::new(&prim_rotations).unwrap();
+            assert_eq!(cached.arithmetic_number, point_group.arithmetic_number);
+            assert_eq!(cached.prim_trans_mat, point_group.prim_trans_mat);
 
             assert_eq!(point_group.arithmetic_number, arithmetic_number);
             assert_eq!(
