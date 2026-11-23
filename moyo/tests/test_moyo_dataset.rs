@@ -894,6 +894,37 @@ fn test_with_high_symprec_and_angle_tolerance() {
 }
 
 #[test]
+fn test_retry_after_nonclosed_bravais_candidates() {
+    // The direct and reciprocal lattices from #519 both admit a shear at 5 degrees.
+    let lattice = Lattice::from_basis([
+        [4.34026484, 0.0, 0.30398041],
+        [2.15948739, 3.7649053, 0.30398012],
+        [0.0, 0.0, 31.13740311],
+    ]);
+    let reciprocal = Lattice {
+        basis: lattice.basis.try_inverse().unwrap().transpose(),
+    };
+    let angle_tolerance = 5.0_f64.to_radians();
+
+    for (lattice, symprec) in [(lattice, 1e-5), (reciprocal, 0.01)] {
+        let cell = Cell::new(lattice, vec![Vector3::zeros()], vec![1]);
+        let dataset = MoyoDataset::new(
+            &cell,
+            symprec,
+            AngleTolerance::Radian(angle_tolerance),
+            Setting::default(),
+            true,
+        )
+        .unwrap();
+        assert_eq!(dataset.number, 166);
+        assert_eq!(dataset.operations.len(), 12);
+        assert!(
+            matches!(dataset.angle_tolerance, AngleTolerance::Radian(angle) if angle < angle_tolerance)
+        );
+    }
+}
+
+#[test]
 fn test_wyckoff_position_assignment() {
     let symprec = 1e-4;
 

@@ -170,9 +170,13 @@ pub fn project_rotations(operations: &Operations) -> Rotations {
     operations.iter().map(|ops| ops.rotation).collect()
 }
 
-#[allow(dead_code)]
-/// Used for testing
+#[cfg(test)]
 pub fn traverse(generators: &Rotations) -> Rotations {
+    traverse_with_limit(generators, 48).expect("crystallographic point group has order at most 48")
+}
+
+/// Enumerate the group in breadth-first order with a positive limit on its order.
+pub fn traverse_with_limit(generators: &Rotations, max_order: usize) -> Option<Rotations> {
     let mut queue = VecDeque::new();
     let mut visited = FxHashSet::default();
     let mut group = Vec::with_capacity(48);
@@ -187,12 +191,15 @@ pub fn traverse(generators: &Rotations) -> Rotations {
         for generator in generators {
             let product = element * generator;
             if visited.insert(product) {
+                if visited.len() > max_order {
+                    return None;
+                }
                 queue.push_back(product);
             }
         }
     }
 
-    group
+    Some(group)
 }
 
 #[cfg(test)]

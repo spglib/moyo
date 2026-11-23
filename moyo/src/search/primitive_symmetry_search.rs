@@ -17,7 +17,7 @@ use crate::base::{
     AngleTolerance, Cell, EPS, Lattice, Linear, MagneticCell, MagneticMoment, MagneticOperation,
     MagneticOperations, MoyoError, Operation, Operations, Permutation, Rotation,
     RotationMagneticMomentAction, Rotations, Transformation, Translation,
-    is_angle_within_tolerance, traverse,
+    is_angle_within_tolerance, traverse_with_limit,
 };
 
 #[derive(Debug)]
@@ -444,13 +444,14 @@ pub(crate) fn search_bravais_group(
         return Err(MoyoError::TooLargeToleranceError);
     }
 
-    let complemented_rotations = traverse(&rotations);
-    if complemented_rotations.len() != rotations.len() {
+    // The candidates are distinct and include the identity. Any extra product
+    // proves the set is not closed, and the generated group may be infinite.
+    let Some(complemented_rotations) = traverse_with_limit(&rotations, rotations.len()) else {
         debug!(
             "Found automorphisms for the lattice do not form a group. Consider reducing symprec and angle_tolerance."
         );
         return Err(MoyoError::TooLargeToleranceError);
-    }
+    };
     debug!("Order of Bravais group: {}", complemented_rotations.len());
     Ok(complemented_rotations)
 }

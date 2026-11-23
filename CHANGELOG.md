@@ -14,6 +14,7 @@ Unlisted patch versions (e.g. v0.7.1, v0.7.3, v0.7.6, v0.7.7) contain only depen
 - Speed up primitive symmetry searches with many candidate translations by computing translated positions only until a candidate fails and reducing correspondence allocations.
 - Speed up symmetry searches for high-symmetry cells by reducing rotation hashing and traversal overhead.
 - Speed up primitive symmetry searches with many rejected candidates by reusing correspondence buffers.
+- Prevent Bravais-group searches from hanging when the tolerance admits lattice rotations that are not closed under multiplication. Symmetry searches can retry with tighter tolerances (#519).
 
 ## v0.22.0 - 2026-10-30
 
