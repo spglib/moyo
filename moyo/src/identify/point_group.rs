@@ -32,19 +32,27 @@ impl PointGroup {
     /// right-handed reference orientation.
     pub fn new(prim_rotations: &Rotations) -> Result<Self, MoyoError> {
         // Identification is a pure function of the ordered rotations, which repeat across
-        // structures, so memoize per thread (cleared when full to bound memory).
+        // structures, so memoize per thread (cleared when full to bound memory). The cache is
+        // best-effort: when the thread-local is unavailable (thread teardown) or already
+        // borrowed, identify without it instead of panicking.
         thread_local! {
             static CACHE: RefCell<FxHashMap<Rotations, PointGroup>> = RefCell::default();
         }
-        if let Some(hit) = CACHE.with_borrow(|cache| cache.get(prim_rotations).cloned()) {
-            return Ok(hit);
+        let hit = CACHE
+            .try_with(|cell| cell.try_borrow().ok()?.get(prim_rotations).cloned())
+            .ok()
+            .flatten();
+        if let Some(point_group) = hit {
+            return Ok(point_group);
         }
         let point_group = Self::identify(prim_rotations)?;
-        CACHE.with_borrow_mut(|cache| {
-            if cache.len() >= 1024 {
-                cache.clear();
+        let _ = CACHE.try_with(|cell| {
+            if let Ok(mut cache) = cell.try_borrow_mut() {
+                if cache.len() >= 1024 {
+                    cache.clear();
+                }
+                cache.insert(prim_rotations.clone(), point_group.clone());
             }
-            cache.insert(prim_rotations.clone(), point_group.clone());
         });
         Ok(point_group)
     }
