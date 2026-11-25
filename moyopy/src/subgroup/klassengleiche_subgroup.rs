@@ -13,7 +13,7 @@ use crate::base::{PyMoyoError, PyOperations};
 
 /// A Klassengleiche subgroup embedded in its parent space group.
 #[derive(Debug, Clone)]
-#[pyclass(name = "KlassengleicheSubgroup", frozen, skip_from_py_object)]
+#[pyclass(name = "KlassengleicheSubgroup", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyKlassengleicheSubgroup(KlassengleicheSubgroup);
 
@@ -71,7 +71,7 @@ impl From<KlassengleicheSubgroup> for PyKlassengleicheSubgroup {
 
 /// A member of a parent-conjugacy class of embedded Klassengleiche subgroups.
 #[derive(Debug, Clone)]
-#[pyclass(name = "KlassengleicheSubgroupConjugate", frozen, skip_from_py_object)]
+#[pyclass(name = "KlassengleicheSubgroupConjugate", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyKlassengleicheSubgroupConjugate(KlassengleicheSubgroupConjugate);
 
@@ -111,11 +111,7 @@ impl From<KlassengleicheSubgroupConjugate> for PyKlassengleicheSubgroupConjugate
 
 /// A parent-conjugacy class of embedded Klassengleiche subgroups.
 #[derive(Debug, Clone)]
-#[pyclass(
-    name = "KlassengleicheSubgroupConjugacyClass",
-    frozen,
-    skip_from_py_object
-)]
+#[pyclass(name = "KlassengleicheSubgroupConjugacyClass", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyKlassengleicheSubgroupConjugacyClass(KlassengleicheSubgroupConjugacyClass);
 

@@ -313,7 +313,7 @@ impl PyMoyoDataset {
 /// ``len(stabilizer) * len(coset_representatives)`` equals the number of
 /// normalizer operations.
 #[derive(Debug, Clone)]
-#[pyclass(name = "NormalizerWyckoffPositions", frozen, skip_from_py_object)]
+#[pyclass(name = "NormalizerWyckoffPositions", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyNormalizerWyckoffPositions(NormalizerWyckoffPositions);
 

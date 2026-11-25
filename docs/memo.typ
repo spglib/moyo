@@ -1,4 +1,4 @@
-#import "@preview/ctheorems:1.1.3": *
+#import "@preview/ctheorems:2.0.0": *
 #import "@preview/physica:0.9.8": *
 #show: thmrules
 

@@ -167,6 +167,38 @@ fn permutation_from_operation(
 }
 
 #[test]
+fn test_noisy_bcc_long_supercell() {
+    for n in [16, 24, 32] {
+        let lattice = Lattice::new(Matrix3::from_diagonal(&vector![
+            2.87 * n as f64,
+            2.87,
+            2.87
+        ]));
+        let inverse = lattice.basis.try_inverse().unwrap();
+        let positions = [0.0, 0.5]
+            .into_iter()
+            .flat_map(|x| (0..n).map(move |i| vector![(x + i as f64) / n as f64, x, x]))
+            .enumerate()
+            .map(|(i, position)| {
+                let i = i as f64;
+                position + inverse * (0.01 * vector![i.sin(), (1.7 * i).cos(), (2.3 * i).sin()])
+            })
+            .collect();
+        let cell = Cell::new(lattice, positions, vec![26; 2 * n]);
+        let dataset = MoyoDataset::with_default(&cell, 0.1).unwrap();
+
+        assert_eq!(dataset.number, 229, "{n} conventional bcc cells");
+        assert_eq!(dataset.prim_std_cell.num_atoms(), 1);
+        assert_eq!(dataset.mapping_std_prim, vec![0; 2 * n]);
+        assert_relative_eq!(
+            dataset.prim_std_linear.determinant().abs(),
+            1.0 / (2 * n) as f64,
+            epsilon = 1e-12
+        );
+    }
+}
+
+#[test]
 fn test_with_fcc() {
     let lattice = Lattice::new(Matrix3::identity());
     let positions = vec![
@@ -859,6 +891,37 @@ fn test_with_high_symprec_and_angle_tolerance() {
     let angle_tolerance = AngleTolerance::Radian(1.0);
 
     let _ = MoyoDataset::new(&cell, symprec, angle_tolerance, Setting::default(), true).unwrap();
+}
+
+#[test]
+fn test_retry_after_nonclosed_bravais_candidates() {
+    // The direct and reciprocal lattices from #519 both admit a shear at 5 degrees.
+    let lattice = Lattice::from_basis([
+        [4.34026484, 0.0, 0.30398041],
+        [2.15948739, 3.7649053, 0.30398012],
+        [0.0, 0.0, 31.13740311],
+    ]);
+    let reciprocal = Lattice {
+        basis: lattice.basis.try_inverse().unwrap().transpose(),
+    };
+    let angle_tolerance = 5.0_f64.to_radians();
+
+    for (lattice, symprec) in [(lattice, 1e-5), (reciprocal, 0.01)] {
+        let cell = Cell::new(lattice, vec![Vector3::zeros()], vec![1]);
+        let dataset = MoyoDataset::new(
+            &cell,
+            symprec,
+            AngleTolerance::Radian(angle_tolerance),
+            Setting::default(),
+            true,
+        )
+        .unwrap();
+        assert_eq!(dataset.number, 166);
+        assert_eq!(dataset.operations.len(), 12);
+        assert!(
+            matches!(dataset.angle_tolerance, AngleTolerance::Radian(angle) if angle < angle_tolerance)
+        );
+    }
 }
 
 #[test]

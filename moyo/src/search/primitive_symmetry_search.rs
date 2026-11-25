@@ -1,22 +1,23 @@
 use itertools::iproduct;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, VecDeque};
 
 use log::debug;
 use nalgebra::{Matrix3, Vector3};
+use rustc_hash::{FxHashMap, FxHashSet};
 
 use super::{
     PrimitiveCell,
     primitive_cell::PrimitiveMagneticCell,
     solve::{
         PeriodicNeighborSearch, pivot_site_indices, solve_correspondence,
-        symmetrize_translation_from_permutation,
+        solve_correspondence_with, symmetrize_translation_from_permutation,
     },
 };
 use crate::base::{
     AngleTolerance, Cell, EPS, Lattice, Linear, MagneticCell, MagneticMoment, MagneticOperation,
     MagneticOperations, MoyoError, Operation, Operations, Permutation, Rotation,
     RotationMagneticMomentAction, Rotations, Transformation, Translation,
-    is_angle_within_tolerance, traverse,
+    is_angle_within_tolerance, traverse_with_limit,
 };
 
 #[derive(Debug)]
@@ -54,6 +55,8 @@ impl PrimitiveSymmetrySearch {
         let pivot_site_indices = pivot_site_indices(&primitive_cell.numbers);
         let mut symmetries_tmp = vec![];
         let src = pivot_site_indices[0];
+        let mut mapping = Vec::with_capacity(primitive_cell.num_atoms());
+        let mut visited = vec![false; primitive_cell.num_atoms()];
         for rotation in bravais_group.iter() {
             let rotated_positions = primitive_cell
                 .positions
@@ -63,14 +66,13 @@ impl PrimitiveSymmetrySearch {
             for dst in pivot_site_indices.iter() {
                 // Try to overlap the `src`-th site to the `dst`-th site
                 let translation = primitive_cell.positions[*dst] - rotated_positions[src];
-                let new_positions = rotated_positions
-                    .iter()
-                    .map(|pos| pos + translation)
-                    .collect::<Vec<_>>();
-
-                if let Some(permutation) =
-                    solve_correspondence(&neighbor_search, primitive_cell, &new_positions)
-                {
+                if let Some(permutation) = solve_correspondence_with(
+                    &neighbor_search,
+                    primitive_cell,
+                    |i| rotated_positions[i] + translation,
+                    &mut mapping,
+                    &mut visited,
+                ) {
                     symmetries_tmp.push((*rotation, translation, permutation));
                     // Do not break here because there may be multiple translations with the rough tolerance
                 }
@@ -104,7 +106,8 @@ impl PrimitiveSymmetrySearch {
 
         // Recover operations by group multiplication
         let mut queue = VecDeque::new();
-        let mut visited = HashSet::new();
+        let mut visited = FxHashSet::default();
+        visited.insert(Rotation::identity());
         let mut operations = vec![];
         let mut permutations = vec![];
         queue.push_back((
@@ -113,15 +116,14 @@ impl PrimitiveSymmetrySearch {
         ));
         while !queue.is_empty() {
             let (ops_lhs, permutation_lhs) = queue.pop_front().unwrap();
-            if visited.contains(&ops_lhs.rotation) {
-                continue;
-            }
-            visited.insert(ops_lhs.rotation);
             operations.push(ops_lhs.clone());
             permutations.push(permutation_lhs.clone());
 
             for (ops_rhs, permutation_rhs) in operations_and_permutations.iter() {
                 let mut new_ops = ops_lhs.clone() * ops_rhs.clone();
+                if !visited.insert(new_ops.rotation) {
+                    continue;
+                }
                 new_ops.translation -= new_ops.translation.map(|e| e.round()); // Consider up to the translation subgroup
                 let new_permutation = permutation_lhs.clone() * permutation_rhs.clone();
                 queue.push_back((new_ops, new_permutation));
@@ -149,7 +151,7 @@ impl PrimitiveSymmetrySearch {
     }
 
     fn check_closure(operations: &Operations, lattice: &Lattice, symprec: f64) -> bool {
-        let mut translations_map = HashMap::new();
+        let mut translations_map = FxHashMap::default();
         for operation in operations.iter() {
             translations_map.insert(operation.rotation, operation.translation);
         }
@@ -442,13 +444,14 @@ pub(crate) fn search_bravais_group(
         return Err(MoyoError::TooLargeToleranceError);
     }
 
-    let complemented_rotations = traverse(&rotations);
-    if complemented_rotations.len() != rotations.len() {
+    // The candidates are distinct and include the identity. Any extra product
+    // proves the set is not closed, and the generated group may be infinite.
+    let Some(complemented_rotations) = traverse_with_limit(&rotations, rotations.len()) else {
         debug!(
             "Found automorphisms for the lattice do not form a group. Consider reducing symprec and angle_tolerance."
         );
         return Err(MoyoError::TooLargeToleranceError);
-    }
+    };
     debug!("Order of Bravais group: {}", complemented_rotations.len());
     Ok(complemented_rotations)
 }
@@ -484,11 +487,64 @@ mod tests {
     use nalgebra::{Matrix3, Vector3, matrix};
     use test_log::test;
 
-    use super::{PrimitiveMagneticSymmetrySearch, search_bravais_group};
+    use super::{PrimitiveMagneticSymmetrySearch, PrimitiveSymmetrySearch, search_bravais_group};
     use crate::base::{
-        AngleTolerance, Collinear, Lattice, MagneticCell, NonCollinear,
+        AngleTolerance, Cell, Collinear, Lattice, MagneticCell, NonCollinear,
         RotationMagneticMomentAction,
     };
+
+    #[test]
+    fn test_closure_preserves_site_permutations() {
+        let mut positions = vec![Vector3::zeros()];
+        for axis in 0..3 {
+            for sign in [-1.0, 1.0] {
+                let mut position = Vector3::zeros();
+                position[axis] = 0.2 * sign;
+                positions.push(position);
+            }
+        }
+        let cell = Cell::new(
+            Lattice::new(Matrix3::identity()),
+            positions,
+            vec![0, 1, 1, 1, 1, 1, 1],
+        );
+        let search = PrimitiveSymmetrySearch::new(&cell, 1e-5, AngleTolerance::default()).unwrap();
+        assert_eq!(search.operations.len(), 48);
+        assert_eq!(search.permutations.len(), 48);
+        assert_eq!(
+            search
+                .operations
+                .iter()
+                .map(|op| op.rotation)
+                .collect::<std::collections::HashSet<_>>()
+                .len(),
+            48
+        );
+        for (operation, permutation) in search.operations.iter().zip(&search.permutations) {
+            for (site, position) in cell.positions.iter().enumerate() {
+                assert_relative_eq!(
+                    operation.rotation.map(f64::from) * position + operation.translation,
+                    cell.positions[permutation.apply(site)],
+                    epsilon = 1e-12
+                );
+            }
+            for (rhs, rhs_permutation) in search.operations.iter().zip(&search.permutations) {
+                let rotation = operation.rotation * rhs.rotation;
+                let (_, product) = search
+                    .operations
+                    .iter()
+                    .zip(&search.permutations)
+                    .find(|(candidate, _)| candidate.rotation == rotation)
+                    .unwrap();
+                for site in 0..cell.num_atoms() {
+                    assert_eq!(
+                        product.apply(site),
+                        permutation.apply(rhs_permutation.apply(site))
+                    );
+                }
+            }
+        }
+    }
 
     #[test]
     fn test_search_bravais_group() {

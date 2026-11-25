@@ -1,8 +1,9 @@
-use std::collections::{HashSet, VecDeque};
+use std::collections::VecDeque;
 use std::fmt;
 use std::ops::Mul;
 
 use nalgebra::base::{Matrix3, Vector3};
+use rustc_hash::FxHashSet;
 
 use crate::utils::{to_3_slice, to_3x3_slice};
 use serde::{Deserialize, Serialize};
@@ -169,30 +170,36 @@ pub fn project_rotations(operations: &Operations) -> Rotations {
     operations.iter().map(|ops| ops.rotation).collect()
 }
 
-#[allow(dead_code)]
-/// Used for testing
+#[cfg(test)]
 pub fn traverse(generators: &Rotations) -> Rotations {
+    traverse_with_limit(generators, 48).expect("crystallographic point group has order at most 48")
+}
+
+/// Enumerate the group in breadth-first order with a positive limit on its order.
+pub fn traverse_with_limit(generators: &Rotations, max_order: usize) -> Option<Rotations> {
     let mut queue = VecDeque::new();
-    let mut visited = HashSet::new();
+    let mut visited = FxHashSet::default();
     let mut group = Vec::with_capacity(48);
 
+    visited.insert(Rotation::identity());
     queue.push_back(Rotation::identity());
 
     while !queue.is_empty() {
         let element = queue.pop_front().unwrap();
-        if visited.contains(&element) {
-            continue;
-        }
-        visited.insert(element);
         group.push(element);
 
         for generator in generators {
             let product = element * generator;
-            queue.push_back(product);
+            if visited.insert(product) {
+                if visited.len() > max_order {
+                    return None;
+                }
+                queue.push_back(product);
+            }
         }
     }
 
-    group
+    Some(group)
 }
 
 #[cfg(test)]
@@ -202,6 +209,26 @@ mod tests {
 
     use super::*;
     use crate::base::{Operation, lattice::Lattice};
+
+    #[test]
+    fn test_traverse_preserves_breadth_first_order() {
+        let identity = Rotation::identity();
+        let four_z = matrix![0, -1, 0; 1, 0, 0; 0, 0, 1];
+        let two_x = matrix![1, 0, 0; 0, -1, 0; 0, 0, -1];
+        let expected = vec![
+            identity,
+            four_z,
+            two_x,
+            matrix![-1, 0, 0; 0, -1, 0; 0, 0, 1],
+            matrix![0, 1, 0; 1, 0, 0; 0, 0, -1],
+            matrix![0, -1, 0; -1, 0, 0; 0, 0, -1],
+            matrix![0, 1, 0; -1, 0, 0; 0, 0, 1],
+            matrix![-1, 0, 0; 0, 1, 0; 0, 0, -1],
+        ];
+        assert_eq!(traverse(&vec![four_z, two_x]), expected);
+        assert_eq!(traverse(&vec![identity, four_z, two_x, four_z]), expected);
+        assert_eq!(traverse(&vec![]), vec![identity]);
+    }
 
     #[test]
     fn test_cartesian_rotations() {
