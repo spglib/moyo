@@ -6,7 +6,7 @@ use moyo::data::{HallNumber, WyckoffPosition};
 
 /// A Wyckoff position of a space group.
 #[derive(Debug, Clone)]
-#[pyclass(name = "WyckoffPosition", frozen, skip_from_py_object)]
+#[pyclass(name = "WyckoffPosition", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyWyckoffPosition(WyckoffPosition);
 

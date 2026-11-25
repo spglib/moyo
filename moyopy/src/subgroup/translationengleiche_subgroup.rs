@@ -13,7 +13,7 @@ use crate::base::{PyMoyoError, PyOperations};
 
 /// A Translationengleiche subgroup embedded in its parent space group.
 #[derive(Debug, Clone)]
-#[pyclass(name = "TranslationengleicheSubgroup", frozen, skip_from_py_object)]
+#[pyclass(name = "TranslationengleicheSubgroup", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyTranslationengleicheSubgroup(TranslationengleicheSubgroup);
 
@@ -65,11 +65,7 @@ impl From<TranslationengleicheSubgroup> for PyTranslationengleicheSubgroup {
 
 /// A member of a parent-conjugacy class of embedded Translationengleiche subgroups.
 #[derive(Debug, Clone)]
-#[pyclass(
-    name = "TranslationengleicheSubgroupConjugate",
-    frozen,
-    skip_from_py_object
-)]
+#[pyclass(name = "TranslationengleicheSubgroupConjugate", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyTranslationengleicheSubgroupConjugate(TranslationengleicheSubgroupConjugate);
 
@@ -109,11 +105,7 @@ impl From<TranslationengleicheSubgroupConjugate> for PyTranslationengleicheSubgr
 
 /// A parent-conjugacy class of embedded Translationengleiche subgroups.
 #[derive(Debug, Clone)]
-#[pyclass(
-    name = "TranslationengleicheSubgroupConjugacyClass",
-    frozen,
-    skip_from_py_object
-)]
+#[pyclass(name = "TranslationengleicheSubgroupConjugacyClass", frozen)]
 #[pyo3(module = "moyopy")]
 pub struct PyTranslationengleicheSubgroupConjugacyClass(TranslationengleicheSubgroupConjugacyClass);
 
