@@ -16,7 +16,7 @@ name = "moyoc"
 crate-type = ["staticlib", "cdylib"]
 
 [dependencies]
-moyo = { path = "../moyo", version = "0.22.1" }
+moyo = { path = "../moyo", version = "0.22.2" }
 
 [dev-dependencies]
 nalgebra.workspace = true
