@@ -31,13 +31,42 @@ jobs:
       with:
         rust-version: 1.85.0  # edition 2024
 
+  release:
+    if: github.event_name == 'pull_request' && github.base_ref == 'main' && startsWith(github.head_ref, 'tagpr-from-v')
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      with:
+        fetch-depth: 0
+        persist-credentials: false
+    - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
+    - name: Verify the workspace version and lockfile
+      run: |
+        cargo metadata --locked --format-version 1 |
+          jq -e --arg previous "${GITHUB_HEAD_REF#tagpr-from-v}" '
+            .workspace_members as $members
+            | [.packages[] | select(.id as $id | $members | index($id))] as $workspace
+            | ($workspace[] | select(.name == "moyo") | .version) as $version
+            | $version != $previous
+              and all($workspace[]; .version == $version)
+              and all($workspace[] | select(.name == "moyopy" or .name == "moyoc")
+                      | .dependencies[] | select(.name == "moyo"); .req == ("^" + $version))
+          '
+      shell: bash
+    - uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+      with:
+        tool: cargo-semver-checks@0.51.0
+    - name: Check Rust API compatibility
+      run: cargo semver-checks check-release -p moyo --baseline-rev "${GITHUB_HEAD_REF#tagpr-from-}"
+
   pass:
     name: ✅ Pass checks
-    needs: [prek, cargo-deny]
+    needs: [prek, cargo-deny, release]
     runs-on: ubuntu-latest # ubuntu-slim lacks python
     steps:
       - name: Check all CI jobs
         uses: re-actors/alls-green@b5b5b37504aa4183270bd3d855c52a67f212be35 # release/v1
         with:
           jobs: ${{ toJSON(needs) }}
+          allowed-skips: release
     if: always()

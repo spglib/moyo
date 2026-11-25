@@ -110,13 +110,17 @@ cargo install cargo-release cargo-edit cargo-deny cargo-semver-checks
 
 ### How to release
 
-Prerequisites: `cargo install cargo-release cargo-edit cargo-deny cargo-semver-checks`
+1. Add user-facing changes under `## Unreleased` in the [changelog](./CHANGELOG.md).
+1. Review the release pull request that [tagpr](https://github.com/Songmu/tagpr) maintains. For a minor or major bump, add the `tagpr:minor` or `tagpr:major` label and run the **Prepare release** workflow on `main` to refresh the proposal.
+1. Merge the release pull request once checks pass. Tagpr pushes the version tag and the [release workflow](.github/workflows/release.yaml) publishes the packages and GitHub release assets.
 
-1. `cargo semver-checks` to lint a new release
-1. `cargo set-version --bump patch` for patch version increment
-1. Write [change log](./CHANGELOG.md) and create a pull request
-1. After merging the pull request, run `cargo release --execute` (If you already release the package in crates.io, run `cargo release --execute --no-publish`)
-   - This automatically creates a git tag and pushes it to Remote, and triggers GitHub Actions to publish the packages.
+#### One-time release setup
+
+1. Install a GitHub App on `spglib/moyo` with read and write access to Contents and Pull requests, and read access to Issues. Save its private key as the `TAGPR_APP_PRIVATE_KEY` Actions secret.
+1. Configure [crates.io Trusted Publishing](https://crates.io/docs/trusted-publishing) for `moyo` with GitHub repository `spglib/moyo`, workflow `release.yaml`, and environment `release`.
+1. Set the `TAGPR_APP_CLIENT_ID` Actions variable to the App's client ID. Then run **Prepare release** on `main` to open the first release pull request.
+
+Until the App is configured, use `cargo set-version --bump patch` and `cargo semver-checks` to prepare a release pull request. After merging it, run `cargo release --execute` from the updated `main` branch.
 
 ### Debugging
 

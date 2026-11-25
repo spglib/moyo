@@ -1,4 +1,7 @@
 changelog:
+  exclude:
+    labels:
+      - tagpr
   categories:
     - title: 🛠 Breaking Changes
       labels:

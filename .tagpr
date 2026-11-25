@@ -1,0 +1,8 @@
+[tagpr]
+    releaseBranch = main
+    vPrefix = true
+    versionFile = Cargo.toml
+    changelog = false
+    release = false
+    command = python3 .github/scripts/prepare-release.py
+    template = .github/tagpr-release.md
