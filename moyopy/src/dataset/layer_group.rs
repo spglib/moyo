@@ -56,6 +56,7 @@ impl PyMoyoLayerDataset {
     #[new]
     #[pyo3(signature = (cell, *, symprec=1e-4, angle_tolerance=None, setting=None, rotate_basis=true))]
     pub fn new(
+        py: Python<'_>,
         cell: &PyStructure,
         symprec: f64,
         angle_tolerance: Option<f64>,
@@ -74,13 +75,15 @@ impl PyMoyoLayerDataset {
             LayerSetting::default()
         };
 
-        let dataset = MoyoLayerDataset::new(
-            &cell.to_owned().into(),
-            symprec,
-            angle_tolerance,
-            setting,
-            rotate_basis,
-        )?;
+        let dataset = py.detach(|| {
+            MoyoLayerDataset::new(
+                &cell.to_owned().into(),
+                symprec,
+                angle_tolerance,
+                setting,
+                rotate_basis,
+            )
+        })?;
         Ok(PyMoyoLayerDataset(dataset))
     }
 

@@ -40,6 +40,7 @@ impl PyMoyoCollinearMagneticDataset {
     #[new]
     #[pyo3(signature = (magnetic_cell, *, symprec=1e-4, angle_tolerance=None, mag_symprec=None, is_axial=false, rotate_basis=true))]
     pub fn new(
+        py: Python<'_>,
         magnetic_cell: &PyCollinearMagneticCell,
         symprec: f64,
         angle_tolerance: Option<f64>,
@@ -58,14 +59,16 @@ impl PyMoyoCollinearMagneticDataset {
             RotationMagneticMomentAction::Polar
         };
 
-        let dataset = MoyoMagneticDataset::new(
-            &magnetic_cell.to_owned().into(),
-            symprec,
-            angle_tolerance,
-            mag_symprec,
-            action,
-            rotate_basis,
-        )?;
+        let dataset = py.detach(|| {
+            MoyoMagneticDataset::new(
+                &magnetic_cell.to_owned().into(),
+                symprec,
+                angle_tolerance,
+                mag_symprec,
+                action,
+                rotate_basis,
+            )
+        })?;
         Ok(PyMoyoCollinearMagneticDataset(dataset))
     }
 
@@ -268,6 +271,7 @@ impl PyMoyoNonCollinearMagneticDataset {
     #[new]
     #[pyo3(signature = (magnetic_cell, *, symprec=1e-4, angle_tolerance=None, mag_symprec=None, is_axial=true, rotate_basis=true))]
     pub fn new(
+        py: Python<'_>,
         magnetic_cell: &PyNonCollinearMagneticCell,
         symprec: f64,
         angle_tolerance: Option<f64>,
@@ -286,14 +290,16 @@ impl PyMoyoNonCollinearMagneticDataset {
             RotationMagneticMomentAction::Polar
         };
 
-        let dataset = MoyoMagneticDataset::new(
-            &magnetic_cell.to_owned().into(),
-            symprec,
-            angle_tolerance,
-            mag_symprec,
-            action,
-            rotate_basis,
-        )?;
+        let dataset = py.detach(|| {
+            MoyoMagneticDataset::new(
+                &magnetic_cell.to_owned().into(),
+                symprec,
+                angle_tolerance,
+                mag_symprec,
+                action,
+                rotate_basis,
+            )
+        })?;
         Ok(PyMoyoNonCollinearMagneticDataset(dataset))
     }
 
